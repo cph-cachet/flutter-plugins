@@ -1,0 +1,18 @@
+name: pedometer
+description: A pedometer plugin for retrieving the steps taken today. Works for both iOS and Android and is written in Swift/Java.
+version: 0.0.1
+homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/pedometer
+author: CACHET Team <cph.cachet@gmail.com>
+
+environment:
+  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+# The following section is specific to Flutter.
+flutter:
+  plugin:
+    androidPackage: cachet.plugins.pedometer
+    pluginClass: PedometerPlugin
