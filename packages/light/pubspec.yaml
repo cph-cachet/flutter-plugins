@@ -1,0 +1,18 @@
+name: light
+description: A flutter plugin for retrieving the light sensor data via a platform channel Lux though a stream which is listenable. Works for Android only, since the light sensor API is not available on iOS.
+version: 0.0.1
+homepage: https://github.com/cph-cachet/flutter_light
+author: CACHET Team <cph.cachet@gmail.com>
+
+environment:
+  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+# The following section is specific to Flutter.
+flutter:
+  plugin:
+    androidPackage: cachet.sensors.flutterlight
+    pluginClass: FlutterLightPlugin
