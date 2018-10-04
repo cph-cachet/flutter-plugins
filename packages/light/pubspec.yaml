@@ -1,7 +1,7 @@
 name: light
-version: 0.0.1
+version: 0.0.2
 description: A Flutter plugin for retrieving the light sensor data using a platform channel. Works for Android only, since the light sensor API is not available on iOS.
-homepage: https://github.com/cph-cachet/flutter_plugins/packages/light
+homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/light
 author: CACHET Team <cph.cachet@gmail.com>
 
 environment:
