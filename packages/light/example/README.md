@@ -1,6 +1,7 @@
-# flutter_light_example
+# light_example
 
-A pedometer plugin for retrieving the light sensor data in Lux. Works for Android only, since the light sensor API is not available on iOS.
+A Flutter plugin for retrieving the light sensor data using a platform channel. Works for Android only, since the light sensor API is not available on iOS.
+
 ## Usage
 ```dart
 class MyClass {
@@ -27,5 +28,3 @@ class MyClass {
     // Handle the error
     }
 }
-  
-```

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 
 class Light {
   static const EventChannel _eventChannel =
-      const EventChannel("flutter_light.eventChannel");
+  const EventChannel("flutter_light.eventChannel");
 
   Stream<int> _onLightSensorEvent;
 

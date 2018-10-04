@@ -1,4 +1,4 @@
-group 'cachet.sensors.flutterlight'
+group 'cachet.sensors.light'
 version '1.0-SNAPSHOT'
 
 buildscript {

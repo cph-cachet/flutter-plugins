@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
-import 'package:flutter_light/flutter_light.dart';
+import 'package:light/light.dart';
 
 void main() => runApp(new MyApp());
 
@@ -12,19 +11,16 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _luxString = 'Unknown';
-
-  StreamSubscription<int> _subscription;
   Light _light;
 
   void _onData(int luxValue) async {
+    print("Lux value: $luxValue");
     setState(() {
       _luxString = "$luxValue";
     });
   }
 
-  void _onDone() {
-
-  }
+  void _onDone() {}
 
   void _onError(error) {
     // Handle the error
@@ -39,7 +35,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     _light = new Light();
-    _subscription = _light.lightSensorStream.listen(_onData,
+    _light.lightSensorStream.listen(_onData,
         onError: _onError, onDone: _onDone, cancelOnError: true);
   }
 

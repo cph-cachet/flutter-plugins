@@ -1,10 +1,10 @@
 import Flutter
 import UIKit
     
-public class SwiftFlutterLightPlugin: NSObject, FlutterPlugin {
+public class SwiftLightPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "flutter_light", binaryMessenger: registrar.messenger())
-    let instance = SwiftFlutterLightPlugin()
+    let channel = FlutterMethodChannel(name: "light", binaryMessenger: registrar.messenger())
+    let instance = SwiftLightPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
