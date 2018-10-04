@@ -13,7 +13,7 @@ public class SwiftPedometerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
         let instance = SwiftPedometerPlugin()
 
         // Set flutter communication channel for emitting step count updates
-        let eventChannel = FlutterEventChannel.init(name: "flutter_pedometer.eventChannel", binaryMessenger: registrar.messenger())
+        let eventChannel = FlutterEventChannel.init(name: "pedometer.eventChannel", binaryMessenger: registrar.messenger())
         eventChannel.setStreamHandler(instance)
 
     }

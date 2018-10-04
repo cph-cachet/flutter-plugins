@@ -17,7 +17,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
  */
 public class PedometerPlugin implements EventChannel.StreamHandler {
   private static final String STEP_COUNT_CHANNEL_NAME =
-          "flutter_pedometer.eventChannel";
+          "pedometer.eventChannel";
 
   /**
    * Plugin registration.

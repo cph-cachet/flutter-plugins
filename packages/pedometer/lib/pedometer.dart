@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class Pedometer {
-  static const EventChannel _eventChannel = const EventChannel("flutter_pedometer.eventChannel");
+  static const EventChannel _eventChannel = const EventChannel("pedometer.eventChannel");
 
   Stream<int> _onStepCountEvent;
 

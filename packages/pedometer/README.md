@@ -4,13 +4,13 @@ This plugin allows for conitnuous step count using the built-in pedometer sensor
 
 ## Usage
 
-To use this plugin, add `flutter_pedometer` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
+To use this plugin, add `pedometer` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
 
 ### Example
 
 ``` dart
 import 'dart:async';
-import 'package:flutter_pedometer/flutter_pedometer.dart';
+import 'package:pedometer/pedometer.dart';
 
 class someClass {
     StreamSubscription<int> _subscription;
