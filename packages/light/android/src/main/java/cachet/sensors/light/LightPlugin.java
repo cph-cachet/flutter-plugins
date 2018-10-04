@@ -15,7 +15,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
  */
 public class LightPlugin implements EventChannel.StreamHandler {
   private static final String STEP_COUNT_CHANNEL_NAME =
-          "flutter_light.eventChannel";
+          "light.eventChannel";
 
   /**
    * Plugin registration.
