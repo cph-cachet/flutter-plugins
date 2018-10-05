@@ -21,7 +21,7 @@ class Class {
   void function() {
     ...
      _screenEventSubscription =
-        _screenListener.onScreenEvent.listen((ScreenEvent event) {
+        _screenListener.screenEvents.listen((ScreenEvent event) {
           setState(() {
             _screenEvent = event;
             /// Use _screenEvent
