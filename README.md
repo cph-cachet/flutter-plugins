@@ -11,8 +11,7 @@ For more information about plugins, and how to use them, see
 
 ## Issues
 
-Please file any issues, bugs, or feature requests in the [main flutter
-repo](https://github.com/flutter/flutter/issues/new).
+Please check existing issues and file any new issues, bugs, or feature requests in the [flutter-plugin issue list](https://github.com/cph-cachet/flutter-plugins/issues).
 
 ## Contributing
 
