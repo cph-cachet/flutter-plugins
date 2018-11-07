@@ -23,9 +23,9 @@ public class PedometerPlugin implements EventChannel.StreamHandler {
    * Plugin registration.
    */
   public static void registerWith(Registrar registrar) {
-    final EventChannel accelerometerChannel =
+    final EventChannel eventChannel =
             new EventChannel(registrar.messenger(), STEP_COUNT_CHANNEL_NAME);
-    accelerometerChannel.setStreamHandler(
+    eventChannel.setStreamHandler(
             new PedometerPlugin(registrar.context(), Sensor.TYPE_STEP_COUNTER));
   }
 
