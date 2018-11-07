@@ -3,7 +3,7 @@ import 'package:intl/intl.dart' show DateFormat;
 
 import 'dart:io';
 import 'dart:async';
-import 'package:flutter_sound/flutter_sound.dart';
+import 'package:noise/noise.dart';
 
 import 'package:path_provider/path_provider.dart';
 
@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
 
       _recorderSubscription = flutterSound.onRecorderStateChanged.listen((e) {
         DateTime date =
-            new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
+        new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
         String txt = DateFormat('mm:ss:SS', 'en_US').format(date);
 
         this.setState(() {
@@ -90,7 +90,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Flutter Sound'),
+          title: const Text('Noise Plugin Example'),
         ),
         body: ListView(
           children: <Widget>[
@@ -126,8 +126,8 @@ class _MyAppState extends State<MyApp> {
                       padding: EdgeInsets.all(8.0),
                       child: Image(
                         image: this._isRecording
-                            ? AssetImage('res/icons/ic_stop.png')
-                            : AssetImage('res/icons/ic_mic.png'),
+                            ? AssetImage('icons/ic_stop.png')
+                            : AssetImage('icons/ic_mic.png'),
                       ),
                     ),
                   ),

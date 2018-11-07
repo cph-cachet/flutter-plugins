@@ -1,4 +1,4 @@
-group 'com.dooboolab.fluttersound'
+group 'com.example.noise'
 version '1.0-SNAPSHOT'
 
 buildscript {

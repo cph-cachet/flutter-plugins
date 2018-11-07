@@ -1,5 +1,5 @@
-name: flutter_sound_example
-description: Demonstrates how to use the flutter_sound plugin.
+name: noise_example
+description: Demonstrates how to use the noise plugin.
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -9,20 +9,23 @@ description: Demonstrates how to use the flutter_sound plugin.
 # Read more about versioning at semver.org.
 version: 1.0.0+1
 
+environment:
+  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+
 dependencies:
   flutter:
     sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  intl: ^0.15.6
   cupertino_icons: ^0.1.2
+  intl: ^0.15.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_sound:
+  noise:
     path: ../
 
 # For information on the generic Dart part of this file, see the
@@ -36,26 +39,30 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
-  - res/icons/ic_play.png
-  - res/icons/2.0x/ic_play.png
-  - res/icons/3.0x/ic_play.png
-  - res/icons/ic_stop.png
-  - res/icons/2.0x/ic_stop.png
-  - res/icons/3.0x/ic_stop.png
-  - res/icons/ic_pause.png
-  - res/icons/2.0x/ic_pause.png
-  - res/icons/3.0x/ic_pause.png
-  - res/icons/ic_mic.png
-  - res/icons/2.0x/ic_mic.png
-  - res/icons/3.0x/ic_mic.png
-  - res/icons/ic_volume_down.png
-  - res/icons/2.0x/ic_volume_down.png
-  - res/icons/3.0x/ic_volume_down.png
-  - res/icons/ic_volume_up.png
-  - res/icons/2.0x/ic_volume_up.png
-  - res/icons/3.0x/ic_volume_up.png
+  - icons/ic_play.png
+  - icons/2.0x/ic_play.png
+  - icons/3.0x/ic_play.png
+  - icons/ic_stop.png
+  - icons/2.0x/ic_stop.png
+  - icons/3.0x/ic_stop.png
+  - icons/ic_pause.png
+  - icons/2.0x/ic_pause.png
+  - icons/3.0x/ic_pause.png
+  - icons/ic_mic.png
+  - icons/2.0x/ic_mic.png
+  - icons/3.0x/ic_mic.png
+  - icons/ic_volume_down.png
+  - icons/2.0x/ic_volume_down.png
+  - icons/3.0x/ic_volume_down.png
+  - icons/ic_volume_up.png
+  - icons/2.0x/ic_volume_up.png
+  - icons/3.0x/ic_volume_up.png
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #  - images/a_dot_burr.jpeg
+  #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.
