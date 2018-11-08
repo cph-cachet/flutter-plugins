@@ -13,3 +13,5 @@ pubspec.lock
 doc/api/
 *.xml
 *.iml
+packages/.DS_Store
+.DS_Store
