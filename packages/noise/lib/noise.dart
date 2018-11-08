@@ -20,10 +20,11 @@ NoiseEvent _noiseEvent(num decibel) {
 
 class Noise {
   static const MethodChannel _channel = const MethodChannel('flutter_sound');
-  static const EventChannel _noiseEventChannel = EventChannel('noise.eventChannel');
-  static StreamController<RecordStatus> _recorderController;
+  static const EventChannel _noiseEventChannel = EventChannel(
+      'noise.eventChannel');
+//  static StreamController<RecordStatus> _recorderController;
 
-  Stream<RecordStatus> get onRecorderStateChanged => _recorderController.stream;
+//  Stream<RecordStatus> get onRecorderStateChanged => _recorderController.stream;
   bool _isRecording = false;
 
   Stream<NoiseEvent> _noiseStream;
@@ -43,9 +44,10 @@ class Noise {
       String pathResult =
       await _channel.invokeMethod('startRecorder', <String, dynamic>{
         'path': uri,
+        'frequency': 500
       });
 
-      _setRecorderCallback();
+//      _setRecorderCallback();
 
       if (this._isRecording) {
         throw new Exception('Recorder is already recording.');
@@ -65,52 +67,44 @@ class Noise {
     String result = await _channel.invokeMethod('stopRecorder');
 
     this._isRecording = false;
-    _removeRecorderCallback();
+//    _removeRecorderCallback();
     return result;
   }
-
-  Future<String> setSubscriptionDuration(double sec) async {
-    String result = await _channel
-        .invokeMethod('setSubscriptionDuration', <String, dynamic>{
-      'sec': sec,
-    });
-    return result;
-  }
-
-  Future<void> _setRecorderCallback() async {
-    if (_recorderController == null) {
-      _recorderController = new StreamController.broadcast();
-    }
-    _channel.setMethodCallHandler((MethodCall call) {
-      switch (call.method) {
-        case "updateRecorderProgress":
-          Map<String, dynamic> result = json.decode(call.arguments);
-          _recorderController.add(new RecordStatus.fromJSON(result));
-          break;
-        default:
-          throw new ArgumentError('Unknown method ${call.method} ');
-      }
-    });
-  }
-
-  Future<void> _removeRecorderCallback() async {
-    if (_recorderController != null) {
-      _recorderController
-        ..add(null)
-        ..close();
-      _recorderController = null;
-    }
-  }
 }
+//  Future<void> _setRecorderCallback() async {
+//    if (_recorderController == null) {
+//      _recorderController = new StreamController.broadcast();
+//    }
+//    _channel.setMethodCallHandler((MethodCall call) {
+//      switch (call.method) {
+//        case "updateRecorderProgress":
+//          Map<String, dynamic> result = json.decode(call.arguments);
+//          _recorderController.add(new RecordStatus.fromJSON(result));
+//          break;
+//        default:
+//          throw new ArgumentError('Unknown method ${call.method} ');
+//      }
+//    });
+//  }
 
-class RecordStatus {
-  final double currentPosition;
+//  Future<void> _removeRecorderCallback() async {
+//    if (_recorderController != null) {
+//      _recorderController
+//        ..add(null)
+//        ..close();
+//      _recorderController = null;
+//    }
+//  }
+//}
 
-  RecordStatus.fromJSON(Map<String, dynamic> json)
-      : currentPosition = double.parse(json['current_position']);
-
-  @override
-  String toString() {
-    return 'currentPosition: $currentPosition';
-  }
-}
+//class RecordStatus {
+//  final double currentPosition;
+//
+//  RecordStatus.fromJSON(Map<String, dynamic> json)
+//      : currentPosition = double.parse(json['current_position']);
+//
+//  @override
+//  String toString() {
+//    return 'currentPosition: $currentPosition';
+//  }
+//}

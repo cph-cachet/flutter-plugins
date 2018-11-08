@@ -14,9 +14,9 @@ import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.util.Log;
 
+import android.os.SystemClock;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,7 +26,7 @@ import java.io.File;
 /**
  * NoisePlugin
  */
-public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener, NoiseInterface, EventChannel.StreamHandler {
+public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener, EventChannel.StreamHandler {
     final static String TAG = "NoisePlugin";
     private static final String ERR_RECORDER_IS_NULL = "ERR_RECORDER_IS_NULL";
     private static Registrar reg;
@@ -35,6 +35,7 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
     private static MethodChannel methodChannel;
     private static EventChannel eventChannel;
     private boolean isRecording = false;
+    private EventSink eventSink;
 
     private static final String EVENT_CHANNEL_NAME = "noise.eventChannel";
 
@@ -52,21 +53,21 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
 
     @Override
     public void onListen(Object o, EventChannel.EventSink eventSink) {
-        this.startRecorder(path, result, eventSink);
-
+        this.eventSink = eventSink;
     }
 
     @Override
     public void onCancel(Object o) {
-        this.stopRecorder(result);
+        this.eventSink = null;
     }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
         String path = call.argument("path");
+        int frequency = call.argument("frequency");
         switch (call.method) {
             case "startRecorder":
-                this.startRecorder(path, result, eventSink);
+                this.startRecorder(path, frequency, result);
                 break;
             case "stopRecorder":
                 this.stopRecorder(result);
@@ -89,8 +90,7 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
         return false;
     }
 
-    @Override
-    public void startRecorder(String path, final Result result, EventSink eventSink) {
+    public void startRecorder(String path, int frequency, Result result) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (
                     reg.activity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
@@ -123,25 +123,7 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
             this.model.getMediaRecorder().prepare();
             this.model.getMediaRecorder().start();
             isRecording = true;
-            this.listen(eventSink);
-
-            final long systemTime = SystemClock.elapsedRealtime();
-            this.model.setRecorderTicker(new Runnable() {
-                @Override
-                public void run() {
-
-                    long time = SystemClock.elapsedRealtime() - systemTime;
-                    try {
-                        JSONObject json = new JSONObject();
-                        json.put("current_position", String.valueOf(time));
-                        methodChannel.invokeMethod("updateRecorderProgress", json.toString());
-                        recordHandler.postDelayed(model.getRecorderTicker(), model.subsDurationMillis);
-                    } catch (JSONException je) {
-                        Log.d(TAG, "Json Exception: " + je.toString());
-                    }
-                }
-            });
-            this.model.getRecorderTicker().run();
+            listen(frequency);
             result.success("Recording finished");
             flushAudioFile(path);
         } catch (Exception e) {
@@ -151,17 +133,39 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
 
     }
 
-    void listen(EventSink eventSink) {
+//    private void runTickerUpdates() {
+//        final long systemTime = SystemClock.elapsedRealtime();
+//        this.model.setRecorderTicker(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                long time = SystemClock.elapsedRealtime() - systemTime;
+//                try {
+//                    JSONObject json = new JSONObject();
+//                    json.put("current_position", String.valueOf(time));
+//                    methodChannel.invokeMethod("updateRecorderProgress", json.toString());
+//                    recordHandler.postDelayed(model.getRecorderTicker(), model.subsDurationMillis);
+//                } catch (JSONException je) {
+//                    Log.d(TAG, "Json Exception: " + je.toString());
+//                }
+//            }
+//        });
+//        this.model.getRecorderTicker().run();
+//    }
+
+    void listen(final int frequency) {
         Log.d(TAG, "Is recording? " + isRecording);
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (isRecording) {
+                while (isRecording && eventSink != null) {
                     try {
                         int volume = model.getMediaRecorder().getMaxAmplitude();  //Get the sound pressure value
                         float db = 20 * (float) (Math.log10(volume));
                         Log.d(TAG, "signal:" + volume + ", dB val: " + db);
-                        Thread.sleep(500);
+                        eventSink.success(db);
+                        Thread.sleep(frequency);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -175,14 +179,13 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
         File file = new File(path);
         if (file.exists()) {
             if (file.delete()) {
-                System.out.println("file Deleted :" + path);
+                Log.d(TAG, "file Deleted :" + path);
             } else {
-                System.out.println("file not Deleted :" + path);
+                Log.d(TAG, "file not Deleted :" + path);
             }
         }
     }
 
-    @Override
     public void stopRecorder(final Result result) {
         isRecording = false;
         recordHandler.removeCallbacks(this.model.getRecorderTicker());

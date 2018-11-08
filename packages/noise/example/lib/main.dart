@@ -18,16 +18,19 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isRecording = false;
-  StreamSubscription _recorderSubscription;
-  Noise flutterSound;
+  StreamSubscription<NoiseEvent> _noiseSubscription;
+  Noise _noise;
 
   String _recorderTxt = '00:00:00';
 
   @override
   void initState() {
     super.initState();
-    flutterSound = new Noise();
-    flutterSound.setSubscriptionDuration(0.01);
+    _noise = new Noise();
+  }
+
+  void onData(NoiseEvent e) {
+    print(e.toString());
   }
 
   Future<String> get _localPath async {
@@ -44,20 +47,8 @@ class _MyAppState extends State<MyApp> {
   void startRecorder() async {
     try {
       String appDocPath = await _localPath;
-      print("App Doc Path: $appDocPath");
-
-      String path = await flutterSound.startRecorder(appDocPath);
-      print('startRecorder: $path');
-
-      _recorderSubscription = flutterSound.onRecorderStateChanged.listen((e) {
-        DateTime date =
-        new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
-        String txt = DateFormat('mm:ss:SS', 'en_US').format(date);
-
-        this.setState(() {
-          this._recorderTxt = txt.substring(0, 8);
-        });
-      });
+      String path = await _noise.startRecorder(appDocPath);
+      _noiseSubscription = _noise.noiseStream.listen(onData);
 
       this.setState(() {
         this._isRecording = true;
@@ -69,12 +60,12 @@ class _MyAppState extends State<MyApp> {
 
   void stopRecorder() async {
     try {
-      String result = await flutterSound.stopRecorder();
+      String result = await _noise.stopRecorder();
       print('stopRecorder: $result');
 
-      if (_recorderSubscription != null) {
-        _recorderSubscription.cancel();
-        _recorderSubscription = null;
+      if (_noiseSubscription != null) {
+        _noiseSubscription.cancel();
+        _noiseSubscription = null;
       }
 
       this.setState(() {
