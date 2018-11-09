@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:core';
 import 'package:flutter/services.dart';
 
+/** A [NoiseEvent] holds a decibel value for a particular noise level reading.**/
 class NoiseEvent {
   NoiseEvent(this._decibel);
 
@@ -19,13 +20,17 @@ NoiseEvent _noiseEvent(num decibel) {
   return new NoiseEvent(decibel);
 }
 
+/** A [Noise] object is reponsible for connecting to to the native environment.
+ * Uses a frequency (in milliseconds) for controlling how frequently readings
+ * are received from the native environment**/
+
 class Noise {
   Noise(this._frequency);
 
   int _frequency;
 
   static const EventChannel _noiseEventChannel =
-  EventChannel('noiseLevel.eventChannel');
+      EventChannel('noiseLevel.eventChannel');
 
   Stream<NoiseEvent> _noiseStream;
 

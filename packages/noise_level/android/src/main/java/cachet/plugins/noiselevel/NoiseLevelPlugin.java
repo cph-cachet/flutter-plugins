@@ -42,6 +42,11 @@ public class NoiseLevelPlugin implements PluginRegistry.RequestPermissionsResult
         reg = registrar;
     }
 
+
+    /**
+     * The onListen() method is called when a NoiseLevel object creates a stream of NoiseEvents.
+     * onListen starts recording and starts the listen method.
+     */
     @Override
     @SuppressWarnings("unchecked")
     public void onListen(Object obj, EventChannel.EventSink eventSink) {
@@ -59,11 +64,13 @@ public class NoiseLevelPlugin implements PluginRegistry.RequestPermissionsResult
 
     @Override
     public void onCancel(Object o) {
-//        Log.d(TAG, "onCancel()");
         this.eventSink = null;
         stopRecorder();
     }
 
+    /**
+     * Called by the plugin itself whenever it detects that permissions have not been granted.
+     * */
     @Override
     public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
@@ -76,8 +83,10 @@ public class NoiseLevelPlugin implements PluginRegistry.RequestPermissionsResult
         return false;
     }
 
+    /**
+     * Called by onListen().
+     * */
     private void startRecorder() {
-//        Log.d(TAG, "startRecorder()");
         if (!permissionGranted()) return;
 
         if (this.model.getMediaRecorder() == null) {
@@ -92,13 +101,14 @@ public class NoiseLevelPlugin implements PluginRegistry.RequestPermissionsResult
             this.model.getMediaRecorder().prepare();
             this.model.getMediaRecorder().start();
             isRecording = true;
-//            Log.d(TAG, "startRecorder(): Started recording. isRecording? " + isRecording);
-
         } catch (Exception e) {
             Log.e(TAG, "startRecorder(), MediaRecorder exception: ", e);
         }
     }
 
+    /**
+     * Checks if permission to access microphone and storage was granted.
+     */
     private boolean permissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (reg.activity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
@@ -114,23 +124,21 @@ public class NoiseLevelPlugin implements PluginRegistry.RequestPermissionsResult
         return true;
     }
 
+    /**
+     * Listens to the [MediaRecorder] object with a given frequency and creates a callback
+     * to the [NoiseLevel] object in Flutter which created this Plugin object.
+     * */
     private void listen() {
         Log.d(TAG, "listen()");
 
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-//                Log.d(TAG, "isRecording? " + isRecording);
-//                Log.d(TAG, "eventSink?" + (eventSink != null));
                 while (isRecording && eventSink != null) {
-//                    Log.d(TAG, "Listening...");
                     try {
                         int volume = model.getMediaRecorder().getMaxAmplitude();  //Get the sound pressure value
-                        if (volume > 0) {
-                            float db = 20 * (float) (Math.log10(volume));
-                            eventSink.success(db);
-//                            Log.d(TAG, "signal:" + volume + ", dB val: " + db);
-                        }
+                        NoiseLevel noiseLevel = new NoiseLevel(volume);
+                        eventSink.success(noiseLevel.getDecibel());
                         Thread.sleep(frequency);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -141,11 +149,13 @@ public class NoiseLevelPlugin implements PluginRegistry.RequestPermissionsResult
         thread.start();
     }
 
+    /**
+     * Called by onCancel.
+     * */
     private void stopRecorder() {
         isRecording = false;
         recordHandler.removeCallbacks(this.model.getRecorderTicker());
         if (this.model.getMediaRecorder() == null) {
-//            Log.d(TAG, "mediaRecorder is null");
             return;
         }
         this.model.getMediaRecorder().stop();
@@ -154,14 +164,13 @@ public class NoiseLevelPlugin implements PluginRegistry.RequestPermissionsResult
         flushAudioFile();
     }
 
+    /**
+     * Deletes the audio file used for recording.
+     */
     private void flushAudioFile() {
         File file = new File(AudioModel.DEFAULT_FILE_LOCATION);
         if (file.exists()) {
-//            if (file.delete()) {
-//                Log.d(TAG, "file Deleted");
-//            } else {
-//                Log.d(TAG, "file not Deleted");
-//            }
+            file.delete();
         }
     }
 }
