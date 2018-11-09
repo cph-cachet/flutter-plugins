@@ -19,16 +19,20 @@ NoiseEvent _noiseEvent(num decibel) {
 }
 
 class Noise {
+  Noise(this._path, this._frequency);
+
+  String _path;
+  int _frequency;
+
   static const MethodChannel _noiseMethodChannel =
       const MethodChannel('noise.methodChannel');
   static const EventChannel _noiseEventChannel =
       EventChannel('noise.eventChannel');
-  bool _isRecording = false;
 
   Stream<NoiseEvent> _noiseStream;
 
   Stream<NoiseEvent> get noiseStream {
-    Map<String, dynamic> args = {'arg': 500};
+    Map<String, dynamic> args = {'path': _path, 'frequency': '$_frequency'};
     if (_noiseStream == null) {
       _noiseStream = _noiseEventChannel
           .receiveBroadcastStream(args)
@@ -37,30 +41,4 @@ class Noise {
     return _noiseStream;
   }
 
-  Future<String> startRecorder(String uri) async {
-    Map<String, dynamic> args = {'path': uri, 'frequency': 500};
-    try {
-      String pathResult =
-          await _noiseMethodChannel.invokeMethod('startRecorder', args);
-
-      if (this._isRecording) {
-        throw new Exception('Recorder is already recording.');
-      }
-      this._isRecording = true;
-      return pathResult;
-    } catch (err) {
-      throw new Exception(err);
-    }
-  }
-
-  Future<String> stopRecorder() async {
-    if (!this._isRecording) {
-      throw new Exception('Recorder already stopped.');
-    }
-
-    String result = await _noiseMethodChannel.invokeMethod('stopRecorder');
-
-    this._isRecording = false;
-    return result;
-  }
 }

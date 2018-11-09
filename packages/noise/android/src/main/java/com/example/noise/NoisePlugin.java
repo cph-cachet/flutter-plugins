@@ -1,9 +1,6 @@
 package com.example.noise;
 
-import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.EventChannel.EventSink;
@@ -16,11 +13,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
-import android.os.SystemClock;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.util.HashMap;
 
@@ -28,7 +20,7 @@ import java.util.HashMap;
 /**
  * NoisePlugin
  */
-public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener, EventChannel.StreamHandler {
+public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListener, EventChannel.StreamHandler {
     final static String TAG = "NoisePlugin";
     private static final String ERR_RECORDER_IS_NULL = "ERR_RECORDER_IS_NULL";
     private static Registrar reg;
@@ -50,16 +42,9 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
         Log.d(TAG, "registerWith()");
         eventChannel = new EventChannel(registrar.messenger(), EVENT_CHANNEL_NAME);
         eventChannel.setStreamHandler(new NoisePlugin());
-        methodChannel = new MethodChannel(registrar.messenger(), "noise.methodChannel");
-        methodChannel.setMethodCallHandler(new NoisePlugin());
+//        methodChannel = new MethodChannel(registrar.messenger(), "noise.methodChannel");
+//        methodChannel.setMethodCallHandler(new NoisePlugin());
         reg = registrar;
-    }
-
-    public static <T> T as(Class<T> clazz, Object o){
-        if(clazz.isInstance(o)){
-            return clazz.cast(o);
-        }
-        return null;
     }
 
     @Override
@@ -67,10 +52,13 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
     public void onListen(Object obj, EventChannel.EventSink eventSink) {
         if (obj instanceof HashMap) {
             Log.d(TAG, "onListen(), Type cast worked!");
-            HashMap<String, Integer> args = (HashMap<String, Integer>) obj;
-            frequency = args.get("frequency");
+            HashMap<String, String> args = (HashMap<String, String>) obj;
+            frequency = Integer.parseInt(args.get("frequency"));
+            path = args.get("path");
         }
+
         this.eventSink = eventSink;
+        startRecorder();
         listen();
     }
 
@@ -78,25 +66,7 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
     public void onCancel(Object o) {
         Log.d(TAG, "onCancel()");
         this.eventSink = null;
-    }
-
-    @Override
-    public void onMethodCall(MethodCall call, Result result) {
-        Log.d(TAG, "onMethodCall()");
-        switch (call.method) {
-            case "startRecorder":
-                path = call.argument("path");
-                frequency = call.argument("frequency");
-                Log.d(TAG, "path: " + path + ", frequency: " + frequency);
-                this.startRecorder(result);
-                break;
-            case "stopRecorder":
-                this.stopRecorder(result);
-                break;
-            default:
-                result.notImplemented();
-                break;
-        }
+        stopRecorder();
     }
 
     @Override
@@ -111,9 +81,9 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
         return false;
     }
 
-    private void startRecorder(Result result) {
+    private void startRecorder() {
         Log.d(TAG, "startRecorder()");
-        if (checkPermissions(result)) return;
+        if (!permissionGranted()) return;
 
         if (path == null) {
             path = AudioModel.DEFAULT_FILE_LOCATION;
@@ -133,27 +103,24 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
             isRecording = true;
             Log.d(TAG, "startRecorder(): Started recording. isRecording? " + isRecording);
 
-            result.success(path);
         } catch (Exception e) {
             Log.e(TAG, "Exception: ", e);
         }
     }
 
-    private boolean checkPermissions(Result result) {
+    private boolean permissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (
-                    reg.activity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
+            if (reg.activity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
                             || reg.activity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                     ) {
                 reg.activity().requestPermissions(new String[]{
                         Manifest.permission.RECORD_AUDIO,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 }, 0);
-                result.error(TAG, "NO PERMISSION GRANTED", Manifest.permission.RECORD_AUDIO + " or " + Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private void listen() {
@@ -168,9 +135,11 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
                     Log.d(TAG, "Listening...");
                     try {
                         int volume = model.getMediaRecorder().getMaxAmplitude();  //Get the sound pressure value
-                        float db = 20 * (float) (Math.log10(volume));
-                        Log.d(TAG, "signal:" + volume + ", dB val: " + db);
-                        eventSink.success(db);
+                        if (volume > 0) {
+                            float db = 20 * (float) (Math.log10(volume));
+                            eventSink.success(db);
+                            Log.d(TAG, "signal:" + volume + ", dB val: " + db);
+                        }
                         Thread.sleep(frequency);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -181,18 +150,16 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
         thread.start();
     }
 
-    private void stopRecorder(final Result result) {
+    private void stopRecorder() {
         isRecording = false;
         recordHandler.removeCallbacks(this.model.getRecorderTicker());
         if (this.model.getMediaRecorder() == null) {
             Log.d(TAG, "mediaRecorder is null");
-            result.error(ERR_RECORDER_IS_NULL, ERR_RECORDER_IS_NULL, ERR_RECORDER_IS_NULL);
             return;
         }
         this.model.getMediaRecorder().stop();
         this.model.getMediaRecorder().release();
         this.model.setMediaRecorder(null);
-        result.success("recorder stopped.");
         flushAudioFile(path);
     }
 

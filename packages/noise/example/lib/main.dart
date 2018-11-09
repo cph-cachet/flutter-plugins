@@ -26,7 +26,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _noise = new Noise();
   }
 
   void onData(NoiseEvent e) {
@@ -46,8 +45,9 @@ class _MyAppState extends State<MyApp> {
 
   void startRecorder() async {
     try {
-      String appDocPath = await _localPath;
-      String path = await _noise.startRecorder(appDocPath);
+      String path = await _localPath;
+      int frequency = 500;
+      _noise = new Noise(path, frequency);
       _noiseSubscription = _noise.noiseStream.listen(onData);
 
       this.setState(() {
@@ -60,14 +60,10 @@ class _MyAppState extends State<MyApp> {
 
   void stopRecorder() async {
     try {
-      String result = await _noise.stopRecorder();
-      print('stopRecorder: $result');
-
       if (_noiseSubscription != null) {
         _noiseSubscription.cancel();
         _noiseSubscription = null;
       }
-
       this.setState(() {
         this._isRecording = false;
       });
