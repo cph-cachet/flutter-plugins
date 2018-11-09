@@ -1,4 +1,5 @@
 name: noise_level
+version: 0.0.1
 description: A noise mearusing plugin for Android and iOS. Currently works for Android only, will support iOS in near future.
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/noise_level
 author: CACHET Team <cph.cachet@gmail.com>
