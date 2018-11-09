@@ -1,9 +1,5 @@
 package com.example.noise;
 
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.EventChannel.EventSink;
@@ -16,26 +12,22 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
-import android.os.SystemClock;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
+import java.util.HashMap;
 
 
 /**
  * NoisePlugin
  */
-public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener, EventChannel.StreamHandler {
+public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListener, EventChannel.StreamHandler {
     final static String TAG = "NoisePlugin";
-    private static final String ERR_RECORDER_IS_NULL = "ERR_RECORDER_IS_NULL";
     private static Registrar reg;
     final private AudioModel model = new AudioModel();
     final private Handler recordHandler = new Handler();
-    private static MethodChannel methodChannel;
     private static EventChannel eventChannel;
     private boolean isRecording = false;
     private EventSink eventSink;
+    private int frequency;
 
     private static final String EVENT_CHANNEL_NAME = "noise.eventChannel";
 
@@ -43,39 +35,33 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
+        Log.d(TAG, "registerWith()");
         eventChannel = new EventChannel(registrar.messenger(), EVENT_CHANNEL_NAME);
         eventChannel.setStreamHandler(new NoisePlugin());
-
-        methodChannel = new MethodChannel(registrar.messenger(), "flutter_sound");
-        methodChannel.setMethodCallHandler(new NoisePlugin());
         reg = registrar;
     }
 
     @Override
-    public void onListen(Object o, EventChannel.EventSink eventSink) {
+    @SuppressWarnings("unchecked")
+    public void onListen(Object obj, EventChannel.EventSink eventSink) {
+        try {
+            HashMap<String, String> args = (HashMap<String, String>) obj;
+            frequency = Integer.parseInt(args.get("frequency"));
+        }
+        catch (Exception e) {
+            Log.e(TAG, "onListen(), Type-cast exception: ", e);
+        }
+
         this.eventSink = eventSink;
+        startRecorder();
+        listen();
     }
 
     @Override
     public void onCancel(Object o) {
+//        Log.d(TAG, "onCancel()");
         this.eventSink = null;
-    }
-
-    @Override
-    public void onMethodCall(MethodCall call, Result result) {
-        String path = call.argument("path");
-        int frequency = call.argument("frequency");
-        switch (call.method) {
-            case "startRecorder":
-                this.startRecorder(path, frequency, result);
-                break;
-            case "stopRecorder":
-                this.stopRecorder(result);
-                break;
-            default:
-                result.notImplemented();
-                break;
-        }
+        stopRecorder();
     }
 
     @Override
@@ -90,81 +76,61 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
         return false;
     }
 
-    public void startRecorder(String path, int frequency, Result result) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (
-                    reg.activity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
-                            || reg.activity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                reg.activity().requestPermissions(new String[]{
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                }, 0);
-                result.error(TAG, "NO PERMISSION GRANTED", Manifest.permission.RECORD_AUDIO + " or " + Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                return;
-            }
-        }
-
-        Log.d(TAG, "startRecorder");
-
-        if (path == null) {
-            path = AudioModel.DEFAULT_FILE_LOCATION;
-        }
+    private void startRecorder() {
+//        Log.d(TAG, "startRecorder()");
+        if (!permissionGranted()) return;
 
         if (this.model.getMediaRecorder() == null) {
             this.model.setMediaRecorder(new MediaRecorder());
             this.model.getMediaRecorder().setAudioSource(MediaRecorder.AudioSource.MIC);
             this.model.getMediaRecorder().setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             this.model.getMediaRecorder().setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-            this.model.getMediaRecorder().setOutputFile(path);
+            this.model.getMediaRecorder().setOutputFile(AudioModel.DEFAULT_FILE_LOCATION);
         }
 
         try {
             this.model.getMediaRecorder().prepare();
             this.model.getMediaRecorder().start();
             isRecording = true;
-            listen(frequency);
-            result.success("Recording finished");
-            flushAudioFile(path);
+//            Log.d(TAG, "startRecorder(): Started recording. isRecording? " + isRecording);
+
         } catch (Exception e) {
-            Log.e(TAG, "Exception: ", e);
+            Log.e(TAG, "startRecorder(), MediaRecorder exception: ", e);
         }
-
-
     }
 
-//    private void runTickerUpdates() {
-//        final long systemTime = SystemClock.elapsedRealtime();
-//        this.model.setRecorderTicker(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//                long time = SystemClock.elapsedRealtime() - systemTime;
-//                try {
-//                    JSONObject json = new JSONObject();
-//                    json.put("current_position", String.valueOf(time));
-//                    methodChannel.invokeMethod("updateRecorderProgress", json.toString());
-//                    recordHandler.postDelayed(model.getRecorderTicker(), model.subsDurationMillis);
-//                } catch (JSONException je) {
-//                    Log.d(TAG, "Json Exception: " + je.toString());
-//                }
-//            }
-//        });
-//        this.model.getRecorderTicker().run();
-//    }
+    private boolean permissionGranted() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (reg.activity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
+                            || reg.activity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                reg.activity().requestPermissions(new String[]{
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                }, 0);
+                return false;
+            }
+        }
+        return true;
+    }
 
-    void listen(final int frequency) {
-        Log.d(TAG, "Is recording? " + isRecording);
+    private void listen() {
+        Log.d(TAG, "listen()");
 
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+//                Log.d(TAG, "isRecording? " + isRecording);
+//                Log.d(TAG, "eventSink?" + (eventSink != null));
                 while (isRecording && eventSink != null) {
+//                    Log.d(TAG, "Listening...");
                     try {
                         int volume = model.getMediaRecorder().getMaxAmplitude();  //Get the sound pressure value
-                        float db = 20 * (float) (Math.log10(volume));
-                        Log.d(TAG, "signal:" + volume + ", dB val: " + db);
-                        eventSink.success(db);
+                        if (volume > 0) {
+                            float db = 20 * (float) (Math.log10(volume));
+                            eventSink.success(db);
+//                            Log.d(TAG, "signal:" + volume + ", dB val: " + db);
+                        }
                         Thread.sleep(frequency);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -175,30 +141,28 @@ public class NoisePlugin implements MethodCallHandler, PluginRegistry.RequestPer
         thread.start();
     }
 
-    void flushAudioFile(String path) {
-        File file = new File(path);
-        if (file.exists()) {
-            if (file.delete()) {
-                Log.d(TAG, "file Deleted :" + path);
-            } else {
-                Log.d(TAG, "file not Deleted :" + path);
-            }
-        }
-    }
-
-    public void stopRecorder(final Result result) {
+    private void stopRecorder() {
         isRecording = false;
         recordHandler.removeCallbacks(this.model.getRecorderTicker());
         if (this.model.getMediaRecorder() == null) {
-            Log.d(TAG, "mediaRecorder is null");
-            result.error(ERR_RECORDER_IS_NULL, ERR_RECORDER_IS_NULL, ERR_RECORDER_IS_NULL);
+//            Log.d(TAG, "mediaRecorder is null");
             return;
         }
         this.model.getMediaRecorder().stop();
         this.model.getMediaRecorder().release();
         this.model.setMediaRecorder(null);
-        result.success("recorder stopped.");
+        flushAudioFile();
     }
 
+    private void flushAudioFile() {
+        File file = new File(AudioModel.DEFAULT_FILE_LOCATION);
+        if (file.exists()) {
+//            if (file.delete()) {
+//                Log.d(TAG, "file Deleted");
+//            } else {
+//                Log.d(TAG, "file not Deleted");
+//            }
+        }
+    }
 }
 
