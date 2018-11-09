@@ -4,13 +4,13 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 class NoiseEvent {
-  NoiseEvent(this.decibel);
+  NoiseEvent(this._decibel);
 
-  final num decibel;
+  num _decibel;
 
   @override
   String toString() {
-    return "[Decibel Reading: $decibel dB]";
+    return "[Decibel Reading: $_decibel dB]";
   }
 }
 
@@ -24,8 +24,6 @@ class Noise {
   String _path;
   int _frequency;
 
-  static const MethodChannel _noiseMethodChannel =
-      const MethodChannel('noise.methodChannel');
   static const EventChannel _noiseEventChannel =
       EventChannel('noise.eventChannel');
 
@@ -40,5 +38,4 @@ class Noise {
     }
     return _noiseStream;
   }
-
 }

@@ -30,7 +30,6 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
     private static EventChannel eventChannel;
     private boolean isRecording = false;
     private EventSink eventSink;
-    private String path;
     private int frequency;
 
     private static final String EVENT_CHANNEL_NAME = "noise.eventChannel";
@@ -54,7 +53,6 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
             Log.d(TAG, "onListen(), Type cast worked!");
             HashMap<String, String> args = (HashMap<String, String>) obj;
             frequency = Integer.parseInt(args.get("frequency"));
-            path = args.get("path");
         }
 
         this.eventSink = eventSink;
@@ -85,16 +83,12 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
         Log.d(TAG, "startRecorder()");
         if (!permissionGranted()) return;
 
-        if (path == null) {
-            path = AudioModel.DEFAULT_FILE_LOCATION;
-        }
-
         if (this.model.getMediaRecorder() == null) {
             this.model.setMediaRecorder(new MediaRecorder());
             this.model.getMediaRecorder().setAudioSource(MediaRecorder.AudioSource.MIC);
             this.model.getMediaRecorder().setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             this.model.getMediaRecorder().setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-            this.model.getMediaRecorder().setOutputFile(path);
+            this.model.getMediaRecorder().setOutputFile(AudioModel.DEFAULT_FILE_LOCATION);
         }
 
         try {
@@ -160,16 +154,16 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
         this.model.getMediaRecorder().stop();
         this.model.getMediaRecorder().release();
         this.model.setMediaRecorder(null);
-        flushAudioFile(path);
+        flushAudioFile();
     }
 
-    private void flushAudioFile(String path) {
-        File file = new File(path);
+    private void flushAudioFile() {
+        File file = new File(AudioModel.DEFAULT_FILE_LOCATION);
         if (file.exists()) {
             if (file.delete()) {
-                Log.d(TAG, "file Deleted :" + path);
+                Log.d(TAG, "file Deleted");
             } else {
-                Log.d(TAG, "file not Deleted :" + path);
+                Log.d(TAG, "file not Deleted");
             }
         }
     }
