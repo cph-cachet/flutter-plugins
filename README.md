@@ -33,3 +33,4 @@ These are the available plugins in this repository.
 * [screen_state](https://pub.dartlang.org/packages/screen_state)
 * [light](https://pub.dartlang.org/packages/light)
 * [pedometer](https://pub.dartlang.org/packages/pedometer)
+* [noise_level](https://pub.dartlang.org/packages/noise_level)
