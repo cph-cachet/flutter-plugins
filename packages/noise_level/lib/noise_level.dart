@@ -25,7 +25,7 @@ class Noise {
   int _frequency;
 
   static const EventChannel _noiseEventChannel =
-      EventChannel('noise.eventChannel');
+  EventChannel('noiseLevel.eventChannel');
 
   Stream<NoiseEvent> _noiseStream;
 
