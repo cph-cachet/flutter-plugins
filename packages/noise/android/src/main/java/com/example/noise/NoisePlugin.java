@@ -1,6 +1,5 @@
 package com.example.noise;
 
-import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.EventChannel.EventSink;
@@ -22,11 +21,9 @@ import java.util.HashMap;
  */
 public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListener, EventChannel.StreamHandler {
     final static String TAG = "NoisePlugin";
-    private static final String ERR_RECORDER_IS_NULL = "ERR_RECORDER_IS_NULL";
     private static Registrar reg;
     final private AudioModel model = new AudioModel();
     final private Handler recordHandler = new Handler();
-    private static MethodChannel methodChannel;
     private static EventChannel eventChannel;
     private boolean isRecording = false;
     private EventSink eventSink;
@@ -41,18 +38,18 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
         Log.d(TAG, "registerWith()");
         eventChannel = new EventChannel(registrar.messenger(), EVENT_CHANNEL_NAME);
         eventChannel.setStreamHandler(new NoisePlugin());
-//        methodChannel = new MethodChannel(registrar.messenger(), "noise.methodChannel");
-//        methodChannel.setMethodCallHandler(new NoisePlugin());
         reg = registrar;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void onListen(Object obj, EventChannel.EventSink eventSink) {
-        if (obj instanceof HashMap) {
-            Log.d(TAG, "onListen(), Type cast worked!");
+        try {
             HashMap<String, String> args = (HashMap<String, String>) obj;
             frequency = Integer.parseInt(args.get("frequency"));
+        }
+        catch (Exception e) {
+            Log.e(TAG, "onListen(), Type-cast exception: ", e);
         }
 
         this.eventSink = eventSink;
@@ -62,7 +59,7 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
 
     @Override
     public void onCancel(Object o) {
-        Log.d(TAG, "onCancel()");
+//        Log.d(TAG, "onCancel()");
         this.eventSink = null;
         stopRecorder();
     }
@@ -80,7 +77,7 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
     }
 
     private void startRecorder() {
-        Log.d(TAG, "startRecorder()");
+//        Log.d(TAG, "startRecorder()");
         if (!permissionGranted()) return;
 
         if (this.model.getMediaRecorder() == null) {
@@ -95,10 +92,10 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
             this.model.getMediaRecorder().prepare();
             this.model.getMediaRecorder().start();
             isRecording = true;
-            Log.d(TAG, "startRecorder(): Started recording. isRecording? " + isRecording);
+//            Log.d(TAG, "startRecorder(): Started recording. isRecording? " + isRecording);
 
         } catch (Exception e) {
-            Log.e(TAG, "Exception: ", e);
+            Log.e(TAG, "startRecorder(), MediaRecorder exception: ", e);
         }
     }
 
@@ -123,16 +120,16 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "isRecording? " + isRecording);
-                Log.d(TAG, "eventSink?" + (eventSink != null));
+//                Log.d(TAG, "isRecording? " + isRecording);
+//                Log.d(TAG, "eventSink?" + (eventSink != null));
                 while (isRecording && eventSink != null) {
-                    Log.d(TAG, "Listening...");
+//                    Log.d(TAG, "Listening...");
                     try {
                         int volume = model.getMediaRecorder().getMaxAmplitude();  //Get the sound pressure value
                         if (volume > 0) {
                             float db = 20 * (float) (Math.log10(volume));
                             eventSink.success(db);
-                            Log.d(TAG, "signal:" + volume + ", dB val: " + db);
+//                            Log.d(TAG, "signal:" + volume + ", dB val: " + db);
                         }
                         Thread.sleep(frequency);
                     } catch (InterruptedException e) {
@@ -148,7 +145,7 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
         isRecording = false;
         recordHandler.removeCallbacks(this.model.getRecorderTicker());
         if (this.model.getMediaRecorder() == null) {
-            Log.d(TAG, "mediaRecorder is null");
+//            Log.d(TAG, "mediaRecorder is null");
             return;
         }
         this.model.getMediaRecorder().stop();
@@ -160,11 +157,11 @@ public class NoisePlugin implements PluginRegistry.RequestPermissionsResultListe
     private void flushAudioFile() {
         File file = new File(AudioModel.DEFAULT_FILE_LOCATION);
         if (file.exists()) {
-            if (file.delete()) {
-                Log.d(TAG, "file Deleted");
-            } else {
-                Log.d(TAG, "file not Deleted");
-            }
+//            if (file.delete()) {
+//                Log.d(TAG, "file Deleted");
+//            } else {
+//                Log.d(TAG, "file not Deleted");
+//            }
         }
     }
 }

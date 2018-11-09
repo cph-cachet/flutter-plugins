@@ -8,6 +8,8 @@ class NoiseEvent {
 
   num _decibel;
 
+  int get decibel => _decibel.round();
+
   @override
   String toString() {
     return "[Decibel Reading: $_decibel dB]";
@@ -19,9 +21,8 @@ NoiseEvent _noiseEvent(num decibel) {
 }
 
 class Noise {
-  Noise(this._path, this._frequency);
+  Noise(this._frequency);
 
-  String _path;
   int _frequency;
 
   static const EventChannel _noiseEventChannel =
@@ -30,7 +31,7 @@ class Noise {
   Stream<NoiseEvent> _noiseStream;
 
   Stream<NoiseEvent> get noiseStream {
-    Map<String, dynamic> args = {'path': _path, 'frequency': '$_frequency'};
+    Map<String, dynamic> args = {'frequency': '$_frequency'};
     if (_noiseStream == null) {
       _noiseStream = _noiseEventChannel
           .receiveBroadcastStream(args)
