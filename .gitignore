@@ -1,6 +1,5 @@
 # See https://www.dartlang.org/guides/libraries/private-files
 **/*.iml
-**/*.xml
 **/.idea
 **/.DS_Store
 **/.packages
