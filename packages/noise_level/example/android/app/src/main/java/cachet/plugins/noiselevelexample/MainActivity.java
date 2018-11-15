@@ -1,4 +1,4 @@
-package cachet.plugins.noiselevelexample;
+package cachet.plugins.noise_levelexample;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

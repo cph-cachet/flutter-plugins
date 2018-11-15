@@ -1,4 +1,4 @@
-group 'cachet.plugins.noiselevel'
+group 'cachet.plugins.noise_level'
 version '1.0-SNAPSHOT'
 
 buildscript {
