@@ -1,4 +1,4 @@
-package cachet.plugins.noiselevel;
+package cachet.plugins.noise_level;
 
 
 import io.flutter.plugin.common.PluginRegistry.Registrar;

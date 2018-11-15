@@ -1,4 +1,4 @@
-package cachet.plugins.noiselevel;
+package cachet.plugins.noise_level;
 
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;

@@ -1,4 +1,4 @@
-package cachet.plugins.noiselevel;
+package cachet.plugins.noise_level;
 
 /**
  * A data object which calculates the decibel value given a volume value.
