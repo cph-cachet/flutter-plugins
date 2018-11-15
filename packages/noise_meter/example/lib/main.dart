@@ -1,4 +1,4 @@
-import 'package:noise_level/noise_level.dart';
+import 'package:noise_meter/noise_meter.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 

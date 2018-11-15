@@ -1,6 +1,5 @@
 package cachet.plugins.noise_level;
 
-
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.EventChannel.EventSink;
