@@ -8,3 +8,4 @@
 **/.pub/
 **/build
 **/pubspec.lock
+**/.gitignore
