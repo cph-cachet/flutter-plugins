@@ -30,7 +30,9 @@ and send a [pull request](https://github.com/cph-cachet/flutter-plugins/pulls).
 ## Plugins
 These are the available plugins in this repository.
 
-* [screen_state](https://pub.dartlang.org/packages/screen_state)
-* [light](https://pub.dartlang.org/packages/light)
-* [pedometer](https://pub.dartlang.org/packages/pedometer)
-* [noise_level](https://pub.dartlang.org/packages/noise_level)
+| Component | Description | Pub | 
+|-----------|-------------|-----|
+| [screen_state](./packages/screen_state) | Track screen state changes | [![pub package](https://img.shields.io/pub/v/screen_state.svg)](https://pub.dartlang.org/packages/screen_state) |
+| [light](./packages/light) | Track light sensor readings | [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
+| [pedometer](./packages/pedometer) | Track step count | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
+| [noise_meter](./packages/noise_meter) | Support for uploading data to a Firebase Storage data endpoint as zipped JSON files| [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |
