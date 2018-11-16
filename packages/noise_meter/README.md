@@ -1,11 +1,11 @@
 # noise_meter
 
+[![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter)
 
 ## Install
-Add ```noise_meter``` as a dependency in pubspec.yaml
+Add ```noise_meter``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
-## Post Installation
 On *Android* you need to add a permission to `AndroidManifest.xml`:
 ```xml
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -31,11 +31,11 @@ Where `onData()` handles the events from `StreamSubscription`. An example could 
 
 ```dart
 void onData(NoiseEvent event) {
-  _noiseValues.add(event.decibel);
+  print("noise level is ${event.decibel} decibel.");
 }
 ```
 
-Each `NoiseEvent` coming in has an  integer field called `decibel`, containing the noise level of the reading.
+Each incoming `NoiseEvent` has an integer field named `decibel` containing the noise level of the reading.
 
 ### Stop listening
 ```dart
