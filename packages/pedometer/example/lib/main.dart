@@ -31,18 +31,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onData(int stepCountValue) async {
-    print(stepCountValue);
-
-    setState(() {
-      _stepCountValue = "$stepCountValue";
-    });
+    setState(() => _stepCountValue = "$stepCountValue");
   }
 
   void _onDone() {}
 
-  void _onError(error) {
-    print("Flutter Pedometer Error: $error");
-  }
+  void _onError(error) => print("Flutter Pedometer Error: $error");
+
+  void _onCancel() => _subscription.cancel();
 
   @override
   Widget build(BuildContext context) {
