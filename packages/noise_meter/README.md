@@ -1,5 +1,6 @@
 # noise_meter
 
+[![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter)
 
 ## Install
 Add ```noise_meter``` as a dependency in  `pubspec.yaml`.
