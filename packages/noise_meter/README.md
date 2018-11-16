@@ -30,11 +30,11 @@ Where `onData()` handles the events from `StreamSubscription`. An example could 
 
 ```dart
 void onData(NoiseEvent event) {
-  _noiseValues.add(event.decibel);
+  print("noise level is ${event.decibel} decibel.");
 }
 ```
 
-Each `NoiseEvent` coming in has an  integer field called `decibel`, containing the noise level of the reading.
+Each incoming `NoiseEvent` has an integer field named `decibel` containing the noise level of the reading.
 
 ### Stop listening
 ```dart
