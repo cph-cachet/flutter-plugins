@@ -1,0 +1,729 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0C8DB5BF543F06BDBC1E37AFA44B6837 /* PedometerPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AEF9EBB52C8D210394B839485751FF9F /* PedometerPlugin.m */; };
+		0D7BBF3C628EE9D4DD4D99C3A250BE00 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A16F4CFC63FAC439D7A04994F579A03 /* Foundation.framework */; };
+		3D6D95F20F0B9AA8E62E21BDE621EDB4 /* Pods-Runner-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D72C0A7975EDA7F23FBF0B6467A4B8B /* Pods-Runner-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4B30E2A53CD5C865C247305B8F16AD6B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A16F4CFC63FAC439D7A04994F579A03 /* Foundation.framework */; };
+		62480A5B3A953229AEC9FC06D26A4416 /* Pods-Runner-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = A54846D03DD77A9BADCC0A64792E593F /* Pods-Runner-dummy.m */; };
+		6E9576AFA5D3A1177DB0008659E7895C /* pedometer-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A860E5A040FB53386DD51F92982F639 /* pedometer-dummy.m */; };
+		7B4E7AE696F808D9BB7478A3DCD5839F /* pedometer-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 56C2263ADF67C7456E67268D7851AD99 /* pedometer-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E6C93EB4F38F87A60C02B2DA802402E0 /* SwiftPedometerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59D39A121E1EF7BC83C55B0E8B2E7A90 /* SwiftPedometerPlugin.swift */; };
+		E6D1686D8410C30D7B3466887CF9FD0D /* PedometerPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 38EBAC29449387886A4C1DB8FC693F01 /* PedometerPlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		919A6E0B2BE2D6F476C5673618EBF5A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F593487F78B4A3D3610A1D47999C9B04;
+			remoteInfo = pedometer;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		03F0C1E726CB14C001204FC7413CE736 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../../../../../../LICENSE; sourceTree = "<group>"; };
+		0BFEC9185FE27B9F1703B6B5A1C64149 /* Pods-Runner-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-Runner-acknowledgements.markdown"; sourceTree = "<group>"; };
+		0DAB33498FA3B92FE4507273956FB5C2 /* Flutter.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; lastKnownFileType = text; name = Flutter.podspec; path = ../../../../../../../../../development/flutter/bin/cache/artifacts/engine/ios/Flutter.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		1C168DDC657505F0A240F92AC470327C /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		38EBAC29449387886A4C1DB8FC693F01 /* PedometerPlugin.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PedometerPlugin.h; path = ../../../../../../../ios/Classes/PedometerPlugin.h; sourceTree = "<group>"; };
+		428E0A127E174ED58DBF195F320D3C08 /* Pods-Runner-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Runner-acknowledgements.plist"; sourceTree = "<group>"; };
+		44CB104796C2480071CA9655B7306E01 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_Runner.framework; path = "Pods-Runner.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		49EE34F905B917D751681983E6FAE011 /* pedometer.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = pedometer.modulemap; sourceTree = "<group>"; };
+		56C2263ADF67C7456E67268D7851AD99 /* pedometer-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "pedometer-umbrella.h"; sourceTree = "<group>"; };
+		59D39A121E1EF7BC83C55B0E8B2E7A90 /* SwiftPedometerPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SwiftPedometerPlugin.swift; path = ../../../../../../../ios/Classes/SwiftPedometerPlugin.swift; sourceTree = "<group>"; };
+		5A16F4CFC63FAC439D7A04994F579A03 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS11.3.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		5A860E5A040FB53386DD51F92982F639 /* pedometer-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "pedometer-dummy.m"; sourceTree = "<group>"; };
+		67C29E2B5784A3E536E2FE813C658669 /* Pods-Runner.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-Runner.modulemap"; sourceTree = "<group>"; };
+		6EA39E0351B815DCA174207856B1D976 /* pedometer.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; lastKnownFileType = text; name = pedometer.podspec; path = ../../../../../../ios/pedometer.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		7AF4FBC51F8B92B6478133CE10AE1606 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../../../../../../../../../development/flutter/bin/cache/artifacts/engine/ios/LICENSE; sourceTree = "<group>"; };
+		7FCECA84B6038B862FF03CB0D481D5BA /* pedometer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = pedometer.framework; path = pedometer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		877ADED78D94B47F73DF972383D89287 /* pedometer-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "pedometer-prefix.pch"; sourceTree = "<group>"; };
+		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		95346D80E13D48B363B8E9F6792E0FAD /* pedometer.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = pedometer.xcconfig; sourceTree = "<group>"; };
+		9D72C0A7975EDA7F23FBF0B6467A4B8B /* Pods-Runner-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-Runner-umbrella.h"; sourceTree = "<group>"; };
+		A54846D03DD77A9BADCC0A64792E593F /* Pods-Runner-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-Runner-dummy.m"; sourceTree = "<group>"; };
+		AD41DEBF256BB7BE7A4C12E1E6F955D3 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
+		AEF9EBB52C8D210394B839485751FF9F /* PedometerPlugin.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = PedometerPlugin.m; path = ../../../../../../../ios/Classes/PedometerPlugin.m; sourceTree = "<group>"; };
+		BD31358413E229785C15580F2A0CF231 /* Flutter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Flutter.framework; path = ../../../../../../../../../development/flutter/bin/cache/artifacts/engine/ios/Flutter.framework; sourceTree = "<group>"; };
+		BF5527680466FC54BF7E6BE1895AB2A4 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
+		CC42515927208637B49AC41D867FE8F0 /* Pods-Runner-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-Runner-frameworks.sh"; sourceTree = "<group>"; };
+		CD6DC1F99BC3A61F70CDB06ADA3678AC /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D214E93819DF710B96B70AE4BCD38587 /* Pods-Runner-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-Runner-resources.sh"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B0FA3C794E8031A18BBA5E4DEB100307 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D7BBF3C628EE9D4DD4D99C3A250BE00 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B115CC0B93A597A292CBDA81D5B43862 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B30E2A53CD5C865C247305B8F16AD6B /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1722934C8DBE48F03B70914C88BE8B50 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				F1917A4054474553088928532359581C /* Classes */,
+			);
+			name = ios;
+			path = ios;
+			sourceTree = "<group>";
+		};
+		17C0A4AEED3C0A4BC7239BEF4B2037D9 /* Pod */ = {
+			isa = PBXGroup;
+			children = (
+				0DAB33498FA3B92FE4507273956FB5C2 /* Flutter.podspec */,
+				7AF4FBC51F8B92B6478133CE10AE1606 /* LICENSE */,
+			);
+			name = Pod;
+			sourceTree = "<group>";
+		};
+		1E784949D10645ED29EA61F431C7127F /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				1C168DDC657505F0A240F92AC470327C /* Info.plist */,
+				49EE34F905B917D751681983E6FAE011 /* pedometer.modulemap */,
+				95346D80E13D48B363B8E9F6792E0FAD /* pedometer.xcconfig */,
+				5A860E5A040FB53386DD51F92982F639 /* pedometer-dummy.m */,
+				877ADED78D94B47F73DF972383D89287 /* pedometer-prefix.pch */,
+				56C2263ADF67C7456E67268D7851AD99 /* pedometer-umbrella.h */,
+			);
+			name = "Support Files";
+			path = "../../../../Pods/Target Support Files/pedometer";
+			sourceTree = "<group>";
+		};
+		33EF77B002218DEC25A4A2BB80092E53 /* Pod */ = {
+			isa = PBXGroup;
+			children = (
+				03F0C1E726CB14C001204FC7413CE736 /* LICENSE */,
+				6EA39E0351B815DCA174207856B1D976 /* pedometer.podspec */,
+			);
+			name = Pod;
+			sourceTree = "<group>";
+		};
+		4D1DDC2E7FB76A7CCDEEF96F64F5AE89 /* .. */ = {
+			isa = PBXGroup;
+			children = (
+				F8D159F48F29A3CF81BE88116EB039FB /* example */,
+			);
+			name = ..;
+			path = ..;
+			sourceTree = "<group>";
+		};
+		5E0D919E635D23B70123790B8308F8EF /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				5A16F4CFC63FAC439D7A04994F579A03 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		600D119772D2DBD05A614F85D86D48B5 /* Pods-Runner */ = {
+			isa = PBXGroup;
+			children = (
+				CD6DC1F99BC3A61F70CDB06ADA3678AC /* Info.plist */,
+				67C29E2B5784A3E536E2FE813C658669 /* Pods-Runner.modulemap */,
+				0BFEC9185FE27B9F1703B6B5A1C64149 /* Pods-Runner-acknowledgements.markdown */,
+				428E0A127E174ED58DBF195F320D3C08 /* Pods-Runner-acknowledgements.plist */,
+				A54846D03DD77A9BADCC0A64792E593F /* Pods-Runner-dummy.m */,
+				CC42515927208637B49AC41D867FE8F0 /* Pods-Runner-frameworks.sh */,
+				D214E93819DF710B96B70AE4BCD38587 /* Pods-Runner-resources.sh */,
+				9D72C0A7975EDA7F23FBF0B6467A4B8B /* Pods-Runner-umbrella.h */,
+				BF5527680466FC54BF7E6BE1895AB2A4 /* Pods-Runner.debug.xcconfig */,
+				AD41DEBF256BB7BE7A4C12E1E6F955D3 /* Pods-Runner.release.xcconfig */,
+			);
+			name = "Pods-Runner";
+			path = "Target Support Files/Pods-Runner";
+			sourceTree = "<group>";
+		};
+		7DB346D0F39D3F0E887471402A8071AB = {
+			isa = PBXGroup;
+			children = (
+				93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */,
+				DAF1183AEEB92E73EE1CDC6A68551B0D /* Development Pods */,
+				BC3CA7F9E30CC8F7E2DD044DD34432FC /* Frameworks */,
+				E716051DE738D6BEF32CAC42C2D1682C /* Products */,
+				B88D6092221BFC46BA797811AC7C0DEC /* Targets Support Files */,
+			);
+			sourceTree = "<group>";
+		};
+		9C4564F7369AEEF36D339A5D1F9337A9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BD31358413E229785C15580F2A0CF231 /* Flutter.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A59442F3E7AB099D75A2695D64610EE4 /* .symlinks */ = {
+			isa = PBXGroup;
+			children = (
+				C1910BE01DF76FC965C120D7F1E4A25E /* plugins */,
+			);
+			name = .symlinks;
+			path = .symlinks;
+			sourceTree = "<group>";
+		};
+		B12EFA164151B5FA7ABF8E521D0CFF3A /* pedometer */ = {
+			isa = PBXGroup;
+			children = (
+				FF6F0A57FD3A7A90AA7F9FEA8CB82401 /* .. */,
+				33EF77B002218DEC25A4A2BB80092E53 /* Pod */,
+				1E784949D10645ED29EA61F431C7127F /* Support Files */,
+			);
+			name = pedometer;
+			path = ../.symlinks/plugins/pedometer/ios;
+			sourceTree = "<group>";
+		};
+		B88D6092221BFC46BA797811AC7C0DEC /* Targets Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				600D119772D2DBD05A614F85D86D48B5 /* Pods-Runner */,
+			);
+			name = "Targets Support Files";
+			sourceTree = "<group>";
+		};
+		BC3CA7F9E30CC8F7E2DD044DD34432FC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5E0D919E635D23B70123790B8308F8EF /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C1910BE01DF76FC965C120D7F1E4A25E /* plugins */ = {
+			isa = PBXGroup;
+			children = (
+				E61633B51F15B8602367897AD1C77F95 /* pedometer */,
+			);
+			name = plugins;
+			path = plugins;
+			sourceTree = "<group>";
+		};
+		DAF1183AEEB92E73EE1CDC6A68551B0D /* Development Pods */ = {
+			isa = PBXGroup;
+			children = (
+				E95CE1EF86ED189FC4B756363A950D62 /* Flutter */,
+				B12EFA164151B5FA7ABF8E521D0CFF3A /* pedometer */,
+			);
+			name = "Development Pods";
+			sourceTree = "<group>";
+		};
+		E5E69DA3C0DADC20CD073011243E61F2 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				A59442F3E7AB099D75A2695D64610EE4 /* .symlinks */,
+			);
+			name = ios;
+			path = ios;
+			sourceTree = "<group>";
+		};
+		E61633B51F15B8602367897AD1C77F95 /* pedometer */ = {
+			isa = PBXGroup;
+			children = (
+				1722934C8DBE48F03B70914C88BE8B50 /* ios */,
+			);
+			name = pedometer;
+			path = pedometer;
+			sourceTree = "<group>";
+		};
+		E716051DE738D6BEF32CAC42C2D1682C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7FCECA84B6038B862FF03CB0D481D5BA /* pedometer.framework */,
+				44CB104796C2480071CA9655B7306E01 /* Pods_Runner.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E95CE1EF86ED189FC4B756363A950D62 /* Flutter */ = {
+			isa = PBXGroup;
+			children = (
+				9C4564F7369AEEF36D339A5D1F9337A9 /* Frameworks */,
+				17C0A4AEED3C0A4BC7239BEF4B2037D9 /* Pod */,
+			);
+			name = Flutter;
+			path = ../.symlinks/flutter/ios;
+			sourceTree = "<group>";
+		};
+		F1917A4054474553088928532359581C /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				38EBAC29449387886A4C1DB8FC693F01 /* PedometerPlugin.h */,
+				AEF9EBB52C8D210394B839485751FF9F /* PedometerPlugin.m */,
+				59D39A121E1EF7BC83C55B0E8B2E7A90 /* SwiftPedometerPlugin.swift */,
+			);
+			name = Classes;
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		F8D159F48F29A3CF81BE88116EB039FB /* example */ = {
+			isa = PBXGroup;
+			children = (
+				E5E69DA3C0DADC20CD073011243E61F2 /* ios */,
+			);
+			name = example;
+			path = example;
+			sourceTree = "<group>";
+		};
+		FF6F0A57FD3A7A90AA7F9FEA8CB82401 /* .. */ = {
+			isa = PBXGroup;
+			children = (
+				4D1DDC2E7FB76A7CCDEEF96F64F5AE89 /* .. */,
+			);
+			name = ..;
+			path = ../../../../../../ios;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		10861201B30DDBD3DE4B93485AFEBAED /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7B4E7AE696F808D9BB7478A3DCD5839F /* pedometer-umbrella.h in Headers */,
+				E6D1686D8410C30D7B3466887CF9FD0D /* PedometerPlugin.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		458D40BCB5DB9903F614360F162D5BEB /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D6D95F20F0B9AA8E62E21BDE621EDB4 /* Pods-Runner-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		B95FE8161944AF419D92D162D36C3729 /* Pods-Runner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 91DD3170BECCE5D8A235617B6C680EAC /* Build configuration list for PBXNativeTarget "Pods-Runner" */;
+			buildPhases = (
+				458D40BCB5DB9903F614360F162D5BEB /* Headers */,
+				A89D1963ABAB792D1AF6036E9EA5F28E /* Sources */,
+				B0FA3C794E8031A18BBA5E4DEB100307 /* Frameworks */,
+				584A8FFF40F40EE1CD59B1B8426AE13B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1EF69EB2A8171D0D4459652F47B044B6 /* PBXTargetDependency */,
+			);
+			name = "Pods-Runner";
+			productName = "Pods-Runner";
+			productReference = 44CB104796C2480071CA9655B7306E01 /* Pods_Runner.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		F593487F78B4A3D3610A1D47999C9B04 /* pedometer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6930073B10E3A49B78051A0501E3B1B4 /* Build configuration list for PBXNativeTarget "pedometer" */;
+			buildPhases = (
+				10861201B30DDBD3DE4B93485AFEBAED /* Headers */,
+				1CBFBC0463DF28B4C3380E2EDD66471B /* Sources */,
+				B115CC0B93A597A292CBDA81D5B43862 /* Frameworks */,
+				F44F569EA05A7C0B4EE566412423024F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pedometer;
+			productName = pedometer;
+			productReference = 7FCECA84B6038B862FF03CB0D481D5BA /* pedometer.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D41D8CD98F00B204E9800998ECF8427E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0930;
+				LastUpgradeCheck = 0930;
+			};
+			buildConfigurationList = 2D8E8EC45A3A1A1D94AE762CB5028504 /* Build configuration list for PBXProject "Pods" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7DB346D0F39D3F0E887471402A8071AB;
+			productRefGroup = E716051DE738D6BEF32CAC42C2D1682C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F593487F78B4A3D3610A1D47999C9B04 /* pedometer */,
+				B95FE8161944AF419D92D162D36C3729 /* Pods-Runner */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		584A8FFF40F40EE1CD59B1B8426AE13B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F44F569EA05A7C0B4EE566412423024F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1CBFBC0463DF28B4C3380E2EDD66471B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6E9576AFA5D3A1177DB0008659E7895C /* pedometer-dummy.m in Sources */,
+				0C8DB5BF543F06BDBC1E37AFA44B6837 /* PedometerPlugin.m in Sources */,
+				E6C93EB4F38F87A60C02B2DA802402E0 /* SwiftPedometerPlugin.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A89D1963ABAB792D1AF6036E9EA5F28E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62480A5B3A953229AEC9FC06D26A4416 /* Pods-Runner-dummy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1EF69EB2A8171D0D4459652F47B044B6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = pedometer;
+			target = F593487F78B4A3D3610A1D47999C9B04 /* pedometer */;
+			targetProxy = 919A6E0B2BE2D6F476C5673618EBF5A3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0E69550BD41DC5416EE8008FA28DE983 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 95346D80E13D48B363B8E9F6792E0FAD /* pedometer.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				GCC_PREFIX_HEADER = "Target Support Files/pedometer/pedometer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/pedometer/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/pedometer/pedometer.modulemap";
+				PRODUCT_MODULE_NAME = pedometer;
+				PRODUCT_NAME = pedometer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		6729486BE83C40BBDA40E02B66C4D717 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AD41DEBF256BB7BE7A4C12E1E6F955D3 /* Pods-Runner.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = "Target Support Files/Pods-Runner/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-Runner/Pods-Runner.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		96434B6C8FF320C976A10DAD7174A4BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"POD_CONFIGURATION_RELEASE=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SYMROOT = "${SRCROOT}/../build";
+			};
+			name = Release;
+		};
+		D11C82AF2204B41B80412B8DC9C1D652 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"POD_CONFIGURATION_DEBUG=1",
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SYMROOT = "${SRCROOT}/../build";
+			};
+			name = Debug;
+		};
+		DCECBDEFC4EDB180C0D9F706FCE7805F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = BF5527680466FC54BF7E6BE1895AB2A4 /* Pods-Runner.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = "Target Support Files/Pods-Runner/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-Runner/Pods-Runner.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		ECCBB6C0A25DC79747C01F51ABD23D18 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 95346D80E13D48B363B8E9F6792E0FAD /* pedometer.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				GCC_PREFIX_HEADER = "Target Support Files/pedometer/pedometer-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/pedometer/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/pedometer/pedometer.modulemap";
+				PRODUCT_MODULE_NAME = pedometer;
+				PRODUCT_NAME = pedometer;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2D8E8EC45A3A1A1D94AE762CB5028504 /* Build configuration list for PBXProject "Pods" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D11C82AF2204B41B80412B8DC9C1D652 /* Debug */,
+				96434B6C8FF320C976A10DAD7174A4BB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6930073B10E3A49B78051A0501E3B1B4 /* Build configuration list for PBXNativeTarget "pedometer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0E69550BD41DC5416EE8008FA28DE983 /* Debug */,
+				ECCBB6C0A25DC79747C01F51ABD23D18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		91DD3170BECCE5D8A235617B6C680EAC /* Build configuration list for PBXNativeTarget "Pods-Runner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DCECBDEFC4EDB180C0D9F706FCE7805F /* Debug */,
+				6729486BE83C40BBDA40E02B66C4D717 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
+}
