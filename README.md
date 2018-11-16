@@ -30,9 +30,9 @@ and send a [pull request](https://github.com/cph-cachet/flutter-plugins/pulls).
 ## Plugins
 These are the available plugins in this repository.
 
-| Component | Description | Pub | 
-|-----------|-------------|-----|
-| [screen_state](./packages/screen_state) | Track screen state changes | [![pub package](https://img.shields.io/pub/v/screen_state.svg)](https://pub.dartlang.org/packages/screen_state) |
-| [light](./packages/light) | Track light sensor readings | [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
-| [pedometer](./packages/pedometer) | Track step count | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
-| [noise_meter](./packages/noise_meter) | Support for uploading data to a Firebase Storage data endpoint as zipped JSON files| [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |
+| Plugin | Description | Android | iOS |    Pub    | 
+|-----------|-------------|---------|-----|-----------|
+| [screen_state](./packages/screen_state) | Track screen state changes | yes | N/A | [![pub package](https://img.shields.io/pub/v/screen_state.svg)](https://pub.dartlang.org/packages/screen_state) |
+| [light](./packages/light) | Track light sensor readings | yes | N/A |  [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
+| [pedometer](./packages/pedometer) | Track step count |  yes | yes | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
+| [noise_meter](./packages/noise_meter) | Read noise level in Decibel | yes | coming  | [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |
