@@ -30,14 +30,9 @@ public class SwiftPedometerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
 
     // Event Channel: On Stream Listen
     public func onListen(withArguments arguments: Any?, eventSink: @escaping FlutterEventSink) -> FlutterError? {
-
         self.eventSink = eventSink
-
-        let date = Date()
-        let cal = Calendar(identifier: .gregorian)
-        let todayAtMidnight = cal.startOfDay(for: date)
-
-        pedometer.startUpdates(from: todayAtMidnight) { (pedometerData, error) in
+        let now = Date()
+        pedometer.startUpdates(from: now) { (pedometerData, error) in
             if let data = pedometerData {
 
                 // Dispatch method to main thread with an async call
