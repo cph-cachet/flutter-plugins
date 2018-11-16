@@ -2,10 +2,9 @@
 
 
 ## Install
-Add ```noise_meter``` as a dependency in pubspec.yaml
+Add ```noise_meter``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
-## Post Installation
 On *Android* you need to add a permission to `AndroidManifest.xml`:
 ```xml
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
