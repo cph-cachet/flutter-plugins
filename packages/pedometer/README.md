@@ -1,5 +1,7 @@
 # pedometer
 
+[![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer)
+
 This plugin allows for conitnuous step count using the built-in pedometer sensor API's of iOS and Android devices.
 
 ## Usage
@@ -9,33 +11,21 @@ To use this plugin, add `pedometer` as a [dependency in your pubspec.yaml file](
 ### Example
 
 ``` dart
-import 'dart:async';
-import 'package:pedometer/pedometer.dart';
-
-class someClass {
-    StreamSubscription<int> _subscription;
-    FlutterPedometer pedometer;
-    
-    void someFunction() async {
-        // ...
-        pedometer = new FlutterPedometer();
-        _subscription = pedometer.stepCountStream.listen(_onData,
-            onError: _onError, onDone: _onDone, cancelOnError: true);
-    }
-    
-    void _onData(int stepCountValue) async {
-        // Do something with the stepCountValue
-    }
-    
-    void _onDone() {
-        // Do something when done collecting
-    }
-    
-    void _onError(error) {
-        // Handle the error
-    }
-
+void setUpPedometer() {
+    Pedometer pedometer = new Pedometer();
+    _subscription = pedometer.stepCountStream.listen(_onData,
+        onError: _onError, onDone: _onDone, cancelOnError: true);
 }
+
+void _onData(int stepCountValue) async {
+    setState(() => _stepCountValue = "$stepCountValue");
+}
+
+void _onDone() => print("Finished pedometer tracking");
+
+void _onError(error) => print("Flutter Pedometer Error: $error");
+
+void _onCancel() => _subscription.cancel();
         
 ```
 ## Configuring XCode for usage on iOS
@@ -44,23 +34,7 @@ It seems that users of this plug-in will have to manually open XCode and configu
 
 For usage on Android it seems there are no problems with permissions.
 
-## Flutter Errors
-```shell
-Could not build the precompiled application for the device.
-    ** BUILD FAILED **
-    
-Xcode's output:
-↳
-    === BUILD TARGET Runner OF PROJECT Runner WITH CONFIGURATION Debug ===
-    The use of Swift 3 @objc inference in Swift 4 mode is deprecated. Please address deprecated @objc inference warnings, test your code with “Use of deprecated Swift 3 @objc inference” logging enabled, and then disable inference by changing the "Swift 3 @objc Inference" build setting to "Default" for the "Runner" target.
-    The use of Swift 3 @objc inference in Swift 4 mode is deprecated. Please address deprecated @objc inference warnings, test your code with “Use of deprecated Swift 3 @objc inference” logging enabled, and then disable inference by changing the "Swift 3 @objc Inference" build setting to "Default" for the "Runner" target.
-    === BUILD TARGET Runner OF PROJECT Runner WITH CONFIGURATION Debug ===
-    fatal error: lipo: -extract armv7 specified but fat file: /Users/thomasnilsson/Desktop/testingoutmyplugin/build/ios/Debug-iphoneos/Runner.app/Frameworks/location.framework/location does not contain that architecture
-    Failed to extract armv7 for /Users/thomasnilsson/Desktop/testingoutmyplugin/build/ios/Debug-iphoneos/Runner.app/Frameworks/location.framework/location. Running lipo -info:
-    Architectures in the fat file: /Users/thomasnilsson/Desktop/testingoutmyplugin/build/ios/Debug-iphoneos/Runner.app/Frameworks/location.framework/location are: arm64 
-
-Error launching application on Thomas’s iPhone.
-```
+## Common iOS Flutter Errors
 
 ### Fix: Enable @objc inference
 ![7jcq5](https://user-images.githubusercontent.com/9467047/43827445-21326694-9afa-11e8-8e0c-60e829eb4c79.png)
