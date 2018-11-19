@@ -44,5 +44,13 @@ void function() async {
   Map<String, double> usage = await appUsage.getUsage(startDate, endDate);
 }
 ```
+## Example
 
-![alt text](/images/screen1.png "Logo Title Text 1")
+The first screen will ask for permission to view usage stats. Tap on your application.
+![Screen 1](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/app_usage/images/screen1.png)
+
+Tap on the 'Permit usage access' switch.
+![Screen 2](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/app_usage/images/screen2.png)
+
+Your application is now running, if the manifest has been corectly set up you should be presented with the following screen after tapping the refresh button.
+![Screen 3](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/app_usage/images/screen3.png)
