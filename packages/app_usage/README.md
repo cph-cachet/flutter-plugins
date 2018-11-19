@@ -6,6 +6,9 @@
 Add ```app_usage``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
+## Android
+*NB: Requires API level 21 as a minimum!*
+
 You need to add the following package to the manifest namespace in `AndroidManifest.xml`:
 ```xml
 xmlns:tools="http://schemas.android.com/tools"
