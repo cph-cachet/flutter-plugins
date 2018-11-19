@@ -3,11 +3,16 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class AppUsage {
-  static const MethodChannel _channel =
-      const MethodChannel('app_usage');
+  static const MethodChannel _methodChannel =
+      const MethodChannel("app_usage.methodChannel");
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  void getUsage(DateTime startDate, DateTime endDate) async {
+    int end = endDate.millisecondsSinceEpoch;
+    int start = startDate.millisecondsSinceEpoch;
+
+    Map<String, int> interval = {'start': start, 'end': end};
+    Map<dynamic, dynamic> usage = await _methodChannel.invokeMethod('getUsage', interval);
+
+    print(usage);
   }
 }

@@ -1,6 +1,0 @@
-framework module pedometer {
-  umbrella header "pedometer-umbrella.h"
-
-  export *
-  module * { export * }
-}
