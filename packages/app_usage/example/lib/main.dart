@@ -29,7 +29,6 @@ class _MyAppState extends State<MyApp> {
     DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
     Map<String, double> usage = await appUsage.getUsage(startDate, endDate);
     usage.removeWhere((key,val) => val == 0);
-//    print(usage);
     setState(() => apps = makeString(usage));
   }
 
