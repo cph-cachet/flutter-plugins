@@ -9,24 +9,20 @@ For help on adding as a dependency, view the [documentation](https://flutter.io/
 ## Usage
 First and foremost you need an API key from OpenWeatherMap, which can be acquired for free [here](https://openweathermap.org/price).
 
-### Query current weather
-For api doucmentation on the current weather API, see the [documentation](https://openweathermap.org/current).
 ```dart
 String key = 'YOUR_API KEY';
-Weather w = new Weather(key);
-String res = await w.getFiveDayForecast();
-setState(() {
-  _res = res;
-});
+Weather weather = new Weather(key);
+```
+### Query current weather
+For api documentation on the current weather API, see the [documentation](https://openweathermap.org/current).
+
+```dart
+String forecastJSON = await weather.getFiveDayForecast();
 ```
 
 ### Query 5 day forecast
-For api doucmentation on the forecast API, see the [documentation](https://openweathermap.org/forecast5).
+For api documentation on the forecast API, see the [documentation](https://openweathermap.org/forecast5).
+
 ```dart
-String key = 'YOUR_API KEY';
-Weather w = new Weather(key);
-String res = await w.getCurrentWeather();
-setState(() {
-  _res = res;
-});
+String weatherJSON = await weather.getCurrentWeather();
 ```
