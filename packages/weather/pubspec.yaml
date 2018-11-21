@@ -1,0 +1,19 @@
+name: weather
+description: A weather plugin using the OpenWeatherMap API.
+version: 0.0.1
+author: CACHET Team <cph.cachet@gmail.com>
+homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/weather
+
+environment:
+  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  location:
+  http:
+# The following section is specific to Flutter.
+flutter:
+  plugin:
+    androidPackage: cachet.plugins.weather
+    pluginClass: WeatherPlugin
