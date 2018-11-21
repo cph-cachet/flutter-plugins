@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:weather/weather.dart';
 
@@ -14,6 +14,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _res = 'Unknown';
   String key = '12b6e28582eb9298577c734a31ba9f4f';
+  JsonEncoder encoder = new JsonEncoder.withIndent('  ');
 
   @override
   void initState() {
@@ -28,17 +29,17 @@ class _MyAppState extends State<MyApp> {
 
   void queryForecast() async {
     Weather w = new Weather(key);
-    String res = await w.getCurrentWeather();
+    Map<String, dynamic> res = await w.getCurrentWeather();
     setState(() {
-      _res = res;
+      _res = encoder.convert(res);
     });
   }
 
   void queryWeather() async {
     Weather w = new Weather(key);
-    String res = await w.getFiveDayForecast();
+    Map<String, dynamic> res = await w.getCurrentWeather();
     setState(() {
-      _res = res;
+      _res = encoder.convert(res);
     });
   }
 
@@ -47,7 +48,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text("Noise Level Example"),
+          title: Text("Weather API Example"),
         ),
         body: Center(
           child: Column(
@@ -59,7 +60,7 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-            onPressed: queryForecast,
+            onPressed: queryWeather,
             child: Icon(Icons.cloud_download)
         ),
       ),

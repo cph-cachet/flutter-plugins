@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,24 +15,28 @@ class Weather {
   /// Fetch current weather based on geographical coordinates
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
-  Future<String> getCurrentWeather() async {
-    String url = await generateUrl(tag: WEATHER);
+  Future<Map<String, dynamic>> getCurrentWeather() async {
+    String url = await _generateUrl(tag: WEATHER);
     http.Response response = await client.get(url);
-    return response.body;
+    Map<String, dynamic> currentWeather = json.decode(response.body);
+    print(currentWeather);
+    return currentWeather;
   }
 
   /// Fetch current weather based on geographical coordinates.
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/forecast5
-  Future<String> getFiveDayForecast() async {
-    String url = await generateUrl(tag: FORECAST);
+  Future<Map<String, dynamic>> getFiveDayForecast() async {
+    String url = await _generateUrl(tag: FORECAST);
     http.Response response = await client.get(url);
-    return response.body;
+    Map<String, dynamic> weatherForecast = json.decode(response.body);
+    print(weatherForecast);
+    return weatherForecast;
   }
 
   /// Generate the URL for the API, containing the API key,
   /// as well as latitude and longitude.
-  Future<String> generateUrl({String tag}) async {
+  Future<String> _generateUrl({String tag}) async {
     Map<String, double> loc = await new Location().getLocation();
     double lat = loc['latitude'];
     double lon = loc['longitude'];
