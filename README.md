@@ -17,7 +17,8 @@ These are the available plugins in this repository.
 | [pedometer](./packages/pedometer) | Track step count |  yes | yes | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
 | [noise_meter](./packages/noise_meter) | Read noise level in Decibel | yes | coming  | [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |
 | [app_usage](./packages/app_usage) | Track usage of all applications on phone. | yes | N/A  | [![pub package](https://img.shields.io/pub/v/app_usage.svg)](https://pub.dartlang.org/packages/app_usage) |
-| [weather](./packages/weather) | Weather, as well as forecasting using the OpenWeatherMap API. | yes | yes  | [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather) |
+| [weather](./packages/weather) | Get current weather, as well as forecasting using the OpenWeatherMap API. | yes | yes  | [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather) |
+| [notifications](./packages/notifications) | Track device notifications. | yes | N/A  | [![pub package](https://img.shields.io/pub/v/notifications.svg)](https://pub.dartlang.org/packages/notifications) |
 
 ## Issues
 
