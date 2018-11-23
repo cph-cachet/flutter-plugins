@@ -13,6 +13,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -30,9 +31,7 @@ public class NotificationsPlugin implements EventChannel.StreamHandler {
     private Context context;
     private static final String EVENT_CHANNEL_NAME = "notifications.eventChannel";
 
-    /**
-     * Plugin registration.
-     */
+    /** Plugin registration. */
     public static void registerWith(Registrar registrar) {
         final EventChannel channel = new EventChannel(registrar.messenger(), EVENT_CHANNEL_NAME);
         Context context = registrar.activeContext();
@@ -40,27 +39,40 @@ public class NotificationsPlugin implements EventChannel.StreamHandler {
         channel.setStreamHandler(plugin);
     }
 
-    public NotificationsPlugin(Context context) {
+    /**
+     * Plugin constructor setting the context and registering the notification service.
+     */
+    private NotificationsPlugin(Context context) {
         this.context = context;
-        /**
-         * Check if permission is given, if not then go to the notification settings screen.
-         */
+
+        /* Check if permission is given, if not then go to the notification settings screen. */
         if (!permissionGiven()) {
             context.startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS));
         }
+
+        NotificationReceiver receiver = new NotificationReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(NotificationListener.NOTIFICATION_INTENT);
+        context.registerReceiver(receiver, intentFilter);
+
+        /* Start the notification service once permission has been given. */
+        Intent listenerIntent = new Intent(context, NotificationListener.class);
+        context.startService(listenerIntent);
     }
 
+    /** Called whenever the event channel is subscribed to in Flutter */
     @Override
     public void onListen(Object o, EventSink eventSink) {
         this.eventSink = eventSink;
-        /**
-         * Start the notification service once permission has been given.
+        /*
+          Start the notification service once permission has been given.
          */
         Intent listenerIntent = new Intent(context, NotificationListener.class);
         context.startService(listenerIntent);
 
     }
 
+    /** Called whenever the event channel subscription is cancelled in Flutter */
     @Override
     public void onCancel(Object o) {
         this.eventSink = null;
@@ -93,8 +105,6 @@ public class NotificationsPlugin implements EventChannel.StreamHandler {
         public void onReceive(Context context, Intent intent) {
             String packageName = intent.getStringExtra(NotificationListener.NOTIFICATION_PACKAGE_NAME);
             eventSink.success(packageName);
-            Log.d(TAG, "onReceive() " + packageName);
-
         }
     }
 }

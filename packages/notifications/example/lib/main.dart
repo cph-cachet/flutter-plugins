@@ -21,14 +21,12 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    Notifications n = new Notifications();
+    Notifications notifications = new Notifications();
     StreamSubscription<NotificationEvent> events;
-    events = n.noiseStream.listen(onData);
+    events = notifications.noiseStream.listen(onData);
   }
 
-  void onData(NotificationEvent event) {
-    print(event.toString());
-  }
+  void onData(NotificationEvent event) => print(event.toString());
 
   @override
   Widget build(BuildContext context) {
