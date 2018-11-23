@@ -36,7 +36,8 @@ Where the `onData()` method handles the incoming `NotificationEvents`. An exampl
 void onData(NotificationEvent event) => print(event.toString());
 ```
 
-A `NotificationEvent` contains a the following attributes
+### Notification Information
+Every time a notification is registered a `NotificationEvent` is received in Flutter, containing the following attributes:
 * `packageName [String]`: The name of the application which triggered the notification.
 * `timeStamp [DateTime]`: The timestamp at which the notification was received.
     * Alternatively, `timeStamp` can be converted to a unix timestamp using `timeStamp.millisecondsSinceEpoch`.
