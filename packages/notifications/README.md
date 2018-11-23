@@ -12,7 +12,7 @@ For help on adding as a dependency, view the [documentation](https://flutter.io/
 
 ### Android: Register service in the manifest 
 The plugin uses an Android system service to track notifications. 
-To allow this service to run the following code should be put imn the Android manifest, 
+To allow this service to run the following code should be put inside the Android manifest, 
 between the `<application></application>` tags.
 ```xml
 <service android:name="cachet.plugins.notifications.NotificationListener"
@@ -35,3 +35,9 @@ Where the `onData()` method handles the incoming `NotificationEvents`. An exampl
 ```dart
 void onData(NotificationEvent event) => print(event.toString());
 ```
+
+A `NotificationEvent` contains a the following attributes
+* `packageName [String]`: The name of the application which triggered the notification.
+* `timeStamp [DateTime]`: The timestamp at which the notification was received.
+    * Alternatively, `timeStamp` can be converted to a unix timestamp using `timeStamp.millisecondsSinceEpoch`.
+
