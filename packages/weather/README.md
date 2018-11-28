@@ -6,6 +6,32 @@
 Add ```weather``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
+
+## Permissions
+The plugin uses your location to fetch weather data, therefore location tracking must be enabled.
+
+### Android
+Add the following entry to your `manifest.xml` file, in the Android project of your application:
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+```
+
+In addition, it is recommended to set your minimum SDK version to 21.
+
+### iOS
+1. Open the XCode project of your app, named `Runner.xcodeproj`
+2. Locate the `info.plist` file in the `Runner` directory.
+3. Right click `info.plist` and choose `Open as > Source Code`.
+4. Add the following entries inside the `<dict></dict>` tags`:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app uses location to forecast the weather.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app uses location to forecast the weather.</string>
+```
+
 ## Usage
 First and foremost you need an API key from OpenWeatherMap, which can be acquired for free [here](https://openweathermap.org/price).
 
