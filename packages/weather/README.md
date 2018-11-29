@@ -32,6 +32,15 @@ In addition, it is recommended to set your minimum SDK version to 21.
 <string>This app uses location to forecast the weather.</string>
 ```
 
+#### Known issues
+There is an issue with the `location` plugin which this plugin depends on, where an error with the following message 
+
+`The use of Swift 3 @objc inference in Swift 4 mode is deprecated` 
+
+may be thrown. For a solution, check the following stack overflow question:
+https://stackoverflow.com/questions/44379348/the-use-of-swift-3-objc-inference-in-swift-4-mode-is-deprecated
+
+
 ## Usage
 First and foremost you need an API key from OpenWeatherMap, which can be acquired for free [here](https://openweathermap.org/price).
 
