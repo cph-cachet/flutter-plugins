@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
 
   void queryForecast() async {
     Weather w = new Weather(key);
-    Map<String, dynamic> res = await w.getCurrentWeather();
+    WeatherResult res = await w.getCurrentWeather();
     setState(() {
       _res = encoder.convert(res);
     });
@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
 
   void queryWeather() async {
     Weather w = new Weather(key);
-    Map<String, dynamic> res = await w.getCurrentWeather();
+    WeatherResult res = await w.getCurrentWeather();
     setState(() {
       _res = encoder.convert(res);
     });
