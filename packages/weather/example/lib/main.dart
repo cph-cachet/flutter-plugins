@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
     Weather w = new Weather(key);
     WeatherResult res = await w.getCurrentWeather();
     setState(() {
-      _res = encoder.convert(res);
+      _res = res.toString();
     });
   }
 
@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
     Weather w = new Weather(key);
     WeatherResult res = await w.getCurrentWeather();
     setState(() {
-      _res = encoder.convert(res);
+      _res = res.toString();
     });
   }
 
