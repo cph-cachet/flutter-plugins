@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:weather/weather.dart';
 
@@ -14,11 +13,12 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _res = 'Unknown';
   String key = '12b6e28582eb9298577c734a31ba9f4f';
-  JsonEncoder encoder = new JsonEncoder.withIndent('  ');
+  WeatherStation ws;
 
   @override
   void initState() {
     super.initState();
+    ws = new WeatherStation(key);
     initPlatformState();
   }
 
@@ -28,18 +28,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   void queryForecast() async {
-    Weather w = new Weather(key);
-    WeatherResult res = await w.getCurrentWeather();
+    List<Weather> f = await f.getFiveDayForecast();
     setState(() {
-      _res = res.toString();
+      _res = f.toString();
     });
   }
 
   void queryWeather() async {
-    Weather w = new Weather(key);
-    WeatherResult res = await w.getCurrentWeather();
+    Weather w = await ws.getCurrentWeather();
     setState(() {
-      _res = res.toString();
+      _res = w.toString();
     });
   }
 

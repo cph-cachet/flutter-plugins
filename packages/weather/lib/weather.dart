@@ -48,7 +48,7 @@ String unpackString(Map<String, dynamic> M, String k) {
 DateTime unpackDate(Map<String, dynamic> M, String k) {
   if (M != null) {
     if (M.containsKey(k)) {
-      int millis = M[k];
+      int millis = M[k] * 1000;
       return DateTime.fromMillisecondsSinceEpoch(millis);
     }
   }
@@ -65,10 +65,10 @@ Temperature unpackTemperature(Map<String, dynamic> M, String k) {
 /// A class for storing a weather-query response from OpenWeatherMap.
 /// This includes various measures such as location,
 /// temperature, wind, snow, rain and humidity.
-class WeatherResult {
+class Weather {
   String _country, _placeName, _weatherMain, _weatherDescription;
   Temperature _temperature, _tempMin, _tempMax;
-  DateTime _sunrise, _sunset;
+  DateTime _date, _sunrise, _sunset;
   double _latitude,
       _longitude,
       _pressure,
@@ -81,7 +81,7 @@ class WeatherResult {
       _snowLastHour,
       _snowLast3Hours;
 
-  WeatherResult(Map<String, dynamic> weatherData) {
+  Weather(Map<String, dynamic> weatherData) {
     Map<String, dynamic> main = weatherData['main'];
     Map<String, dynamic> coord = weatherData['coord'];
     Map<String, dynamic> sys = weatherData['sys'];
@@ -101,11 +101,11 @@ class WeatherResult {
     _weatherMain = unpackString(weather, 'main');
     _weatherDescription = unpackString(weather, 'description');
 
-    _temperature = unpackTemperature(weatherData['main'], 'temp');
-    _tempMin = unpackTemperature(weatherData['main'], 'temp_min');
-    _tempMax = unpackTemperature(weatherData['main'], 'temp_max');
-    _humidity = unpackDouble(weatherData['main'], 'humidity');
-    _pressure = unpackDouble(weatherData['main'], 'pressure');
+    _temperature = unpackTemperature(main, 'temp');
+    _tempMin = unpackTemperature(main, 'temp_min');
+    _tempMax = unpackTemperature(main, 'temp_max');
+    _humidity = unpackDouble(main, 'humidity');
+    _pressure = unpackDouble(main, 'pressure');
 
     _windSpeed = unpackDouble(wind, 'speed');
     _windDegree = unpackDouble(wind, 'deg');
@@ -119,13 +119,16 @@ class WeatherResult {
     _snowLast3Hours = unpackDouble(snow, '3h');
 
     _placeName = unpackString(weatherData, 'name');
+    _date = unpackDate(weatherData, 'dt');
   }
 
   String toString() {
     return '''
     Place Name: $_placeName ($_country)
-    Lat: $_latitude, Lon: $_longitude
+    Date: $_date
+    Weather: $_weatherMain, $_weatherDescription
     Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax
+    Sunrise: $_sunrise, Sunset: $_sunset
     ''';
   }
 
@@ -153,6 +156,8 @@ class WeatherResult {
 
   double get latitude => _latitude;
 
+  DateTime get date => _date;
+
   DateTime get sunset => _sunset;
 
   DateTime get sunrise => _sunrise;
@@ -171,32 +176,32 @@ class WeatherResult {
 }
 
 /// Plugin for fetching weather data in JSON.
-class Weather {
+class WeatherStation {
   String _apiKey;
   http.Client client = new http.Client();
   static const String FORECAST = 'forecast';
   static const String WEATHER = 'weather';
 
-  Weather(this._apiKey);
+  WeatherStation(this._apiKey);
 
   /// Fetch current weather based on geographical coordinates
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
-  Future<WeatherResult> getCurrentWeather() async {
+  Future<Weather> getCurrentWeather() async {
     String url = await _generateUrl(tag: WEATHER);
     http.Response response = await client.get(url);
     Map<String, dynamic> currentWeather = json.decode(response.body);
-    return new WeatherResult(currentWeather);
+    return new Weather(currentWeather);
   }
 
   /// Fetch current weather based on geographical coordinates.
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/forecast5
-  Future<Map<String, dynamic>> getFiveDayForecast() async {
+  Future<List<Weather>> getFiveDayForecast() async {
     String url = await _generateUrl(tag: FORECAST);
     http.Response response = await client.get(url);
-    Map<String, dynamic> weatherForecast = json.decode(response.body);
-    return weatherForecast;
+    Map<String, dynamic> jsonForecasts = json.decode(response.body);
+    return forecasts(jsonForecasts);
   }
 
   /// Generate the URL for the API, containing the API key,
@@ -208,4 +213,11 @@ class Weather {
     return 'http://api.openweathermap.org/data/2.5/' +
         '$tag?lat=$lat&lon=$lon&appid=$_apiKey';
   }
+}
+
+List<Weather> forecasts(Map<String, dynamic> jsonForecasts) {
+  List<Map<String, dynamic>> forecastsJson = jsonForecasts['list'];
+  List<Weather> forecasts =
+      forecastsJson.map((Map<String, dynamic> M) => new Weather(M)).toList();
+  return forecasts;
 }
