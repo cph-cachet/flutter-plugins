@@ -201,7 +201,8 @@ class WeatherStation {
     String url = await _generateUrl(tag: FORECAST);
     http.Response response = await client.get(url);
     Map<String, dynamic> jsonForecasts = json.decode(response.body);
-    return forecasts(jsonForecasts);
+    List<Weather> weatherForecasts = forecasts(jsonForecasts);
+    return weatherForecasts;
   }
 
   /// Generate the URL for the API, containing the API key,

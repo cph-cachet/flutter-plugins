@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void queryForecast() async {
-    List<Weather> f = await f.getFiveDayForecast();
+    List<Weather> f = await ws.getFiveDayForecast();
     setState(() {
       _res = f.toString();
     });
