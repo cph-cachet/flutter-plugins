@@ -53,7 +53,7 @@ For api documentation on the current weather API, see the [documentation](https:
 ```dart
 Weather weather = await weatherStation.getCurrentWeather();
 ```
-
+For a complete list of all the properties of the [Weather](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html) class, check the [documentation](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html)
 #### Get current temperature
 The [Temperature](https://pub.dartlang.org/documentation/weather/latest/weather/Temperature-class.html) class holds a temperature and can output the temperature in Celsius, Fahrenheit, and Kelvin:
 ```dart
