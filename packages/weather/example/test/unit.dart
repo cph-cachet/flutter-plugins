@@ -9,7 +9,7 @@ void main() {
 
   });
 
-  test('Weather Forecast test', () {
+  test('Weather Forecast test', () async {
     Map<String, dynamic> forecastsJson = forecastJsonExample();
     List<Weather> wrs = forecasts(forecastsJson);
     print(wrs);

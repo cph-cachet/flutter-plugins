@@ -66,7 +66,7 @@ Temperature unpackTemperature(Map<String, dynamic> M, String k) {
 /// This includes various measures such as location,
 /// temperature, wind, snow, rain and humidity.
 class Weather {
-  String _country, _placeName, _weatherMain, _weatherDescription;
+  String _country, _areaName, _weatherMain, _weatherDescription;
   Temperature _temperature, _tempMin, _tempMax;
   DateTime _date, _sunrise, _sunset;
   double _latitude,
@@ -118,13 +118,13 @@ class Weather {
     _snowLastHour = unpackDouble(snow, '1h');
     _snowLast3Hours = unpackDouble(snow, '3h');
 
-    _placeName = unpackString(weatherData, 'name');
+    _areaName = unpackString(weatherData, 'name');
     _date = unpackDate(weatherData, 'dt');
   }
 
   String toString() {
     return '''
-    Place Name: $_placeName ($_country)
+    Place Name: $_areaName ($_country)
     Date: $_date
     Weather: $_weatherMain, $_weatherDescription
     Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax
@@ -132,46 +132,67 @@ class Weather {
     ''';
   }
 
+  /// A long description of the weather
   String get weatherDescription => _weatherDescription;
 
+  /// A brief description of the weather
   String get weatherMain => _weatherMain;
 
+  /// The level of cloudiness in Okta (0-9 scale)
   double get cloudiness => _cloudiness;
 
+  /// Wind direction in degrees
   double get windDegree => _windDegree;
 
+  /// Wind speed in m/s
   double get windSpeed => _windSpeed;
 
+  /// Max [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
   Temperature get tempMax => _tempMax;
 
+  /// Min [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
   Temperature get tempMin => _tempMin;
 
+  /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
   Temperature get temperature => _temperature;
 
+  /// Pressure in Pascal
   double get pressure => _pressure;
 
+  /// Humidity in percent
   double get humidity => _humidity;
 
+  /// Longitude of the weather observation
   double get longitude => _longitude;
 
+  /// Latitude of the weather observation
   double get latitude => _latitude;
 
+  /// Date of the weather observation
   DateTime get date => _date;
 
+  /// Timestamp of sunset
   DateTime get sunset => _sunset;
 
+  /// Timestamp of sunrise
   DateTime get sunrise => _sunrise;
 
-  String get placeName => _placeName;
+  /// Name of the area, ex Mountain View, or Copenhagen Municipality
+  String get areaName => _areaName;
 
+  /// Country code, ex US or DK
   String get country => _country;
 
+  /// Rain fall last hour measured in volume
   double get rainLastHour => _rainLastHour;
 
+  /// Rain fall last 3 hours measured in volume
   double get rainLast3Hours => _rainLast3Hours;
 
+  /// Rain fall last 3 hours measured in volume
   double get snowLastHour => _snowLastHour;
 
+  /// Rain fall last 3 hours measured in volume
   double get snowLast3Hours => _snowLast3Hours;
 }
 

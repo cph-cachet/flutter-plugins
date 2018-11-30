@@ -45,19 +45,28 @@ https://stackoverflow.com/questions/44379348/the-use-of-swift-3-objc-inference-i
 First and foremost you need an API key from OpenWeatherMap, which can be acquired for free [here](https://openweathermap.org/price).
 
 ```dart
-String key = 'YOUR_API_KEY';
-Weather weather = new Weather(key);
+WeatherStation weatherStation = WeatherStation("YOUR_API_KEY");
 ```
 ### Query current weather
 For api documentation on the current weather API, see the [documentation](https://openweathermap.org/current).
 
 ```dart
-Map<String, dynamic> weatherJSON = await weather.getCurrentWeather();
+Weather weather = await weatherStation.getCurrentWeather();
+```
+
+#### Get current temperature
+The [Temperature](https://pub.dartlang.org/documentation/weather/latest/weather/Temperature-class.html) class holds a temperature and can output the temperature in Celsius, Fahrenheit, and Kelvin:
+```dart
+double celsius = weather.temperature.celsius;
+double fahrenheit = weather.temperature.celsius;
+double kelvin = weather.temperature.kelvin;
 ```
 
 ### Query 5 day forecast
 For api documentation on the forecast API, see the [documentation](https://openweathermap.org/forecast5).
 
 ```dart
-Map<String, dynamic> forecastJSON = await weather.getFiveDayForecast();
+List<Weather> forecasts = await weatherStation.getFiveDayForecast();
 ```
+
+
