@@ -1,14 +1,14 @@
 # weather
+This package uses the [OpenWeatherMAP API](https://openweathermap.org/) to get the current weather status as well as weather forecasts.
 
 [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather)
 
-## Install
+## Install (Flutter)
 Add ```weather``` as a dependency in  `pubspec.yaml`.
-For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
-
+For help on adding as a dependency, view the [pubspec documenation](https://flutter.io/using-packages/).
 
 ## Permissions
-The plugin uses your location to fetch weather data, therefore location tracking must be enabled.
+The package uses your location to fetch weather data, therefore location tracking must be enabled.
 
 ### Android
 Add the following entry to your `manifest.xml` file, in the Android project of your application:
@@ -17,7 +17,7 @@ Add the following entry to your `manifest.xml` file, in the Android project of y
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 
-In addition, it is recommended to set your minimum SDK version to 21.
+In addition, it is recommended to set your __minimum SDK version to 21__.
 
 ### iOS
 1. Open the XCode project of your app, named `Runner.xcodeproj`
@@ -33,7 +33,7 @@ In addition, it is recommended to set your minimum SDK version to 21.
 ```
 
 #### Known issues
-There is an issue with the `location` plugin which this plugin depends on, where an error with the following message 
+There is an issue with the `location` plugin which this package depends on, where an error with the following message 
 
 `The use of Swift 3 @objc inference in Swift 4 mode is deprecated` 
 
@@ -45,15 +45,16 @@ https://stackoverflow.com/questions/44379348/the-use-of-swift-3-objc-inference-i
 First and foremost you need an API key from OpenWeatherMap, which can be acquired for free [here](https://openweathermap.org/price).
 
 ```dart
-WeatherStation weatherStation = WeatherStation("YOUR_API_KEY");
+WeatherStation weatherStation = new WeatherStation("YOUR_API_KEY");
 ```
 ### Query current weather
-For api documentation on the current weather API, see the [documentation](https://openweathermap.org/current).
+For api documentation on the current weather API, see the [OpenWeatherMap weather API docs](https://openweathermap.org/current).
 
 ```dart
 Weather weather = await weatherStation.getCurrentWeather();
 ```
 For a complete list of all the properties of the [Weather](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html) class, check the [documentation](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html)
+
 #### Get current temperature
 The [Temperature](https://pub.dartlang.org/documentation/weather/latest/weather/Temperature-class.html) class holds a temperature and can output the temperature in Celsius, Fahrenheit, and Kelvin:
 ```dart
@@ -63,7 +64,7 @@ double kelvin = weather.temperature.kelvin;
 ```
 
 ### Query 5 day forecast
-For api documentation on the forecast API, see the [documentation](https://openweathermap.org/forecast5).
+For API documentation on the forecast API, see the [OpenWeatherMap forecast API docs](https://openweathermap.org/forecast5).
 
 ```dart
 List<Weather> forecasts = await weatherStation.getFiveDayForecast();

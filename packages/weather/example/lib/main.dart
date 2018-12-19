@@ -28,14 +28,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   void queryForecast() async {
-    List<Weather> f = await ws.getFiveDayForecast();
+    List<Weather> f = await ws.fiveDayForecast();
     setState(() {
       _res = f.toString();
     });
   }
 
   void queryWeather() async {
-    Weather w = await ws.getCurrentWeather();
+    Weather w = await ws.currentWeather();
     setState(() {
       _res = w.toString();
     });
