@@ -1,7 +1,6 @@
 package com.example.movisensflutter;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,8 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import java.util.HashMap;
-
-import de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart;
 import de.kn.uni.smartact.movisenslibrary.screens.viewmodel.Handler_BluetoothStart;
 
 public class PermissionActivity extends AppCompatActivity {
@@ -77,8 +74,6 @@ public class PermissionActivity extends AppCompatActivity {
     }
 
     private void startMainActivity() {
-        Intent intent = new Intent(this, Activity_BluetoothStart.class);
-        intent.putExtra("user_data", userDataMap);
-        startActivity(intent);
+        Handler_BluetoothStart handler = new Handler_BluetoothStart(this, userDataMap);
     }
 }

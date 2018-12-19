@@ -52,7 +52,7 @@ import static de.kn.uni.smartact.movisenslibrary.database.MovisensData.TrackingD
 
 public class Handler_BluetoothStart {
 
-    private final Activity mContext;
+    private final Context mContext;
     private HashMap<String, String> userDataMap;
 
     public BindableString autoStartNewMeasurement;
@@ -77,7 +77,7 @@ public class Handler_BluetoothStart {
 
 
 
-    public Handler_BluetoothStart(Activity context, HashMap<String, String> userDataMap) {
+    public Handler_BluetoothStart(Context context, HashMap<String, String> userDataMap) {
         this.userDataMap = userDataMap;
         Log.d("HandlerBluetoothStart", this.userDataMap.toString());
         mContext = context;
