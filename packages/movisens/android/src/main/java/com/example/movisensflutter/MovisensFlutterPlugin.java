@@ -91,11 +91,15 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
             String batteryLevel = intent.getStringExtra(MovisensService.MOVISENS_BATTERY_LEVEL);
             String tapMarker = intent.getStringExtra(MovisensService.MOVISENS_TAP_MARKER);
             String stepCount = intent.getStringExtra(MovisensService.MOVISENS_STEP_COUNT);
+            String met = intent.getStringExtra(MovisensService.MOVISENS_MET);
+            String metLevel = intent.getStringExtra(MovisensService.MOVISENS_MET_LEVEL);
             HashMap<String, String> data = new HashMap<>();
 
-            if (batteryLevel != null) data.put("batteryLevel", batteryLevel);
-            if (tapMarker != null) data.put("tapMarker", tapMarker);
-            if (stepCount != null) data.put("stepCount", stepCount);
+            if (batteryLevel != null) data.put(MovisensService.MOVISENS_BATTERY_LEVEL, batteryLevel);
+            if (tapMarker != null) data.put(MovisensService.MOVISENS_TAP_MARKER, tapMarker);
+            if (stepCount != null) data.put(MovisensService.MOVISENS_STEP_COUNT, stepCount);
+            if (stepCount != null) data.put(MovisensService.MOVISENS_MET, met);
+            if (stepCount != null) data.put(MovisensService.MOVISENS_MET_LEVEL, metLevel);
 
             eventSink.success(data);
         }

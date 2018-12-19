@@ -4,17 +4,20 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 
 class MovisensDataPoint {
-  static const String TAP_MARKER = 'tapMarker',
-      BATTERY_LEVEL = 'batteryLevel',
-      STEP_COUNT = 'step_count';
+  static const String TAP_MARKER = 'tap_marker',
+      BATTERY = 'battery_level',
+      STEP_COUNT = 'step_count',
+      MET = 'met',
+      MET_LEVEL = 'met_level';
 
-  String _batteryLevel, _tapMarker, _stepCount;
+  String _batteryLevel, _tapMarker, _stepCount, _met, _metLevel;
 
   MovisensDataPoint(Map<String, dynamic> data) {
-    _batteryLevel =
-        data.containsKey(BATTERY_LEVEL) ? data[BATTERY_LEVEL] : 'none';
+    _batteryLevel = data.containsKey(BATTERY) ? data[BATTERY] : 'none';
     _tapMarker = data.containsKey(TAP_MARKER) ? data[TAP_MARKER] : 'none';
     _stepCount = data.containsKey(STEP_COUNT) ? data[STEP_COUNT] : 'none';
+    _met = data.containsKey(MET) ? data[MET] : 'none';
+    _metLevel = data.containsKey(MET_LEVEL) ? data[MET_LEVEL] : 'none';
   }
 
   String get batteryLevel => _batteryLevel;
@@ -23,9 +26,19 @@ class MovisensDataPoint {
 
   String get stepCount => _stepCount;
 
+  String get met => _met;
+
+  String get metLevel => _metLevel;
+
   @override
   String toString() {
-    return 'Movisens Data Point {Battery Level: $batteryLevel, Tap Marker: $tapMarker, Step Count: $stepCount}';
+    return 'Movisens Data Point {'
+        'Battery Level: $batteryLevel, '
+        'Tap Marker: $tapMarker, '
+        'Step Count: $stepCount, '
+        'Met: $met, '
+        'Met level: $metLevel'
+        '}';
   }
 }
 
