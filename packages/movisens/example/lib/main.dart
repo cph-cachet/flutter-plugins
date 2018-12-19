@@ -23,7 +23,7 @@ class _MyAppState extends State<MyApp> {
   /// Set up movisens data stream
   Future<void> initPlatformState() async {
    MovisensFlutter movisens = new MovisensFlutter();
-   movisens.makeUserData();
+   movisens.startSensing();
    movisens.movisensStream.listen(onData);
 
   }

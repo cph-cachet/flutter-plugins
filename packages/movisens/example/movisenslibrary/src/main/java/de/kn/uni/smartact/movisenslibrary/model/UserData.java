@@ -26,10 +26,6 @@ import static de.kn.uni.smartact.movisenslibrary.database.MovisensData.TrackingD
  */
 
 public class UserData {
-    private static final String DEFAULT_WEIGHT = "80";
-    private static final String DEFAULT_HEIGHT = "180";
-    private static final String DEFAULT_GENDER = "male";
-    private static final String DEFAULT_AGE = "23";
 
     public BindableString weight;
     public BindableString height;
@@ -48,6 +44,17 @@ public class UserData {
         this.sensor_location = new BindableString(userData.get("sensor_location"));
         this.sensor_address = new BindableString(userData.get("sensor_address"));
         this.sensor_name = new BindableString(userData.get("sensor_name"));
+    }
+
+    public UserData() {
+        this.weight = new BindableString("100");
+        this.height = new BindableString("100");
+        this.gender = new BindableString("male");
+        this.age = new BindableString("100");
+
+        this.sensor_location = new BindableString("CHEST");
+        this.sensor_address = new BindableString("88:6B:0F:82:1D:33");
+        this.sensor_name = new BindableString("Sensor 02655");
     }
 
     public String toString() {

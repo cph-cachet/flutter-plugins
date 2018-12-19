@@ -3,6 +3,26 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 
+class MetLevel {
+  DateTime _time;
+  double _sedentary, _light, _moderate;
+
+  MetLevel(String level) {
+    List<String> levels = level.split(',');
+    String timestamp = levels[0].split('=')[1].trim();
+    _sedentary = double.parse(levels[1].split('=')[1].trim());
+    _light = double.parse(levels[2].split('=')[1].trim());
+    _moderate = double.parse(levels[3].split('=')[1].trim());
+    _time = DateTime.parse(timestamp);
+  }
+
+  DateTime get time => time;
+
+  double get sedentary => _sedentary;
+  double get light => _light;
+  double get moderate => _moderate;
+}
+
 class MovisensDataPoint {
   static const String TAP_MARKER = 'tap_marker',
       BATTERY_LEVEL = 'battery_level',
@@ -16,9 +36,9 @@ class MovisensDataPoint {
       _tapMarker,
       _stepCount,
       _met,
-      _metLevel,
       _bodyPosition,
       _movementAcceleration;
+  MetLevel _metLevel;
 
   MovisensDataPoint(Map<String, dynamic> data) {
     _batteryLevel =
@@ -26,7 +46,8 @@ class MovisensDataPoint {
     _tapMarker = data.containsKey(TAP_MARKER) ? data[TAP_MARKER] : 'none';
     _stepCount = data.containsKey(STEP_COUNT) ? data[STEP_COUNT] : 'none';
     _met = data.containsKey(MET) ? data[MET] : 'none';
-    _metLevel = data.containsKey(MET_LEVEL) ? data[MET_LEVEL] : 'none';
+    _metLevel =
+        new MetLevel(data.containsKey(MET_LEVEL) ? data[MET_LEVEL] : 'none');
     _bodyPosition =
         data.containsKey(BODY_POSITION) ? data[BODY_POSITION] : 'none';
     _movementAcceleration = data.containsKey(MOVEMENT_ACCELERATION)
@@ -42,7 +63,7 @@ class MovisensDataPoint {
 
   String get met => _met;
 
-  String get metLevel => _metLevel;
+  MetLevel get metLevel => _metLevel;
 
   String get bodyPosition => _bodyPosition;
 
@@ -63,7 +84,6 @@ class MovisensDataPoint {
 }
 
 MovisensDataPoint parseDataPoint(dynamic dataPoint) {
-//  Map<dynamic, dynamic> jsonMap = json.decode(dataPoint);
   Map<String, dynamic> data = new Map<String, dynamic>.from(dataPoint);
   return MovisensDataPoint(data);
 }
@@ -78,7 +98,7 @@ class MovisensFlutter {
     return _movisenStream;
   }
 
-  void makeUserData() async {
+  void startSensing() {
     print('Make user data');
     Map<String, dynamic> args = {
       'user_data': {
@@ -92,7 +112,6 @@ class MovisensFlutter {
       }
     };
 
-    var res = await _methodChannel.invokeMethod('userData', args);
-    print("Response from android -> $res");
+    _methodChannel.invokeMethod('userData', args);
   }
 }
