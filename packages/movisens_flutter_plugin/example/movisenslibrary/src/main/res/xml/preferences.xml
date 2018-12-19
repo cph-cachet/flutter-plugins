@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="@string/sensor" >
+        <PreferenceScreen
+            android:key="select_sensor"
+            android:summary="@string/select_sensor"
+            android:title="@string/select_sensor" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetClass="de.kn.uni.smartact.movisenslibrary.activities.DeviceScanActivity"
+                android:targetPackage="de.kn.uni.smartact.movisenstest" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+
+</PreferenceScreen>
