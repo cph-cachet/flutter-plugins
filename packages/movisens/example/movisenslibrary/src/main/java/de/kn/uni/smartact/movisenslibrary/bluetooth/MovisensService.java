@@ -1,4 +1,5 @@
 package de.kn.uni.smartact.movisenslibrary.bluetooth;
+
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -24,11 +25,13 @@ import com.movisens.movisensgattlib.MovisensCharacteristics;
 import com.movisens.movisensgattlib.MovisensServices;
 import com.movisens.movisensgattlib.attributes.AgeFloat;
 import com.movisens.movisensgattlib.attributes.BatteryLevelBuffered;
+import com.movisens.movisensgattlib.attributes.BodyPosition;
 import com.movisens.movisensgattlib.attributes.DataAvailable;
 import com.movisens.movisensgattlib.attributes.EnumSensorLocation;
 import com.movisens.movisensgattlib.attributes.MeasurementEnabled;
 import com.movisens.movisensgattlib.attributes.MetBuffered;
 import com.movisens.movisensgattlib.attributes.MetLevelBuffered;
+import com.movisens.movisensgattlib.attributes.MovementAcceleration;
 import com.movisens.movisensgattlib.attributes.SensorLocation;
 import com.movisens.movisensgattlib.attributes.StepsBuffered;
 import com.movisens.movisensgattlib.attributes.TapMarker;
@@ -88,6 +91,8 @@ public class MovisensService extends Service {
     public final static String MOVISENS_STEP_COUNT = "step_count";
     public final static String MOVISENS_MET_LEVEL = "met_level";
     public final static String MOVISENS_MET = "met";
+    public final static String MOVISENS_BODY_POSITION = "met";
+    public final static String MOVISENS_MOVEMENT_ACCELERATION = "met";
 
 
     private final static int NOTIFICATION_ID = 1377;
@@ -448,6 +453,14 @@ public class MovisensService extends Service {
             BleUtils.enableCharacteristicIndication(
                     MovisensCharacteristics.MET_LEVEL_BUFFERED.getUuid(), "MET_LEVEL_BUFFERED",
                     accService.getCharacteristics(), connectionHandler);
+
+            BleUtils.enableCharacteristicNotification(
+                    MovisensCharacteristics.BODY_POSITION.getUuid(), "BODY_POSITION",
+                    accService.getCharacteristics(), connectionHandler);
+
+            BleUtils.enableCharacteristicNotification(
+                    MovisensCharacteristics.MOVEMENT_ACCELERATION.getUuid(), "MOVEMENT_ACCELERATION",
+                    accService.getCharacteristics(), connectionHandler);
         }
 
 
@@ -522,7 +535,6 @@ public class MovisensService extends Service {
         GattByteBuffer timeBB = GattByteBuffer.allocate(4);
         return timeBB.putUint32(time / 1000).array();
     }
-
 
 
     // The StateMachine class
@@ -627,20 +639,32 @@ public class MovisensService extends Service {
 
                     if (MovisensCharacteristics.MET_LEVEL_BUFFERED.equals(uuid)) {
                         String levelBuffered = new MetLevelBuffered(data).toString();
-//                        sm.context.splitAndSaveMetLevel(levelBuffered);
                         Log.d(TAG, "MET LEVEL: " + levelBuffered);
                         sm.context.broadcastData(sm.context.MOVISENS_MET_LEVEL, levelBuffered);
                     }
 
                     if (MovisensCharacteristics.MET_BUFFERED.equals(uuid)) {
                         String met = new MetBuffered(data).toString();
-//                        sm.context.splitAndSaveMet(new_data);
                         Log.d(TAG, "MET: " + met);
                         sm.context.broadcastData(sm.context.MOVISENS_MET, met);
                     }
 
                     if (MovisensCharacteristics.DATA_AVAILABLE.equals(uuid)) {
                         sm.context.log(TAG, "Data available");
+                    }
+
+                    if (MovisensCharacteristics.BODY_POSITION.equals(uuid)) {
+                        BodyPosition bodyPosition = new BodyPosition(data);
+                        String position = bodyPosition.getBodyPosition().toString();
+                        Log.d("body_postion", position);
+                        sm.context.broadcastData(sm.context.MOVISENS_BODY_POSITION, position);
+                    }
+
+                    if (MovisensCharacteristics.MOVEMENT_ACCELERATION.equals(uuid)) {
+                        MovementAcceleration movementAcceleration = new MovementAcceleration(data);
+                        String acceleration = movementAcceleration.getMovementAcceleration().toString();
+                        Log.d("movement_acceleration", acceleration);
+                        sm.context.broadcastData(sm.context.MOVISENS_MOVEMENT_ACCELERATION, acceleration);
                     }
                 }
             }

@@ -73,9 +73,6 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
             /// Start MoviSens service
             PermissionManager manager = new PermissionManager(registrar.activity(), userDataMap);
             manager.startMovisensService();
-//            Intent intent = new Intent(context, PermissionActivity.class);
-//            intent.putExtra(USER_DATA_KEY, userDataMap);
-//            context.startActivity(intent);
         }
         else {
             result.notImplemented();
@@ -93,13 +90,18 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
             String stepCount = intent.getStringExtra(MovisensService.MOVISENS_STEP_COUNT);
             String met = intent.getStringExtra(MovisensService.MOVISENS_MET);
             String metLevel = intent.getStringExtra(MovisensService.MOVISENS_MET_LEVEL);
-            HashMap<String, String> data = new HashMap<>();
+            String bodyPosition = intent.getStringExtra(MovisensService.MOVISENS_BODY_POSITION);
+            String movementAcceleration = intent.getStringExtra(MovisensService.MOVISENS_MOVEMENT_ACCELERATION);
 
+
+            HashMap<String, String> data = new HashMap<>();
             if (batteryLevel != null) data.put(MovisensService.MOVISENS_BATTERY_LEVEL, batteryLevel);
             if (tapMarker != null) data.put(MovisensService.MOVISENS_TAP_MARKER, tapMarker);
             if (stepCount != null) data.put(MovisensService.MOVISENS_STEP_COUNT, stepCount);
-            if (stepCount != null) data.put(MovisensService.MOVISENS_MET, met);
-            if (stepCount != null) data.put(MovisensService.MOVISENS_MET_LEVEL, metLevel);
+            if (met != null) data.put(MovisensService.MOVISENS_MET, met);
+            if (metLevel != null) data.put(MovisensService.MOVISENS_MET_LEVEL, metLevel);
+            if (bodyPosition != null) data.put(MovisensService.MOVISENS_BODY_POSITION, metLevel);
+            if (movementAcceleration != null) data.put(MovisensService.MOVISENS_MOVEMENT_ACCELERATION, metLevel);
 
             eventSink.success(data);
         }

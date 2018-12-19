@@ -50,31 +50,6 @@ public class UserData {
         this.sensor_name = new BindableString(userData.get("sensor_name"));
     }
 
-    public UserData() {
-        this.weight = new BindableString("100");
-        this.height = new BindableString("100");
-        this.gender = new BindableString("male");
-        this.age = new BindableString("100");
-
-        this.sensor_location = new BindableString("CHEST");
-        this.sensor_address = new BindableString("88:6B:0F:82:1D:33");
-        this.sensor_name = new BindableString("Sensor 02655");
-    }
-
-
-//    public UserData(Context context) {
-//        this.weight = new BindableString(DEFAULT_WEIGHT);
-//        this.height = new BindableString(DEFAULT_HEIGHT);
-//        this.gender = new BindableString(DEFAULT_GENDER);
-//        this.age = new BindableString(DEFAULT_AGE);
-//
-//        this.sensor_location = new BindableString();
-//        this.sensor_address = new BindableString();
-//        this.sensor_name = new BindableString();
-//
-//        getFromDB(context);
-//    }
-
     public String toString() {
         return "UserData : {" +
                 "weight: " + weight.get() + ", " +
@@ -130,37 +105,4 @@ public class UserData {
         return location;
     }
 
-//    public void saveToDB(Context context) {
-//        ContentValues values = new ContentValues();
-//        values.put(COL_HEIGHT, height.get());
-//        values.put(COL_WEIGHT, weight.get());
-//        values.put(COL_GENDER, gender.get());
-//        values.put(COL_AGE, age.get());
-//        values.put(COL_SENSORLOCATION, sensor_location.get());
-//        values.put(COL_SENSORADDRESS, sensor_address.get());
-//        values.put(COL_SENSORNAME, sensor_name.get());
-//        values.put(COL_UPDATED, TimeFormatUtil.getDateString());
-//        context.getContentResolver().insert(MovisensData.SensorData.SENSORDATA_URI, values);
-//    }
-//
-//    public void getFromDB(Context context) {
-//        ContentResolver resolver = context.getContentResolver();
-//        try (Cursor cursor = resolver.query(SENSORDATA_URI,         // the URI to query
-//                SENSORDATA_PROJECTION_ALL,                          // the projection to use
-//                null,                                      // the where clause without the WHERE keyword
-//                null,                                   // any wildcard substitutions
-//                null)) {                                   // the sort order without the SORT BY keyword
-//            if (cursor != null && cursor.getCount() > 0) {
-//                cursor.moveToFirst();
-//
-//                height.set(String.valueOf(cursor.getInt(cursor.getColumnIndex(COL_HEIGHT))));
-//                weight.set(String.valueOf(cursor.getInt(cursor.getColumnIndex(COL_WEIGHT))));
-//                gender.set(cursor.getString(cursor.getColumnIndex(COL_GENDER)));
-//                age.set(String.valueOf(cursor.getInt(cursor.getColumnIndex(COL_AGE))));
-//                sensor_location.set(cursor.getString(cursor.getColumnIndex(COL_SENSORLOCATION)));
-//                sensor_address.set(cursor.getString(cursor.getColumnIndex(COL_SENSORADDRESS)));
-//                sensor_name.set(cursor.getString(cursor.getColumnIndex(COL_SENSORNAME)));
-//            }
-//        }
-//    }
 }

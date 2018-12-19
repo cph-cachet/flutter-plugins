@@ -5,19 +5,33 @@ import 'dart:convert';
 
 class MovisensDataPoint {
   static const String TAP_MARKER = 'tap_marker',
-      BATTERY = 'battery_level',
+      BATTERY_LEVEL = 'battery_level',
       STEP_COUNT = 'step_count',
       MET = 'met',
-      MET_LEVEL = 'met_level';
+      MET_LEVEL = 'met_level',
+      BODY_POSITION = 'body_position',
+      MOVEMENT_ACCELERATION = 'movement_acceleration';
 
-  String _batteryLevel, _tapMarker, _stepCount, _met, _metLevel;
+  String _batteryLevel,
+      _tapMarker,
+      _stepCount,
+      _met,
+      _metLevel,
+      _bodyPosition,
+      _movementAcceleration;
 
   MovisensDataPoint(Map<String, dynamic> data) {
-    _batteryLevel = data.containsKey(BATTERY) ? data[BATTERY] : 'none';
+    _batteryLevel =
+        data.containsKey(BATTERY_LEVEL) ? data[BATTERY_LEVEL] : 'none';
     _tapMarker = data.containsKey(TAP_MARKER) ? data[TAP_MARKER] : 'none';
     _stepCount = data.containsKey(STEP_COUNT) ? data[STEP_COUNT] : 'none';
     _met = data.containsKey(MET) ? data[MET] : 'none';
     _metLevel = data.containsKey(MET_LEVEL) ? data[MET_LEVEL] : 'none';
+    _bodyPosition =
+        data.containsKey(BODY_POSITION) ? data[BODY_POSITION] : 'none';
+    _movementAcceleration = data.containsKey(MOVEMENT_ACCELERATION)
+        ? data[MOVEMENT_ACCELERATION]
+        : 'none';
   }
 
   String get batteryLevel => _batteryLevel;
@@ -30,6 +44,10 @@ class MovisensDataPoint {
 
   String get metLevel => _metLevel;
 
+  String get bodyPosition => _bodyPosition;
+
+  String get movementAcceleration => _movementAcceleration;
+
   @override
   String toString() {
     return 'Movisens Data Point {'
@@ -37,7 +55,9 @@ class MovisensDataPoint {
         'Tap Marker: $tapMarker, '
         'Step Count: $stepCount, '
         'Met: $met, '
-        'Met level: $metLevel'
+        'Met level: $metLevel, '
+        'Body position: $bodyPosition, '
+        'Movement acceleration: $movementAcceleration'
         '}';
   }
 }
