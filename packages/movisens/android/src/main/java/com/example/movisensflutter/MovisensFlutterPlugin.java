@@ -22,7 +22,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 public class MovisensFlutterPlugin implements EventChannel.StreamHandler, MethodChannel.MethodCallHandler {
 
     private EventChannel.EventSink eventSink;
-    private Context context;
+    private Registrar registrar;
     static String USER_DATA_KEY = "user_data";
     static String USER_DATA_METHOD = "userData";
 
@@ -31,7 +31,7 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
      */
     public static void registerWith(Registrar registrar) {
         // Set up plugin instance
-        MovisensFlutterPlugin plugin = new MovisensFlutterPlugin(registrar.activeContext());
+        MovisensFlutterPlugin plugin = new MovisensFlutterPlugin(registrar);
 
         // Set up method channel
         final MethodChannel methodChannel = new MethodChannel(registrar.messenger(), "movisens.method_channel");
@@ -42,14 +42,14 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
         eventChannel.setStreamHandler(plugin);
     }
 
-    public MovisensFlutterPlugin(Context context) {
-        this.context = context;
+    public MovisensFlutterPlugin(Registrar registrar) {
+        this.registrar = registrar;
         Log.v("Flutter Plugin", "Constructor");
         /// Set up the intent filter
         MovisensEventReceiver receiver = new MovisensEventReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MovisensService.MOVISENS_INTENT_NAME);
-        context.registerReceiver(receiver, intentFilter);
+        registrar.context().registerReceiver(receiver, intentFilter);
     }
 
     @Override
@@ -71,9 +71,11 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
             Log.d("User Data sent from Flutter", userData.toString());
 
             /// Start MoviSens service
-            Intent intent = new Intent(context, PermissionActivity.class);
-            intent.putExtra(USER_DATA_KEY, userDataMap);
-            context.startActivity(intent);
+            PermissionManager manager = new PermissionManager(registrar.activity(), userDataMap);
+            manager.startMovisensService();
+//            Intent intent = new Intent(context, PermissionActivity.class);
+//            intent.putExtra(USER_DATA_KEY, userDataMap);
+//            context.startActivity(intent);
         }
         else {
             result.notImplemented();

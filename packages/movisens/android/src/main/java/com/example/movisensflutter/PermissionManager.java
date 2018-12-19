@@ -1,6 +1,8 @@
 package com.example.movisensflutter;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,9 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import java.util.HashMap;
+
 import de.kn.uni.smartact.movisenslibrary.screens.viewmodel.Handler_BluetoothStart;
 
-public class PermissionActivity extends AppCompatActivity {
+public class PermissionManager {
 
     private HashMap<String, String> userDataMap;
 
@@ -24,26 +27,22 @@ public class PermissionActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
+    private Activity activity;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        userDataMap = (HashMap<String, String>) this.getIntent().getSerializableExtra("user_data");
+
+    public PermissionManager(Activity activity, HashMap<String, String> userDataMap) {
         Log.d("PermissionActivity", userDataMap.toString());
-
-        if (!arePermissionsGranted()) {
-            requestPermissions(permissions, 0);
-            checkDelayed();
-        } else {
-            Log.d("appFlow", "Inside Activity_permission and starting Main activity");
-            startService();
-        }
-
+        this.activity = activity;
+        this.userDataMap = userDataMap;
     }
 
-    @Override
-    public void onBackPressed() {
-
+    public void startMovisensService() {
+        if (!arePermissionsGranted()) {
+            activity.requestPermissions(permissions, 0);
+            checkDelayed();
+        } else {
+            startService();
+        }
     }
 
     private Boolean arePermissionsGranted() {
@@ -56,7 +55,7 @@ public class PermissionActivity extends AppCompatActivity {
     }
 
     private Boolean isPermissionGranted(String permission) {
-        int res = checkCallingOrSelfPermission(permission);
+        int res = activity.checkCallingOrSelfPermission(permission);
         return (res == PackageManager.PERMISSION_GRANTED);
     }
 
@@ -74,6 +73,6 @@ public class PermissionActivity extends AppCompatActivity {
     }
 
     private void startService() {
-        Handler_BluetoothStart handler = new Handler_BluetoothStart(this, userDataMap);
+        Handler_BluetoothStart handler = new Handler_BluetoothStart(activity, userDataMap);
     }
 }
