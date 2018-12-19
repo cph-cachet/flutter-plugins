@@ -45,6 +45,7 @@ import org.joda.time.DateTime;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -100,6 +101,7 @@ public class MovisensService extends Service {
     private BLEConnectionHandler connectionHandler;
     private String deviceAdress;
     private ScheduledThreadPoolExecutor mScheduler;
+    private UserData userData;
 
     public void broadcastData(String key, String value) {
 //        Log.d("MovisensService", "broadcastData()");
@@ -182,6 +184,8 @@ public class MovisensService extends Service {
         super.onStartCommand(intent, flags, startId);
 
         allow_delete_data = intent.getBooleanExtra(ALLOWDELETEDATE, false);
+        HashMap<String, String> userDataMap = (HashMap<String, String>) intent.getSerializableExtra("user_data");
+        userData = new UserData(userDataMap);
 
         start();
         log(TAG, "Service stared");
@@ -210,7 +214,8 @@ public class MovisensService extends Service {
 
         connectionHandler = new BLEConnectionHandler(this);
         if (connectionHandler.initialize()) {
-            deviceAdress = (new UserData()).sensor_address.get();
+//            deviceAdress = (new UserData()).sensor_address.get();
+            deviceAdress = userData.sensor_address.get();
             String sensorname = connectionHandler.setDevice(deviceAdress);
         } else {
             setConnectionState(false);
@@ -386,9 +391,6 @@ public class MovisensService extends Service {
     private void startMeasurement() {
         log(TAG, "Starting Measurmente... ");
         final List<BluetoothGattService> gattServices = connectionHandler.getSupportedGattServices();
-
-        UserData userData = new UserData();
-
         double weight = Double.parseDouble(userData.weight.get());
         double height = Double.parseDouble(userData.height.get()) / 100;
 

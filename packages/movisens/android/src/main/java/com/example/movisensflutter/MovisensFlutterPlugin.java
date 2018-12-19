@@ -22,6 +22,9 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 public class MovisensFlutterPlugin implements EventChannel.StreamHandler, MethodChannel.MethodCallHandler {
 
     private EventChannel.EventSink eventSink;
+    private Context context;
+    static String USER_DATA_KEY = "user_data";
+    static String USER_DATA_METHOD = "userData";
 
     /**
      * Plugin registration.
@@ -40,16 +43,13 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
     }
 
     public MovisensFlutterPlugin(Context context) {
+        this.context = context;
         Log.v("Flutter Plugin", "Constructor");
         /// Set up the intent filter
         MovisensEventReceiver receiver = new MovisensEventReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MovisensService.MOVISENS_INTENT_NAME);
         context.registerReceiver(receiver, intentFilter);
-
-        /// Start MoviSens service
-        Intent intent = new Intent(context, PermissionActivity.class);
-        context.startActivity(intent);
     }
 
     @Override
@@ -65,14 +65,15 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
 
     @Override
     public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
+        if (methodCall.method.equals(USER_DATA_METHOD)) {
+            HashMap<String, String> userDataMap = (HashMap<String, String>) methodCall.argument(USER_DATA_KEY);
+            UserData userData = new UserData(userDataMap);
+            Log.d("User Data sent from Flutter", userData.toString());
 
-        Log.v("USERADATA", "Hello my dude");
-        if (methodCall.method.equals("userData")) {
-            HashMap<String, String> user = (HashMap<String, String>) methodCall.argument("user_data");
-            UserData userData = new UserData(user);
-            Log.d("USERADATA", userData.toString());
-            String s = userData.toString();
-            result.success(s);
+            /// Start MoviSens service
+            Intent intent = new Intent(context, PermissionActivity.class);
+            intent.putExtra(USER_DATA_KEY, userDataMap);
+            context.startActivity(intent);
         }
         else {
             result.notImplemented();

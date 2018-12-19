@@ -52,11 +52,14 @@ class MovisensFlutter {
         'weight': '100',
         'height': '180',
         'gender': 'male',
-        'age': '40'
+        'age': '40',
+        'sensor_location': 'CHEST',
+        'sensor_address': '88:6B:0F:82:1D:33',
+        'sensor_name': 'Sensor 02655'
       }
     };
 
-    dynamic res = await _methodChannel.invokeMethod('userData', args);
+    var res = await _methodChannel.invokeMethod('userData', args);
     print("Response from android -> $res");
   }
 }

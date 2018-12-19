@@ -13,6 +13,8 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.util.HashMap;
+
 import de.kn.uni.smartact.movisenslibrary.R;
 import de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService;
 import de.kn.uni.smartact.movisenslibrary.database.MovisensData;
@@ -51,6 +53,7 @@ import static de.kn.uni.smartact.movisenslibrary.database.MovisensData.TrackingD
 public class Handler_BluetoothStart {
 
     private final Activity mContext;
+    private HashMap<String, String> userDataMap;
 
     public BindableString autoStartNewMeasurement;
 
@@ -72,7 +75,11 @@ public class Handler_BluetoothStart {
     public BindableBoolean isServiceRunning;
     public BindableBoolean isServiceStartEnabled;
 
-    public Handler_BluetoothStart(Activity context) {
+
+
+    public Handler_BluetoothStart(Activity context, HashMap<String, String> userDataMap) {
+        this.userDataMap = userDataMap;
+        Log.d("HandlerBluetoothStart", this.userDataMap.toString());
         mContext = context;
 
         isUserInizialised = new BindableBoolean();
@@ -278,6 +285,7 @@ public class Handler_BluetoothStart {
 
         final Intent gattServiceIntent = new Intent(mContext, MovisensService.class);
         gattServiceIntent.putExtra(ALLOWDELETEDATE, true);
+        gattServiceIntent.putExtra("user_data", userDataMap);
         mContext.startService(gattServiceIntent);
     }
 

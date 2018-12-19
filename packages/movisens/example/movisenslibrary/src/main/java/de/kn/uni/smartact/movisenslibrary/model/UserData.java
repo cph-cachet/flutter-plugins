@@ -45,9 +45,9 @@ public class UserData {
         this.gender = new BindableString(userData.get("gender"));
         this.age = new BindableString(userData.get("age"));
 
-        this.sensor_location = new BindableString();
-        this.sensor_address = new BindableString();
-        this.sensor_name = new BindableString();
+        this.sensor_location = new BindableString(userData.get("sensor_location"));
+        this.sensor_address = new BindableString(userData.get("sensor_address"));
+        this.sensor_name = new BindableString(userData.get("sensor_name"));
     }
 
     public UserData() {
