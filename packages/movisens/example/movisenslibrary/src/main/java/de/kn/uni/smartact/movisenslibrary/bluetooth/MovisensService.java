@@ -87,6 +87,7 @@ public class MovisensService extends Service {
     public final static String MOVISENS_TAP_MARKER = "tap_marker";
     public final static String MOVISENS_STEP_COUNT = "step_count";
     public final static String MOVISENS_MET_LEVEL = "met_level";
+    public final static String MOVISENS_MET = "met";
 
 
     private final static int NOTIFICATION_ID = 1377;
@@ -625,13 +626,17 @@ public class MovisensService extends Service {
                     }
 
                     if (MovisensCharacteristics.MET_LEVEL_BUFFERED.equals(uuid)) {
-                        MetLevelBuffered new_data = new MetLevelBuffered(data);
-                        sm.context.splitAndSaveMetLevel(new_data);
+                        String levelBuffered = new MetLevelBuffered(data).toString();
+//                        sm.context.splitAndSaveMetLevel(levelBuffered);
+                        Log.d(TAG, "MET LEVEL: " + levelBuffered);
+                        sm.context.broadcastData(sm.context.MOVISENS_MET_LEVEL, levelBuffered);
                     }
 
                     if (MovisensCharacteristics.MET_BUFFERED.equals(uuid)) {
-                        MetBuffered new_data = new MetBuffered(data);
-                        sm.context.splitAndSaveMet(new_data);
+                        String met = new MetBuffered(data).toString();
+//                        sm.context.splitAndSaveMet(new_data);
+                        Log.d(TAG, "MET: " + met);
+                        sm.context.broadcastData(sm.context.MOVISENS_MET, met);
                     }
 
                     if (MovisensCharacteristics.DATA_AVAILABLE.equals(uuid)) {

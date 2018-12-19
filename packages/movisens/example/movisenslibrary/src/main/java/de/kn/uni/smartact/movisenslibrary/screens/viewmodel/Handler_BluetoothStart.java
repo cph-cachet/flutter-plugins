@@ -20,7 +20,6 @@ import de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService;
 import de.kn.uni.smartact.movisenslibrary.database.MovisensData;
 import de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothData;
 import de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothDeviceScan;
-import de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothUser;
 import de.kn.uni.smartact.movisenslibrary.utils.BindableBoolean;
 import de.kn.uni.smartact.movisenslibrary.utils.BindableString;
 
@@ -213,12 +212,12 @@ public class Handler_BluetoothStart {
     }
 
 
-    public void editUser() {
-        stopSampling();
-
-        Intent startUpIntent = new Intent(mContext, Activity_BluetoothUser.class);
-        mContext.startActivity(startUpIntent);
-    }
+//    public void editUser() {
+//        stopSampling();
+//
+//        Intent startUpIntent = new Intent(mContext, Activity_BluetoothUser.class);
+//        mContext.startActivity(startUpIntent);
+//    }
 
     public void selectDevice() {
         stopSampling();
