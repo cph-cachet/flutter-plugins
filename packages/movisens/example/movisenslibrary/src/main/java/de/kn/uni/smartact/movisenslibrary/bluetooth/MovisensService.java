@@ -210,7 +210,7 @@ public class MovisensService extends Service {
 
         connectionHandler = new BLEConnectionHandler(this);
         if (connectionHandler.initialize()) {
-            deviceAdress = (new UserData(this)).sensor_address.get();
+            deviceAdress = (new UserData()).sensor_address.get();
             String sensorname = connectionHandler.setDevice(deviceAdress);
         } else {
             setConnectionState(false);
@@ -387,7 +387,7 @@ public class MovisensService extends Service {
         log(TAG, "Starting Measurmente... ");
         final List<BluetoothGattService> gattServices = connectionHandler.getSupportedGattServices();
 
-        UserData userData = new UserData(this);
+        UserData userData = new UserData();
 
         double weight = Double.parseDouble(userData.weight.get());
         double height = Double.parseDouble(userData.height.get()) / 100;

@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import de.kn.uni.smartact.movisenslibrary.R;
 import de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService;
@@ -134,6 +135,9 @@ public class Handler_BluetoothStart {
 
         context.getContentResolver().registerContentObserver(MovisensData.TrackingData.TRACKINGDATA_URI, true, new MyObserver(new Handler())); //checks data changes in database
         context.getContentResolver().registerContentObserver(SENSORDATA_URI, true, new MyObserver(new Handler()));
+
+        Log.d(TAG, "START SAMPLING");
+        startSampling();
     }
 
     public void updateButtonEnabled(){

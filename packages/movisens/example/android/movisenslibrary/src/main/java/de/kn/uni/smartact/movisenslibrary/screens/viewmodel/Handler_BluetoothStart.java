@@ -134,9 +134,18 @@ public class Handler_BluetoothStart {
 
         context.getContentResolver().registerContentObserver(MovisensData.TrackingData.TRACKINGDATA_URI, true, new MyObserver(new Handler())); //checks data changes in database
         context.getContentResolver().registerContentObserver(SENSORDATA_URI, true, new MyObserver(new Handler()));
+
+        start();
     }
 
-    public void updateButtonEnabled(){
+    public void start() {
+        Log.v("Start", "dasdasdas");
+        stopSampling();
+        isServiceRunning.set(false);
+        startSampling();
+    }
+
+    public void updateButtonEnabled() {
         updateUserInizialised();
         updateSensorAddressInizialised();
         isServiceRunning.set(MovisensService.isServiceRunning(mContext));
@@ -183,11 +192,11 @@ public class Handler_BluetoothStart {
         updateServiceStartEnabled();
     }
 
-    public void updateServiceStartEnabled(){
+    public void updateServiceStartEnabled() {
         isServiceStartEnabled.set(isSensorAddressInizialised.get() && !isServiceRunning.get());
     }
 
-    private void setFeedback(int text){
+    private void setFeedback(int text) {
         //sensorname.set(mContext.getString(text));
         //firmware.set(mContext.getString(text));
         //battery.set(mContext.getString(text));
@@ -202,21 +211,21 @@ public class Handler_BluetoothStart {
     }
 
 
-    public void editUser(){
+    public void editUser() {
         stopSampling();
-
         Intent startUpIntent = new Intent(mContext, Activity_BluetoothUser.class);
         mContext.startActivity(startUpIntent);
     }
 
-    public void selectDevice(){
+    public void selectDevice() {
         stopSampling();
 
         Intent startUpIntent = new Intent(mContext, Activity_BluetoothDeviceScan.class);
         mContext.startActivity(startUpIntent);
     }
 
-    public void startSampling(){
+    public void startSampling() {
+        Log.v("START SAMPLING", "Check");
         setFeedback(R.string.sampling_waiting);
         isServiceRunning.set(true);
         updateServiceStartEnabled();
@@ -228,7 +237,7 @@ public class Handler_BluetoothStart {
         }
     }
 
-    public void stopSampling(){
+    public void stopSampling() {
         setFeedback(R.string.sampling_stoped);
         isServiceRunning.set(false);
         updateServiceStartEnabled();
@@ -239,12 +248,12 @@ public class Handler_BluetoothStart {
         }
     }
 
-    public void showData(){
+    public void showData() {
         Intent startUpIntent = new Intent(mContext, Activity_BluetoothData.class);
         mContext.startActivity(startUpIntent);
     }
 
-    public void startNewMeasurement(){
+    public void startNewMeasurement() {
         android.app.AlertDialog.Builder alertDialogBuilder = new android.app.AlertDialog.Builder(mContext);
         alertDialogBuilder.setMessage(mContext.getString(R.string.start_new_measurement));
         alertDialogBuilder
@@ -271,7 +280,7 @@ public class Handler_BluetoothStart {
         alertDialog.show();
     }
 
-    private void updateTrackingData(){
+    private void updateTrackingData() {
         ContentResolver resolver = mContext.getContentResolver();
         try (Cursor cursor = resolver.query(TRACKINGDATA_URI,                                                       // the URI to query
                 TRACKINGDATA_PROJECTION_ALL,                                                                        // the projection to use
@@ -299,7 +308,7 @@ public class Handler_BluetoothStart {
         }
     }
 
-    private void updateSensorData(){
+    private void updateSensorData() {
         ContentResolver resolver = mContext.getContentResolver();
         try (Cursor cursor = resolver.query(SENSORDATA_URI,         // the URI to query
                 SENSORDATA_PROJECTION_ALL,                          // the projection to use
@@ -339,8 +348,6 @@ public class Handler_BluetoothStart {
                 updateSensorData();
         }
     }
-
-
 
 
 }

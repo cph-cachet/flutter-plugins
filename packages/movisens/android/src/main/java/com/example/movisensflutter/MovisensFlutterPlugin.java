@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService;
 import de.kn.uni.smartact.movisenslibrary.model.UserData;
@@ -49,7 +48,7 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
         context.registerReceiver(receiver, intentFilter);
 
         /// Start MoviSens service
-        Intent intent = new Intent(context, NewActivity.class);
+        Intent intent = new Intent(context, PermissionActivity.class);
         context.startActivity(intent);
     }
 
@@ -70,9 +69,9 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
         Log.v("USERADATA", "Hello my dude");
         if (methodCall.method.equals("userData")) {
             HashMap<String, String> user = (HashMap<String, String>) methodCall.argument("user_data");
-//            UserData data = new UserData(user);
-//            Log.d("USERADATA", data.toString());
-            String s = user.toString();
+            UserData userData = new UserData(user);
+            Log.d("USERADATA", userData.toString());
+            String s = userData.toString();
             result.success(s);
         }
         else {

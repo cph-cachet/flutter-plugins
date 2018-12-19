@@ -148,10 +148,9 @@ public class Handler_BluetoothDeviceScan {
     public void selectDevice(BluetoothDevice device){
         String sensor_name = device.getName().replace("MOVISENS", "").trim();
 
-        UserData user = new UserData(mContext);
+        UserData user = new UserData();
         user.sensor_address.set(device.getAddress());
         user.sensor_name.set(sensor_name);
-        user.saveToDB(mContext);
         mContext.finish();
     }
 

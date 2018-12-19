@@ -12,9 +12,9 @@ class MovisensDataPoint {
 
   MovisensDataPoint(Map<String, dynamic> data) {
     _batteryLevel =
-        data.containsKey(BATTERY_LEVEL) ? data[BATTERY_LEVEL] : null;
-    _tapMarker = data.containsKey(TAP_MARKER) ? data[TAP_MARKER] : null;
-    _stepCount = data.containsKey(STEP_COUNT) ? data[STEP_COUNT] : null;
+        data.containsKey(BATTERY_LEVEL) ? data[BATTERY_LEVEL] : 'none';
+    _tapMarker = data.containsKey(TAP_MARKER) ? data[TAP_MARKER] : 'none';
+    _stepCount = data.containsKey(STEP_COUNT) ? data[STEP_COUNT] : 'none';
   }
 
   String get batteryLevel => _batteryLevel;
@@ -47,7 +47,6 @@ class MovisensFlutter {
 
   void makeUserData() async {
     print('Make user data');
-
     Map<String, dynamic> args = {
       'user_data': {
         'weight': '100',
@@ -58,6 +57,6 @@ class MovisensFlutter {
     };
 
     dynamic res = await _methodChannel.invokeMethod('userData', args);
-    print("Response from android $res");
+    print("Response from android -> $res");
   }
 }

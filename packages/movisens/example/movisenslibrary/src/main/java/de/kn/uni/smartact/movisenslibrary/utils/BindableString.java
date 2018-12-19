@@ -39,8 +39,9 @@ public class BindableString extends BaseObservable {
     public void set(String value) {
         if (!Objects.equals(this._value, value)) {
             this._value = value;
-            if (_listener != null)
+            if (_listener != null) {
                 _listener.onUpdate(value);
+            }
             notifyChange();
         }
     }

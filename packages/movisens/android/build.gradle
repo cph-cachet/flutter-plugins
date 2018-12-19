@@ -9,12 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
-
-        //implementation project(path:':movisenslibrary', configurations:'default')
-
-
-
+        classpath 'com.android.tools.build:gradle:3.2.1'
     }
 }
 
@@ -25,8 +20,6 @@ rootProject.allprojects {
         maven { url "https://jitpack.io" }
     }
 }
-
-
 
 apply plugin: 'com.android.library'
 
@@ -48,9 +41,7 @@ android {
     }*/
 }
 dependencies {
-
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation project(path: ':movisenslibrary')
-
 }
 

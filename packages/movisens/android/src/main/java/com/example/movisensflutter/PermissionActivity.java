@@ -10,7 +10,7 @@ import android.util.Log;
 
 import de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart;
 
-public class NewActivity extends AppCompatActivity
+public class PermissionActivity extends AppCompatActivity
 {
 
 
@@ -20,7 +20,6 @@ public class NewActivity extends AppCompatActivity
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };

@@ -15,7 +15,7 @@ public class Handler_BluetoothUser {
     public Handler_BluetoothUser(Activity context) {
         this.context = context;
 
-        userData = new UserData(context);
+        userData = new UserData();
     }
 
     public UserData getUserData() {
@@ -49,7 +49,6 @@ public class Handler_BluetoothUser {
             return;
         }
 
-        userData.saveToDB(context);
         context.finish();
     }
 
