@@ -98,14 +98,24 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
                 data.put(MovisensService.MOVISENS_BATTERY_LEVEL, batteryLevel);
             if (tapMarker != null) data.put(MovisensService.MOVISENS_TAP_MARKER, tapMarker);
             if (stepCount != null) data.put(MovisensService.MOVISENS_STEP_COUNT, stepCount);
-            if (met != null && !met.equals("null")) {
+
+            if (met != null) {
                 Log.d("MET", met);
                 data.put(MovisensService.MOVISENS_MET, met);
             }
+
             if (metLevel != null) data.put(MovisensService.MOVISENS_MET_LEVEL, metLevel);
-            if (bodyPosition != null) data.put(MovisensService.MOVISENS_BODY_POSITION, metLevel);
-            if (movementAcceleration != null)
+
+            if (bodyPosition != null) {
+                Log.d("BODY POSITION", bodyPosition);
+                data.put(MovisensService.MOVISENS_BODY_POSITION, metLevel);
+            }
+
+            if (movementAcceleration != null) {
+                Log.d("MOVEMENT ACCELERATION", movementAcceleration);
                 data.put(MovisensService.MOVISENS_MOVEMENT_ACCELERATION, metLevel);
+            }
+
 
             eventSink.success(data);
         }

@@ -91,8 +91,8 @@ public class MovisensService extends Service {
     public final static String MOVISENS_STEP_COUNT = "step_count";
     public final static String MOVISENS_MET_LEVEL = "met_level";
     public final static String MOVISENS_MET = "met";
-    public final static String MOVISENS_BODY_POSITION = "met";
-    public final static String MOVISENS_MOVEMENT_ACCELERATION = "met";
+    public final static String MOVISENS_BODY_POSITION = "body_position";
+    public final static String MOVISENS_MOVEMENT_ACCELERATION = "movement_acceleration";
 
 
     private final static int NOTIFICATION_ID = 1377;
@@ -602,7 +602,7 @@ public class MovisensService extends Service {
                         TapMarker marker = new TapMarker(data);
 //                        String markerData = "TAP MARKER: " + marker.getTapMarker();
                         String markerData = "" + Calendar.getInstance().getTimeInMillis();
-                        sm.context.broadcastData(sm.context.MOVISENS_TAP_MARKER, markerData);
+                        sm.context.broadcastData(MOVISENS_TAP_MARKER, markerData);
                     }
 
                     if (MovisensCharacteristics.BATTERY_LEVEL_BUFFERED.equals(uuid)) {
@@ -610,7 +610,7 @@ public class MovisensService extends Service {
                         sm.context.splitAndSaveLastBatteryLevel(battery);
                         String level = "" + battery.getLevel()[0];
                         Log.d(TAG, "BATTERY: " + level);
-                        sm.context.broadcastData(sm.context.MOVISENS_BATTERY_LEVEL, level);
+                        sm.context.broadcastData(MOVISENS_BATTERY_LEVEL, level);
                     }
 
                     if (Characteristics.FIRMWARE_REVISION_STRING.equals(uuid)) {
@@ -666,14 +666,14 @@ public class MovisensService extends Service {
                         BodyPosition bodyPosition = new BodyPosition(data);
                         String position = bodyPosition.getBodyPosition().toString();
                         Log.d("body_postion", position);
-                        sm.context.broadcastData(sm.context.MOVISENS_BODY_POSITION, position);
+                        sm.context.broadcastData(MOVISENS_BODY_POSITION, position);
                     }
 
                     if (MovisensCharacteristics.MOVEMENT_ACCELERATION.equals(uuid)) {
                         MovementAcceleration movementAcceleration = new MovementAcceleration(data);
                         String acceleration = movementAcceleration.getMovementAcceleration().toString();
                         Log.d("movement_acceleration", acceleration);
-                        sm.context.broadcastData(sm.context.MOVISENS_MOVEMENT_ACCELERATION, acceleration);
+                        sm.context.broadcastData(MOVISENS_MOVEMENT_ACCELERATION, acceleration);
                     }
                 }
             }
