@@ -108,14 +108,15 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
 
             if (bodyPosition != null) {
                 Log.d("BODY POSITION", bodyPosition);
-                data.put(MovisensService.MOVISENS_BODY_POSITION, metLevel);
+                data.put(MovisensService.MOVISENS_BODY_POSITION, bodyPosition);
             }
 
             if (movementAcceleration != null) {
                 Log.d("MOVEMENT ACCELERATION", movementAcceleration);
-                data.put(MovisensService.MOVISENS_MOVEMENT_ACCELERATION, metLevel);
+                data.put(MovisensService.MOVISENS_MOVEMENT_ACCELERATION, movementAcceleration);
             }
 
+            Log.d("ANDROID DATA", data.toString());
 
             eventSink.success(data);
         }

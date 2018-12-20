@@ -82,13 +82,11 @@ class MovisensMet extends MovisensDataPoint {
 
 /// Movisens body-position, which depends on the sensor location
 class MovisensBodyPosition extends MovisensDataPoint {
-  double _bodyPosition;
+  String _bodyPosition;
 
-  MovisensBodyPosition(String value) {
-    _bodyPosition = double.parse(value);
-  }
+  MovisensBodyPosition(this._bodyPosition);
 
-  double get bodyPosition => _bodyPosition;
+  String get bodyPosition => _bodyPosition;
 }
 
 /// Accelerometer measure of the Movisens device
@@ -101,10 +99,9 @@ class MovisensMovementAcceleration extends MovisensDataPoint {
 
   double get met => _movementAcceleration;
 }
-
 /// Factory function for converting a generic object sent through the platform channel into a concrete [MovisensDataPoint] object.
-MovisensDataPoint movisensFactory(dynamic dataPoint) {
-  Map<String, dynamic> data = new Map<String, dynamic>.from(dataPoint);
+MovisensDataPoint movisensFactory(dynamic javaMap) {
+  Map<String, dynamic> data = Map<String, dynamic>.from(javaMap);
   print(data);
 
   String _batteryLevel =
