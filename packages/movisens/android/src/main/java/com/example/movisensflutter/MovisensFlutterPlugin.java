@@ -94,7 +94,7 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
             String movementAcceleration = intent.getStringExtra(MovisensService.MOVISENS_MOVEMENT_ACCELERATION);
 
 
-            HashMap<String, String> data = new HashMap<>();
+            HashMap<String, Object> data = new HashMap<>();
             if (batteryLevel != null) data.put(MovisensService.MOVISENS_BATTERY_LEVEL, batteryLevel);
             if (tapMarker != null) data.put(MovisensService.MOVISENS_TAP_MARKER, tapMarker);
             if (stepCount != null) data.put(MovisensService.MOVISENS_STEP_COUNT, stepCount);

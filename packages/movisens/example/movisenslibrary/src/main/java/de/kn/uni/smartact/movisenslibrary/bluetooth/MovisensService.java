@@ -110,7 +110,6 @@ public class MovisensService extends Service {
     private UserData userData;
 
     public void broadcastData(String key, String value) {
-//        Log.d("MovisensService", "broadcastData()");
         Intent dataIntent = new Intent(MOVISENS_INTENT_NAME);
         dataIntent.putExtra(key, value);
         sendBroadcast(dataIntent);
@@ -638,9 +637,20 @@ public class MovisensService extends Service {
                     }
 
                     if (MovisensCharacteristics.MET_LEVEL_BUFFERED.equals(uuid)) {
-                        String levelBuffered = new MetLevelBuffered(data).toString();
-                        Log.d(TAG, "MET LEVEL: " + levelBuffered);
-                        sm.context.broadcastData(sm.context.MOVISENS_MET_LEVEL, levelBuffered);
+                        double[][] levelBufferedArrays = new MetLevelBuffered(data).getValues();
+                        for (double[] levelBuffered : levelBufferedArrays) {
+                            HashMap<String, Double> metLevels = new HashMap<>();
+                            metLevels.put("sedentary", Double.valueOf(levelBuffered[0]));
+                            metLevels.put("light", Double.valueOf(levelBuffered[1]));
+                            metLevels.put("moderate", Double.valueOf(levelBuffered[2]));
+                            metLevels.put("vigorous", Double.valueOf(levelBuffered[3]));
+
+                            Log.d(TAG, "MET LEVEL: " + metLevels.toString());
+
+                            Intent dataIntent = new Intent(MOVISENS_INTENT_NAME);
+                            dataIntent.putExtra(MOVISENS_MET_LEVEL, metLevels);
+                            sm.context.sendBroadcast(dataIntent);
+                        }
                     }
 
                     if (MovisensCharacteristics.MET_BUFFERED.equals(uuid)) {
