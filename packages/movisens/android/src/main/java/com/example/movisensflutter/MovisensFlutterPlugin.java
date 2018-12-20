@@ -73,8 +73,7 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
             /// Start MoviSens service
             PermissionManager manager = new PermissionManager(registrar.activity(), userDataMap);
             manager.startMovisensService();
-        }
-        else {
+        } else {
             result.notImplemented();
         }
     }
@@ -95,13 +94,18 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
 
 
             HashMap<String, Object> data = new HashMap<>();
-            if (batteryLevel != null) data.put(MovisensService.MOVISENS_BATTERY_LEVEL, batteryLevel);
+            if (batteryLevel != null)
+                data.put(MovisensService.MOVISENS_BATTERY_LEVEL, batteryLevel);
             if (tapMarker != null) data.put(MovisensService.MOVISENS_TAP_MARKER, tapMarker);
             if (stepCount != null) data.put(MovisensService.MOVISENS_STEP_COUNT, stepCount);
-            if (met != null) data.put(MovisensService.MOVISENS_MET, met);
+            if (met != null && !met.equals("null")) {
+                Log.d("MET", met);
+                data.put(MovisensService.MOVISENS_MET, met);
+            }
             if (metLevel != null) data.put(MovisensService.MOVISENS_MET_LEVEL, metLevel);
             if (bodyPosition != null) data.put(MovisensService.MOVISENS_BODY_POSITION, metLevel);
-            if (movementAcceleration != null) data.put(MovisensService.MOVISENS_MOVEMENT_ACCELERATION, metLevel);
+            if (movementAcceleration != null)
+                data.put(MovisensService.MOVISENS_MOVEMENT_ACCELERATION, metLevel);
 
             eventSink.success(data);
         }

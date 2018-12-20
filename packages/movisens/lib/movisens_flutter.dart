@@ -26,13 +26,14 @@ abstract class MovisensDataPoint {
 
 /// Metabolic buffered level, holds met level values for a sedentary, light and moderate state.
 class MovisensMetLevel extends MovisensDataPoint {
-  double _sedentary, _light, _moderate;
+  double _sedentary, _light, _moderate, _vigorous;
 
-  MovisensMetLevel(dynamic metLevel) {
-    Map<String, dynamic> metLevelMap = new Map<String, dynamic>.from(metLevel);
+  MovisensMetLevel(String metLevel) {
+    Map<String, dynamic> metLevelMap = jsonDecode(metLevel);
     _sedentary = metLevelMap['sedentary'];
     _light = metLevelMap['light'];
     _moderate = metLevelMap['moderate'];
+    _vigorous = metLevelMap['vigorous'];
   }
 
   double get sedentary => _sedentary;
@@ -40,6 +41,8 @@ class MovisensMetLevel extends MovisensDataPoint {
   double get light => _light;
 
   double get moderate => _moderate;
+
+  double get vigorous => _vigorous;
 }
 
 /// Battery level of the Movisens device, in percent (%)
@@ -102,6 +105,8 @@ class MovisensMovementAcceleration extends MovisensDataPoint {
 /// Factory function for converting a generic object sent through the platform channel into a concrete [MovisensDataPoint] object.
 MovisensDataPoint movisensFactory(dynamic dataPoint) {
   Map<String, dynamic> data = new Map<String, dynamic>.from(dataPoint);
+  print(data);
+
   String _batteryLevel =
       data.containsKey(BATTERY_LEVEL) ? data[BATTERY_LEVEL] : null;
   String _tapMarker = data.containsKey(TAP_MARKER) ? data[TAP_MARKER] : null;

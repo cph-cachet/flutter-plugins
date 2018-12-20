@@ -632,31 +632,30 @@ public class MovisensService extends Service {
                             String stepString = stepCount.toString();
                             Log.d("step", stepString);
                             sm.context.splitAndSaveSteps(stepsBuffered);
-                            sm.context.broadcastData(sm.context.MOVISENS_STEP_COUNT, stepString);
+                            sm.context.broadcastData(MOVISENS_STEP_COUNT, stepString);
                         }
                     }
 
                     if (MovisensCharacteristics.MET_LEVEL_BUFFERED.equals(uuid)) {
                         double[][] levelBufferedArrays = new MetLevelBuffered(data).getValues();
                         for (double[] levelBuffered : levelBufferedArrays) {
-                            HashMap<String, Double> metLevels = new HashMap<>();
-                            metLevels.put("sedentary", Double.valueOf(levelBuffered[0]));
-                            metLevels.put("light", Double.valueOf(levelBuffered[1]));
-                            metLevels.put("moderate", Double.valueOf(levelBuffered[2]));
-                            metLevels.put("vigorous", Double.valueOf(levelBuffered[3]));
+                            HashMap<String, String> metLevels = new HashMap<>();
+                            metLevels.put("sedentary", levelBuffered[0] + "");
+                            metLevels.put("light", levelBuffered[1] + "");
+                            metLevels.put("moderate", levelBuffered[2] + "");
+                            metLevels.put("vigorous", levelBuffered[3] + "");
 
-                            Log.d(TAG, "MET LEVEL: " + metLevels.toString());
+                            String metLevelJson = metLevels.toString();
+                            sm.context.broadcastData(MOVISENS_MET_LEVEL, metLevelJson);
 
-                            Intent dataIntent = new Intent(MOVISENS_INTENT_NAME);
-                            dataIntent.putExtra(MOVISENS_MET_LEVEL, metLevels);
-                            sm.context.sendBroadcast(dataIntent);
+                            Log.d(TAG, "MET LEVEL: " + metLevelJson);
                         }
                     }
 
                     if (MovisensCharacteristics.MET_BUFFERED.equals(uuid)) {
                         String met = new MetBuffered(data).toString();
                         Log.d(TAG, "MET: " + met);
-                        sm.context.broadcastData(sm.context.MOVISENS_MET, met);
+                        sm.context.broadcastData(MOVISENS_MET, met);
                     }
 
                     if (MovisensCharacteristics.DATA_AVAILABLE.equals(uuid)) {
