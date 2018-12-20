@@ -23,9 +23,17 @@ class _MyAppState extends State<MyApp> {
   /// Set up movisens data stream
   Future<void> initPlatformState() async {
    MovisensFlutter movisens = new MovisensFlutter();
-   movisens.startSensing();
+   Map<String, String> userData = {
+     'weight': '100',
+     'height': '180',
+     'gender': 'male',
+     'age': '40',
+     'sensor_location': 'CHEST',
+     'sensor_address': '88:6B:0F:82:1D:33',
+     'sensor_name': 'Sensor 02655'
+   };
+   movisens.startSensing(userData);
    movisens.movisensStream.listen(onData);
-
   }
 
   void onData(MovisensDataPoint data) {
