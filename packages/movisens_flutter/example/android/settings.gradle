@@ -1,6 +1,6 @@
 include ':app'
-include ':movisenslibrary'
-project(':movisenslibrary').projectDir = new File('.', '../movisenslibrary')
+//include ':movisenslibrary'
+//project(':movisenslibrary').projectDir = new File('.', '../movisenslibrary')
 
 
 def flutterProjectRoot = rootProject.projectDir.parentFile.toPath()

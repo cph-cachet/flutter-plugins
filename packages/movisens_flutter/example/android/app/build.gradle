@@ -48,6 +48,14 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    allprojects {
+        repositories {
+
+            maven { url 'https://jitpack.io' }
+        }
+    }
+
+
     dataBinding {
         enabled = true
     }
@@ -81,10 +89,14 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:28.0.0'
 
-    implementation project(':movisenslibrary')
+    //implementation project(':movisenslibrary')
     implementation 'com.android.support:support-annotations:26.0.0'
     implementation 'com.android.databinding:compiler:3.2.0-alpha04'
     implementation "com.google.guava:guava:24.1-jre"
+
+    implementation 'com.github.devhci:movisenslibrary:-SNAPSHOT'
+
+
 
 }
 
