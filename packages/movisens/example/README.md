@@ -1,8 +1,10 @@
 # movisens_flutter_example
 
-Demonstrates how to use the movisens_flutter plugin.
+[![pub package](https://img.shields.io/pub/v/movisens.svg)](https://pub.dartlang.org/packages/movisens)
 
-## Getting Started
+## Install
+Add ```noise_meter``` as a dependency in  `pubspec.yaml`.
+For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
-For help getting started with Flutter, view our online
-[documentation](https://flutter.io/).
+
+## Usage
