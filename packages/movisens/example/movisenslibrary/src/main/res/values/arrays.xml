@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--Bluetooth-->
+    <!--Dropdown list select Sensor Position-->
+    <string name="sensor_position_prompt">Wo tragen Sie den Sensor</string>
+    <string-array name="sensor_positions">
+        <item>Brust</item>
+        <item>Linker Knöchel</item>
+        <item>Linke Seite Hüfte</item>
+        <item>Linker Oberschenkel</item>
+        <item>Linker Oberarm</item>
+        <item>Linkes Handgelenk</item>
+        <item>Rechter Knöchel</item>
+        <item>Rechte Seite Hüfte</item>
+        <item>Rechter Oberschenkel</item>
+        <item>Rechter Oberarm</item>
+        <item>Rechtes Handgelenk</item>
+    </string-array>
+
+</resources>
