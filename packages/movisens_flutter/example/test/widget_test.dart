@@ -8,18 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:movisens_flutter_example/main.dart';
+import 'dart:convert';
 
 void main() {
-  testWidgets('Verify Platform version', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(new MyApp());
 
-    // Verify that platform version is retrieved.
-    expect(
-        find.byWidgetPredicate(
-          (Widget widget) =>
-              widget is Text && widget.data.startsWith('Running on:'),
-        ),
-        findsOneWidget);
-  });
 }
+
+//void main() {
+//  test("Unit test", () {
+//    String json = '{moderate=0.0, light=0.0, sedentary=60.0, vigorous=0.0}';
+//    print(jsonDecode(json));
+//  });
+//}

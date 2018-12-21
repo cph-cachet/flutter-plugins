@@ -28,8 +28,11 @@ abstract class MovisensDataPoint {
 class MovisensMetLevel extends MovisensDataPoint {
   double _sedentary, _light, _moderate, _vigorous;
 
-  MovisensMetLevel(dynamic metLevelMap) {
-    Map<String, dynamic> metLevel =Map<String, dynamic>.from(metLevelMap);
+  MovisensMetLevel(String metLevelString) {
+    String metLevelJson = metLevelString.replaceAllMapped(
+        new RegExp(r'([a-z]+)\=([\d.]+)'), (g) => '"${g[1]}":"${g[2]}"');
+    print(metLevelJson);
+    Map<String, dynamic> metLevel = jsonDecode(metLevelJson);
     _sedentary = metLevel['sedentary'];
     _light = metLevel['light'];
     _moderate = metLevel['moderate'];
@@ -99,6 +102,7 @@ class MovisensMovementAcceleration extends MovisensDataPoint {
 
   double get met => _movementAcceleration;
 }
+
 /// Factory function for converting a generic object sent through the platform channel into a concrete [MovisensDataPoint] object.
 MovisensDataPoint movisensFactory(dynamic javaMap) {
   Map<String, dynamic> data = Map<String, dynamic>.from(javaMap);
@@ -109,7 +113,7 @@ MovisensDataPoint movisensFactory(dynamic javaMap) {
   String _tapMarker = data.containsKey(TAP_MARKER) ? data[TAP_MARKER] : null;
   String _stepCount = data.containsKey(STEP_COUNT) ? data[STEP_COUNT] : null;
   String _met = data.containsKey(MET) ? data[MET] : null;
-  dynamic _metLevel = data.containsKey(MET_LEVEL) ? data[MET_LEVEL] : null;
+  String _metLevel = data.containsKey(MET_LEVEL) ? data[MET_LEVEL] : null;
   String _bodyPosition =
       data.containsKey(BODY_POSITION) ? data[BODY_POSITION] : null;
   String _movementAcceleration = data.containsKey(MOVEMENT_ACCELERATION)

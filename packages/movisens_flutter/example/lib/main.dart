@@ -38,7 +38,6 @@ class _MyAppState extends State<MyApp> {
 
   void onData(MovisensDataPoint data) {
     print('FLUTTER: $data');
-
   }
 
   @override
