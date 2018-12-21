@@ -77,13 +77,10 @@ class MovisensTapMarker extends MovisensDataPoint {}
 
 class MovisensMet extends MovisensDataPoint {
   double _met;
-
-  MovisensMet(dynamic value) {
-
+   MovisensMet(dynamic value) {
+    String met = value;
     print("customMet = " +value);
-
-
-    _met = double.parse(value);
+    _met = double.parse( met.split(',').removeLast());
   }
 
   double get met => _met;
