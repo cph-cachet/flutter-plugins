@@ -83,7 +83,6 @@ configurations.all {exclude group: 'com.android.support', module: 'support-v4'}
 
 dependencies {
     testImplementation 'junit:junit:4.12'
-    //androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -93,16 +92,8 @@ dependencies {
     implementation 'com.android.support:support-annotations:26.0.0'
     implementation 'com.android.databinding:compiler:3.2.0-alpha04'
     implementation "com.google.guava:guava:24.1-jre"
-
-    implementation 'com.github.devhci:movisenslibrary:-SNAPSHOT'
-
-
-
+    implementation 'com.github.devhci:movisenslibrary:4c893a7099'
 }
-
-
-
-
 
 android.defaultConfig.javaCompileOptions.annotationProcessorOptions.includeCompileClasspath = true
 

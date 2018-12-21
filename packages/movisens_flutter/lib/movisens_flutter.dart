@@ -28,12 +28,12 @@ abstract class MovisensDataPoint {
 class MovisensMetLevel extends MovisensDataPoint {
   double _sedentary, _light, _moderate, _vigorous;
 
-  MovisensMetLevel(String metLevel) {
-    Map<String, dynamic> metLevelMap = jsonDecode(metLevel);
-    _sedentary = metLevelMap['sedentary'];
-    _light = metLevelMap['light'];
-    _moderate = metLevelMap['moderate'];
-    _vigorous = metLevelMap['vigorous'];
+  MovisensMetLevel(dynamic metLevelMap) {
+    Map<String, dynamic> metLevel =Map<String, dynamic>.from(metLevelMap);
+    _sedentary = metLevel['sedentary'];
+    _light = metLevel['light'];
+    _moderate = metLevel['moderate'];
+    _vigorous = metLevel['vigorous'];
   }
 
   double get sedentary => _sedentary;
