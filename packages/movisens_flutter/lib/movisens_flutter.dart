@@ -33,10 +33,12 @@ class MovisensMetLevel extends MovisensDataPoint {
         new RegExp(r'([a-z]+)\=([\d.]+)'), (g) => '"${g[1]}":"${g[2]}"');
     print(metLevelJson);
     Map<String, dynamic> metLevel = jsonDecode(metLevelJson);
-    _sedentary = metLevel['sedentary'];
-    _light = metLevel['light'];
-    _moderate = metLevel['moderate'];
-    _vigorous = metLevel['vigorous'];
+
+  // print("After Decode json  "+jsonDecode(metLevelJson));
+    _sedentary = double.parse(metLevel['sedentary']);
+    _light = double.parse(metLevel['light']);
+    _moderate = double.parse(metLevel['moderate']);
+    _vigorous = double.parse(metLevel['vigorous']);
   }
 
   double get sedentary => _sedentary;
@@ -76,7 +78,11 @@ class MovisensTapMarker extends MovisensDataPoint {}
 class MovisensMet extends MovisensDataPoint {
   double _met;
 
-  MovisensMet(String value) {
+  MovisensMet(dynamic value) {
+
+    print("customMet = " +value);
+
+
     _met = double.parse(value);
   }
 
