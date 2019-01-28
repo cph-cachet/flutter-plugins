@@ -28,7 +28,7 @@ between the `<application></application>` tags.
 ```dart
 Notifications notifications = new Notifications();
 StreamSubscription<NotificationEvent> events;
-events = notifications.noiseStream.listen(onData);
+events = notifications.stream.listen(onData);
 ```
 
 Where the `onData()` method handles the incoming `NotificationEvents`. An example could be:

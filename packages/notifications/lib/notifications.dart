@@ -29,7 +29,7 @@ class Notifications {
 
   Stream<NotificationEvent> _notificationStream;
 
-  Stream<NotificationEvent> get noiseStream {
+  Stream<NotificationEvent> get stream {
     if (_notificationStream == null) {
       _notificationStream = _notificationEventChannel
           .receiveBroadcastStream()

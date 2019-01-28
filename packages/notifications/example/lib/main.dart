@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:notifications/notifications.dart';
 
 void main() => runApp(MyApp());
@@ -23,7 +21,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     Notifications notifications = new Notifications();
     StreamSubscription<NotificationEvent> events;
-    events = notifications.noiseStream.listen(onData);
+    events = notifications.stream.listen(onData);
   }
 
   void onData(NotificationEvent event) => print(event.toString());
