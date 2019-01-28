@@ -56,7 +56,8 @@ const String TAP_MARKER = 'tap_marker',
     MET = 'met',
     MET_LEVEL = 'met_level',
     BODY_POSITION = 'body_position',
-    MOVEMENT_ACCELERATION = 'movement_acceleration';
+    MOVEMENT_ACCELERATION = 'movement_acceleration',
+    CONNECTION_STATUS = 'connection_status';
 
 /// Generic Movisens data-point which all concrete data-points inherit from. Each data-point has a timestamp.
 abstract class MovisensDataPoint {
@@ -208,8 +209,27 @@ class MovisensMovementAcceleration extends MovisensDataPoint {
   }
 }
 
+/// Accelerometer measure of the Movisens device
+class MovisensStatus extends MovisensDataPoint {
+  double _connectionStatus;
+
+  MovisensStatus(String value) {
+    _connectionStatus = double.parse(value);
+  }
+
+  double get connectionStatus => _connectionStatus;
+
+  @override
+  String toString() {
+    return 'ConnectionStatus: {'
+        'time: $timeStamp, '
+        'connection_status: $_connectionStatus'
+        '}';
+  }
+}
+
 /// Factory function for converting a generic object sent through the platform channel into a concrete [MovisensDataPoint] object.
-MovisensDataPoint movisensFactory(dynamic javaMap) {
+MovisensDataPoint parseDataPoint(dynamic javaMap) {
   Map<String, dynamic> data = Map<String, dynamic>.from(javaMap);
   String _batteryLevel =
       data.containsKey(BATTERY_LEVEL) ? data[BATTERY_LEVEL] : null;
@@ -222,6 +242,8 @@ MovisensDataPoint movisensFactory(dynamic javaMap) {
   String _movementAcceleration = data.containsKey(MOVEMENT_ACCELERATION)
       ? data[MOVEMENT_ACCELERATION]
       : null;
+  String _connectionStatus =
+      data.containsKey(CONNECTION_STATUS) ? data[CONNECTION_STATUS] : null;
 
   if (_batteryLevel != null) return new MovisensBatteryLevel(_batteryLevel);
   if (_tapMarker != null) return new MovisensTapMarker();
@@ -243,7 +265,7 @@ class MovisensFlutter {
   /// Starts listening to incoming data sent over the [EventChannel]
   Stream<MovisensDataPoint> get movisensStream {
     _movisensStream =
-        _eventChannel.receiveBroadcastStream().map(movisensFactory);
+        _eventChannel.receiveBroadcastStream().map(parseDataPoint);
     return _movisensStream;
   }
 
