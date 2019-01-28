@@ -92,6 +92,8 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
             String bodyPosition = intent.getStringExtra(MovisensService.MOVISENS_BODY_POSITION);
             String movementAcceleration = intent.getStringExtra(MovisensService.MOVISENS_MOVEMENT_ACCELERATION);
 
+            String connectionStatus = intent.getStringExtra(MovisensService.MOVISENS_CONNECTION_STATUS);
+
 
             HashMap<String, Object> data = new HashMap<>();
             if (batteryLevel != null)
@@ -114,6 +116,10 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
             if (movementAcceleration != null) {
 //                Log.d("MOVEMENT ACCELERATION", movementAcceleration);
                 data.put(MovisensService.MOVISENS_MOVEMENT_ACCELERATION, movementAcceleration);
+            }
+            if (connectionStatus != null) {
+                Log.d("CONNECTION_STATUS", connectionStatus);
+                data.put(MovisensService.MOVISENS_CONNECTION_STATUS, connectionStatus);
             }
 
 //            Log.d("ANDROID DATA", data.toString());
