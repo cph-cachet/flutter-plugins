@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-
 import 'package:flutter/services.dart';
 import 'package:movisens_flutter/movisens_flutter.dart';
 
@@ -13,31 +12,36 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+  String address = 'unknown', name = 'unknown', log = 'Movisens event log:\n';
 
   @override
   void initState() {
     super.initState();
     initPlatformState();
   }
+
   /// Set up movisens data stream
   Future<void> initPlatformState() async {
-   MovisensFlutter movisens = new MovisensFlutter();
-   Map<String, String> userData = {
-     'weight': '100',
-     'height': '180',
-     'gender': 'male',
-     'age': '40',
-     'sensor_location': 'CHEST',
-     'sensor_address': '88:6B:0F:82:1D:33',
-     'sensor_name': 'Sensor 02655'
-   };
-   movisens.startSensing(userData);
-   movisens.movisensStream.listen(onData);
+    MovisensFlutter movisens = new MovisensFlutter();
+
+    int weight = 100, height = 180, age = 25;
+
+    setState(() {
+      address = '88:6B:0F:82:1D:33';
+      name = 'Sensor 02655';
+    });
+
+    UserData userData = new UserData(
+        weight, height, Gender.male, age, SensorLocation.chest, address, name);
+
+    movisens.startSensing(userData);
+    movisens.movisensStream.listen(onData);
   }
 
-  void onData(MovisensDataPoint data) {
-    print('FLUTTER: $data');
+  void onData(MovisensDataPoint dataPoint) {
+    setState(() {
+      log += '\t$dataPoint\n';
+    });
   }
 
   @override
@@ -45,10 +49,10 @@ class _MyAppState extends State<MyApp> {
     return new MaterialApp(
       home: new Scaffold(
         appBar: new AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Movisens Plugin'),
         ),
         body: new Center(
-          child: new Text('Running on: $_platformVersion\n'),
+          child: new Text('Running on Device: $name ($address)\n\n$log'),
         ),
       ),
     );

@@ -35,10 +35,9 @@ public class PermissionActivity extends AppCompatActivity {
             requestPermissions(permissions, 0);
             checkDelayed();
         } else {
-            Log.d("appFlow", "Inside Activity_permission and starting Main activity");
+//            Log.d("appFlow", "Inside Activity_permission and starting Main activity");
             startService();
         }
-
     }
 
     @Override
@@ -51,7 +50,6 @@ public class PermissionActivity extends AppCompatActivity {
             if (!isPermissionGranted(permission))
                 return false;
         }
-
         return true;
     }
 

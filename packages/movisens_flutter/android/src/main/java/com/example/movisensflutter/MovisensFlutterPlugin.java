@@ -44,7 +44,7 @@ public class MovisensFlutterPlugin implements EventChannel.StreamHandler, Method
 
     public MovisensFlutterPlugin(Registrar registrar) {
         this.registrar = registrar;
-        Log.v("Flutter Plugin", "Constructor");
+//        Log.v("Flutter Plugin", "Constructor");
         /// Set up the intent filter
         MovisensEventReceiver receiver = new MovisensEventReceiver();
         IntentFilter intentFilter = new IntentFilter();
