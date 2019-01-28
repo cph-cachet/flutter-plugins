@@ -211,13 +211,11 @@ class MovisensMovementAcceleration extends MovisensDataPoint {
 
 /// Accelerometer measure of the Movisens device
 class MovisensStatus extends MovisensDataPoint {
-  double _connectionStatus;
+  String _connectionStatus;
 
-  MovisensStatus(String value) {
-    _connectionStatus = double.parse(value);
-  }
+  MovisensStatus(String _connectionStatus);
 
-  double get connectionStatus => _connectionStatus;
+  String get connectionStatus => _connectionStatus;
 
   @override
   String toString() {
@@ -245,6 +243,8 @@ MovisensDataPoint parseDataPoint(dynamic javaMap) {
   String _connectionStatus =
       data.containsKey(CONNECTION_STATUS) ? data[CONNECTION_STATUS] : null;
 
+  print('Flutter connection: $_connectionStatus');
+
   if (_batteryLevel != null) return new MovisensBatteryLevel(_batteryLevel);
   if (_tapMarker != null) return new MovisensTapMarker();
   if (_stepCount != null) return new MovisensStepCount(_stepCount);
@@ -253,6 +253,10 @@ MovisensDataPoint parseDataPoint(dynamic javaMap) {
   if (_bodyPosition != null) return new MovisensBodyPosition(_bodyPosition);
   if (_movementAcceleration != null)
     return new MovisensMovementAcceleration(_movementAcceleration);
+  if (_connectionStatus != null) return new MovisensStatus(_connectionStatus);
+
+  print(_connectionStatus);
+
   return null;
 }
 
