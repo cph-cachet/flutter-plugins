@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movisens_flutter/movisens_flutter.dart';
+import 'file_io.dart';
 
 ThemeData darkTheme = ThemeData(
   // Define the default Brightness and Colors
@@ -30,6 +31,7 @@ class _MovisensAppState extends State<MovisensApp> {
   int value = 2;
   String address = 'unknown', name = 'unknown';
   Movisens movisens = new Movisens();
+  LogManager logManager = new LogManager();
   List<String> log = [];
 
   @override
@@ -52,6 +54,7 @@ class _MovisensAppState extends State<MovisensApp> {
   void onData(MovisensDataPoint d) {
     setState(() {
       log.add('$d');
+      logManager.writeLog('$d');
     });
   }
 
