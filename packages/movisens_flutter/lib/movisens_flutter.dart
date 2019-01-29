@@ -243,8 +243,6 @@ MovisensDataPoint parseDataPoint(dynamic javaMap) {
   String _connectionStatus =
       data.containsKey(CONNECTION_STATUS) ? data[CONNECTION_STATUS] : null;
 
-  print('Flutter connection: $_connectionStatus');
-
   if (_batteryLevel != null) return new MovisensBatteryLevel(_batteryLevel);
   if (_tapMarker != null) return new MovisensTapMarker();
   if (_stepCount != null) return new MovisensStepCount(_stepCount);
@@ -255,13 +253,11 @@ MovisensDataPoint parseDataPoint(dynamic javaMap) {
     return new MovisensMovementAcceleration(_movementAcceleration);
   if (_connectionStatus != null) return new MovisensStatus(_connectionStatus);
 
-  print(_connectionStatus);
-
   return null;
 }
 
 /// The main plugin class which establishes a [MethodChannel] and an [EventChannel].
-class MovisensFlutter {
+class Movisens {
   MethodChannel _methodChannel = MethodChannel('movisens.method_channel');
   EventChannel _eventChannel = EventChannel('movisens.event_channel');
   Stream<MovisensDataPoint> _movisensStream;
