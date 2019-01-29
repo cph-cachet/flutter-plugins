@@ -32,17 +32,14 @@ class _MovisensAppState extends State<MovisensApp> {
   String address = 'unknown', name = 'unknown';
   Movisens movisens = new Movisens();
   LogManager logManager = new LogManager();
-  List<String> log = [];
+  List<MovisensDataPoint> movisensEvents = [];
 
   @override
   void initState() {
     super.initState();
     int weight = 100, height = 180, age = 25;
-
-    setState(() {
-      address = '88:6B:0F:82:1D:33';
-      name = 'Sensor 02655';
-    });
+    address = '88:6B:0F:82:1D:33';
+    name = 'Sensor 02655';
 
     UserData userData = new UserData(
         weight, height, Gender.male, age, SensorLocation.chest, address, name);
@@ -53,7 +50,7 @@ class _MovisensAppState extends State<MovisensApp> {
 
   void onData(MovisensDataPoint d) {
     setState(() {
-      log.add('$d');
+      movisensEvents.add(d);
       logManager.writeLog('$d');
     });
   }
@@ -65,16 +62,36 @@ class _MovisensAppState extends State<MovisensApp> {
       theme: darkTheme,
       home: Scaffold(
         body: ListView.builder(
-            itemCount: this.log.length,
+            itemCount: this.movisensEvents.length,
             itemBuilder: (context, index) => this._buildRow(index)),
       ),
     );
   }
 
   _buildRow(int index) {
+    MovisensDataPoint d = movisensEvents[index];
     return new Container(
-        child: new ListTile(title: new Text(log[index])),
+        child: new ListTile(
+          leading: Icon(_getIcon(d)),
+          title: new Text(
+            d.toString(),
+            style: TextStyle(fontSize: 12),
+          ),
+        ),
         decoration:
             new BoxDecoration(border: new Border(bottom: new BorderSide())));
+  }
+
+  IconData _getIcon(MovisensDataPoint d) {
+    if (d is MovisensTapMarker) return Icons.touch_app;
+    if (d is MovisensMovementAcceleration) return Icons.arrow_downward;
+    if (d is MovisensBodyPosition) return Icons.accessibility;
+    if (d is MovisensMet) return Icons.cached;
+    if (d is MovisensStepCount) return Icons.directions_walk;
+    if (d is MovisensBatteryLevel) return Icons.battery_charging_full;
+    if (d is MovisensStatus)
+      return Icons.bluetooth_connected;
+    else
+      return Icons.device_unknown;
   }
 }

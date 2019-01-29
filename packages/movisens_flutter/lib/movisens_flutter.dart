@@ -49,6 +49,10 @@ class UserData {
   }
 }
 
+String timeStampHHMMSS(DateTime timeStamp) {
+  return timeStamp.toIso8601String();
+}
+
 /// Keys for Movisens data points
 const String TAP_MARKER = 'tap_marker',
     BATTERY_LEVEL = 'battery_level',
@@ -97,7 +101,7 @@ class MovisensMetLevel extends MovisensDataPoint {
   @override
   String toString() {
     return 'MetLevel: {'
-        'time: $timeStamp, '
+        'time: ${timeStampHHMMSS(timeStamp)}, '
         'sedentary: $sedentary, '
         'light: $light, '
         'moderate: $moderate, '
@@ -119,7 +123,7 @@ class MovisensBatteryLevel extends MovisensDataPoint {
   @override
   String toString() {
     return 'BatteryLevel: {'
-        'time: $timeStamp, '
+        'time: ${timeStampHHMMSS(timeStamp)}, '
         'battery_level: $batteryLevel'
         '}';
   }
@@ -138,7 +142,7 @@ class MovisensStepCount extends MovisensDataPoint {
   @override
   String toString() {
     return 'StepCount: {'
-        'time: $timeStamp, '
+        'time: ${timeStampHHMMSS(timeStamp)}, '
         'step_count: $stepCount'
         '}';
   }
@@ -148,9 +152,7 @@ class MovisensStepCount extends MovisensDataPoint {
 class MovisensTapMarker extends MovisensDataPoint {
   @override
   String toString() {
-    return 'TapMarker: {'
-        'time: $timeStamp'
-        '}';
+    return 'TapMarker: {time: ${timeStampHHMMSS(timeStamp)}}';
   }
 }
 
@@ -167,7 +169,7 @@ class MovisensMet extends MovisensDataPoint {
   @override
   String toString() {
     return 'MET: {'
-        'time: $timeStamp, '
+        'time: ${timeStampHHMMSS(timeStamp)}, '
         'met: $met'
         '}';
   }
@@ -184,7 +186,7 @@ class MovisensBodyPosition extends MovisensDataPoint {
   @override
   String toString() {
     return 'BodyPosition: {'
-        'time: $timeStamp, '
+        'time: ${timeStampHHMMSS(timeStamp)}, '
         'body_position: $bodyPosition'
         '}';
   }
@@ -198,12 +200,12 @@ class MovisensMovementAcceleration extends MovisensDataPoint {
     _movementAcceleration = double.parse(value);
   }
 
-  double get met => _movementAcceleration;
+  double get movementAcceleration => _movementAcceleration;
 
   @override
   String toString() {
     return 'MovementAcceleration: {'
-        'time: $timeStamp, '
+        'time: ${timeStampHHMMSS(timeStamp)}, '
         'movement_acceleration: $_movementAcceleration'
         '}';
   }
@@ -220,7 +222,7 @@ class MovisensStatus extends MovisensDataPoint {
   @override
   String toString() {
     return 'ConnectionStatus: {'
-        'time: $timeStamp, '
+        'time: ${timeStampHHMMSS(timeStamp)}, '
         'connection_status: $_connectionStatus'
         '}';
   }
@@ -243,6 +245,8 @@ MovisensDataPoint parseDataPoint(dynamic javaMap) {
   String _connectionStatus =
       data.containsKey(CONNECTION_STATUS) ? data[CONNECTION_STATUS] : null;
 
+  print(_connectionStatus);
+
   if (_batteryLevel != null) return new MovisensBatteryLevel(_batteryLevel);
   if (_tapMarker != null) return new MovisensTapMarker();
   if (_stepCount != null) return new MovisensStepCount(_stepCount);
@@ -251,7 +255,8 @@ MovisensDataPoint parseDataPoint(dynamic javaMap) {
   if (_bodyPosition != null) return new MovisensBodyPosition(_bodyPosition);
   if (_movementAcceleration != null)
     return new MovisensMovementAcceleration(_movementAcceleration);
-  if (_connectionStatus != null) return new MovisensStatus(_connectionStatus);
+  if (_connectionStatus != null && _connectionStatus != 'null')
+    return new MovisensStatus(_connectionStatus);
 
   return null;
 }

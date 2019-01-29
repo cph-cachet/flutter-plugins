@@ -17,3 +17,24 @@ Add the following to your manifest
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 ```
+
+## Example Usage
+```dart
+int weight = 100, height = 180, age = 25;
+address = '88:6B:0F:82:1D:33';
+name = 'Sensor 02655';
+
+UserData userData = new UserData(
+    weight, 
+    height, 
+    Gender.male, 
+    age, 
+    SensorLocation.chest, 
+    address, 
+    name
+);
+
+movisens.startSensing(userData);
+movisens.movisensStream.listen(onData);
+```
+![image](https://i.imgur.com/EZuiKm5.png)
