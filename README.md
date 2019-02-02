@@ -1,6 +1,6 @@
 # CACHET Flutter plugins
 
-This repo contains the source code for Flutter third-party plugins developed by developers at the [Copenhagen Center for Health Technology (CACHET)](http://www.cachet.dk/) at The Technical University of Denmark.
+This repo contains the source code for Flutter first-party plugins developed by developers at the [Copenhagen Center for Health Technology (CACHET)](http://www.cachet.dk/) at The Technical University of Denmark.
 Check the `packages` directory for all plugins.
 
 Flutter plugins enable access to platform-specific APIs using a platform channel. 
