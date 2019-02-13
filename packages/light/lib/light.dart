@@ -7,23 +7,25 @@ class Light {
   static const EventChannel _eventChannel =
       const EventChannel("light.eventChannel");
 
-  Stream<int> _onLightSensorEvent;
+  Stream<int> _lightStream;
+  StreamSubscription<int> _lightStreamSubScription;
 
-  Stream<int> get lightSensorStream {
-    if (_onLightSensorEvent == null) {
-      _onLightSensorEvent =
-          _eventChannel.receiveBroadcastStream().map((lux) => lux);
-    }
-    return _onLightSensorEvent;
-  }
-
-  StreamSubscription<int> listen(void onData(int event),
+  /// Start listening to the light sensor, but only if on an Android device.
+  void listen(void onData(int event),
       {Function onError, void onDone(), bool cancelOnError}) {
     if (Platform.isAndroid) {
-      return lightSensorStream.listen(onData,
+      _lightStream = _eventChannel.receiveBroadcastStream().map((lux) => lux);
+      _lightStream.listen(onData,
           onError: onError, onDone: onDone, cancelOnError: true);
+    } else {
+      print('[light]: Light sensor API not available on iOS!');
     }
-    print('[light]: Light sensor API not available on iOS!');
-    return null;
+  }
+
+  /// Cancel the subscription, if it has been started.
+  void cancel() {
+    if (_lightStreamSubScription != null) {
+      _lightStreamSubScription.cancel();
+    }
   }
 }
