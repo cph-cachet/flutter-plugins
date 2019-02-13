@@ -20,12 +20,6 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _onDone() {}
-
-  void _onError(error) {
-    // Handle the error
-  }
-
   @override
   void initState() {
     super.initState();
@@ -35,8 +29,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     _light = new Light();
-    _light.lightSensorStream.listen(_onData,
-        onError: _onError, onDone: _onDone, cancelOnError: true);
+    _light.listen(_onData);
   }
 
   @override
