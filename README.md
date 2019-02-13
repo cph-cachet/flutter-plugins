@@ -12,14 +12,14 @@ These are the available plugins in this repository.
 
 | Plugin | Description | Android | iOS |    Pub    | 
 |-----------|-------------|---------|-----|-----------|
-| [screen_state](./packages/screen_state) | Track screen state changes | yes | N/A | [![pub package](https://img.shields.io/pub/v/screen_state.svg)](https://pub.dartlang.org/packages/screen_state) |
-| [light](./packages/light) | Track light sensor readings | yes | N/A |  [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
-| [pedometer](./packages/pedometer) | Track step count |  yes | yes | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
-| [noise_meter](./packages/noise_meter) | Read noise level in Decibel | yes | coming  | [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |
-| [app_usage](./packages/app_usage) | Track usage of all applications on phone. | yes | N/A  | [![pub package](https://img.shields.io/pub/v/app_usage.svg)](https://pub.dartlang.org/packages/app_usage) |
-| [weather](./packages/weather) | Get current weather, as well as forecasting using the OpenWeatherMap API. | yes | yes  | [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather) |
-| [notifications](./packages/notifications) | Track device notifications. | yes | N/A  | [![pub package](https://img.shields.io/pub/v/notifications.svg)](https://pub.dartlang.org/packages/notifications) |
-| [movisens_flutter](./packages/movisens_flutter) | Movisens sensor communication. | yes | N/A  | [![pub package](https://img.shields.io/pub/v/movisens_flutter.svg)](https://pub.dartlang.org/packages/movisens_flutter) |
+| [screen_state](./packages/screen_state) | Track screen state changes | ✅ | ❌ | [![pub package](https://img.shields.io/pub/v/screen_state.svg)](https://pub.dartlang.org/packages/screen_state) |
+| [light](./packages/light) | Track light sensor readings | ✅ | ❌ |  [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
+| [pedometer](./packages/pedometer) | Track step count |  ✅ | ✅ | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
+| [noise_meter](./packages/noise_meter) | Read noise level in Decibel | ✅ | coming  | [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |
+| [app_usage](./packages/app_usage) | Track usage of all applications on phone. | ✅ | ❌  | [![pub package](https://img.shields.io/pub/v/app_usage.svg)](https://pub.dartlang.org/packages/app_usage) |
+| [weather](./packages/weather) | Get current weather, as well as forecasting using the OpenWeatherMap API. | ✅ | ✅  | [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather) |
+| [notifications](./packages/notifications) | Track device notifications. | ✅ | ❌  | [![pub package](https://img.shields.io/pub/v/notifications.svg)](https://pub.dartlang.org/packages/notifications) |
+| [movisens_flutter](./packages/movisens_flutter) | Movisens sensor communication. | ✅ | ❌  | [![pub package](https://img.shields.io/pub/v/movisens_flutter.svg)](https://pub.dartlang.org/packages/movisens_flutter) |
 
 ## Issues
 
