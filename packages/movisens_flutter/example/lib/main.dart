@@ -30,7 +30,7 @@ class MovisensApp extends StatefulWidget {
 class _MovisensAppState extends State<MovisensApp> {
   int value = 2;
   String address = 'unknown', name = 'unknown';
-  Movisens movisens = new Movisens();
+  Movisens movisens;
   LogManager logManager = new LogManager();
   List<MovisensDataPoint> movisensEvents = [];
 
@@ -43,9 +43,8 @@ class _MovisensAppState extends State<MovisensApp> {
 
     UserData userData = new UserData(
         weight, height, Gender.male, age, SensorLocation.chest, address, name);
-
-    movisens.startSensing(userData);
-    movisens.movisensStream.listen(onData);
+    movisens = new Movisens(userData);
+    movisens.listen(onData);
   }
 
   void onData(MovisensDataPoint d) {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 enum Gender { male, female }
 
@@ -232,52 +233,77 @@ class MovisensStatus extends MovisensDataPoint {
 MovisensDataPoint parseDataPoint(dynamic javaMap) {
   Map<String, dynamic> data = Map<String, dynamic>.from(javaMap);
   String _batteryLevel =
-      data.containsKey(BATTERY_LEVEL) ? data[BATTERY_LEVEL] : null;
+  data.containsKey(BATTERY_LEVEL) ? data[BATTERY_LEVEL] : null;
   String _tapMarker = data.containsKey(TAP_MARKER) ? data[TAP_MARKER] : null;
   String _stepCount = data.containsKey(STEP_COUNT) ? data[STEP_COUNT] : null;
   String _met = data.containsKey(MET) ? data[MET] : null;
   String _metLevel = data.containsKey(MET_LEVEL) ? data[MET_LEVEL] : null;
   String _bodyPosition =
-      data.containsKey(BODY_POSITION) ? data[BODY_POSITION] : null;
+  data.containsKey(BODY_POSITION) ? data[BODY_POSITION] : null;
   String _movementAcceleration = data.containsKey(MOVEMENT_ACCELERATION)
-      ? data[MOVEMENT_ACCELERATION]
+  ? data[MOVEMENT_ACCELERATION]
       : null;
-  String _connectionStatus =
-      data.containsKey(CONNECTION_STATUS) ? data[CONNECTION_STATUS] : null;
+  String _connectionStatus = data.containsKey(CONNECTION_STATUS) ? data[CONNECTION_STATUS] : null;
 
   print(_connectionStatus);
 
-  if (_batteryLevel != null) return new MovisensBatteryLevel(_batteryLevel);
-  if (_tapMarker != null) return new MovisensTapMarker();
-  if (_stepCount != null) return new MovisensStepCount(_stepCount);
-  if (_met != null) return new MovisensMet(_met);
-  if (_metLevel != null) return new MovisensMetLevel(_metLevel);
-  if (_bodyPosition != null) return new MovisensBodyPosition(_bodyPosition);
-  if (_movementAcceleration != null)
+  if (_batteryLevel != null) {
+    return new MovisensBatteryLevel(_batteryLevel);
+  }
+  if (_tapMarker != null) {
+    return new MovisensTapMarker();
+  }
+  if (_stepCount != null) {
+    return new MovisensStepCount(_stepCount);
+  }
+  if (_met != null) {
+    return new MovisensMet(_met);
+  }
+  if (_metLevel != null) {
+    return new MovisensMetLevel(_metLevel);
+  }
+  if (_bodyPosition != null) {
+    return new MovisensBodyPosition(_bodyPosition);
+  }
+  if (_movementAcceleration != null) {
     return new MovisensMovementAcceleration(_movementAcceleration);
-  if (_connectionStatus != null && _connectionStatus != 'null')
+  }
+  if (_connectionStatus != null && _connectionStatus != 'null') {
     return new MovisensStatus(_connectionStatus);
-
+  }
   return null;
-}
+  }
 
 /// The main plugin class which establishes a [MethodChannel] and an [EventChannel].
 class Movisens {
   MethodChannel _methodChannel = MethodChannel('movisens.method_channel');
   EventChannel _eventChannel = EventChannel('movisens.event_channel');
   Stream<MovisensDataPoint> _movisensStream;
+  StreamSubscription<MovisensDataPoint> _movisensStreamSubscription;
+  UserData _userData;
 
-  /// Starts listening to incoming data sent over the [EventChannel]
-  Stream<MovisensDataPoint> get movisensStream {
-    _movisensStream =
-        _eventChannel.receiveBroadcastStream().map(parseDataPoint);
-    return _movisensStream;
-  }
+  Movisens(this._userData);
 
   /// Sends data used for starting the Movisens device.
-  /// The sampling will begin once the data is received on the other end of the [MethodChannel].
-  void startSensing(UserData userData) {
-    Map<String, dynamic> args = {'user_data': userData.asMap};
-    _methodChannel.invokeMethod('userData', args);
+  /// The sampling will begin once the data is received
+  /// on the other end of the [MethodChannel],
+  /// given that the application is running on an Android device.
+  void listen(void onData(MovisensDataPoint event),
+      {Function onError, void onDone(), bool cancelOnError}) {
+    if (Platform.isAndroid) {
+      Map<String, dynamic> args = {'user_data': _userData.asMap};
+      _methodChannel.invokeMethod('userData', args);
+      _movisensStream =
+          _eventChannel.receiveBroadcastStream().map(parseDataPoint);
+      _movisensStreamSubscription = _movisensStream.listen(onData);
+    }
+  }
+
+  /// Cancels the subscription to events,
+  /// given that it was started at some point.
+  void cancel() {
+    if (_movisensStreamSubscription != null) {
+      _movisensStreamSubscription.cancel();
+    }
   }
 }
