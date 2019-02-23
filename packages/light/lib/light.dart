@@ -15,7 +15,7 @@ class Light {
       {Function onError, void onDone(), bool cancelOnError}) {
     if (Platform.isAndroid) {
       _lightStream = _eventChannel.receiveBroadcastStream().map((lux) => lux);
-      _lightStream.listen(onData,
+      _lightStreamSubScription = _lightStream.listen(onData,
           onError: onError, onDone: onDone, cancelOnError: true);
     } else {
       print('[light]: Light sensor API not available on iOS!');
