@@ -1,18 +1,33 @@
 import 'dart:async';
-
+import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 
 enum ScreenStateEvent { SCREEN_UNLOCKED, SCREEN_ON, SCREEN_OFF }
 
 class Screen {
   EventChannel _eventChannel = const EventChannel('screenStateEvents');
-  Stream<ScreenStateEvent> _onScreenStateEvent;
+  Stream<ScreenStateEvent> _screenStateStream;
+  StreamSubscription<ScreenStateEvent> _screenStateStreamSubscription;
 
-  Stream<ScreenStateEvent> get screenStateEvents {
-    _onScreenStateEvent = _eventChannel
-        .receiveBroadcastStream()
-        .map((dynamic event) => _parseScreenStateEvent(event));
-    return _onScreenStateEvent;
+  /// Start tracking the screen state events, but only if on an Android device.
+  void listen(void onData(ScreenStateEvent event),
+      {Function onError, void onDone(), bool cancelOnError}) {
+    if (Platform.isAndroid) {
+      _screenStateStream = _eventChannel
+          .receiveBroadcastStream()
+          .map((event) => _parseScreenStateEvent(event));
+      _screenStateStreamSubscription = _screenStateStream.listen(onData,
+          onError: onError, onDone: onDone, cancelOnError: true);
+    } else {
+      print('[screen_state]: Screen state API not available on iOS!');
+    }
+  }
+
+  /// Cancel the subscription, if it has been started.
+  void cancel() {
+    if (_screenStateStreamSubscription != null) {
+      _screenStateStreamSubscription.cancel();
+    }
   }
 
   ScreenStateEvent _parseScreenStateEvent(String event) {

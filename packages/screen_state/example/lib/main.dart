@@ -10,7 +10,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
@@ -20,8 +19,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     Screen screen = new Screen();
-    StreamSubscription<ScreenStateEvent> subscription;
-    subscription = screen.screenStateEvents.listen(onData);
+    screen.listen(onData);
   }
 
   onData(ScreenStateEvent event) {
@@ -35,8 +33,7 @@ class _MyAppState extends State<MyApp> {
         appBar: new AppBar(
           title: const Text('Screen State Example app'),
         ),
-        body: new Center(
-        ),
+        body: new Center(),
       ),
     );
   }
