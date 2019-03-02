@@ -12,12 +12,27 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _luxString = 'Unknown';
   Light _light;
+  StreamSubscription _subscription;
 
-  void _onData(int luxValue) async {
+  void onData(int luxValue) async {
     print("Lux value: $luxValue");
     setState(() {
       _luxString = "$luxValue";
     });
+  }
+
+  void stopListening() {
+    _subscription.cancel();
+  }
+
+  void startListening() {
+    _light = new Light();
+    try {
+      _subscription = _light.lightStream.listen(onData);
+    }
+    on LightException catch (exception) {
+      print(exception);
+    }
   }
 
   @override
@@ -28,8 +43,7 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    _light = new Light();
-    _light.listen(_onData);
+    startListening();
   }
 
   @override
