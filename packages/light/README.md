@@ -1,7 +1,7 @@
 # light
 
-A light sensor plugin for Flutter, reads the intensity of light in lux, and reports this number back.
-The API for getting the current light exposure is only available on Android devices, and the plugin will therefore not work for iOS devices.
+A light sensor plugin for Flutter, reads the light intensity registered by the light sensor (in [Lux]), and reports this number back via a stream.
+The API for getting the light exposure is **only available on Android devices**, and the plugin will therefore not work for iOS devices.
 
 ## Install
 Add ```light``` as a dependency in  `pubspec.yaml`.
