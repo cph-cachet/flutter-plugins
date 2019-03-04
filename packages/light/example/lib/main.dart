@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
   void startListening() {
     _light = new Light();
     try {
-      _subscription = _light.lightStream.listen(onData);
+      _subscription = _light.lightSensorStream.listen(onData);
     }
     on LightException catch (exception) {
       print(exception);
