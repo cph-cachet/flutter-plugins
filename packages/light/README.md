@@ -8,7 +8,7 @@ Add ```light``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
 ## Usage
-Al incoming data points are streamed with a `StreamSubscription` which is set up by calling the `listen()` method on the `light.lightSensorStream` stream object.
+All incoming data points are streamed with a `StreamSubscription` which is set up by calling the `listen()` method on the `light.lightSensorStream` stream object.
 
 Given a method `_onData(int lux)` the subscription can be set up as follows:
 ```dart
