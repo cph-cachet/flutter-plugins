@@ -10,6 +10,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Screen _screen;
+  StreamSubscription<ScreenStateEvent> _subscription;
+
   @override
   void initState() {
     super.initState();
@@ -18,12 +21,24 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    Screen screen = new Screen();
-    screen.listen(onData);
+    startListening();
   }
 
-  onData(ScreenStateEvent event) {
+  void onData(ScreenStateEvent event) {
     print(event);
+  }
+
+  void startListening() {
+    _screen = new Screen();
+    try {
+      _subscription = _screen.screenStateStream.listen(onData);
+    } on ScreenStateException catch (exception) {
+      print(exception);
+    }
+  }
+
+  void stopListening() {
+    _subscription.cancel();
   }
 
   @override

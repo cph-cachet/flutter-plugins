@@ -4,30 +4,32 @@ import 'package:flutter/services.dart';
 
 enum ScreenStateEvent { SCREEN_UNLOCKED, SCREEN_ON, SCREEN_OFF }
 
+/// Custom Exception for the plugin,
+/// thrown whenever the plugin is used on platforms other than Android
+class ScreenStateException implements Exception {
+  String _cause;
+
+  ScreenStateException(this._cause);
+
+  @override
+  String toString() {
+    return _cause;
+  }
+}
+
 class Screen {
   EventChannel _eventChannel = const EventChannel('screenStateEvents');
   Stream<ScreenStateEvent> _screenStateStream;
-  StreamSubscription<ScreenStateEvent> _screenStateStreamSubscription;
 
-  /// Start tracking the screen state events, but only if on an Android device.
-  void listen(void onData(ScreenStateEvent event),
-      {Function onError, void onDone(), bool cancelOnError}) {
+  Stream<ScreenStateEvent> get screenStateStream {
     if (Platform.isAndroid) {
       _screenStateStream = _eventChannel
           .receiveBroadcastStream()
           .map((event) => _parseScreenStateEvent(event));
-      _screenStateStreamSubscription = _screenStateStream.listen(onData,
-          onError: onError, onDone: onDone, cancelOnError: true);
-    } else {
-      print('[screen_state]: Screen state API not available on iOS!');
+      return _screenStateStream;
     }
-  }
-
-  /// Cancel the subscription, if it has been started.
-  void cancel() {
-    if (_screenStateStreamSubscription != null) {
-      _screenStateStreamSubscription.cancel();
-    }
+    throw ScreenStateException(
+        'Screen State API exclusively available on Android!');
   }
 
   ScreenStateEvent _parseScreenStateEvent(String event) {
