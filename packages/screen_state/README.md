@@ -7,27 +7,32 @@ A Flutter plugin for tracking the screen state.
 Add ```screen_state``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
-## Example Usage
-Instantiate a Screen object (no parameters needed):
+## Usage
+All incoming data points are streamed with a `StreamSubscription` which is set up by calling the `listen()` method on the `screenStateStream` stream object.
 
+Given a method `_onData(ScreenStateEvent event)` the subscription can be set up as follows:
 ```dart
-Screen screen = new Screen();
-```
-
-Screen State events can be streamed by calling the `listen()` method on a `Screen`
-object, using an onData method for handling incoming events:
-
-```dart
-screen.listen(onData);
-```
-
-An example of the `onData()` method is:
-
-```dart  
-onData(ScreenStateEvent event) {
+Screen _screen;
+StreamSubscription<ScreenStateEvent> _subscription;
+...
+void onData(ScreenStateEvent event) {
     print(event);
 }
+
+void startListening() {
+    _screen = new Screen();
+    try {
+      _subscription = _screen.screenStateStream.listen(onData);
+    } on ScreenStateException catch (exception) {
+      print(exception);
+    }
+}
 ```
-  
-The subscription can be cancelled again, by invoking the `cancel` method:
-`screen.cancel();`
+
+The stream can also be cancelled again by calling the `cancel()` method:
+
+```dart
+  void stopListening() {
+    _subscription.cancel();
+  }
+```
