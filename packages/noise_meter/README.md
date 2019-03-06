@@ -14,17 +14,32 @@ On *Android* you need to add a permission to `AndroidManifest.xml`:
 
 ## Usage
 ### Initalization
+Noise data will be streamed, and for this a few objects need to be initialized, such as a boolean representing the recording state, a stream and a NoiseMeter object.
 ```dart
-int frequency = 500; 
-Noise noise = new Noise(frequency);
+bool _isRecording = false;
 StreamSubscription<NoiseEvent> _noiseSubscription;
+Noise _noise;
+```
+
+Furthermore, handling incoming events in a seperate method is also a good idea:
+```dart
+void onData(NoiseEvent e) {
+    print("${e.decibel} dB");
+}
 ```
 
 Where `frequency` is the update rate in milliseconds of type `int`, this means the lower the update rate, the more frequently events will come in.
 
 ### Start listening
 ```dart
-_noiseSubscription = noise.noiseStream.listen(onData);
+void startRecorder() async {
+    try {
+      _noise = new Noise(500); // New observation every 500 ms
+      _noiseSubscription = _noise.noiseStream.listen(onData);
+    } on NoiseMeterException catch (exception) {
+      print(exception);
+    }
+}
 ```
 
 Where `onData()` handles the events from `StreamSubscription`. An example could be:
@@ -39,5 +54,17 @@ Each incoming `NoiseEvent` has an integer field named `decibel` containing the n
 
 ### Stop listening
 ```dart
-_noiseSubscription.cancel();
+void stopRecorder() async {
+    try {
+      if (_noiseSubscription != null) {
+        _noiseSubscription.cancel();
+        _noiseSubscription = null;
+      }
+      this.setState(() {
+        this._isRecording = false;
+      });
+    } catch (err) {
+      print('stopRecorder error: $err');
+    }
+}
 ```

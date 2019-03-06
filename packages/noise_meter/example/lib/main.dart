@@ -2,7 +2,6 @@ import 'package:noise_meter/noise_meter.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-
 void main() {
   runApp(new MyApp());
 }
@@ -17,7 +16,6 @@ class _MyAppState extends State<MyApp> {
   StreamSubscription<NoiseEvent> _noiseSubscription;
   String _noiseLevel;
   Noise _noise;
-  int myNumber = 0;
 
   @override
   void initState() {
@@ -37,9 +35,8 @@ class _MyAppState extends State<MyApp> {
     try {
       _noise = new Noise(500); // New observation every 500 ms
       _noiseSubscription = _noise.noiseStream.listen(onData);
-
-    } catch (err) {
-      print('startRecorder error: $err');
+    } on NoiseMeterException catch (exception) {
+      print(exception);
     }
   }
 
@@ -85,11 +82,8 @@ class _MyAppState extends State<MyApp> {
               }
               this.stopRecorder();
             },
-            child: Icon(this._isRecording ? Icons.stop : Icons.mic)
-        ),
+            child: Icon(this._isRecording ? Icons.stop : Icons.mic)),
       ),
     );
   }
-
 }
-
