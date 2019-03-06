@@ -1,6 +1,6 @@
 name: app_usage
 description: View usage statistics of all applications on the phone (Android only).
-version: 0.0.3
+version: 0.1.0
 author: CACHET Team <cph.cachet@gmail.com>
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/app_usage
 

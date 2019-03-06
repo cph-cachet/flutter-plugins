@@ -35,16 +35,23 @@ Below is an example of how the start of your manifest should look in the end
 
 ## Usage
 ```dart
-void function() async {
-  // Initialization
-  AppUsage appUsage = new AppUsage();
-  
-  // Define a time interval
-  DateTime endDate = new DateTime.now();
-  DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
-  
-  // Fetch the usage stats
-  Map<String, double> usage = await appUsage.getUsage(startDate, endDate);
+void getUsageStats() async {
+    // Initialization
+    AppUsage appUsage = new AppUsage();
+    try {
+      // Define a time interval
+      DateTime endDate = new DateTime.now();
+      DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
+      
+      // Fetch the usage stats
+      Map<String, double> usage = await appUsage.fetchUsage(startDate, endDate);
+      
+      // (Optional) Remove entries for apps with 0 usage time
+      usage.removeWhere((key,val) => val == 0);
+    }
+    on AppUsageException catch (exception) {
+      print(exception);
+    }
 }
 ```
 ## Example

@@ -25,11 +25,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   void getUsageStats() async {
-    DateTime endDate = new DateTime.now();
-    DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
-    Map<String, double> usage = await appUsage.getUsage(startDate, endDate);
-    usage.removeWhere((key,val) => val == 0);
-    setState(() => apps = makeString(usage));
+    try {
+      DateTime endDate = new DateTime.now();
+      DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
+      Map<String, double> usage = await appUsage.fetchUsage(startDate, endDate);
+      usage.removeWhere((key,val) => val == 0);
+      setState(() => apps = makeString(usage));
+    }
+    on AppUsageException catch (exception) {
+      print(exception);
+    }
   }
 
   String makeString(Map<String, double> usage) {
