@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:movisens_flutter/movisens_flutter.dart';
 import 'file_io.dart';
@@ -28,23 +30,17 @@ class MovisensApp extends StatefulWidget {
 }
 
 class _MovisensAppState extends State<MovisensApp> {
-  int value = 2;
-  String address = 'unknown', name = 'unknown';
-  Movisens movisens;
+  Movisens _movisens;
+  StreamSubscription<MovisensDataPoint> _subscription;
   LogManager logManager = new LogManager();
   List<MovisensDataPoint> movisensEvents = [];
+  String address = 'unknown', name = 'unknown';
+  int weight, height, age;
 
   @override
   void initState() {
     super.initState();
-    int weight = 100, height = 180, age = 25;
-    address = '88:6B:0F:82:1D:33';
-    name = 'Sensor 02655';
-
-    UserData userData = new UserData(
-        weight, height, Gender.male, age, SensorLocation.chest, address, name);
-    movisens = new Movisens(userData);
-    movisens.listen(onData);
+    startListening();
   }
 
   void onData(MovisensDataPoint d) {
@@ -52,6 +48,29 @@ class _MovisensAppState extends State<MovisensApp> {
       movisensEvents.add(d);
       logManager.writeLog('$d');
     });
+  }
+
+  void stopListening() {
+    _subscription.cancel();
+  }
+
+  void startListening() {
+    address = '88:6B:0F:82:1D:33';
+    name = 'Sensor 02655';
+    weight = 100;
+    height = 180;
+    age = 25;
+
+    UserData userData = new UserData(
+        weight, height, Gender.male, age, SensorLocation.chest, address, name);
+
+    _movisens = new Movisens(userData);
+
+    try {
+      _subscription = _movisens.movisensStream.listen(onData);
+    } on MovisensException catch (exception) {
+      print(exception);
+    }
   }
 
   @override

@@ -4,6 +4,18 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'dart:io' show Platform;
 
+/// Custom Exception for the plugin,
+/// thrown whenever the plugin is used on platforms other than Android
+class MovisensException implements Exception {
+  String _cause;
+  MovisensException(this._cause);
+
+  @override
+  String toString() {
+    return _cause;
+  }
+}
+
 enum Gender { male, female }
 
 enum SensorLocation {
@@ -279,31 +291,20 @@ class Movisens {
   MethodChannel _methodChannel = MethodChannel('movisens.method_channel');
   EventChannel _eventChannel = EventChannel('movisens.event_channel');
   Stream<MovisensDataPoint> _movisensStream;
-  StreamSubscription<MovisensDataPoint> _movisensStreamSubscription;
   UserData _userData;
 
   Movisens(this._userData);
 
-  /// Sends data used for starting the Movisens device.
-  /// The sampling will begin once the data is received
-  /// on the other end of the [MethodChannel],
-  /// given that the application is running on an Android device.
-  void listen(void onData(MovisensDataPoint event),
-      {Function onError, void onDone(), bool cancelOnError}) {
+  Stream<MovisensDataPoint> get movisensStream {
     if (Platform.isAndroid) {
-      Map<String, dynamic> args = {'user_data': _userData.asMap};
-      _methodChannel.invokeMethod('userData', args);
-      _movisensStream =
-          _eventChannel.receiveBroadcastStream().map(parseDataPoint);
-      _movisensStreamSubscription = _movisensStream.listen(onData);
+      if (_movisensStream == null) {
+        Map<String, dynamic> args = {'user_data': _userData.asMap};
+        _methodChannel.invokeMethod('userData', args);
+        _movisensStream =
+            _eventChannel.receiveBroadcastStream().map(parseDataPoint);
+        return _movisensStream;
+      }
     }
-  }
-
-  /// Cancels the subscription to events,
-  /// given that it was started at some point.
-  void cancel() {
-    if (_movisensStreamSubscription != null) {
-      _movisensStreamSubscription.cancel();
-    }
+    throw MovisensException('Movisens API exclusively available on Android!');
   }
 }
