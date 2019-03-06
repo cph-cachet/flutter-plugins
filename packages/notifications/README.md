@@ -25,17 +25,34 @@ between the `<application></application>` tags.
 ```
 
 ### Flutter: Listen to notification events
+All incoming data points are streamed with a `StreamSubscription` which is set up by calling the `listen()` method on the `notificationStream` stream object.
+
+Given a method `onData(NotificationEvent event)` the subscription can be set up as follows:
 ```dart
-Notifications notifications = new Notifications();
-StreamSubscription<NotificationEvent> events;
-events = notifications.stream.listen(onData);
+Light _light;
+StreamSubscription _subscription;
+...
+void onData(NotificationEvent event) {
+    print(event.toString());
+}
+
+void startListening() {
+    _notifications = new Notifications();
+    try {
+      _subscription = _notifications.notificationStream.listen(onData);
+    } on NotificationException catch (exception) {
+      print(exception);
+    }
+}
 ```
 
-Where the `onData()` method handles the incoming `NotificationEvents`. An example could be:
-```dart
-void onData(NotificationEvent event) => print(event.toString());
-```
+To stop listening, call `cancel()` on the subcription object:
 
+```
+void stopListening() {
+  _subscription.cancel();
+}
+```
 ### Notification Information
 Every time a notification is registered a `NotificationEvent` is received in Flutter, containing the following attributes:
 * `packageName [String]`: The name of the application which triggered the notification.
