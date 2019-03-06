@@ -23,9 +23,11 @@ class Screen {
 
   Stream<ScreenStateEvent> get screenStateStream {
     if (Platform.isAndroid) {
-      _screenStateStream = _eventChannel
-          .receiveBroadcastStream()
-          .map((event) => _parseScreenStateEvent(event));
+      if (_screenStateStream == null) {
+        _screenStateStream = _eventChannel
+            .receiveBroadcastStream()
+            .map((event) => _parseScreenStateEvent(event));
+      }
       return _screenStateStream;
     }
     throw ScreenStateException(
