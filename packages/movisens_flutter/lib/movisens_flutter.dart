@@ -302,8 +302,8 @@ class Movisens {
         _methodChannel.invokeMethod('userData', args);
         _movisensStream =
             _eventChannel.receiveBroadcastStream().map(parseDataPoint);
-        return _movisensStream;
       }
+      return _movisensStream;
     }
     throw MovisensException('Movisens API exclusively available on Android!');
   }
