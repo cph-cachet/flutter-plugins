@@ -29,7 +29,7 @@ All incoming data points are streamed with a `StreamSubscription` which is set u
 
 Given a method `onData(NotificationEvent event)` the subscription can be set up as follows:
 ```dart
-Light _light;
+Notifications _notifications;
 StreamSubscription _subscription;
 ...
 void onData(NotificationEvent event) {
