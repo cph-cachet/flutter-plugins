@@ -6,14 +6,35 @@ This package uses the [OpenWeatherMAP API](https://openweathermap.org/) to get t
 ## Install (Flutter)
 Add ```weather``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [pubspec documenation](https://flutter.io/using-packages/).
+## AndroidX support
+**Only for Android API level 28**
+
+Update the contents of the `android/gradle.properties` file with the following:
+```
+android.enableJetifier=true
+android.useAndroidX=true
+org.gradle.jvmargs=-Xmx1536M
+```
+
+Next, add the following dependencies to your `android/build.gradle` file:
+```
+dependencies {
+  classpath 'com.android.tools.build:gradle:3.3.0'
+  classpath 'com.google.gms:google-services:4.2.0'
+} 
+```
+
+And finally, set the Android compile SDK version to `compileSdkVersion 28` in the `android/app/build.gradle` file.
 
 ## Permissions
 The package uses your location to fetch weather data, therefore location tracking must be enabled.
+
 
 ### Android
 Add the following entry to your `manifest.xml` file, in the Android project of your application:
 
 ```xml
+<uses-permission android:name="android.permission.INTERNET"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 
