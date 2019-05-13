@@ -73,14 +73,14 @@ import 'package:weather/weather.dart';
 WeatherStation weatherStation = new WeatherStation("YOUR_API_KEY");
 ```
 ### Query current weather
-For api documentation on the current weather API, see the [OpenWeatherMap weather API docs](https://openweathermap.org/current).
+For specific documentation on the current weather API, see the [OpenWeatherMap weather API docs](https://openweathermap.org/current).
 
 ```dart
 Weather weather = await weatherStation.currentWeather();
 ```
 For a complete list of all the properties of the [Weather](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html) class, check the [documentation](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html)
 
-#### Get current temperature
+#### Get temperature
 The [Temperature](https://pub.dartlang.org/documentation/weather/latest/weather/Temperature-class.html) class holds a temperature and can output the temperature in Celsius, Fahrenheit, and Kelvin:
 ```dart
 double celsius = weather.temperature.celsius;
@@ -95,4 +95,10 @@ For API documentation on the forecast API, see the [OpenWeatherMap forecast API 
 List<Weather> forecasts = await weatherStation.getFiveDayForecast();
 ```
 
+### Exceptions
+The following are cases for which an exception will be thrown:
+
+* No Location permission was given
+* The provided OpenWeather API key is invalid
+* An bad response was given by the API; it may be down.
 
