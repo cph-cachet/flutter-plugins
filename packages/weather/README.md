@@ -24,7 +24,7 @@ dependencies {
 } 
 ```
 
-And finally, set the Android compile SDK version to `compileSdkVersion 28` in the `android/app/build.gradle` file.
+And finally, set the Android compile- and minimum SDK versions to `compileSdkVersion 28`, and `minSdkVersion 21` respectively, inside the `android/app/build.gradle` file.
 
 ## Permissions
 The package uses your location to fetch weather data, therefore location tracking must be enabled.
@@ -66,13 +66,17 @@ https://stackoverflow.com/questions/44379348/the-use-of-swift-3-objc-inference-i
 First and foremost you need an API key from OpenWeatherMap, which can be acquired for free [here](https://openweathermap.org/price).
 
 ```dart
+import 'package:weather/weather.dart';
+
+...
+
 WeatherStation weatherStation = new WeatherStation("YOUR_API_KEY");
 ```
 ### Query current weather
 For api documentation on the current weather API, see the [OpenWeatherMap weather API docs](https://openweathermap.org/current).
 
 ```dart
-Weather weather = await weatherStation.getCurrentWeather();
+Weather weather = await weatherStation.currentWeather();
 ```
 For a complete list of all the properties of the [Weather](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html) class, check the [documentation](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html)
 

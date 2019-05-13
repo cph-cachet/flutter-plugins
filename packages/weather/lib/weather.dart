@@ -5,10 +5,23 @@ import 'package:http/http.dart' as http;
 
 /// Custom Exception for the plugin,
 /// thrown whenever sufficient permissions weren't granted
-class WeatherException implements Exception {
+class LocationPermissionException implements Exception {
   String _cause;
 
-  WeatherException(this._cause);
+  LocationPermissionException(this._cause);
+
+  @override
+  String toString() {
+    return _cause;
+  }
+}
+
+/// Custom Exception for the plugin,
+/// thrown whenever the API responds with an error and body could not be parsed.
+class OpenWeatherAPIException implements Exception {
+  String _cause;
+
+  OpenWeatherAPIException(this._cause);
 
   @override
   String toString() {
@@ -229,21 +242,29 @@ class WeatherStation {
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
   Future<Weather> currentWeather() async {
-    String url = await _generateUrl(tag: WEATHER);
-    http.Response response = await http.get(url);
-    Map<String, dynamic> currentWeather = json.decode(response.body);
-    return new Weather(currentWeather);
+    try {
+      Map<String, dynamic> currentWeather =
+      await _requestOpenWeatherAPI(WEATHER);
+      return new Weather(currentWeather);
+    } catch (exception) {
+      print(exception);
+    }
+    return null;
   }
 
   /// Fetch current weather based on geographical coordinates.
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/forecast5
   Future<List<Weather>> fiveDayForecast() async {
-    String url = await _generateUrl(tag: FORECAST);
-    http.Response response = await http.get(url);
-    Map<String, dynamic> jsonForecasts = json.decode(response.body);
-    List<dynamic> forecastsJson = jsonForecasts['list'];
-    List<Weather> forecasts = forecastsJson.map((w) => new Weather(w)).toList();
+    List<Weather> forecasts = new List<Weather>();
+    try {
+      Map<String, dynamic> jsonForecasts =
+      await _requestOpenWeatherAPI(FORECAST);
+      List<dynamic> forecastsJson = jsonForecasts['list'];
+      forecasts = forecastsJson.map((w) => new Weather(w)).toList();
+    } catch (exception) {
+      print(exception);
+    }
     return forecasts;
   }
 
@@ -258,19 +279,40 @@ class WeatherStation {
     }
   }
 
-  /// Generate the URL for the API, containing the API key,
-  /// as well as latitude and longitude.
-  Future<String> _generateUrl({String tag}) async {
+  Future<Map<String, dynamic>> _requestOpenWeatherAPI(String tag) async {
     bool permissionOK = await manageLocationPermission();
+
+    /// Check if device is allowed to get location
     if (permissionOK) {
+      /// Build HTTP get url by passing the required parameters
       LocationData locationData = await new Location().getLocation();
       String url = 'http://api.openweathermap.org/data/2.5/' +
           '$tag?' +
           'lat=${locationData.latitude}&' +
           'lon=${locationData.longitude}&' +
           'appid=$_apiKey';
-      return url;
+
+      /// Send HTTP get response with the url
+      http.Response response = await http.get(url);
+
+      /// Perform error checking on response:
+      /// Status code 200 means everything went well
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonBody = json.decode(response.body);
+        return jsonBody;
+      }
+
+      /// The API key is invalid, the API may be down
+      /// or some other unspecified error could occur.
+      /// The concrete error should be clear from the HTTP response body.
+      else {
+        throw new OpenWeatherAPIException(
+            "OpenWeather API Exception: ${response.body}");
+      }
     }
-    throw new WeatherException("Location permission not granted!");
+
+    /// If permission to track location is not yet given.
+    throw new LocationPermissionException(
+        "PermissionLocation permission not granted!");
   }
 }

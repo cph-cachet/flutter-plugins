@@ -1,3 +1,9 @@
+## 0.9.3
+
+* Refactored how a http response is sent and parsed.
+* Added exceptions for bad HTTP responses.
+* Renamed existing exception classes to something more meaningful.
+
 ## 0.9.2
 
 * Added support for Android X
