@@ -38,7 +38,9 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
     // implementation 'com.github.devhci:movisenslibrary:e0cb4f4348'
     //implementation 'com.github.devhci:movisenslibrary:2a23a0cb71'
-    implementation 'com.github.devhci:movisenslibrary:2600d291b7'
+    //implementation 'com.github.devhci:movisenslibrary:2600d291b7'
+
+    implementation 'com.github.cph-cachet:movisenslibrary:6a27ed9c96'
     //implementation project(':movisenslibrary')
     // implementation files('libs/flutter.jar')
 }
