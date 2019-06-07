@@ -4,10 +4,12 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.HashMap;
+
 import de.kn.uni.smartact.movisenslibrary.screens.viewmodel.Handler_BluetoothStart;
 
 public class PermissionActivity extends AppCompatActivity {

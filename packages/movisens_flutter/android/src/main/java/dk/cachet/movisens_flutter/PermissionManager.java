@@ -2,11 +2,8 @@ package dk.cachet.movisens_flutter;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import java.util.HashMap;
