@@ -1,3 +1,7 @@
-## 0.0.1
+## 0.1.3
 
-* TODO: Describe initial release.
+* `MovisensDataPoint` removed and replaced with a `Map`.
+
+## 0.1.1
+
+* Initial release.
