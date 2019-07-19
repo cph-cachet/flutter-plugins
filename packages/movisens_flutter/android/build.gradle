@@ -1,11 +1,10 @@
-group 'com.example.movisensflutter'
+group 'dk.cachet.movisens_flutter'
 version '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
         google()
         jcenter()
-        maven { url "https://jitpack.io" }
     }
 
     dependencies {
@@ -28,20 +27,26 @@ android {
 
     defaultConfig {
         minSdkVersion 24
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
         disable 'InvalidPackage'
     }
-
-   /* dexOptions {
-
-        javaMaxHeapSize "4g" // 2g should be also OK
-    }*/
 }
+
 dependencies {
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.github.devhci:movisenslibrary:e0cb4f4348'
-}
+    implementation 'androidx.appcompat:appcompat:1.0.2'
 
+
+    //Working version
+
+   /// implementation 'com.github.cph-cachet:movisenslibrary:6a27ed9c96'
+
+    implementation 'com.github.cph-cachet:movisenslibrary:df97c6293b'
+
+   // implementation 'com.github.devhci:movisenslibrary:06c977e05e'
+
+
+    //implementation project(':movisenslibrary')
+    // implementation files('libs/flutter.jar')
+}

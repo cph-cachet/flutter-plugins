@@ -1,0 +1,107 @@
+Flutter crash report; please file at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter clean
+
+## exception
+
+YamlException: Error on line 14, column 4: Expected a key while parsing a block mapping.
+   ╷
+14 │    path_provider: ^0.4.1
+   │    ^
+   ╵
+
+```
+#0      Parser._parseBlockMappingKey (package:yaml/src/parser.dart:448:5)
+#1      Parser._stateMachine (package:yaml/src/parser.dart:86:16)
+#2      Parser.parse (package:yaml/src/parser.dart:47:19)
+#3      Loader._loadMapping (package:yaml/src/loader.dart:171:23)
+#4      Loader._loadNode (package:yaml/src/loader.dart:86:16)
+#5      Loader._loadMapping (package:yaml/src/loader.dart:165:19)
+#6      Loader._loadNode (package:yaml/src/loader.dart:86:16)
+#7      Loader._loadDocument (package:yaml/src/loader.dart:62:20)
+#8      Loader.load (package:yaml/src/loader.dart:54:20)
+#9      loadYamlDocument (package:yaml/yaml.dart:51:25)
+#10     loadYamlNode (package:yaml/yaml.dart:42:5)
+#11     loadYaml (package:yaml/yaml.dart:34:5)
+#12     FlutterManifest.createFromString (package:flutter_tools/src/flutter_manifest.dart:40:28)
+<asynchronous suspension>
+#13     FlutterManifest.createFromPath (package:flutter_tools/src/flutter_manifest.dart:34:12)
+<asynchronous suspension>
+#14     FlutterProject._readManifest (package:flutter_tools/src/project.dart:144:60)
+<asynchronous suspension>
+#15     FlutterProject.fromDirectory (package:flutter_tools/src/project.dart:44:44)
+<asynchronous suspension>
+#16     FlutterProject.current (package:flutter_tools/src/project.dart:55:46)
+#17     CleanCommand.runCommand (package:flutter_tools/src/commands/clean.dart:27:64)
+<asynchronous suspension>
+#18     FlutterCommand.verifyThenRunCommand (package:flutter_tools/src/runner/flutter_command.dart:549:18)
+#19     _asyncThenWrapperHelper.<anonymous closure> (dart:async/runtime/lib/async_patch.dart:77:64)
+#20     _rootRunUnary (dart:async/zone.dart:1132:38)
+#21     _CustomZone.runUnary (dart:async/zone.dart:1029:19)
+#22     _FutureListener.handleValue (dart:async/future_impl.dart:126:18)
+#23     Future._propagateToListeners.handleValueCallback (dart:async/future_impl.dart:639:45)
+#24     Future._propagateToListeners (dart:async/future_impl.dart:668:32)
+#25     Future._complete (dart:async/future_impl.dart:473:7)
+#26     _SyncCompleter.complete (dart:async/future_impl.dart:51:12)
+#27     _AsyncAwaitCompleter.complete.<anonymous closure> (dart:async/runtime/lib/async_patch.dart:33:20)
+#28     _rootRun (dart:async/zone.dart:1124:13)
+#29     _CustomZone.run (dart:async/zone.dart:1021:19)
+#30     _CustomZone.bindCallback.<anonymous closure> (dart:async/zone.dart:947:23)
+#31     _microtaskLoop (dart:async/schedule_microtask.dart:41:21)
+#32     _startMicrotaskLoop (dart:async/schedule_microtask.dart:50:5)
+#33     _runPendingImmediateCallback (dart:isolate/runtime/lib/isolate_patch.dart:115:13)
+#34     _RawReceivePortImpl._handleMessage (dart:isolate/runtime/lib/isolate_patch.dart:172:5)
+```
+
+## flutter doctor
+
+```
+[32m[✓][39m Flutter (Channel master, v1.3.14-pre.20, on Mac OS X 10.13.6 17G65, locale en-DK)
+    [32m•[39m Flutter version 1.3.14-pre.20 at /Users/deku/Documents/development/flutter
+    [32m•[39m Framework revision 01fc01812d (3 months ago), 2019-03-20 01:28:40 -0400
+    [32m•[39m Engine revision 3496156bd9
+    [32m•[39m Dart version 2.2.1 (build 2.2.1-dev.2.0 None)
+
+[32m[✓][39m Android toolchain - develop for Android devices (Android SDK version 28.0.3)
+    [32m•[39m Android SDK at /Users/deku/Library/Android/sdk
+    [32m•[39m Android NDK location not configured (optional; useful for native profiling support)
+    [32m•[39m Platform android-28, build-tools 28.0.3
+    [32m•[39m Java binary at: /Applications/Android Studio 2.app/Contents/jre/jdk/Contents/Home/bin/java
+    [32m•[39m Java version OpenJDK Runtime Environment (build 1.8.0_152-release-1343-b01)
+    [32m•[39m All Android licenses accepted.
+
+[33m[!][39m iOS toolchain - develop for iOS devices (Xcode 9.4.1)
+    [32m•[39m Xcode at /Applications/Xcode.app/Contents/Developer
+    [32m•[39m Xcode 9.4.1, Build version 9F2000
+    [31m✗[39m Verify that all connected devices have been paired with this computer in Xcode.
+      If all devices have been paired, libimobiledevice and ideviceinstaller may require updating.
+      To update with Brew, run:
+        brew update
+        brew uninstall --ignore-dependencies libimobiledevice
+        brew uninstall --ignore-dependencies usbmuxd
+        brew install --HEAD usbmuxd
+        brew unlink usbmuxd
+        brew link usbmuxd
+        brew install --HEAD libimobiledevice
+        brew install ideviceinstaller
+    [32m•[39m ios-deploy 2.0.0
+    [32m•[39m CocoaPods version 1.5.3
+
+[32m[✓][39m Android Studio (version 3.4)
+    [32m•[39m Android Studio at /Applications/Android Studio 2.app/Contents
+    [32m•[39m Flutter plugin version 36.0.1
+    [32m•[39m Dart plugin version 183.6270
+    [32m•[39m Java version OpenJDK Runtime Environment (build 1.8.0_152-release-1343-b01)
+
+[32m[✓][39m IntelliJ IDEA Ultimate Edition (version 2018.2.5)
+    [32m•[39m IntelliJ at /Applications/IntelliJ IDEA.app
+    [32m•[39m Flutter plugin version 29.1.3
+    [32m•[39m Dart plugin version 182.4892.25
+
+[32m[✓][39m Connected device (1 available)
+    [32m•[39m moto g 6 • ZY322TLJ4C • android-arm • Android 8.0.0 (API 26)
+
+[33m![39m Doctor found issues in 1 category.
+```

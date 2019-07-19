@@ -1,10 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.movisensflutterexample">
-
+    package="dk.cachet.movisens_flutter_example">
     <!-- The INTERNET permission is required for development. Specifically,
-         flutter needs it to communicate with the running application
-         to allow setting breakpoints, to provide hot reload, etc.
-    -->
+            flutter needs it to communicate with the running application
+            to allow setting breakpoints, to provide hot reload, etc.
+       -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
 
@@ -16,95 +15,96 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide
          additional functionality it is fine to subclass or reimplement
          FlutterApplication and put your custom class here. -->
     <application
-        android:name="io.flutter.app.FlutterApplication"
-        android:label="movisens_flutter_example"
-        android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.AppCompat.Light">
+            android:name="io.flutter.app.FlutterApplication"
+            android:label="movisens_flutter_example"
+            android:icon="@mipmap/ic_launcher"
+            android:theme="@style/Theme.AppCompat.Light">
         <activity
-            android:name=".MainActivity"
-            android:launchMode="singleTop"
-            android:theme="@style/Theme.AppCompat.Light"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
-            android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+                android:name=".MainActivity"
+                android:launchMode="singleTop"
+                android:theme="@style/Theme.AppCompat.Light"
+                android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+                android:hardwareAccelerated="true"
+                android:windowSoftInputMode="adjustResize">
             <!-- This keeps the window background of the activity showing
                  until Flutter renders its first frame. It can be removed if
                  there is no splash screen (such as the default splash screen
                  defined in @style/LaunchTheme). -->
             <meta-data
-                android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
-                android:value="true" />
+                    android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
+                    android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <activity android:name="com.example.movisensflutter.PermissionActivity"
-            android:theme="@style/Theme.AppCompat.Light"></activity>
+        <activity android:name="dk.cachet.movisensflutter.PermissionActivity"
+                  android:theme="@style/Theme.AppCompat.Light"></activity>
 
         <activity
-            android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothUser"
-            android:configChanges="orientation|keyboardHidden|keyboard"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait">
+                android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothUser"
+                android:configChanges="orientation|keyboardHidden|keyboard"
+                android:exported="true"
+                android:label="@string/app_name"
+                android:launchMode="singleTop"
+                android:screenOrientation="portrait">
             <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
         </activity>
 
         <activity
-            android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothDeviceScan"
-            android:configChanges="orientation|keyboardHidden|keyboard"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait">
+                android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothDeviceScan"
+                android:configChanges="orientation|keyboardHidden|keyboard"
+                android:exported="true"
+                android:label="@string/app_name"
+                android:launchMode="singleTop"
+                android:screenOrientation="portrait">
             <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
         </activity>
 
         <activity
-            android:name="de.kn.uni.smartact.movisenslibrary.screens.NoMeasurmentDialog"
-            android:configChanges="orientation|keyboardHidden|keyboard"
-            android:theme="@style/Theme.AppCompat.Light"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait">
+                android:name="de.kn.uni.smartact.movisenslibrary.screens.NoMeasurmentDialog"
+                android:configChanges="orientation|keyboardHidden|keyboard"
+                android:theme="@style/Theme.AppCompat.Light"
+                android:exported="true"
+                android:label="@string/app_name"
+                android:launchMode="singleTop"
+                android:screenOrientation="portrait">
             <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
         </activity>
 
         <activity
-            android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothData"
-            android:configChanges="orientation|keyboardHidden|keyboard"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait">
+                android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothData"
+                android:configChanges="orientation|keyboardHidden|keyboard"
+                android:exported="true"
+                android:label="@string/app_name"
+                android:launchMode="singleTop"
+                android:screenOrientation="portrait">
             <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
         </activity>
 
         <activity
-            android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart"
-            android:configChanges="orientation|keyboardHidden|keyboard"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait">
+                android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart"
+                android:configChanges="orientation|keyboardHidden|keyboard"
+                android:exported="true"
+                android:label="@string/app_name"
+                android:launchMode="singleTop"
+                android:screenOrientation="portrait">
         </activity>
 
         <service android:name="de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService" />

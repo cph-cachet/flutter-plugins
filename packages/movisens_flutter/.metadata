@@ -7,4 +7,4 @@ version:
   revision: 01fc01812d4b07264dd0b3334f4b3f324814b573
   channel: master
 
-project_type: app
+project_type: plugin
