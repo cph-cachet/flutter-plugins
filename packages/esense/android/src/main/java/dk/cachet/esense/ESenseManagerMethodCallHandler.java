@@ -15,14 +15,14 @@ import io.esense.esenselib.*;
 
 public class ESenseManagerMethodCallHandler implements MethodCallHandler {
 
-    public static final int timeOut = 5 * 1000;
+    public static final int TIMEOUT = 5 * 1000;
 
-    boolean connected = false;
-    int samplingRate = 10;  // default 10 Hz.
+    private boolean connected = false;
+    private Registrar registrar;
+    private ESenseConnectionEventStreamHandler eSenseConnectionEventStreamHandler;
+
+    private int samplingRate = 10;  // default 10 Hz.
     ESenseManager manager;
-    Registrar registrar;
-    ESenseConnectionEventStreamHandler eSenseConnectionEventStreamHandler;
-
 
     public ESenseManagerMethodCallHandler(
             Registrar registrar,
@@ -30,6 +30,13 @@ public class ESenseManagerMethodCallHandler implements MethodCallHandler {
         this.registrar = registrar;
         this.eSenseConnectionEventStreamHandler = eSenseConnectionEventStreamHandler;
     }
+
+    /**
+     * The current sampling rate as specified in the [setSamplingRate] method
+     *
+     * @return the sampling rate in Hz.
+     */
+    public int getSamplingRate() {return samplingRate;}
 
     @Override
     public void onMethodCall(MethodCall call, Result rawResult) {
@@ -40,11 +47,15 @@ public class ESenseManagerMethodCallHandler implements MethodCallHandler {
             case "connect":
                 final String name = call.argument("name");
                 manager = new ESenseManager(name, registrar.activity().getApplicationContext(), eSenseConnectionEventStreamHandler);
-                connected = manager.connect(timeOut);
+                connected = manager.connect(TIMEOUT);
                 result.success(connected);
                 break;
             case "disconnect":
                 connected = manager.disconnect();
+                result.success(connected);
+                break;
+            case "isConnected":
+                connected = manager.isConnected();
                 result.success(connected);
                 break;
             case "setSamplingRate":
@@ -55,9 +66,45 @@ public class ESenseManagerMethodCallHandler implements MethodCallHandler {
                 success = manager.getDeviceName();
                 result.success(success);
                 break;
+            case "setDeviceName":
+                String deviceName = call.argument("deviceName");
+                success = manager.setDeviceName(deviceName);
+                result.success(success);
+                break;
             case "getBatteryVoltage":
                 success = manager.getBatteryVoltage();
                 result.success(success);
+                break;
+            case "getAccelerometerOffset":
+                success = manager.getAccelerometerOffset();
+                result.success(success);
+                break;
+            case "getAdvertisementAndConnectionInterval":
+                success = manager.getAdvertisementAndConnectionInterval();
+                result.success(success);
+                break;
+            case "setAdvertisementAndConnectiontInterval":
+                final int advMinInterval = call.argument("advMinInterval");
+                final int advMaxInterval = call.argument("advMaxInterval");
+                final int connMinInterval = call.argument("connMinInterval");
+                final int connMaxInterval = call.argument("connMaxInterval");
+                success = manager.setAdvertisementAndConnectiontInterval(
+                        advMinInterval,
+                        advMaxInterval,
+                        connMinInterval,
+                        connMaxInterval);
+                result.success(success);
+                break;
+            case "getSensorConfig":
+                success = manager.getSensorConfig();
+                result.success(success);
+                break;
+            case "setSensorConfig":
+                // TODO - implement serialization of ESenseConfig object btw. Java and Dart.
+                // ESenseConfig config = call.argument("config");
+                // success = manager.setSensorConfig(config);
+                // result.success(success);
+                result.notImplemented();
                 break;
             default:
                 result.notImplemented();

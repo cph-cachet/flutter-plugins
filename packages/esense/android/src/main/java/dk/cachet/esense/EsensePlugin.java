@@ -40,7 +40,10 @@ public class EsensePlugin implements MethodCallHandler {
     eSenseConnectionEventChannel.setStreamHandler(eSenseConnectionEventStreamHandler);
 
     final EventChannel eSenseEventChannel = new EventChannel(registrar.messenger(), ESenseEventEventChannelName);
-    eSenseEventChannel.setStreamHandler(new ESenseEventStreamHandler(registrar, eSenseManagerMethodCallHandler));
+    eSenseEventChannel.setStreamHandler(new ESenseEventStreamHandler(eSenseManagerMethodCallHandler));
+
+    final EventChannel eSenseSensorEventChannel = new EventChannel(registrar.messenger(), ESenseSensorEventChannelName);
+    eSenseSensorEventChannel.setStreamHandler(new ESenseSensorEventStreamHandler(eSenseManagerMethodCallHandler));
   }
 
   @Override

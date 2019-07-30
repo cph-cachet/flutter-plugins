@@ -12,59 +12,45 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
   String _deviceName = 'Unknown';
-  int _voltage = 0;
-  bool _deviceConnected;
+  int _voltage = -1;
+  bool _deviceConnecting, _deviceConnected;
   String eSenseName = 'eSense-0332';
+  bool sampling = false;
 
   @override
   void initState() {
     super.initState();
-    getPlatformVersion();
     setupESense();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> getPlatformVersion() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      platformVersion = await PlatformVersion.platformVersion;
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
+  Future<void> setupESense() async {
+    bool con = false;
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
+    // if you want to get the connection events when connecting, set up the listener BEFORE connecting...
+    ESenseManager.connectionEvents.listen((event) {
+      print('CONNECTION event: $event');
+
+      setState(() {
+        _deviceConnected = ESenseManager.connected;
+      });
+    });
+
+    con = await ESenseManager.connect(eSenseName);
 
     setState(() {
-      _platformVersion = platformVersion;
+      _deviceConnecting = con;
     });
   }
 
-  Future<void> setupESense() async {
-    bool con = false, nam = false;
-
-    // if you want to get the connection events when connecting, set up the listener BEFORE connecting...
-    ESenseManager.connectionEvents.listen((event) => print('CONNECTION event: $event'));
-    con = await ESenseManager.connect(eSenseName);
-
-    ESenseManager.eSenseEvents.listen((event) => print('ESENSE #1 event: $event'));
-
-    setState(() {
-      _deviceConnected = con;
-    });
-
+  void _getESenseInfo() async {
     ESenseManager.eSenseEvents.listen((event) {
-      print('ESENSE #2 event: $event');
+      print('ESENSE event: $event');
 
       setState(() {
         switch (event.runtimeType) {
           case DeviceNameRead:
-            _deviceName = (event as DeviceNameRead).name;
+            _deviceName = (event as DeviceNameRead).deviceName;
             break;
           case BatteryRead:
             _voltage = (event as BatteryRead).voltage;
@@ -72,14 +58,29 @@ class _MyAppState extends State<MyApp> {
         }
       });
     });
-  }
 
-  void _getESenseInfo() async {
+    ESenseManager.sensorEvents.listen((event) {
+      print('SENSOR event: $event');
+    });
+
     print('getDeviceName: ${await ESenseManager.getDeviceName()}');
     print('getBatteryVoltage: ${await ESenseManager.getBatteryVoltage()}');
+  }
 
+  StreamSubscription subscription;
+  void _startListenToSensor() async {
+    subscription = ESenseManager.sensorEvents.listen((event) {
+      print('SENSOR event: $event');
+    });
     setState(() {
-      _deviceConnected = ESenseManager.connected;
+      sampling = true;
+    });
+  }
+
+  void _stopListenToSensor() async {
+    subscription.cancel();
+    setState(() {
+      sampling = false;
     });
   }
 
@@ -88,12 +89,12 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('eSense Example App'),
         ),
         body: Center(
           child: Column(
             children: [
-              Text('Running on: $_platformVersion\n'),
+              Text('eSense Device Connecting: $_deviceConnecting'),
               Text('eSense Device Connected: $_deviceConnected'),
               Text('eSense Device Name: $_deviceName'),
               Text('eSense Battery Level: $_voltage'),
@@ -101,9 +102,9 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
         floatingActionButton: new FloatingActionButton(
-          onPressed: _getESenseInfo,
-          tooltip: 'Get eSense Device Info',
-          child: new Icon(Icons.add),
+          onPressed: (!sampling) ? _startListenToSensor : _stopListenToSensor,
+          tooltip: 'Listen to eSense sensors',
+          child: (!sampling) ? Icon(Icons.play_arrow) : Icon(Icons.stop),
         ),
       ),
     );

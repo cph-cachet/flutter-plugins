@@ -4,16 +4,13 @@ import java.util.HashMap;
 
 import io.esense.esenselib.*;
 import io.flutter.plugin.common.EventChannel.*;
-import io.flutter.plugin.common.PluginRegistry;
 
 public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListener {
 
-    PluginRegistry.Registrar registrar;
-    ESenseManagerMethodCallHandler eSenseManagerMethodCallHandler;
-    MainThreadEventSink eventSink;
+    private ESenseManagerMethodCallHandler eSenseManagerMethodCallHandler;
+    private MainThreadEventSink eventSink;
 
-    ESenseEventStreamHandler(PluginRegistry.Registrar registrar, ESenseManagerMethodCallHandler eSenseManagerMethodCallHandler) {
-        this.registrar = registrar;
+    ESenseEventStreamHandler(ESenseManagerMethodCallHandler eSenseManagerMethodCallHandler) {
         this.eSenseManagerMethodCallHandler = eSenseManagerMethodCallHandler;
     }
 
@@ -24,7 +21,7 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
     @Override
     public void onListen(Object o, EventSink rawEventSink) {
         this.eventSink = new MainThreadEventSink(rawEventSink);
-        HashMap map = new HashMap();
+        HashMap<String,Object> map = new HashMap<>();
         map.put("type", "Listen");
         boolean success = eSenseManagerMethodCallHandler.manager.registerEventListener(this);
         map.put("success", success);
@@ -34,6 +31,7 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
     @Override
     public void onCancel(Object o) {
         eventSink.endOfStream();
+        eSenseManagerMethodCallHandler.manager.unregisterEventListener();
         this.eventSink = null;
     }
 
@@ -41,7 +39,6 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
     /* -----------------------------------
        ESenseEventListener callbacks
      ------------------------------------- */
-
 
     /**
      * Called when the information on battery voltage has been received
@@ -51,7 +48,7 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
     @Override
     public void onBatteryRead(double voltage) {
         if (eventSink != null) {
-            HashMap map = new HashMap();
+            HashMap<String,Object> map = new HashMap<>();
             map.put("type", "BatteryRead");
             map.put("voltage", voltage);
             eventSink.success(map);
@@ -65,7 +62,12 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
      */
     @Override
     public void onButtonEventChanged(boolean pressed) {
-
+        if (eventSink != null) {
+            HashMap<String,Object> map = new HashMap<>();
+            map.put("type", "ButtonEventChanged");
+            map.put("pressed", pressed);
+            eventSink.success(map);
+        }
     }
 
     /**
@@ -77,8 +79,19 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
      * @param maxConnectionInterval    maximum connection interval (unit: milliseconds)
      */
     @Override
-    public void onAdvertisementAndConnectionIntervalRead(int minAdvertisementInterval, int maxAdvertisementInterval, int minConnectionInterval, int maxConnectionInterval) {
-
+    public void onAdvertisementAndConnectionIntervalRead(int minAdvertisementInterval,
+                                                         int maxAdvertisementInterval,
+                                                         int minConnectionInterval,
+                                                         int maxConnectionInterval) {
+        if (eventSink != null) {
+            HashMap<String,Object> map = new HashMap<>();
+            map.put("type", "AdvertisementAndConnectionIntervalRead");
+            map.put("minAdvertisementInterval", minAdvertisementInterval);
+            map.put("maxAdvertisementInterval", maxAdvertisementInterval);
+            map.put("minConnectionInterval", minConnectionInterval);
+            map.put("maxConnectionInterval", maxConnectionInterval);
+            eventSink.success(map);
+        }
     }
 
     /**
@@ -89,9 +102,9 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
     @Override
     public void onDeviceNameRead(String deviceName) {
         if (eventSink != null) {
-            HashMap map = new HashMap();
+            HashMap<String,Object> map = new HashMap<>();
             map.put("type", "DeviceNameRead");
-            map.put("name", deviceName);
+            map.put("deviceName", deviceName);
             eventSink.success(map);
         }
     }
@@ -103,7 +116,12 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
      */
     @Override
     public void onSensorConfigRead(ESenseConfig config) {
-
+        if (eventSink != null) {
+            HashMap<String,Object> map = new HashMap<>();
+            map.put("type", "SensorConfigRead");
+            // right now this event is empty, i.e. we do not serialize and send the config object across
+            eventSink.success(map);
+        }
     }
 
     /**
@@ -115,7 +133,14 @@ public class ESenseEventStreamHandler implements StreamHandler, ESenseEventListe
      */
     @Override
     public void onAccelerometerOffsetRead(int offsetX, int offsetY, int offsetZ) {
-
+        if (eventSink != null) {
+            HashMap<String,Object> map = new HashMap<>();
+            map.put("type", "AccelerometerOffsetRead");
+            map.put("offsetX", offsetX);
+            map.put("offsetY", offsetY);
+            map.put("offsetZ", offsetZ);
+            eventSink.success(map);
+        }
     }
 
 
