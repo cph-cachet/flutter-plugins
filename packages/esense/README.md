@@ -141,6 +141,8 @@ ESenseManager.getAdvertisementAndConnectionInterval();
 ESenseManager.getSensorConfig();
 `````
 
+When the button on the eSense device is pressed, the `eSenseEvents` stream will send an [`ButtonEventChanged`](https://pub.dev/documentation/esense/latest/esense/ButtonEventChanged-class.html) event.
+
 ### Change the Configuration of the eSense Device
 
 The [`ESenseManager`](https://pub.dev/documentation/esense/latest/esense/ESenseManager-class.html) exposes methods 

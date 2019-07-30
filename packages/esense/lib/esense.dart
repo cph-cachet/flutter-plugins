@@ -200,7 +200,6 @@ class ESenseManager {
             connected = false;
             break;
         }
-        print('setting connected : $connected');
       });
     }
     return _connectionEventStream;

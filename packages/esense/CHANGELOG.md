@@ -1,4 +1,4 @@
-## 0.1.1
+## 0.1.1+1
 * update of readme documentation on API.
 
 ## 0.1.0
