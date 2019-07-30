@@ -59,12 +59,14 @@ class _MyAppState extends State<MyApp> {
       });
     });
 
-    ESenseManager.sensorEvents.listen((event) {
-      print('SENSOR event: $event');
-    });
-
     print('getDeviceName: ${await ESenseManager.getDeviceName()}');
     print('getBatteryVoltage: ${await ESenseManager.getBatteryVoltage()}');
+
+    ESenseManager.getDeviceName();
+    ESenseManager.getBatteryVoltage();
+    ESenseManager.getAccelerometerOffset();
+    ESenseManager.getAdvertisementAndConnectionInterval();
+    ESenseManager.getSensorConfig();
   }
 
   StreamSubscription subscription;
