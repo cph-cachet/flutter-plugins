@@ -53,7 +53,7 @@ In addition, your __minimum SDK version__ should be __23__.
 
 The eSense Flutter plugin has been designed to resemble the Android eSense API almost __1:1__. Hence, you should be able
 to recognize the names of the different classes and class variables.  
-For example, the methods on the [`ESenseManager`]() class is mapped 1:1. 
+For example, the methods on the [`ESenseManager`](https://pub.dev/documentation/esense/latest/esense/ESenseManager-class.html) class is mapped 1:1. 
 See the [eSense Android documentation](http://www.esense.io/share/eSense-Android-Library.pdf) on how it all works.
 
 However, one major design change has been done; this eSense Flutter plugin complies to the Dart/Flutter reactive programming 
@@ -70,7 +70,7 @@ supported by the eSense library described here.
 
 ### Setting up and Connecting to an eSense Device
 
-All operations on the eSense device happens via the [`ESenseManager`]().
+All operations on the eSense device happens via the [`ESenseManager`](https://pub.dev/documentation/esense/latest/esense/ESenseManager-class.html).
 When connecting, specify the name of the device (typically on the form `eSense-xxxx`).
 
 ```dart
@@ -87,15 +87,17 @@ ESenseManager.connectionEvents.listen((event) {
 bool success = await ESenseManager.connect(eSenseName);
 ```
 
-Everything with the eSense API happens asynchronously. Hence, the `connect` merely initiates the connection
+Everything with the eSense API happens asynchronously. Hence, the `connect` call merely initiates the connection
 process. In order to know the status of the connection process (successful or not), you should listen to 
-connection events ([`ConnectionEvent`]()). This is done via the [`connectionEvents`]() stream.
+connection events ([`ConnectionEvent`](https://pub.dev/documentation/esense/latest/esense/ConnectionEvent-class.html)).
+This is done via the [`connectionEvents`](https://pub.dev/documentation/esense/latest/esense/ESenseManager/connectionEvents.html) stream.
 Note, that if you want to know if your connection to the device is successful, you should initiate listening
 __before__ the connection is initiated, as shown above.
 
 ### Listen to Sensor Events
 
-You can access a stream of [`SensorEvent`]() events via the `ESenseManager.sensorEvents` stream.
+You can access a stream of [`SensorEvent`](https://pub.dev/documentation/esense/latest/esense/SensorEvent-class.html) 
+events via the [`ESenseManager.sensorEvents`](https://pub.dev/documentation/esense/latest/esense/ESenseManager/sensorEvents.html) stream.
 Sampling rate can be set when not listening.
 
 `````dart
@@ -120,10 +122,10 @@ subscription = ESenseManager.sensorEvents.listen((event) {
 Reading properties of the eSense device happens asynchronously. Hence, in order to obtain properties, you should 
 do two things:
 
-  1. listen to the `ESenseManager.eSenseEvents` stream
+  1. listen to the [`ESenseManager.eSenseEvents`](https://pub.dev/documentation/esense/latest/esense/ESenseManager/eSenseEvents.html) stream
   2. invoke read operation on the `ESenseManager`
   
-Invoking read operations will trigger [`ESenseEvent`]()s of various kinds.
+Invoking read operations will trigger [`ESenseEvent`](https://pub.dev/documentation/esense/latest/esense/ESenseEvent-class.html) events of various kinds.
 
 `````dart
 // set up a event listener
@@ -141,12 +143,13 @@ ESenseManager.getSensorConfig();
 
 ### Change the Configuration of the eSense Device
 
-The [`ESenseManager`]() exposes methods to change the configuration of the eSense device. 
-With the plugin, you can change the device name using `setDeviceName()`, 
-change the advertising and connection interval using `setAdvertisementAndConnectiontInterval()`, 
-and change the IMU sensor configuration using `setSensorConfig()`.
+The [`ESenseManager`](https://pub.dev/documentation/esense/latest/esense/ESenseManager-class.html) exposes methods 
+to change the configuration of the eSense device. 
+With the plugin, you can change the device name using [`setDeviceName()`](https://pub.dev/documentation/esense/latest/esense/ESenseManager/setDeviceName.html), 
+change the advertising and connection interval using [`setAdvertisementAndConnectiontInterval()`](https://pub.dev/documentation/esense/latest/esense/ESenseManager/setAdvertisementAndConnectiontInterval.html), 
+and change the IMU sensor configuration using [`setSensorConfig()`](https://pub.dev/documentation/esense/latest/esense/ESenseManager/setSensorConfig.html).
 
-__Note:__ At the time of writing, the `setSensorConfig()` is _not_ implemented.
+__Note:__ At the time of writing, the `setSensorConfig()` method is _not_ implemented.
 
 
 ## Getting Started with Flutter
