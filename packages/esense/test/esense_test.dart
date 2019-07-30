@@ -16,6 +16,6 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    expect(await Esense.platformVersion, '42');
+    expect(await PlatformVersion.platformVersion, '42');
   });
 }
