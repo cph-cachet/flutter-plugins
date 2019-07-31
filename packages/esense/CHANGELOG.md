@@ -1,3 +1,6 @@
+## 0.1.2
+* small improvement to the example app (still not very good though...)
+
 ## 0.1.1+1
 * update of readme documentation on API.
 

@@ -1,6 +1,6 @@
 name: esense
 description: The eSense Flutter Plugin supporting the eSense ear plugs from Nokia Bell Labs, Cambridge.
-version: 0.1.1+1
+version: 0.1.2
 author:  CACHET Team <cph.cachet@gmail.com>
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/esense
 
