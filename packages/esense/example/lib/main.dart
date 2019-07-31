@@ -15,8 +15,11 @@ class _MyAppState extends State<MyApp> {
   String _deviceName = 'Unknown';
   int _voltage = -1;
   bool _deviceConnecting, _deviceConnected;
-  String eSenseName = 'eSense-0332';
   bool sampling = false;
+  String _event;
+
+  // the name of the eSense device to connect to -- change this to your own device.
+  String eSenseName = 'eSense-0332';
 
   @override
   void initState() {
@@ -73,6 +76,10 @@ class _MyAppState extends State<MyApp> {
   void _startListenToSensor() async {
     subscription = ESenseManager.sensorEvents.listen((event) {
       print('SENSOR event: $event');
+      setState(() {
+        sampling = true;
+        _event = event.toString();
+      });
     });
     setState(() {
       sampling = true;
@@ -93,18 +100,22 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('eSense Example App'),
         ),
-        body: Center(
+        body: Align(
+          alignment: Alignment.topLeft,
           child: Column(
             children: [
               Text('eSense Device Connecting: $_deviceConnecting'),
               Text('eSense Device Connected: $_deviceConnected'),
               Text('eSense Device Name: $_deviceName'),
               Text('eSense Battery Level: $_voltage'),
+              Text('$_event'),
             ],
           ),
         ),
         floatingActionButton: new FloatingActionButton(
-          onPressed: (!sampling) ? _startListenToSensor : _stopListenToSensor,
+          // a floating button that starts/stops listening to sensor events.
+          // is disabled until we're connected to the device.
+          onPressed: (!ESenseManager.connected) ? null : (!sampling) ? _startListenToSensor : _stopListenToSensor,
           tooltip: 'Listen to eSense sensors',
           child: (!sampling) ? Icon(Icons.play_arrow) : Icon(Icons.stop),
         ),
