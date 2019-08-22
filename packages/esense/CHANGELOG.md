@@ -1,3 +1,6 @@
+## 0.1.3
+* sampling rate can be set before connecting to device.
+
 ## 0.1.2
 * small improvement to the example app (still not very good though...)
 

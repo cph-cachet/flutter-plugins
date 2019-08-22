@@ -47,6 +47,11 @@ class SensorEvent {
   /// Phone timestamp
   DateTime timestamp;
 
+  /// Sequential number of sensor packet
+  ///
+  /// The eSense device don't have a clock, so this index reflect the order of reading.
+  /// The index is reset to zero when listening is started. Hence, the index is __only__
+  /// unique within each listening session.
   int packetIndex;
 
   /// 3-elements array with X, Y and Z axis for accelerometer

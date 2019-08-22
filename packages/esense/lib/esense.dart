@@ -41,7 +41,7 @@ class ESenseManager {
   // ------------    METHOD HANDLERS --------------------
 
   static Future<bool> connect(String name) async {
-    assert(name != null, 'Must provide a name of the eSense device to connect to.');
+    assert(name != null && name.length > 0, 'Must provide a name of the eSense device to connect to.');
     assert(Platform.isAndroid, 'Currently the eSense API is only available on Android.');
     eSenseDeviceName = name;
     return await _eSenseManagerMethodChannel.invokeMethod('connect', <String, dynamic>{'name': name});
@@ -72,7 +72,6 @@ class ESenseManager {
   static Future<bool> setSamplingRate(int rate) async {
     assert(
         rate != null && samplingRate > 0 && samplingRate <= 100, 'Must provide a sampling rate between 1 and 100 Hz.');
-    if (!connected) throw ESenseException('Not connected to any eSense device.');
     samplingRate = rate;
     return await _eSenseManagerMethodChannel.invokeMethod('setSamplingRate', <String, dynamic>{'rate': rate});
   }

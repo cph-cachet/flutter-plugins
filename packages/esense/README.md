@@ -154,6 +154,12 @@ and change the IMU sensor configuration using [`setSensorConfig()`](https://pub.
 __Note:__ At the time of writing, the `setSensorConfig()` method is _not_ implemented.
 
 
+## Authors
+
+ * [Jakob E. Bardram](http://www.bardram.net) Technical University of Denmark
+
+
+
 ## Getting Started with Flutter
 
 For help getting started with Flutter, view the 
