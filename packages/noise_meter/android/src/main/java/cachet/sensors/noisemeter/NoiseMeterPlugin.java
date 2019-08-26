@@ -10,10 +10,14 @@ import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import java.io.File;
 import java.util.HashMap;
+
+
 
 /**
  * NoiseMeterPlugin
@@ -133,8 +137,14 @@ public class NoiseMeterPlugin implements PluginRegistry.RequestPermissionsResult
                 while (isRecording && eventSink != null) {
                     try {
                         int volume = mediaRecorder.getMaxAmplitude();  //Get the sound pressure value
-                        NoiseLevel noiseLevel = new NoiseLevel(volume);
-                        eventSink.success(noiseLevel.getDecibel());
+                        final NoiseLevel noiseLevel = new NoiseLevel(volume);
+                        //eventSink.success(noiseLevel.getDecibel());
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                eventSink.success(noiseLevel.getDecibel());
+                            }
+                        });
                         Thread.sleep(frequency);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
