@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="net.petleo.flutter_health">
+
+    <meta-data
+        android:name="com.google.android.gms.version"
+        android:value="16" />
+</manifest>
