@@ -1,9 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'dart:io' show Platform;
 
 class FlutterHealth {
   static const MethodChannel _channel = const MethodChannel('flutter_health');
+  static PlatformType _platformType = Platform.isAndroid
+      ? PlatformType.ANDROID
+      : PlatformType.IOS;
 
   static Future<bool> checkIfHealthDataAvailable() async {
     final bool isHealthDataAvailable = await _channel.invokeMethod(
@@ -55,6 +59,11 @@ class FlutterHealth {
   static Future<List<GFHealthData>> getGFStepCount(DateTime startDate,
       DateTime endDate) async {
     return getGFHealthData(startDate, endDate, 2);
+  }
+
+  static Future<List<HealthData>> getStepCount(DateTime startDate,
+      DateTime endDate) async {
+    return getHealthDataCACHET(startDate, endDate, 4);
   }
 
   static Future<List<HealthData>> getHKBasalEnergyBurned(DateTime startDate,
@@ -146,8 +155,8 @@ class FlutterHealth {
     return getGFHealthData(startDate, endDate, 8);
   }
 
-  static Future<List<HealthData>> getHKElectrodermalActivity(
-      DateTime startDate, DateTime endDate) async {
+  static Future<List<HealthData>> getHKElectrodermalActivity(DateTime startDate,
+      DateTime endDate) async {
     return getHealthDataCACHET(startDate, endDate, 15);
   }
 
@@ -166,23 +175,67 @@ class FlutterHealth {
     return getHKHeartData(startDate, endDate, 18);
   }
 
-  static Future<List<HealthData>> getHKAllData(DateTime startDate,
-      DateTime endDate) async {
-    List<HealthData> allData = new List<HealthData>();
-    var healthData = List.from(HKDataType.values);
-    healthData.removeRange(
-        HKDataType.values.indexOf(HKDataType.HIGH_HEART_RATE_EVENT),
-        HKDataType.values.indexOf(HKDataType.IRREGULAR_HEART_RATE_EVENT));
-    for (int i = 0; i < healthData.length; i++) {
-      allData.addAll(await getHealthDataCACHET(startDate, endDate, i));
-    }
-    for (int i = HKDataType.values.indexOf(
-        HKDataType.HIGH_HEART_RATE_EVENT); i < HKDataType.values.length; i++) {
-      allData.addAll(await getHKHeartData(startDate, endDate, i));
-    }
-    return allData;
-  }
+//
+//  static Future<List<HealthData>> getHKAllData(DateTime startDate,
+//      DateTime endDate) async {
+//    List<HealthData> allData = new List<HealthData>();
+//    var healthData = List.from(HKDataType.values);
+//    healthData.removeRange(
+//        HKDataType.values.indexOf(HKDataType.HIGH_HEART_RATE_EVENT),
+//        HKDataType.values.indexOf(HKDataType.IRREGULAR_HEART_RATE_EVENT));
+//    for (int i = 0; i < healthData.length; i++) {
+//      allData.addAll(await getHealthDataCACHET(startDate, endDate, i));
+//    }
+//    for (int i = HKDataType.values.indexOf(
+//        HKDataType.HIGH_HEART_RATE_EVENT); i < HKDataType.values.length; i++) {
+//      allData.addAll(await getHKHeartData(startDate, endDate, i));
+//    }
+//    return allData;
+//  }
+//
 
+//  static Future<List<GFHealthData>> getGFAllData(DateTime startDate,
+//      DateTime endDate) async {
+//    List<GFHealthData> allData = new List<GFHealthData>();
+//    var healthData = List.from(GFDataType.values);
+//
+//    for (int i = 0; i < GFDataType.values.length; i++) {
+//      allData.addAll(await getGFHealthData(startDate, endDate, i));
+//    }
+//    return allData;
+//  }
+
+//  static Future<List<HealthData>> getHKAllDataWithCombinedBP(DateTime startDate,
+//      DateTime endDate) async {
+//    List<HealthData> allData = new List<HealthData>();
+//    var healthData = List.from(HKDataType.values);
+//    healthData.removeRange(
+//        HKDataType.values.indexOf(HKDataType.HIGH_HEART_RATE_EVENT),
+//        HKDataType.values.indexOf(HKDataType.IRREGULAR_HEART_RATE_EVENT));
+//    List<HealthData> bpRecords = [];
+//    for (int i = 0; i < healthData.length; i++) {
+//      if (healthData[i] == HKDataType.BLOOD_PRESSURE_SYSTOLIC) {
+//        bpRecords = await getHealthDataCACHET(startDate, endDate, i);
+//      } else if (healthData[i] == HKDataType.BLOOD_PRESSURE_DIASTOLIC) {
+//        var dia = await getHealthDataCACHET(startDate, endDate, i);
+//        for (int j = 0; j < dia.length; j++) {
+//          try {
+//            bpRecords[j].value2 = dia[j].value;
+//          } catch (e) {}
+//        }
+//        allData.addAll(bpRecords);
+//      } else
+//        allData.addAll(await getHealthDataCACHET(startDate, endDate, i));
+//    }
+//    for (int i = HKDataType.values.indexOf(
+//        HKDataType.HIGH_HEART_RATE_EVENT); i < HKDataType.values.length; i++) {
+//      allData.addAll(await getHKHeartData(startDate, endDate, i));
+//    }
+//    return allData;
+//  }
+
+
+  /// CACHET implementation
   static Future<List<GFHealthData>> getGFHealthData(DateTime startDate,
       DateTime endDate, int type) async {
     Map<String, dynamic> args = {};
@@ -199,63 +252,6 @@ class FlutterHealth {
     }
   }
 
-  static Future<List<GFHealthData>> getGFAllData(DateTime startDate,
-      DateTime endDate) async {
-    List<GFHealthData> allData = new List<GFHealthData>();
-    var healthData = List.from(GFDataType.values);
-
-    for (int i = 0; i < GFDataType.values.length; i++) {
-      allData.addAll(await getGFHealthData(startDate, endDate, i));
-    }
-    return allData;
-  }
-
-  static Future<List<HealthData>> getHKAllDataWithCombinedBP(
-      DateTime startDate, DateTime endDate) async {
-    List<HealthData> allData = new List<HealthData>();
-    var healthData = List.from(HKDataType.values);
-    healthData.removeRange(
-        HKDataType.values.indexOf(HKDataType.HIGH_HEART_RATE_EVENT),
-        HKDataType.values.indexOf(HKDataType.IRREGULAR_HEART_RATE_EVENT));
-    List<HealthData> bpRecords = [];
-    for (int i = 0; i < healthData.length; i++) {
-      if (healthData[i] == HKDataType.BLOOD_PRESSURE_SYSTOLIC) {
-        bpRecords = await getHealthDataCACHET(startDate, endDate, i);
-      } else if (healthData[i] == HKDataType.BLOOD_PRESSURE_DIASTOLIC) {
-        var dia = await getHealthDataCACHET(startDate, endDate, i);
-        for (int j = 0; j < dia.length; j++) {
-          try {
-            bpRecords[j].value2 = dia[j].value;
-          } catch (e) {}
-        }
-        allData.addAll(bpRecords);
-      } else
-        allData.addAll(await getHealthDataCACHET(startDate, endDate, i));
-    }
-    for (int i = HKDataType.values.indexOf(
-        HKDataType.HIGH_HEART_RATE_EVENT); i < HKDataType.values.length; i++) {
-      allData.addAll(await getHKHeartData(startDate, endDate, i));
-    }
-    return allData;
-  }
-
-//  static Future<List<HealthData>> getHealthDataCACHET(DateTime startDate,
-//      DateTime endDate, int type) async {
-//    Map<String, dynamic> args = {};
-//    args.putIfAbsent('index', () => type);
-//    args.putIfAbsent('startDate', () => startDate.millisecondsSinceEpoch);
-//    args.putIfAbsent('endDate', () => endDate.millisecondsSinceEpoch);
-//    try {
-//      List result = await _channel.invokeMethod('getData', args);
-//      var hkHealthData = List<HealthData>.from(result.map((i) =>
-//          HealthData.fromJson(Map<String, dynamic>.from(i))));
-//      return hkHealthData;
-//    } catch (e) {
-//      return const [];
-//    }
-//  }
-
-  /// CACHET implementation
   static Future<List<HealthData>> getHealthDataCACHET(DateTime startDate,
       DateTime endDate, int type) async {
     Map<String, dynamic> args = {};
@@ -268,9 +264,9 @@ class FlutterHealth {
 
       /// Process each data point received
       for (var x in result) {
-        /// Add the platform and datatype fields
-        x["platform"] = Platform.IOS.toString();
-        x["datatype"] = HKDataType.values[type].toString();
+        /// Add the platform_type and data_type fields
+        x["platform_type"] = _platformType.toString();
+        x["data_type"] = HKDataType.values[type].toString();
 
         /// Convert to JSON
         Map<String, dynamic> jsonData = Map<String, dynamic>.from(x);
@@ -301,54 +297,8 @@ class FlutterHealth {
     }
   }
 
-
-  /// CACHET implementation
-//  static Future<List<HealthData>> getHeightDataCACHET(DateTime startDate,
-//      DateTime endDate, Platform platform) async {
-//    int index = -1;
-//    if (platform == Platform.ANDROID) {
-//      index = GFDataType.values.indexOf(GFDataType.HEIGHT);
-//      List<GFHealthData> healthDataList = await getGFHealthData(
-//          startDate, endDate, index);
-//    }
-//    else {
-//      index = HKDataType.values.indexOf(HKDataType.HEIGHT);
-//      List<HKHealthData> healthDataList = await getHealthDataCACHET(
-//          startDate, endDate, index);
-//    }
-//  }
-
 }
 
-//class HKHealthData {
-//  double value;
-//  double value2;
-//  String unit;
-//  int dateFrom;
-//  int dateTo;
-//  HKDataType dataType;
-//
-//  HKHealthData(
-//      {this.value, this.unit, this.dateFrom, this.dateTo, this.dataType});
-//
-//  HKHealthData.fromJson(Map<String, dynamic> json) {
-//    value = json['value'];
-//    unit = json['unit'];
-//    dateFrom = json['date_from'];
-//    dateTo = json['date_to'];
-//    dataType = HKDataType.values[json['data_type_index']];
-//  }
-//
-//  Map<String, dynamic> toJson() {
-//    final Map<String, dynamic> data = new Map<String, dynamic>();
-//    data['value'] = this.value;
-//    data['unit'] = this.unit;
-//    data['date_from'] = this.dateFrom;
-//    data['date_to'] = this.dateTo;
-//    data['data_type_index'] = HKDataType.values.indexOf(this.dataType);
-//    return data;
-//  }
-//}
 
 class GFHealthData {
   String value;
@@ -418,7 +368,7 @@ enum GFDataType {
 
 
 /// Cachet implementations below
-enum Platform {
+enum PlatformType {
   IOS,
   ANDROID,
   UNKNOWN
@@ -442,8 +392,8 @@ class HealthData {
       unit = json['unit'];
       dateFrom = json['date_from'];
       dateTo = json['date_to'];
-      dataType = json['datatype'];
-      platform = json['platform'];
+      dataType = json['data_type'];
+      platform = json['platform_type'];
     }
     catch (error) {
       print(error);
@@ -456,8 +406,8 @@ class HealthData {
     data['unit'] = this.unit;
     data['date_from'] = this.dateFrom;
     data['date_to'] = this.dateTo;
-    data['datatype'] = this.dataType;
-    data['platform'] = this.platform;
+    data['data_type'] = this.dataType;
+    data['platform_type'] = this.platform;
     return data;
   }
 
