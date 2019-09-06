@@ -4,6 +4,41 @@ import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
 
 class FlutterHealth {
+
+  static const healthKitTypes = [
+    'BODY_FAT',
+    'HEIGHT',
+    'BODY_MASS_INDEX',
+    'WAIST_CIRCUMFERENCE',
+    'STEPS',
+    'BASAL_ENERGY_BURNED',
+    'ACTIVE_ENERGY_BURNED',
+    'HEART_RATE',
+    'BODY_TEMPERATURE',
+    'BLOOD_PRESSURE_SYSTOLIC',
+    'BLOOD_PRESSURE_DIASTOLIC',
+    'RESTING_HEART_RATE',
+    'WALKING_HEART_RATE',
+    'BLOOD_OXYGEN',
+    'BLOOD_GLUCOSE',
+    'ELECTRODERMAL_ACTIVITY',
+    'HIGH_HEART_RATE_EVENT',
+    'LOW_HEART_RATE_EVENT',
+    'IRREGULAR_HEART_RATE_EVENT',
+  ];
+
+  static const googleFitTypes = [
+    'BODY_FAT',
+    'HEIGHT',
+    'STEPS',
+    'CALORIES',
+    'HEART_RATE',
+    'BODY_TEMPERATURE',
+    'BLOOD_PRESSURE',
+    'BLOOD_OXYGEN',
+    'BLOOD_GLUCOSE',
+  ];
+
   static const MethodChannel _channel = const MethodChannel('flutter_health');
   static PlatformType _platformType = Platform.isAndroid
       ? PlatformType.ANDROID
@@ -51,19 +86,9 @@ class FlutterHealth {
     return getHealthDataCACHET(startDate, endDate, 3);
   }
 
-  static Future<List<HealthData>> getHKStepCount(DateTime startDate,
-      DateTime endDate) async {
-    return getHealthDataCACHET(startDate, endDate, 4);
-  }
-
-  static Future<List<GFHealthData>> getGFStepCount(DateTime startDate,
-      DateTime endDate) async {
-    return getGFHealthData(startDate, endDate, 2);
-  }
-
   static Future<List<HealthData>> getStepCount(DateTime startDate,
       DateTime endDate) async {
-    return getHealthDataCACHET(startDate, endDate, 4);
+    return getHealthData(startDate, endDate, 'STEPS');
   }
 
   static Future<List<HealthData>> getHKBasalEnergyBurned(DateTime startDate,
@@ -255,6 +280,7 @@ class FlutterHealth {
   static Future<List<HealthData>> getHealthDataCACHET(DateTime startDate,
       DateTime endDate, int type) async {
     Map<String, dynamic> args = {};
+
     args.putIfAbsent('index', () => type);
     args.putIfAbsent('startDate', () => startDate.millisecondsSinceEpoch);
     args.putIfAbsent('endDate', () => endDate.millisecondsSinceEpoch);
@@ -267,6 +293,40 @@ class FlutterHealth {
         /// Add the platform_type and data_type fields
         x["platform_type"] = _platformType.toString();
         x["data_type"] = HKDataType.values[type].toString();
+
+        /// Convert to JSON
+        Map<String, dynamic> jsonData = Map<String, dynamic>.from(x);
+
+        /// Convert JSON to HealtData object
+        HealthData data = HealthData.fromJson(jsonData);
+        healthData.add(data);
+      }
+      return healthData;
+    } catch (e) {
+      return const [];
+    }
+  }
+
+  static Future<List<HealthData>> getHealthData(DateTime startDate,
+      DateTime endDate, String dataType) async {
+    Map<String, dynamic> args = {};
+
+    int dataTypeIndex = _platformType == PlatformType.ANDROID
+        ? googleFitTypes.indexOf(dataType)
+        : healthKitTypes.indexOf(dataType);
+
+    args.putIfAbsent('index', () => dataTypeIndex);
+    args.putIfAbsent('startDate', () => startDate.millisecondsSinceEpoch);
+    args.putIfAbsent('endDate', () => endDate.millisecondsSinceEpoch);
+    try {
+      List result = await _channel.invokeMethod('getData', args);
+      List<HealthData> healthData = new List();
+
+      /// Process each data point received
+      for (var x in result) {
+        /// Add the platform_type and data_type fields
+        x["platform_type"] = _platformType.toString();
+        x["data_type"] = dataType;
 
         /// Convert to JSON
         Map<String, dynamic> jsonData = Map<String, dynamic>.from(x);
