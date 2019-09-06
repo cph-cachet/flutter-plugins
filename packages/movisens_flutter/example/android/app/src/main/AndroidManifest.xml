@@ -107,7 +107,8 @@
                 android:screenOrientation="portrait">
         </activity>
 
-        <service android:name="de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService" />
+        <service android:enabled="true" android:name="de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService" android:exported="false"
+                 android:stopWithTask="false" />
 
         <receiver android:name="de.kn.uni.smartact.movisenslibrary.reboot.RebootReceiver">
             <intent-filter>

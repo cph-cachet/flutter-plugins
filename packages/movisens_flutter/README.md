@@ -23,6 +23,7 @@ Add the following to your manifest
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 ```
 
+
 ## Example Usage
 A Movisens object is instantiated by providing a UserData object, which is, in essence a Map structure containing a list of required fields for the Movisens sensor.
 These include: Weight, height, age, sensor address and sensor name.
