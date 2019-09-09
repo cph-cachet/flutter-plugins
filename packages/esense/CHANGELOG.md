@@ -1,3 +1,6 @@
+## 0.2.0
+* support for iOS implemented
+
 ## 0.1.3
 * sampling rate can be set before connecting to device.
 

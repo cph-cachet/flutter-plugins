@@ -3,19 +3,22 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'esense'
-  s.version          = '0.0.1'
+  s.version          = '0.2.0'
   s.summary          = 'The eSense Flutter Plugin.'
   s.description      = <<-DESC
 The eSense Flutter Plugin.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://pub.dev/packages/esense'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Copenhagen Center for Health Technology' => 'cph.cachet@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
 
-  s.ios.deployment_target = '8.0'
+  # the following is needed, but the name conflicts w. the name of this pod - both called 'esense'...?
+  s.dependency 'ESense'
+
+  s.ios.deployment_target = '10.0'
 end
 
