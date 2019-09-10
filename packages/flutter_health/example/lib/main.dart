@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:flutter/services.dart';
 import 'package:flutter_health/flutter_health.dart';
 
 void main() => runApp(MyApp());
@@ -13,8 +12,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   var _healthKitOutput;
   var _healthDataList = List<HealthData>();
-  var str = "";
-  bool _isAuthorized = true;
+  bool _isAuthorized = false;
 
   @override
   void initState() {
@@ -24,28 +22,26 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-
-
     DateTime startDate = DateTime.utc(2019, 07, 01);
     DateTime endDate = DateTime.now();
+
     Future.delayed(Duration(seconds: 2), () async {
       _isAuthorized = await FlutterHealth.requestAuthorization();
 
       if (_isAuthorized) {
-        _healthDataList.addAll(await FlutterHealth.getStepCount(startDate, endDate));
-        setState(() {});
-        _healthDataList.addAll(await FlutterHealth.getHKHeight(startDate, endDate));
-        setState(() {});
-//        _healthKitDataList.addAll(await FlutterHealth.getHKActiveEnergyBurned(startDate, endDate));
-//        setState(() {});
-      }
-      print('Number of entries: ${_healthDataList.length}');
+        print('Authorized');
 
-      for (var x in _healthDataList) {
-        print(x.toJson());
-      }
+        _healthDataList
+            .addAll(await FlutterHealth.getAllHealthData(startDate, endDate));
+        setState(() {});
 
+        for (var x in _healthDataList) print(x.toJson());
+      } else {
+        print('Not authorized');
+      }
     });
+
+    print('Authorized: $_isAuthorized');
 
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
@@ -71,13 +67,16 @@ class _MyAppState extends State<MyApp> {
         body: _healthDataList.isEmpty
             ? Text('$_healthKitOutput\n')
             : ListView.builder(
-            itemCount: _healthDataList.length,
-            itemBuilder: (_, index) =>
-                ListTile(
-                  title: Text(_healthDataList[index].value.toString() + " " + _healthDataList[index].value2.toString()),
-                  trailing: Text(_healthDataList[index].unit),
-                  subtitle: Text(DateTime.fromMillisecondsSinceEpoch(_healthDataList[index].dateFrom).toIso8601String()),
-                )),
+                itemCount: _healthDataList.length,
+                itemBuilder: (_, index) => ListTile(
+                      title: Text(_healthDataList[index].value.toString() +
+                          " " +
+                          _healthDataList[index].value2.toString()),
+                      trailing: Text('${_healthDataList[index].dataType}: ${_healthDataList[index].unit}'),
+                      subtitle: Text(DateTime.fromMillisecondsSinceEpoch(
+                              _healthDataList[index].dateFrom)
+                          .toIso8601String()),
+                    )),
       ),
     );
   }

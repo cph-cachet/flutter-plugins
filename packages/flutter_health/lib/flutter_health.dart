@@ -5,7 +5,7 @@ import 'dart:io' show Platform;
 
 class FlutterHealth {
 
-  static const healthKitTypes = [
+  static List<String> healthKitTypes = [
     'BODY_FAT',
     'HEIGHT',
     'BODY_MASS_INDEX',
@@ -27,7 +27,7 @@ class FlutterHealth {
     'IRREGULAR_HEART_RATE_EVENT',
   ];
 
-  static const googleFitTypes = [
+  static List<String> googleFitTypes = [
     'BODY_FAT',
     'HEIGHT',
     'STEPS',
@@ -43,6 +43,10 @@ class FlutterHealth {
   static PlatformType _platformType = Platform.isAndroid
       ? PlatformType.ANDROID
       : PlatformType.IOS;
+
+  static String _methodName = _platformType == PlatformType.ANDROID
+      ? 'getGFHealthData'
+      : 'getData';
 
   static Future<bool> checkIfHealthDataAvailable() async {
     final bool isHealthDataAvailable = await _channel.invokeMethod(
@@ -200,69 +204,22 @@ class FlutterHealth {
     return getHKHeartData(startDate, endDate, 18);
   }
 
-//
-//  static Future<List<HealthData>> getHKAllData(DateTime startDate,
-//      DateTime endDate) async {
-//    List<HealthData> allData = new List<HealthData>();
-//    var healthData = List.from(HKDataType.values);
-//    healthData.removeRange(
-//        HKDataType.values.indexOf(HKDataType.HIGH_HEART_RATE_EVENT),
-//        HKDataType.values.indexOf(HKDataType.IRREGULAR_HEART_RATE_EVENT));
-//    for (int i = 0; i < healthData.length; i++) {
-//      allData.addAll(await getHealthDataCACHET(startDate, endDate, i));
-//    }
-//    for (int i = HKDataType.values.indexOf(
-//        HKDataType.HIGH_HEART_RATE_EVENT); i < HKDataType.values.length; i++) {
-//      allData.addAll(await getHKHeartData(startDate, endDate, i));
-//    }
-//    return allData;
-//  }
-//
+  static Future<List<GFHealthData>> getGFAllData(DateTime startDate,
+      DateTime endDate) async {
+    List<GFHealthData> allData = new List<GFHealthData>();
+    var healthData = List.from(GFDataType.values);
 
-//  static Future<List<GFHealthData>> getGFAllData(DateTime startDate,
-//      DateTime endDate) async {
-//    List<GFHealthData> allData = new List<GFHealthData>();
-//    var healthData = List.from(GFDataType.values);
-//
-//    for (int i = 0; i < GFDataType.values.length; i++) {
-//      allData.addAll(await getGFHealthData(startDate, endDate, i));
-//    }
-//    return allData;
-//  }
-
-//  static Future<List<HealthData>> getHKAllDataWithCombinedBP(DateTime startDate,
-//      DateTime endDate) async {
-//    List<HealthData> allData = new List<HealthData>();
-//    var healthData = List.from(HKDataType.values);
-//    healthData.removeRange(
-//        HKDataType.values.indexOf(HKDataType.HIGH_HEART_RATE_EVENT),
-//        HKDataType.values.indexOf(HKDataType.IRREGULAR_HEART_RATE_EVENT));
-//    List<HealthData> bpRecords = [];
-//    for (int i = 0; i < healthData.length; i++) {
-//      if (healthData[i] == HKDataType.BLOOD_PRESSURE_SYSTOLIC) {
-//        bpRecords = await getHealthDataCACHET(startDate, endDate, i);
-//      } else if (healthData[i] == HKDataType.BLOOD_PRESSURE_DIASTOLIC) {
-//        var dia = await getHealthDataCACHET(startDate, endDate, i);
-//        for (int j = 0; j < dia.length; j++) {
-//          try {
-//            bpRecords[j].value2 = dia[j].value;
-//          } catch (e) {}
-//        }
-//        allData.addAll(bpRecords);
-//      } else
-//        allData.addAll(await getHealthDataCACHET(startDate, endDate, i));
-//    }
-//    for (int i = HKDataType.values.indexOf(
-//        HKDataType.HIGH_HEART_RATE_EVENT); i < HKDataType.values.length; i++) {
-//      allData.addAll(await getHKHeartData(startDate, endDate, i));
-//    }
-//    return allData;
-//  }
+    for (int i = 0; i < GFDataType.values.length; i++) {
+      allData.addAll(await getGFHealthData(startDate, endDate, i));
+    }
+    return allData;
+  }
 
 
   /// CACHET implementation
   static Future<List<GFHealthData>> getGFHealthData(DateTime startDate,
       DateTime endDate, int type) async {
+    print('getGFHealthData(): $startDate, $endDate, $type');
     Map<String, dynamic> args = {};
     args.putIfAbsent('index', () => type);
     args.putIfAbsent('startDate', () => startDate.millisecondsSinceEpoch);
@@ -276,6 +233,7 @@ class FlutterHealth {
       return const [];
     }
   }
+
 
   static Future<List<HealthData>> getHealthDataCACHET(DateTime startDate,
       DateTime endDate, int type) async {
@@ -309,18 +267,20 @@ class FlutterHealth {
 
   static Future<List<HealthData>> getHealthData(DateTime startDate,
       DateTime endDate, String dataType) async {
-    Map<String, dynamic> args = {};
-
+    List<HealthData> healthData = new List();
     int dataTypeIndex = _platformType == PlatformType.ANDROID
         ? googleFitTypes.indexOf(dataType)
         : healthKitTypes.indexOf(dataType);
 
-    args.putIfAbsent('index', () => dataTypeIndex);
-    args.putIfAbsent('startDate', () => startDate.millisecondsSinceEpoch);
-    args.putIfAbsent('endDate', () => endDate.millisecondsSinceEpoch);
+    Map<String, dynamic> args = {
+      'index': dataTypeIndex,
+      'startDate': startDate.millisecondsSinceEpoch,
+      'endDate': endDate.millisecondsSinceEpoch
+    };
+
     try {
-      List result = await _channel.invokeMethod('getData', args);
-      List<HealthData> healthData = new List();
+      List result = await _channel.invokeMethod(_methodName, args);
+
 
       /// Process each data point received
       for (var x in result) {
@@ -335,10 +295,46 @@ class FlutterHealth {
         HealthData data = HealthData.fromJson(jsonData);
         healthData.add(data);
       }
-      return healthData;
-    } catch (e) {
-      return const [];
+    } catch (error) {
+      print(error);
     }
+    return healthData;
+  }
+
+  static Future<List<HealthData>> getAllHealthData(DateTime startDate,
+      DateTime endDate) async {
+    List<String> dataTypes = _platformType == PlatformType.ANDROID
+        ? googleFitTypes
+        : healthKitTypes;
+
+    List<HealthData> healthData = new List();
+
+    for (var i = 0; i < dataTypes.length; i++) {
+      Map<String, dynamic> args = {
+        'index': i,
+        'startDate': startDate.millisecondsSinceEpoch,
+        'endDate': endDate.millisecondsSinceEpoch
+      };
+      try {
+        var result = await _channel.invokeMethod(_methodName, args);
+        print(result);
+
+        /// Process each data point received
+        for (var x in result) {
+          /// Add the platform_type and data_type fields
+          x["platform_type"] = _platformType.toString();
+          x["data_type"] = dataTypes[i];
+
+          /// Convert JSON to HealtData object
+          HealthData data = HealthData.fromJson(Map<String, dynamic>.from(x));
+          healthData.add(data);
+        }
+      } catch (error) {
+        print(error);
+      }
+    }
+    for (var d in healthData) print(d.toString());
+    return healthData;
   }
 
   static Future<List<HealthData>> getHKHeartData(DateTime startDate,
@@ -356,7 +352,6 @@ class FlutterHealth {
       return const [];
     }
   }
-
 }
 
 
@@ -469,6 +464,11 @@ class HealthData {
     data['data_type'] = this.dataType;
     data['platform_type'] = this.platform;
     return data;
+  }
+
+  String toString() {
+    Map<String, dynamic> json = this.toJson();
+    return json.toString();
   }
 
 }
