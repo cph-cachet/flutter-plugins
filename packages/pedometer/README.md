@@ -11,26 +11,42 @@ To use this plugin, add `pedometer` as a [dependency in your pubspec.yaml file](
 ### Example
 
 ``` dart
-void setUpPedometer() {
-    Pedometer pedometer = new Pedometer();
-    _subscription = pedometer.stepCountStream.listen(_onData,
-        onError: _onError, onDone: _onDone, cancelOnError: true);
+Pedometer _pedometer;
+StreamSubscription<int> _subscription;
+
+...
+
+void onData(int stepCountValue) {
+print(stepCountValue);
+}
+
+void startListening() {
+_pedometer = new Pedometer();
+_subscription = _pedometer.stepCountStream.listen(_onData,
+    onError: _onError, onDone: _onDone, cancelOnError: true);
+}
+
+void stopListening() {
+_subscription.cancel();
 }
 
 void _onData(int stepCountValue) async {
-    setState(() => _stepCountValue = "$stepCountValue");
+setState(() => _stepCountValue = "$stepCountValue");
 }
 
 void _onDone() => print("Finished pedometer tracking");
 
 void _onError(error) => print("Flutter Pedometer Error: $error");
-
-void _onCancel() => _subscription.cancel();
         
 ```
-## Configuring XCode for usage on iOS
 
-It seems that users of this plug-in will have to manually open XCode and configure a few settings manually, mostly pertaining to privacy settings and permissions due to the application collecting the user's movement data.
+Consult the example-app for a concrete implementation.
+
+## Permissions for Android
+No configuration needed.
+
+## Permissions for iOS
+Users of this plug-in will have to manually open XCode and configure a few settings manually, mostly pertaining to privacy settings and permissions due to the application collecting the user's movement data.
 
 For usage on Android it seems there are no problems with permissions.
 
