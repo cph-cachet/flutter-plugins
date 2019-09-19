@@ -333,7 +333,6 @@ class FlutterHealth {
         print(error);
       }
     }
-    for (var d in healthData) print(d.toString());
     return healthData;
   }
 
@@ -362,6 +361,8 @@ class GFHealthData {
   int dateFrom;
   int dateTo;
   GFDataType dataType;
+
+
 
   GFHealthData(
       {this.value, this.unit, this.dateFrom, this.dateTo, this.dataType});

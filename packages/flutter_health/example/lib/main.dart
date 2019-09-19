@@ -34,14 +34,13 @@ class _MyAppState extends State<MyApp> {
         _healthDataList
             .addAll(await FlutterHealth.getAllHealthData(startDate, endDate));
         setState(() {});
-
-        for (var x in _healthDataList) print(x.toJson());
       } else {
         print('Not authorized');
       }
     });
 
     print('Authorized: $_isAuthorized');
+    for (var x in _healthDataList) print(x.toJson());
 
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
@@ -69,13 +68,9 @@ class _MyAppState extends State<MyApp> {
             : ListView.builder(
                 itemCount: _healthDataList.length,
                 itemBuilder: (_, index) => ListTile(
-                      title: Text(_healthDataList[index].value.toString() +
-                          " " +
-                          _healthDataList[index].value2.toString()),
+                      title: Text(_healthDataList[index].value.toString()),
                       trailing: Text('${_healthDataList[index].dataType}: ${_healthDataList[index].unit}'),
-                      subtitle: Text(DateTime.fromMillisecondsSinceEpoch(
-                              _healthDataList[index].dateFrom)
-                          .toIso8601String()),
+                      subtitle: Text('test'),
                     )),
       ),
     );
