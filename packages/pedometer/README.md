@@ -17,21 +17,24 @@ StreamSubscription<int> _subscription;
 ...
 
 void onData(int stepCountValue) {
-print(stepCountValue);
+    print(stepCountValue);
 }
 
 void startListening() {
-_pedometer = new Pedometer();
-_subscription = _pedometer.stepCountStream.listen(_onData,
-    onError: _onError, onDone: _onDone, cancelOnError: true);
+    _pedometer = new Pedometer();
+    _subscription = _pedometer.stepCountStream.listen(
+        _onData,
+        onError: _onError, 
+        onDone: _onDone, 
+        cancelOnError: true);
 }
 
 void stopListening() {
-_subscription.cancel();
+    _subscription.cancel();
 }
 
 void _onData(int stepCountValue) async {
-setState(() => _stepCountValue = "$stepCountValue");
+    // Do something with the stepCountValue
 }
 
 void _onDone() => print("Finished pedometer tracking");
