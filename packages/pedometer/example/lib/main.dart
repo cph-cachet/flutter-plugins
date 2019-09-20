@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
 
   void startListening() {
     _pedometer = new Pedometer();
-    _subscription = _pedometer.stepCountStream.listen(_onData,
+    _subscription = _pedometer.pedometerStream.listen(_onData,
         onError: _onError, onDone: _onDone, cancelOnError: true);
   }
 

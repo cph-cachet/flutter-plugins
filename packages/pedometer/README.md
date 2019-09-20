@@ -4,7 +4,7 @@
 
 This plugin allows for continuous step counting using the built-in pedometer sensor API of iOS and Android devices.
 
-When the application is started the step count is set to 0, and every time a step count update is registrered the step count value will be updated. The update frequency depends on the platform; iOS updates less frequently than Android.
+When the application is started the step count is set to 0, and every time a step count update is registrered, the cumulative step count value since the app was started will be returned. The update frequency depends on the platform; iOS updates less frequently than Android.
 
 ## Permissions for Android
 No configuration needed.
