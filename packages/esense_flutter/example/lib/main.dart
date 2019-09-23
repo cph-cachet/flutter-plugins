@@ -13,10 +13,11 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _deviceName = 'Unknown';
-  int _voltage = -1;
+  double _voltage = -1;
   bool _deviceConnecting, _deviceConnected;
   bool sampling = false;
   String _event;
+  String _button = '';
 
   // the name of the eSense device to connect to -- change this to your own device.
   String eSenseName = 'eSense-0332';
@@ -60,6 +61,8 @@ class _MyAppState extends State<MyApp> {
           case BatteryRead:
             _voltage = (event as BatteryRead).voltage;
             break;
+          case ButtonEventChanged:
+            _button = (event as ButtonEventChanged).pressed ? 'pressed' : 'not pressed';
         }
       });
     });
@@ -76,6 +79,7 @@ class _MyAppState extends State<MyApp> {
 
   StreamSubscription subscription;
   void _startListenToSensor() async {
+    _getESenseInfo();
     subscription = ESenseManager.sensorEvents.listen((event) {
       print('SENSOR event: $event');
       setState(() {
@@ -96,6 +100,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void dispose() {
+    _stopListenToSensor();
+    ESenseManager.disconnect();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
@@ -110,6 +121,7 @@ class _MyAppState extends State<MyApp> {
               Text('eSense Device Connected: $_deviceConnected'),
               Text('eSense Device Name: $_deviceName'),
               Text('eSense Battery Level: $_voltage'),
+              Text('eSense Button Event: $_button'),
               Text('$_event'),
             ],
           ),

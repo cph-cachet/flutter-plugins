@@ -19,15 +19,25 @@ public class SwiftEsenseFlutterPlugin: NSObject, FlutterPlugin {
         
         let eSenseConnectionEventStreamHandler:ESenseConnectionEventStreamHandler = ESenseConnectionEventStreamHandler()
 
-        // ESenseManger Method Channel
+        // ESense manger method channel
         let  eSenseManagerMethodChannel = FlutterMethodChannel(name: ESenseManagerMethodChannelName, binaryMessenger: registrar.messenger())
         let  eSenseManagerMethodCallHandler =  ESenseManagerMethodCallHandler(eSenseConnectionEventStreamHandler: eSenseConnectionEventStreamHandler)
         registrar.addMethodCallDelegate(eSenseManagerMethodCallHandler, channel: eSenseManagerMethodChannel);
         
+        // ESense connection event channel
         let eSenseConnectionEventChannel = FlutterEventChannel.init(name: ESenseConnectionEventChannelName, binaryMessenger: registrar.messenger())
         eSenseConnectionEventChannel.setStreamHandler(eSenseConnectionEventStreamHandler)
+
         
-        
+        // ESense event event channel
+        let eSenseEventStreamHandler:ESenseEventStreamHandler = ESenseEventStreamHandler(eSenseManagerMethodCallHandler: eSenseManagerMethodCallHandler)
+        let eSenseEventChannel = FlutterEventChannel.init(name: ESenseEventEventChannelName, binaryMessenger: registrar.messenger())
+        eSenseEventChannel.setStreamHandler(eSenseEventStreamHandler)
+
+        // ESense sensor event channel
+        let eSenseSensorEventStreamHandler:ESenseSensorEventStreamHandler = ESenseSensorEventStreamHandler(eSenseManagerMethodCallHandler: eSenseManagerMethodCallHandler)
+        let eSenseSensorEventChannel = FlutterEventChannel.init(name: ESenseSensorEventChannelName, binaryMessenger: registrar.messenger())
+        eSenseSensorEventChannel.setStreamHandler(eSenseSensorEventStreamHandler)
     }
     
     // the following is the auto-generated code when creating the plugin -- not used
@@ -53,7 +63,7 @@ class ESenseManagerMethodCallHandler: NSObject, FlutterPlugin {
     
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        var args = call.arguments as? Dictionary<String, String>
+        let args = call.arguments as? Dictionary<String, String>
         
         switch call.method {
         case "connect":
@@ -170,3 +180,120 @@ class ESenseConnectionEventStreamHandler: NSObject, ESenseConnectionListener, Fl
     }
 }
 
+class ESenseEventStreamHandler: NSObject, ESenseEventListener, FlutterStreamHandler {
+
+    var sink: FlutterEventSink?
+    var eSenseManagerMethodCallHandler:ESenseManagerMethodCallHandler?
+    
+    init(eSenseManagerMethodCallHandler: ESenseManagerMethodCallHandler) {
+        self.eSenseManagerMethodCallHandler = eSenseManagerMethodCallHandler
+    }
+
+    /*
+     *  FlutterStreamHandler functions below
+     */
+    
+    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.sink = events
+        let success = eSenseManagerMethodCallHandler!.manager?.registerEventListener(self)
+        var map:Dictionary<String,Any> = Dictionary()
+        map["type"] = "Listen"
+        map["success"] = success
+        self.sink!(map)
+        return nil
+    }
+    
+    func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        eSenseManagerMethodCallHandler!.manager?.unregisterEventListener()
+        sink = nil
+        return nil
+    }
+
+    func onBatteryRead(_ voltage: Double) {
+        var map:Dictionary<String,Any> = Dictionary()
+        map["type"] = "BatteryRead"
+        map["voltage"] = voltage
+        self.sink!(map)
+    }
+    
+    func onButtonEventChanged(_ pressed: Bool) {
+        var map:Dictionary<String,Any> = Dictionary()
+        map["type"] = "ButtonEventChanged"
+        map["pressed"] = pressed
+        self.sink!(map)
+    }
+    
+    func onAdvertisementAndConnectionIntervalRead(_ minAdvertisementInterval: Int, _ maxAdvertisementInterval: Int, _ minConnectionInterval: Int, _ maxConnectionInterval: Int) {
+        var map:Dictionary<String,Any> = Dictionary()
+        map["type"] = "AdvertisementAndConnectionIntervalRead"
+        map["minAdvertisementInterval"] = minAdvertisementInterval
+        map["maxAdvertisementInterval"] = maxAdvertisementInterval
+        map["minConnectionInterval"] = minConnectionInterval
+        map["maxConnectionInterval"] = maxConnectionInterval
+        self.sink!(map)
+    }
+    
+    func onDeviceNameRead(_ deviceName: String) {
+        var map:Dictionary<String,Any> = Dictionary()
+        map["type"] = "DeviceNameRead"
+        map["deviceName"] = deviceName
+        self.sink!(map)
+    }
+    
+    func onSensorConfigRead(_ config: ESenseConfig) {
+        var map:Dictionary<String,Any> = Dictionary()
+        map["type"] = "SensorConfigRead"
+        // right now this event is empty, i.e. we do not serialize and send the config object across
+        self.sink!(map)
+    }
+    
+    func onAccelerometerOffsetRead(_ offsetX: Int, _ offsetY: Int, _ offsetZ: Int) {
+        var map:Dictionary<String,Any> = Dictionary()
+        map["type"] = "AccelerometerOffsetRead"
+        map["offsetX"] = offsetX
+        map["offsetY"] = offsetY
+        map["offsetZ"] = offsetZ
+        self.sink!(map)
+    }
+}
+
+class ESenseSensorEventStreamHandler: NSObject, ESenseSensorListener, FlutterStreamHandler {
+
+    var sink: FlutterEventSink?
+    var eSenseManagerMethodCallHandler:ESenseManagerMethodCallHandler?
+    
+    init(eSenseManagerMethodCallHandler: ESenseManagerMethodCallHandler) {
+        self.eSenseManagerMethodCallHandler = eSenseManagerMethodCallHandler
+    }
+    
+    /*
+     *  FlutterStreamHandler functions below
+     */
+
+    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.sink = events
+        eSenseManagerMethodCallHandler!.manager?.registerSensorListener(self, hz: UInt8(eSenseManagerMethodCallHandler!.samplingRate))
+        return nil
+    }
+
+    func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        eSenseManagerMethodCallHandler!.manager?.unregisterSensorListener()
+        sink = nil
+        return nil
+    }
+
+    func onSensorChanged(_ evt: ESenseEvent) {
+        var map:Dictionary<String,Any> = Dictionary()
+        map["type"] = "SensorChanged"
+        map["timestamp"] = evt.getTimestamp()
+        map["packetIndex"] = evt.getPacketIndex()
+        map["accel.x"] = evt.getAccel()[0]
+        map["accel.y"] = evt.getAccel()[1]
+        map["accel.z"] = evt.getAccel()[2]
+        map["gyro.x"] = evt.getGyro()[0]
+        map["gyro.y"] = evt.getGyro()[1]
+        map["gyro.z"] = evt.getGyro()[2]
+        self.sink!(map)
+    }
+    
+}

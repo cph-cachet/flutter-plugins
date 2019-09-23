@@ -1,5 +1,6 @@
-## 0.2.0
-* support for iOS implemented
+## 0.1.3+1
+* update to readme file to notify everyone that this __PLUGIN IS NO LONGER MAINTAINED__
+* due to naming conflict, this plugin has been renamed to [`esense_flutter`](https://pub.dev/packages/esense_flutter)
 
 ## 0.1.3
 * sampling rate can be set before connecting to device.

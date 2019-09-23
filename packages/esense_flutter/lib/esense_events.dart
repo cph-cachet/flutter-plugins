@@ -63,6 +63,7 @@ class SensorEvent {
   SensorEvent({this.timestamp, this.packetIndex, this.accel, this.gyro});
 
   factory SensorEvent.fromMap(Map<dynamic, dynamic> map) {
+    //map.forEach((key, value) => print(' > map[$key] = $value'));
     DateTime time = DateTime.fromMillisecondsSinceEpoch(map['timestamp']);
     int index = map['packetIndex'];
     List<int> accl = [map['accel.x'], map['accel.y'], map['accel.z']];
@@ -70,6 +71,7 @@ class SensorEvent {
 
     return SensorEvent(timestamp: time, packetIndex: index, accel: accl, gyro: gyro);
   }
+
   String toString() =>
       'SensorEvent - timestamp: $timestamp, packetIndex: $packetIndex, accl: [${accel[0]},${accel[1]},${accel[2]}], gyro: [${gyro[0]},${gyro[1]},${gyro[2]}]';
 }
@@ -80,7 +82,7 @@ class ESenseEvent {
   ESenseEvent([this.type]);
 
   factory ESenseEvent.fromMap(Map<dynamic, dynamic> map) {
-    String type = map['type'];
+    final String type = map['type'];
     switch (type) {
       case 'Listen':
         return RegisterEventListener(map['success']);
@@ -125,7 +127,13 @@ class AccelerometerOffsetRead extends ESenseEvent {
 
   AccelerometerOffsetRead(this.offsetX, this.offsetY, this.offsetZ) : super();
   factory AccelerometerOffsetRead.fromMap(Map<dynamic, dynamic> map) =>
-      AccelerometerOffsetRead(int.tryParse(map['offsetX']), int.tryParse(map['offsetY']), int.tryParse(map['offsetZ']));
+      AccelerometerOffsetRead(map['offsetX'], map['offsetY'], map['offsetZ']);
+  //AccelerometerOffsetRead(int.tryParse(map['offsetX']), int.tryParse(map['offsetY']), int.tryParse(map['offsetZ']));
+
+  String toString() => 'AccelerometerOffsetRead - '
+      'offsetX: $offsetX, '
+      'offsetY: $offsetY, '
+      'offsetZ: $offsetZ';
 }
 
 /// Called when the information on advertisement and connection interval has been received.
@@ -147,19 +155,31 @@ class AdvertisementAndConnectionIntervalRead extends ESenseEvent {
       : super();
   factory AdvertisementAndConnectionIntervalRead.fromMap(Map<dynamic, dynamic> map) =>
       AdvertisementAndConnectionIntervalRead(
-          int.tryParse(map['minAdvertisementInterval']),
-          int.tryParse(map['maxAdvertisementInterval']),
-          int.tryParse(map['minConnectionInterval']),
-          int.tryParse(map['maxConnectionInterval']));
+        map['minAdvertisementInterval'],
+        map['maxAdvertisementInterval'],
+        map['minConnectionInterval'],
+        map['maxConnectionInterval'],
+      );
+//          int.tryParse(map['minAdvertisementInterval']),
+//          int.tryParse(map['maxAdvertisementInterval']),
+//          int.tryParse(map['minConnectionInterval']),
+//          int.tryParse(map['maxConnectionInterval']));
+
+  String toString() => 'AdvertisementAndConnectionIntervalRead - '
+      'minAdvertisementInterval: $minAdvertisementInterval, '
+      'maxAdvertisementInterval: $maxAdvertisementInterval, '
+      'minConnectionInterval: $minConnectionInterval, '
+      'maxConnectionInterval: $maxConnectionInterval';
 }
 
 /// Called when the information on battery voltage has been received
 class BatteryRead extends ESenseEvent {
   /// eSense battery voltage in Volts
-  int voltage;
+  double voltage;
 
   BatteryRead(this.voltage) : super();
-  factory BatteryRead.fromMap(Map<dynamic, dynamic> map) => BatteryRead(int.tryParse(map['voltage']));
+  //factory BatteryRead.fromMap(Map<dynamic, dynamic> map) => BatteryRead(int.tryParse(map['voltage']));
+  factory BatteryRead.fromMap(Map<dynamic, dynamic> map) => BatteryRead(map['voltage']);
 
   String toString() => 'BatteryRead - voltage: $voltage';
 }
@@ -193,7 +213,7 @@ class SensorConfigRead extends ESenseEvent {
   ESenseConfig config;
 
   SensorConfigRead() : super();
-  factory SensorConfigRead.fromMap(Map<dynamic, dynamic> map) {
-    return SensorConfigRead()..config = ESenseConfig();
-  }
+  factory SensorConfigRead.fromMap(Map<dynamic, dynamic> map) => SensorConfigRead()..config = ESenseConfig();
+
+  String toString() => 'SensorConfigRead - config: $config';
 }
