@@ -1,3 +1,7 @@
+##0.1.5 
+
+* Changed path provider from ^0.5.0 to 1.2.0
+
 ##0.1.4 
 
 Fixed Movisens core Android library for foreground  service and notification error. Now notification is removed on app kill
