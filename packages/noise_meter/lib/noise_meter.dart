@@ -7,6 +7,7 @@ import 'dart:io' show Platform;
 /// thrown whenever the plugin is used on platforms other than Android
 class NoiseMeterException implements Exception {
   String _cause;
+
   NoiseMeterException(this._cause);
 
   @override
@@ -17,45 +18,38 @@ class NoiseMeterException implements Exception {
 
 /** A [NoiseEvent] holds a decibel value for a particular noise level reading.**/
 class NoiseEvent {
-  NoiseEvent(this._decibel);
+  NoiseEvent(this._volumes);
 
-  num _decibel;
+  List<dynamic> _volumes;
 
-  int get decibel => _decibel.round();
+  List<dynamic> get volumes => _volumes;
 
   @override
   String toString() {
-    return "[Decibel Reading: $_decibel dB]";
+    return "[Volumes Reading: ${_volumes.toString()}]";
   }
 }
 
-NoiseEvent _noiseEvent(num decibel) {
-  return new NoiseEvent(decibel);
+NoiseEvent _noiseEvent(List<dynamic> volumes) {
+  return new NoiseEvent(volumes);
 }
 
-/** A [Noise] object is reponsible for connecting to to the native environment.
+/** A [NoiseMeter] object is reponsible for connecting to to the native environment.
  * Uses a frequency (in milliseconds) for controlling how frequently readings
  * are received from the native environment**/
 
-class Noise {
-  Noise(this._frequency);
-
+class NoiseMeter {
   static const EventChannel _noiseEventChannel =
-  EventChannel('noiseLevel.eventChannel');
+      EventChannel('noise_meter.eventChannel');
 
-  int _frequency;
   Stream<NoiseEvent> _noiseStream;
 
   Stream<NoiseEvent> get noiseStream {
-    if (Platform.isAndroid) {
-      Map<String, dynamic> args = {'frequency': '$_frequency'};
-      if (_noiseStream == null) {
-        _noiseStream = _noiseEventChannel
-            .receiveBroadcastStream(args)
-            .map((db) => _noiseEvent(db));
-      }
-      return _noiseStream;
+    if (_noiseStream == null) {
+      _noiseStream = _noiseEventChannel
+          .receiveBroadcastStream()
+          .map((volumes) => _noiseEvent(volumes));
     }
-    throw NoiseMeterException('Noise Meter currently only implemented for Android!');
+    return _noiseStream;
   }
 }

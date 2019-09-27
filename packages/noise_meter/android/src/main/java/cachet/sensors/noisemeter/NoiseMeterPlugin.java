@@ -5,39 +5,33 @@ import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.PluginRegistry;
 
-import android.Manifest;
 import android.content.pm.PackageManager;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import java.io.File;
-import java.util.HashMap;
-
+import java.util.ArrayList;
 
 
 /**
  * NoiseMeterPlugin
  */
 public class NoiseMeterPlugin implements PluginRegistry.RequestPermissionsResultListener, EventChannel.StreamHandler {
-    private static String DEFAULT_FILE_LOCATION = Environment.getExternalStorageDirectory().getPath() + "/noise.m4a";
-    private static final String EVENT_CHANNEL_NAME = "noiseLevel.eventChannel";
-    private final static String TAG = "NoiseMeterPlugin";
-    private static Registrar registrar;
-    private MediaRecorder mediaRecorder;
-    private boolean isRecording = false;
+    private static final String EVENT_CHANNEL_NAME = "noise_meter.eventChannel";
     private EventSink eventSink;
-    private int frequency;
-
+    private static int SAMPLE_RATE = 44100;
+    static int BUFFER_SIZE = 512;
+    private static String LOG_TAG = "NoiseCalibration";
+    boolean recording = false;
+    private static Registrar registrar;
 
     /**
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
-        Log.d(TAG, "registerWith()");
         EventChannel eventChannel = new EventChannel(registrar.messenger(), EVENT_CHANNEL_NAME);
         eventChannel.setStreamHandler(new NoiseMeterPlugin());
         NoiseMeterPlugin.registrar = registrar;
@@ -50,22 +44,68 @@ public class NoiseMeterPlugin implements PluginRegistry.RequestPermissionsResult
     @Override
     @SuppressWarnings("unchecked")
     public void onListen(Object obj, EventChannel.EventSink eventSink) {
-        try {
-            HashMap<String, String> args = (HashMap<String, String>) obj;
-            frequency = Integer.parseInt(args.get("frequency"));
-        } catch (Exception e) {
-            Log.e(TAG, "onListen(), Type-cast exception: ", e);
-        }
-
         this.eventSink = eventSink;
-        startRecorder();
-        listen();
+        recording = true;
+        streamMicData();
     }
 
+    /**
+     * Starts recording and streaming audio data from the mic.
+     * Uses a buffer array of size 512. Whenever buffer is full, the content is sent to Flutter.
+     * <p>
+     * Source:
+     * https://www.newventuresoftware.com/blog/record-play-and-visualize-raw-audio-data-in-android
+     */
+    private void streamMicData() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
+
+                final short[] audioBuffer = new short[BUFFER_SIZE / 2];
+
+                AudioRecord record = new AudioRecord(
+                        MediaRecorder.AudioSource.DEFAULT,
+                        SAMPLE_RATE,
+                        AudioFormat.CHANNEL_IN_MONO,
+                        AudioFormat.ENCODING_PCM_16BIT,
+                        BUFFER_SIZE);
+
+                if (record.getState() != AudioRecord.STATE_INITIALIZED) {
+                    Log.e(LOG_TAG, "Audio Record can't initialize!");
+                    return;
+                }
+
+                /** Start recording loop */
+                record.startRecording();
+                while (recording) {
+                    /** Read data into buffer */
+                    record.read(audioBuffer, 0, audioBuffer.length);
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            /// Convert to list in order to send via EventChannel.
+                            ArrayList<Short> audioBufferList = new ArrayList<>();
+                            for (short impulse : audioBuffer) {
+                                audioBufferList.add(impulse);
+                            }
+                            eventSink.success(audioBufferList);
+                        }
+                    });
+                }
+                record.stop();
+                record.release();
+            }
+        }).start();
+
+    }
+
+    /**
+     * Called from Flutter, which cancels the stream.
+     */
     @Override
     public void onCancel(Object o) {
-        this.eventSink = null;
-        stopRecorder();
+        recording = false;
     }
 
     /**
@@ -81,105 +121,5 @@ public class NoiseMeterPlugin implements PluginRegistry.RequestPermissionsResult
                 break;
         }
         return false;
-    }
-
-    /**
-     * Called by onListen().
-     */
-    private void startRecorder() {
-        if (!permissionGranted()) return;
-
-        if (this.mediaRecorder == null) {
-            this.mediaRecorder = new MediaRecorder();
-            this.mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            this.mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-            this.mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-            this.mediaRecorder.setOutputFile(DEFAULT_FILE_LOCATION);
-        }
-
-        try {
-            this.mediaRecorder.prepare();
-            this.mediaRecorder.start();
-            isRecording = true;
-        } catch (Exception e) {
-            Log.e(TAG, "startRecorder(), MediaRecorder exception: ", e);
-        }
-    }
-
-    /**
-     * Checks if permission to access microphone and storage was granted.
-     */
-    private boolean permissionGranted() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (registrar.activity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
-                    || registrar.activity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                registrar.activity().requestPermissions(new String[]{
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                }, 0);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Listens to the [MediaRecorder] object with a given frequency and creates a callback
-     * to the [NoiseLevel] object in Flutter which created this Plugin object.
-     */
-    private void listen() {
-        Log.d(TAG, "listen()");
-
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (isRecording && eventSink != null) {
-                    try {
-                        int volume = mediaRecorder.getMaxAmplitude();  //Get the sound pressure value
-                        final NoiseLevel noiseLevel = new NoiseLevel(volume);
-                        //eventSink.success(noiseLevel.getDecibel());
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                eventSink.success(noiseLevel.getDecibel());
-                            }
-                        });
-                        Thread.sleep(frequency);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        thread.start();
-    }
-
-    /**
-     * Called by onCancel.
-     */
-    private void stopRecorder() {
-        isRecording = false;
-        if (this.mediaRecorder == null) {
-            return;
-        }
-        this.mediaRecorder.stop();
-        this.mediaRecorder.reset();
-        this.mediaRecorder.release();
-        this.mediaRecorder = null;
-        flushAudioFile();
-    }
-
-    /**
-     * Deletes the audio file used for recording.
-     */
-    private void flushAudioFile() {
-        File file = new File(DEFAULT_FILE_LOCATION);
-        if (file.exists()) {
-            boolean fileDeleteSuccess = file.delete();
-            if (!fileDeleteSuccess) {
-                Log.d(TAG, "Failed to flush audio file!");
-            }
-        }
     }
 }

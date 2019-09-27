@@ -14,8 +14,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool _isRecording = false;
   StreamSubscription<NoiseEvent> _noiseSubscription;
-  String _noiseLevel;
-  Noise _noise;
+  String _volumes;
+  NoiseMeter _noiseMeter;
 
   @override
   void initState() {
@@ -24,17 +24,18 @@ class _MyAppState extends State<MyApp> {
 
   void onData(NoiseEvent e) {
     this.setState(() {
-      this._noiseLevel = "${e.decibel} dB";
+      this._volumes = e.volumes.toString();
       if (!this._isRecording) {
         this._isRecording = true;
       }
     });
+    print(this._volumes);
   }
 
   void startRecorder() async {
     try {
-      _noise = new Noise(500); // New observation every 500 ms
-      _noiseSubscription = _noise.noiseStream.listen(onData);
+      _noiseMeter = new NoiseMeter();
+      _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
     } on NoiseMeterException catch (exception) {
       print(exception);
     }
@@ -69,7 +70,7 @@ class _MyAppState extends State<MyApp> {
                 "Noise Level",
               ),
               Text(
-                _noiseLevel == null ? 'unknown' : '$_noiseLevel',
+                'MIC ${(_isRecording ? 'ON' : 'OFF')} \n(Check Flutter log for data)',
                 style: Theme.of(context).textTheme.display1,
               ),
             ],
