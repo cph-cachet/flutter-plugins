@@ -1,3 +1,6 @@
+## 0.2.0+1
+* small update to documentation
+
 ## 0.2.0
 * support for iOS implemented
 * improved example app

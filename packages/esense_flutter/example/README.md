@@ -1,8 +1,10 @@
-# esense_flutter_example
+# eSense Flutter Example
 
-Demonstrates how to use the esense_flutter plugin.
+Demonstrates how to use the `esense_flutter` plugin. 
+See the [`main.dart`](https://github.com/cph-cachet/flutter-plugins/blob/master/packages/esense_flutter/example/lib/main.dart) for the main application.
 
-## Getting Started
+
+## Getting Started with Flutter
 
 This project is a starting point for a Flutter application.
 
