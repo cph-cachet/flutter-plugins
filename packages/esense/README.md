@@ -1,6 +1,6 @@
 # DEPRICATED
 This _PLUGIN IS NO LONGER MAINTAINED_.
-Due to naming conflict in iOS, this plugin has been renamed to [`esense_flutter`](https://pub.dev/packages/esense_flutter).
+Due to a naming conflict in iOS, this plugin has been renamed to [`esense_flutter`](https://pub.dev/packages/esense_flutter).
 Please use this other one. 
 
 

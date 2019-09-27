@@ -1,5 +1,7 @@
 ## 0.2.0
 * support for iOS implemented
+* improved example app
+* improvement to documentation
 
 ## 0.1.3
 * sampling rate can be set before connecting to device.

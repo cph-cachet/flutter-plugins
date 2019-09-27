@@ -48,8 +48,6 @@ In addition, your __minimum SDK version__ should be __23__.
 
 ##iOS
 
-Uses the [eSense iOS Library](https://github.com/tetujin/ESense).
-
 Requires iOS 10 or later.
 
 ## Usage
@@ -138,13 +136,10 @@ ESenseManager.eSenseEvents.listen((event) {
 
 // now invoke read operations on the manager
 ESenseManager.getDeviceName();
-ESenseManager.getBatteryVoltage();
-ESenseManager.getAccelerometerOffset();
-ESenseManager.getAdvertisementAndConnectionInterval();
-ESenseManager.getSensorConfig();
 `````
 
 When the button on the eSense device is pressed, the `eSenseEvents` stream will send an [`ButtonEventChanged`](https://pub.dev/documentation/esense/latest/esense/ButtonEventChanged-class.html) event.
+
 
 ### Change the Configuration of the eSense Device
 
@@ -156,10 +151,45 @@ and change the IMU sensor configuration using [`setSensorConfig()`](https://pub.
 
 __Note:__ At the time of writing, the `setSensorConfig()` method is _not_ implemented.
 
+### Limitations in the eSense BTLE interface
+
+Note that there is a limitation to the eSesnse BTLE interface which implie that you __should not__ 
+invoke methods on the ESenseManager in a fast pace after each other.
+For example, the following code __will not work__:
+
+`````dart
+// set up a event listener
+ESenseManager.eSenseEvents.listen((event) {
+  print('ESENSE event: $event');
+}
+
+// now invoke read operations on the manager
+// THIS WILL NOT WORK!
+ESenseManager.getDeviceName();
+ESenseManager.getAccelerometerOffset();
+ESenseManager.getAdvertisementAndConnectionInterval();
+`````
+
+In this case, the first operation (listening to the Esense Events) will succeed - the rest will fail.
+In the example app, this has been fixed by adding delays to method call, like;
+
+```dart
+// get the battery level every 10 secs
+Timer.periodic(Duration(seconds: 10), (timer) async => await ESenseManager.getBatteryVoltage());
+
+// wait 2, 3, 4, 5, ... secs before getting the name, offset, etc.
+// it seems like the eSense BTLE interface does NOT like to get called
+// several times in a row -- hence, delays are added in the following calls
+Timer(Duration(seconds: 2), () async => await ESenseManager.getDeviceName());
+Timer(Duration(seconds: 3), () async => await ESenseManager.getAccelerometerOffset());
+Timer(Duration(seconds: 4), () async => await ESenseManager.getAdvertisementAndConnectionInterval());
+Timer(Duration(seconds: 5), () async => await ESenseManager.getSensorConfig());
+```
 
 ## Authors
 
  * [Jakob E. Bardram](http://www.bardram.net) Technical University of Denmark
+ * The iOS implementation uses the [eSense iOS Library](https://github.com/tetujin/ESense).
 
 
 ## Getting Started with Flutter

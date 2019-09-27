@@ -79,8 +79,6 @@ class ESenseManager {
   ///
   /// The event [DeviceNameRead] is fired when the name has been read.
   /// Returns [true] if the request was successfully made, [false] otherwise.
-  ///
-  /// This methods seems not to work on iOS.
   static Future<bool> getDeviceName() async {
     if (!connected) throw ESenseException('Not connected to any eSense device.');
     return await _eSenseManagerMethodChannel.invokeMethod('getDeviceName');
