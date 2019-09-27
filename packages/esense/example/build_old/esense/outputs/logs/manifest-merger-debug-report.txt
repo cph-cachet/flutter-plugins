@@ -1,0 +1,19 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml:1:1-3:12
+INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml:1:1-3:12
+INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml:1:1-3:12
+	package
+		ADDED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml:2:3-29
+		INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml
+		INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml:1:11-69
+uses-sdk
+INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml
+INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml
+		ADDED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml
+		INJECTED from /Users/bardram/dev/flutter-plugins/packages/esense/android/src/main/AndroidManifest.xml

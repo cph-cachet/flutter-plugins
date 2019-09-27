@@ -1,0 +1,11 @@
+framework module esense {
+  umbrella header "esense-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module esense.Swift {
+    header "esense-Swift.h"
+    requires objc
+}
