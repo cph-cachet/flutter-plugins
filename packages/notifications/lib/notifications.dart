@@ -17,25 +17,28 @@ class NotificationException implements Exception {
 }
 
 class NotificationEvent {
-  String _packageName;
-  DateTime _timeStamp;
+  String packageMessage;
+  String packageName;
+  DateTime timeStamp;
 
-  NotificationEvent(this._packageName) {
-    _timeStamp = DateTime.now();
+  NotificationEvent({this.packageName, this.packageMessage, this.timeStamp});
+
+  factory NotificationEvent.fromMap(Map<dynamic, dynamic> map) {
+      DateTime time = DateTime.now();
+      String name = map['packageName'];
+      String message = map['packageMessage'];
+
+      return NotificationEvent(packageName: name, packageMessage: message, timeStamp: time);
   }
-
-  String get packageName => _packageName;
-
-  DateTime get timeStamp => _timeStamp;
 
   @override
   String toString() {
-    return "[$packageName sent notification @ $timeStamp";
+    return "Notification Event \n Package Name: $packageName \n - Timestamp: $timeStamp \n - Package Message: $packageMessage";
   }
 }
 
-NotificationEvent _notificationEvent(String event) {
-  return new NotificationEvent(event);
+NotificationEvent _notificationEvent(dynamic data) {
+  return new NotificationEvent.fromMap(data);
 }
 
 class Notifications {
