@@ -92,7 +92,7 @@ double kelvin = weather.temperature.kelvin;
 For API documentation on the forecast API, see the [OpenWeatherMap forecast API docs](https://openweathermap.org/forecast5).
 
 ```dart
-List<Weather> forecasts = await weatherStation.getFiveDayForecast();
+List<Weather> forecasts = await weatherStation.fiveDayForecast();
 ```
 
 ### Exceptions
