@@ -29,10 +29,11 @@ class _MyAppState extends State<MyApp> {
         this._isRecording = true;
       }
     });
-    print(this._volumes);
+    printWrapped(this._volumes);
   }
 
   void startRecorder() async {
+    print('***NEW RECORDING***');
     try {
       _noiseMeter = new NoiseMeter();
       _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
@@ -53,6 +54,11 @@ class _MyAppState extends State<MyApp> {
     } catch (err) {
       print('stopRecorder error: $err');
     }
+  }
+
+  void printWrapped(String text) {
+    final pattern = new RegExp('.{1,800}'); // 800 is the size of each chunk
+    pattern.allMatches(text).forEach((match) => print(match.group(0)));
   }
 
   @override
