@@ -1,5 +1,7 @@
 package cachet.plugins.notifications;
 
+import java.util.HashMap;
+
 /**
  * Flutter-specific
  */
@@ -104,7 +106,11 @@ public class NotificationsPlugin implements EventChannel.StreamHandler {
         @Override
         public void onReceive(Context context, Intent intent) {
             String packageName = intent.getStringExtra(NotificationListener.NOTIFICATION_PACKAGE_NAME);
-            eventSink.success(packageName);
+            String packageMessage = intent.getStringExtra(NotificationListener.NOTIFICATION_PACKAGE_MESSAGE);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("packageName",packageName);
+            map.put("packageMessage", packageMessage);
+            eventSink.success(map);
         }
     }
 }

@@ -42,3 +42,12 @@ GeneratedPluginRegistrant.m
 GeneratedPluginRegistrant.java
 build/
 .flutter-plugins
+
+### Eclipse Patch ###
+# Legacy Eclipse project files
+.project
+.classpath
+.settings
+
+# Annotation Processing
+.apt_generated
