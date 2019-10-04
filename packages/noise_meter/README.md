@@ -12,59 +12,63 @@ On *Android* you need to add a permission to `AndroidManifest.xml`:
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
+On *iOS* enable the following:
+* Capabilities > Background Modes > _Audio, AirPlay and Picture in Picture_
+* In the Runner Xcode project edit the _Info.plist_ file. Add an entry for _'Privacy - Microphone Usage Description'_
+
+
 ## Usage
 ### Initalization
-Noise data will be streamed, and for this a few objects need to be initialized, such as a boolean representing the recording state, a stream and a NoiseMeter object.
+Keep these three variables accessible:
 ```dart
 bool _isRecording = false;
-StreamSubscription<NoiseEvent> _noiseSubscription;
-Noise _noise;
+StreamSubscription<NoiseReading> _noiseSubscription;
+NoiseMeter _noiseMeter;
 ```
-
-Furthermore, handling incoming events in a seperate method is also a good idea:
-```dart
-void onData(NoiseEvent e) {
-    print("${e.decibel} dB");
-}
-```
-
-Where `frequency` is the update rate in milliseconds of type `int`, this means the lower the update rate, the more frequently events will come in.
 
 ### Start listening
+The easiest thing to do is to create a new instance of the NoiseMeter every time a new recording is started.
 ```dart
 void startRecorder() async {
-    try {
-      _noise = new Noise(500); // New observation every 500 ms
-      _noiseSubscription = _noise.noiseStream.listen(onData);
-    } on NoiseMeterException catch (exception) {
-      print(exception);
-    }
+  try {
+    _noiseMeter = new NoiseMeter();
+    _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
+  } on NoiseMeterException catch (exception) {
+    print(exception);
+  }
 }
 ```
 
-Where `onData()` handles the events from `StreamSubscription`. An example could be:
 
+### On data
+When data comes in through the stream, it will be caught by the `onData` method, specified when the subscription was created.
+The incoming data points are of type `NoiseReading` which have a single field with a getter, namely the `db` value of type `double`.
 ```dart
-void onData(NoiseEvent event) {
-  print("noise level is ${event.decibel} decibel.");
+void onData(NoiseReading noiseReading) {
+  this.setState(() {
+    if (!this._isRecording) {
+      this._isRecording = true;
+    }
+  });
+  /// Do someting with the noiseReading object
+  print(noiseReading.toString());
 }
 ```
-
-Each incoming `NoiseEvent` has an integer field named `decibel` containing the noise level of the reading.
 
 ### Stop listening
+To stop listening, the `.cancel()` method is called on the subscription object.
 ```dart
 void stopRecorder() async {
-    try {
-      if (_noiseSubscription != null) {
-        _noiseSubscription.cancel();
-        _noiseSubscription = null;
-      }
-      this.setState(() {
-        this._isRecording = false;
-      });
-    } catch (err) {
-      print('stopRecorder error: $err');
+  try {
+    if (_noiseSubscription != null) {
+      _noiseSubscription.cancel();
+      _noiseSubscription = null;
     }
+    this.setState(() {
+      this._isRecording = false;
+    });
+  } catch (err) {
+    print('stopRecorder error: $err');
+  }
 }
 ```
