@@ -23,7 +23,8 @@ public class NoiseMeterPlugin implements PluginRegistry.RequestPermissionsResult
     private static final String EVENT_CHANNEL_NAME = "noise_meter.eventChannel";
     private EventSink eventSink;
     private static int SAMPLE_RATE = 44100;
-    static int BUFFER_SIZE = 512;
+    static int BUFFER_SIZE = 22050;
+    static int MAX_AMPLITUDE = 32767;
     private static String LOG_TAG = "NoiseCalibration";
     boolean recording = false;
     private static Registrar registrar;
@@ -85,9 +86,10 @@ public class NoiseMeterPlugin implements PluginRegistry.RequestPermissionsResult
                         @Override
                         public void run() {
                             /// Convert to list in order to send via EventChannel.
-                            ArrayList<Short> audioBufferList = new ArrayList<>();
+                            ArrayList<Double> audioBufferList = new ArrayList<>();
                             for (short impulse : audioBuffer) {
-                                audioBufferList.add(impulse);
+                                double normalizedImpulse = (double) impulse / (double) MAX_AMPLITUDE;
+                                audioBufferList.add(normalizedImpulse);
                             }
                             eventSink.success(audioBufferList);
                         }

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:core';
 import 'package:flutter/services.dart';
-import 'dart:io' show Platform;
+import 'dart:math';
 
 /// Custom Exception for the plugin,
 /// thrown whenever the plugin is used on platforms other than Android
@@ -16,22 +16,37 @@ class NoiseMeterException implements Exception {
   }
 }
 
-/** A [NoiseEvent] holds a decibel value for a particular noise level reading.**/
-class NoiseEvent {
-  NoiseEvent(this._volumes);
+/** A [NoiseReading] holds a decibel value for a particular noise level reading.**/
+class NoiseReading {
 
-  List<dynamic> _volumes;
+  double _db = 0;
 
-  List<dynamic> get volumes => _volumes;
+  NoiseReading(List<dynamic> volumes) {
+    /// Sorted volumes such that the last element is max amplitude
+    volumes.sort();
+
+    /// Compute average peak-amplitude using the min and max amplitude
+    double min = volumes.first + 0.0;
+    double max = volumes.last + 0.0;
+    double avg = 0.5 * (min.abs() + max.abs());
+
+    /// Max amplitude is 2^15
+    double maxAmp = pow(2, 15) + 0.0;
+
+    /// Calculate decibel values as 20 * log10(x)
+    _db = 20 * log(maxAmp * avg) * log10e;
+  }
+
+  double get db => _db;
 
   @override
   String toString() {
-    return "[Volumes Reading: ${_volumes.toString()}]";
+    return "[VolumeReading: $db dB]";
   }
 }
 
-NoiseEvent _noiseEvent(List<dynamic> volumes) {
-  return new NoiseEvent(volumes);
+NoiseReading _noiseReading(List<dynamic> volumes) {
+  return new NoiseReading(volumes);
 }
 
 /** A [NoiseMeter] object is reponsible for connecting to to the native environment.
@@ -42,13 +57,13 @@ class NoiseMeter {
   static const EventChannel _noiseEventChannel =
       EventChannel('noise_meter.eventChannel');
 
-  Stream<NoiseEvent> _noiseStream;
+  Stream<NoiseReading> _noiseStream;
 
-  Stream<NoiseEvent> get noiseStream {
+  Stream<NoiseReading> get noiseStream {
     if (_noiseStream == null) {
       _noiseStream = _noiseEventChannel
           .receiveBroadcastStream()
-          .map((volumes) => _noiseEvent(volumes));
+          .map((volumes) => _noiseReading(volumes));
     }
     return _noiseStream;
   }
