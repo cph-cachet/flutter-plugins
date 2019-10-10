@@ -1,6 +1,6 @@
 name: noise_meter
 description: A noise meter plugin for Android and iOS. Currently works for Android only, will support iOS in near future.
-version: 1.0.0
+version: 1.0.1
 author: CACHET Team <cph.cachet@gmail.com>
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/noise_meter
 
