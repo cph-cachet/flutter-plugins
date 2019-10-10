@@ -72,3 +72,28 @@ void stopRecorder() async {
   }
 }
 ```
+## Technical documentation
+
+### Sample rate
+The sample rate for both native implementations is 44,100. 
+
+### Microphone data
+The native implementations record PCM data using the microphone of the device, and uses an audio buffer array to store the incoming data. When the buffer is filled, the contents are emitted to the Flutter side. The incoming floating point values are between -1 and 1 which is the PCM values divided by the max amplitude value which is 2^15.
+
+### Conversion to Decibel
+Firstly an average of the absolute value of the two highest peaks (usually a negative and a positive peak) is computed in order to reduce the window of data into a the maximum amplitude 
+
+```python
+avg = 0.5*abs(min) + 0.5*abs(max)
+```
+
+Thereafter computing the decibel value is performed as follows:
+```python
+db = 20 * log10(2**15 * avg)
+```
+
+
+
+
+
+
