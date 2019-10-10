@@ -31,8 +31,10 @@ class _MyAppState extends State<MyApp> {
       if (_isAuthorized) {
         print('Authorized');
 
+/*        _healthDataList
+            .addAll(await FlutterHealth.getAllHealthData(startDate, endDate));*/
         _healthDataList
-            .addAll(await FlutterHealth.getAllHealthData(startDate, endDate));
+            .addAll(await FlutterHealth.getStepCount(startDate, endDate));
         setState(() {});
       } else {
         print('Not authorized');
