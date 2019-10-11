@@ -46,9 +46,29 @@ Add the following entry to your `manifest.xml` file, in the Android project of y
 
 In addition, your __minimum SDK version__ should be __23__.
 
-##iOS
+## iOS
 
-Requires iOS 10 or later.
+Requires iOS 10 or later. Hence, in your `Podfile` in the `ios` folder of your app, 
+make sure that the platform is set to `10.0`.
+ 
+
+```
+platform :ios, '10.0'
+```
+
+Add this permission in the `Info.plist` file located in `ios/Runner`:
+
+```xml
+<key>NSBluetoothAlwaysUsageDescription</key>
+<string>Uses bluetooth to connect to the eSense device</string>
+<key>UIBackgroundModes</key>
+  <array>
+  <string>audio</string>
+  <string>external-accessory</string>
+  <string>fetch</string>
+</array>
+
+```
 
 ## Usage
 

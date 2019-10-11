@@ -1,3 +1,7 @@
+## 0.2.0+2
+* update to readme on iOS 
+* added bluetooth permission to `Info.plist`
+
 ## 0.2.0+1
 * small update to documentation
 
