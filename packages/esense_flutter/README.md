@@ -173,7 +173,7 @@ __Note:__ At the time of writing, the `setSensorConfig()` method is _not_ implem
 
 ### Limitations in the eSense BTLE interface
 
-Note that there is a limitation to the eSesnse BTLE interface which implie that you __should not__ 
+Note that there is a limitation to the eSense BTLE interface which implie that you __should not__ 
 invoke methods on the ESenseManager in a fast pace after each other.
 For example, the following code __will not work__:
 
