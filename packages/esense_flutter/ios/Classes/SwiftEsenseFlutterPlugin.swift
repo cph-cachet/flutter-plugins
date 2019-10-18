@@ -74,7 +74,7 @@ class ESenseManagerMethodCallHandler: NSObject, FlutterPlugin {
                 result(connected)
             } else {
                 result(FlutterError.init(code: "BAD_ARGS",
-                                         message: "Wrong argument - connect expects the name as first argument)" ,
+                                         message: "Wrong argument - connect expects the name as an argument)" ,
                                          details: nil))
             }
         case "disconnect":
@@ -90,8 +90,8 @@ class ESenseManagerMethodCallHandler: NSObject, FlutterPlugin {
                 result(true)
             } else {
                 result(FlutterError.init(code: "BAD_ARGS",
-                                         message: "Wrong argument - setSamplingRate expects the sampling rate as first argument)" ,
-                                         details: "Sampling rate set to \(samplingRate)"))
+                                         message: "Wrong argument - setSamplingRate expects the sampling rate as an argument)" ,
+                                         details: "Sampling rate set to default rate: \(samplingRate)"))
             }
         case "getDeviceName":
             let success = manager?.getDeviceName()
@@ -103,7 +103,7 @@ class ESenseManagerMethodCallHandler: NSObject, FlutterPlugin {
                 result(success)
             } else {
                 result(FlutterError.init(code: "BAD_ARGS",
-                                         message: "Wrong argument - setDeviceName expects the device name as first argument)" ,
+                                         message: "Wrong argument - setDeviceName expects the device name as an argument)" ,
                                          details: nil ))
             }
         case "getBatteryVoltage":

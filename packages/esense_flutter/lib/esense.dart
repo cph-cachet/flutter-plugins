@@ -35,8 +35,10 @@ class ESenseManager {
   /// The name of the connected eSense device
   static String eSenseDeviceName;
 
+  static int _samplingRate = 10;
+
   /// The sampling rate of the eSense sensors (default sampling rate is 10 Hz.)
-  static int samplingRate = 10;
+  static int get samplingRate => _samplingRate;
 
   // ------------    METHOD HANDLERS --------------------
 
@@ -69,9 +71,9 @@ class ESenseManager {
   ///
   /// Default sampling rate is 10 Hz.
   static Future<bool> setSamplingRate(int rate) async {
-    assert(
-        rate != null && samplingRate > 0 && samplingRate <= 100, 'Must provide a sampling rate between 1 and 100 Hz.');
-    samplingRate = rate;
+    assert(rate != null && _samplingRate > 0 && _samplingRate <= 100,
+        'Must provide a sampling rate between 1 and 100 Hz.');
+    _samplingRate = rate;
     return await _eSenseManagerMethodChannel.invokeMethod('setSamplingRate', <String, dynamic>{'rate': rate});
   }
 
