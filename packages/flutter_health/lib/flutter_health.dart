@@ -124,6 +124,52 @@ class FlutterHealth {
   }
 
   /// Start of enum getter functions
+
+  static Future<List<HealthData>> getBloodGlucose(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.BLOOD_GLUCOSE
+        : HealthKitDataType.BLOOD_GLUCOSE;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getBloodGlucose");
+  }
+
+  static Future<List<HealthData>> getBloodOxygen(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.BLOOD_OXYGEN
+        : HealthKitDataType.BLOOD_OXYGEN;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getBloodOxygen");
+  }
+
+  static Future<List<HealthData>> getRestingHeartRate(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? null
+        : HealthKitDataType.RESTING_HEART_RATE;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getRestingHeartRate");
+  }
+
+  static Future<List<HealthData>> getBloodPressureDiastolic(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.BLOOD_PRESSURE
+        : HealthKitDataType.BLOOD_PRESSURE_DIASTOLIC;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getBloodPressureDiastolic");
+  }
+
+  static Future<List<HealthData>> getBloodPressureSystolic(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.BLOOD_PRESSURE
+        : HealthKitDataType.BLOOD_PRESSURE_SYSTOLIC;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getBloodPressureSystolic");
+  }
+
   static Future<List<HealthData>> getBodyTemperature(
       DateTime startDate, DateTime endDate) async {
     var type = _platformType == PlatformType.ANDROID

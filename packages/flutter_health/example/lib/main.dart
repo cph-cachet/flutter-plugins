@@ -36,20 +36,20 @@ class _MyAppState extends State<MyApp> {
         try {
           _healthDataList
             ..addAll(await FlutterHealth.getStepCount(startDate, endDate))
-            ..addAll(
-                await FlutterHealth.getWaistCircumference(startDate, endDate))
-            ..addAll(
-                await FlutterHealth.getBodyFatPercentage(startDate, endDate))
+            ..addAll(await FlutterHealth.getWaistCircumference(startDate, endDate))
+            ..addAll(await FlutterHealth.getBodyFatPercentage(startDate, endDate))
             ..addAll(await FlutterHealth.getBodyMassIndex(startDate, endDate))
             ..addAll(await FlutterHealth.getHeight(startDate, endDate))
-            ..addAll(
-                await FlutterHealth.getBodyFatPercentage(startDate, endDate))
-            ..addAll(
-                await FlutterHealth.getActiveEnergyBurned(startDate, endDate))
-            ..addAll(
-                await FlutterHealth.getBasalEnergyBurned(startDate, endDate))
-            ..addAll(
-                await FlutterHealth.getHeartRate(startDate, endDate));
+            ..addAll(await FlutterHealth.getBodyFatPercentage(startDate, endDate))
+            ..addAll(await FlutterHealth.getActiveEnergyBurned(startDate, endDate))
+            ..addAll(await FlutterHealth.getBasalEnergyBurned(startDate, endDate))
+            ..addAll(await FlutterHealth.getHeartRate(startDate, endDate))
+            ..addAll(await FlutterHealth.getBloodPressureDiastolic(startDate, endDate))
+            ..addAll(await FlutterHealth.getBloodPressureSystolic(startDate, endDate))
+            ..addAll(await FlutterHealth.getRestingHeartRate(startDate, endDate))
+            ..addAll(await FlutterHealth.getBloodGlucose(startDate, endDate))
+            ..addAll(await FlutterHealth.getBloodOxygen(startDate, endDate));
+
 
         } catch (error) {
           print(error);
