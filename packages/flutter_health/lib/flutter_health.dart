@@ -124,13 +124,22 @@ class FlutterHealth {
   }
 
   /// Start of enum getter functions
+  static Future<List<HealthData>> getBodyTemperature(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.BODY_TEMPERATURE
+        : HealthKitDataType.BODY_TEMPERATURE;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getBodyTemperature");
+  }
+
   static Future<List<HealthData>> getHeartRate(
       DateTime startDate, DateTime endDate) async {
     var type = _platformType == PlatformType.ANDROID
         ? GoogleFitType.HEART_RATE
         : HealthKitDataType.HEART_RATE;
     return getHealthDataFromEnum(
-        startDate, endDate, type, "getBodyFatPercentage");
+        startDate, endDate, type, "getHeartRate");
   }
 
   static Future<List<HealthData>> getBasalEnergyBurned(
@@ -199,7 +208,6 @@ class FlutterHealth {
     return getHealthDataFromEnum(
         startDate, endDate, type, "getWaistCircumference");
   }
-
   /// End of enum getter functions
 
   /// Main function for fetching health data
