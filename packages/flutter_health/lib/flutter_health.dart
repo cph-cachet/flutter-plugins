@@ -51,165 +51,6 @@ enum GoogleFitType {
   BLOOD_GLUCOSE
 }
 
-class FlutterHealth {
-
-  static const MethodChannel _channel = const MethodChannel('flutter_health');
-  static PlatformType _platformType =
-      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
-
-  static String _methodName =
-      _platformType == PlatformType.ANDROID ? 'getGFHealthData' : 'getData';
-
-  static Future<bool> checkIfHealthDataAvailable() async {
-    final bool isHealthDataAvailable =
-        await _channel.invokeMethod('checkIfHealthDataAvailable');
-    return isHealthDataAvailable;
-  }
-
-  static Future<bool> requestAuthorization() async {
-    final bool isAuthorized =
-        await _channel.invokeMethod('requestAuthorization');
-    return isAuthorized;
-  }
-
-  //////// START ENUM FUNCTIONS /////////
-
-  static Future<List<HealthData>> getHeartRate(
-      DateTime startDate, DateTime endDate) async {
-    var type = _platformType == PlatformType.ANDROID
-        ? GoogleFitType.HEART_RATE
-        : HealthKitDataType.HEART_RATE;
-    return getHealthDataFromEnum(startDate, endDate, type, "getBodyFatPercentage");
-  }
-
-  static Future<List<HealthData>> getBasalEnergyBurned(
-      DateTime startDate, DateTime endDate) async {
-    var type = _platformType == PlatformType.ANDROID
-        ? null
-        : HealthKitDataType.BASAL_ENERGY_BURNED;
-    return getHealthDataFromEnum(startDate, endDate, type, "getBodyFatPercentage");
-  }
-
-  static Future<List<HealthData>> getBodyFatPercentage(
-      DateTime startDate, DateTime endDate) async {
-    var type = _platformType == PlatformType.ANDROID
-        ? GoogleFitType.BODY_FAT
-        : HealthKitDataType.BODY_FAT;
-    return getHealthDataFromEnum(startDate, endDate, type, "getBodyFatPercentage");
-  }
-
-  static Future<List<HealthData>> getCalories(
-      DateTime startDate, DateTime endDate) async {
-    var type =
-        _platformType == PlatformType.ANDROID ? GoogleFitType.CALORIES : null;
-    return getHealthDataFromEnum(startDate, endDate, type, "getCalories");
-  }
-
-  static Future<List<HealthData>> getActiveEnergyBurned(
-      DateTime startDate, DateTime endDate) async {
-    var type = _platformType == PlatformType.ANDROID
-        ? null
-        : HealthKitDataType.ACTIVE_ENERGY_BURNED;
-    return getHealthDataFromEnum(startDate, endDate, type, "getActiveEnergyBurned");
-  }
-
-  static Future<List<HealthData>> getHeight(
-      DateTime startDate, DateTime endDate) async {
-    var type = _platformType == PlatformType.ANDROID
-        ? GoogleFitType.HEIGHT
-        : HealthKitDataType.HEIGHT;
-    return getHealthDataFromEnum(startDate, endDate, type, "getHeight");
-  }
-
-  static Future<List<HealthData>> getBodyMassIndex(
-      DateTime startDate, DateTime endDate) async {
-    var type = _platformType == PlatformType.ANDROID
-        ? null
-        : HealthKitDataType.BODY_MASS_INDEX;
-    return getHealthDataFromEnum(startDate, endDate, type, "getBodyMassIndex");
-  }
-
-  static Future<List<HealthData>> getStepCount(
-      DateTime startDate, DateTime endDate) async {
-    var type = _platformType == PlatformType.ANDROID
-        ? GoogleFitType.STEPS
-        : HealthKitDataType.STEPS;
-    return getHealthDataFromEnum(startDate, endDate, type, "getStepCount");
-  }
-
-  static Future<List<HealthData>> getWaistCircumference(
-      DateTime startDate, DateTime endDate) async {
-    var type = _platformType == PlatformType.ANDROID
-        ? null // Not implemented for Google Fit
-        : HealthKitDataType.WAIST_CIRCUMFERENCE;
-    return getHealthDataFromEnum(startDate, endDate, type, "getWaistCircumference");
-  }
-
-  //////// END ENUM FUNCTIONS /////////
-
-  static Future<List<HealthData>> getHealthDataFromEnum(
-      DateTime startDate, DateTime endDate, dynamic dataType, String dataTypeName) async {
-    List<HealthData> healthData = new List();
-
-    /// If not implemented on platform, just return the empty list
-    if (dataType == null) {
-      print("Method $dataTypeName not implemented for platform ${_platformType.toString()}");
-      return healthData;
-    }
-
-    /// Get the index of the given data type
-    int dataTypeIndex = _platformType == PlatformType.ANDROID
-        ? GoogleFitType.values.indexOf(dataType)
-        : HealthKitDataType.values.indexOf(dataType);
-
-    /// Set parameters for method channel request
-    Map<String, dynamic> args = {
-      'index': dataTypeIndex,
-      'startDate': startDate.millisecondsSinceEpoch,
-      'endDate': endDate.millisecondsSinceEpoch
-    };
-
-
-    try {
-      List result = await _channel.invokeMethod(_methodName, args);
-
-      /// Process each data point received
-      for (var x in result) {
-        /// Add the platform_type and data_type fields
-        x["platform_type"] = _platformType.toString();
-        x["data_type"] = dataType.toString();
-
-        /// Convert to JSON
-        Map<String, dynamic> jsonData = Map<String, dynamic>.from(x);
-
-        /// Convert JSON to HealtData object
-        HealthData data = HealthData.fromJson(jsonData);
-        healthData.add(data);
-      }
-    } catch (error) {
-      print(error);
-    }
-    return healthData;
-  }
-
-  static Future<List<HealthData>> getHKHeartData(
-      DateTime startDate, DateTime endDate, int type) async {
-    Map<String, dynamic> args = {};
-    args.putIfAbsent('index', () => type);
-    args.putIfAbsent('startDate', () => startDate.millisecondsSinceEpoch);
-    args.putIfAbsent('endDate', () => endDate.millisecondsSinceEpoch);
-    try {
-      List result = await _channel.invokeMethod('getHeartAlerts', args);
-      var hkHealthData = List<HealthData>.from(
-          result.map((i) => HealthData.fromJson(Map<String, dynamic>.from(i))));
-      return hkHealthData;
-    } catch (e) {
-      return const [];
-    }
-  }
-}
-
-/// Cachet implementations below
 enum PlatformType { IOS, ANDROID, UNKNOWN }
 
 class HealthData {
@@ -257,5 +98,153 @@ class HealthData {
   String toString() {
     Map<String, dynamic> json = this.toJson();
     return json.toString();
+  }
+}
+
+class FlutterHealth {
+  static const MethodChannel _channel = const MethodChannel('flutter_health');
+  static PlatformType _platformType =
+      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+
+  static String _methodName =
+      _platformType == PlatformType.ANDROID ? 'getGFHealthData' : 'getData';
+
+  ///  Check of any health data is available
+  static Future<bool> checkIfHealthDataAvailable() async {
+    final bool isHealthDataAvailable =
+        await _channel.invokeMethod('checkIfHealthDataAvailable');
+    return isHealthDataAvailable;
+  }
+
+  /// Request access to health data on Android or iOS
+  static Future<bool> requestAuthorization() async {
+    final bool isAuthorized =
+        await _channel.invokeMethod('requestAuthorization');
+    return isAuthorized;
+  }
+
+  /// Start of enum getter functions
+  static Future<List<HealthData>> getHeartRate(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.HEART_RATE
+        : HealthKitDataType.HEART_RATE;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getBodyFatPercentage");
+  }
+
+  static Future<List<HealthData>> getBasalEnergyBurned(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? null
+        : HealthKitDataType.BASAL_ENERGY_BURNED;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getBodyFatPercentage");
+  }
+
+  static Future<List<HealthData>> getBodyFatPercentage(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.BODY_FAT
+        : HealthKitDataType.BODY_FAT;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getBodyFatPercentage");
+  }
+
+  static Future<List<HealthData>> getCalories(
+      DateTime startDate, DateTime endDate) async {
+    var type =
+        _platformType == PlatformType.ANDROID ? GoogleFitType.CALORIES : null;
+    return getHealthDataFromEnum(startDate, endDate, type, "getCalories");
+  }
+
+  static Future<List<HealthData>> getActiveEnergyBurned(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? null
+        : HealthKitDataType.ACTIVE_ENERGY_BURNED;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getActiveEnergyBurned");
+  }
+
+  static Future<List<HealthData>> getHeight(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.HEIGHT
+        : HealthKitDataType.HEIGHT;
+    return getHealthDataFromEnum(startDate, endDate, type, "getHeight");
+  }
+
+  static Future<List<HealthData>> getBodyMassIndex(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? null
+        : HealthKitDataType.BODY_MASS_INDEX;
+    return getHealthDataFromEnum(startDate, endDate, type, "getBodyMassIndex");
+  }
+
+  static Future<List<HealthData>> getStepCount(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.STEPS
+        : HealthKitDataType.STEPS;
+    return getHealthDataFromEnum(startDate, endDate, type, "getStepCount");
+  }
+
+  static Future<List<HealthData>> getWaistCircumference(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? null // Not implemented for Google Fit
+        : HealthKitDataType.WAIST_CIRCUMFERENCE;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getWaistCircumference");
+  }
+
+  /// End of enum getter functions
+
+  /// Main function for fetching health data
+  static Future<List<HealthData>> getHealthDataFromEnum(DateTime startDate,
+      DateTime endDate, dynamic dataType, String dataTypeName) async {
+    List<HealthData> healthData = new List();
+
+    /// If not implemented on platform, just return the empty list
+    if (dataType == null) {
+      print(
+          "Method $dataTypeName not implemented for platform ${_platformType.toString()}");
+      return healthData;
+    }
+
+    /// Get the index of the given data type
+    int dataTypeIndex = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.values.indexOf(dataType)
+        : HealthKitDataType.values.indexOf(dataType);
+
+    /// Set parameters for method channel request
+    Map<String, dynamic> args = {
+      'index': dataTypeIndex,
+      'startDate': startDate.millisecondsSinceEpoch,
+      'endDate': endDate.millisecondsSinceEpoch
+    };
+
+    try {
+      List result = await _channel.invokeMethod(_methodName, args);
+
+      /// Process each data point received
+      for (var x in result) {
+        /// Add the platform_type and data_type fields
+        x["platform_type"] = _platformType.toString();
+        x["data_type"] = dataType.toString();
+
+        /// Convert to JSON
+        Map<String, dynamic> jsonData = Map<String, dynamic>.from(x);
+
+        /// Convert JSON to HealtData object
+        HealthData data = HealthData.fromJson(jsonData);
+        healthData.add(data);
+      }
+    } catch (error) {
+      print(error);
+    }
+    return healthData;
   }
 }
