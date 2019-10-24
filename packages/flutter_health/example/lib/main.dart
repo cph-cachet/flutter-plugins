@@ -33,8 +33,27 @@ class _MyAppState extends State<MyApp> {
 
 /*        _healthDataList
             .addAll(await FlutterHealth.getAllHealthData(startDate, endDate));*/
-        _healthDataList
-            .addAll(await FlutterHealth.getStepCount(startDate, endDate));
+        try {
+          _healthDataList
+            ..addAll(await FlutterHealth.getStepCount(startDate, endDate))
+            ..addAll(
+                await FlutterHealth.getWaistCircumference(startDate, endDate))
+            ..addAll(
+                await FlutterHealth.getBodyFatPercentage(startDate, endDate))
+            ..addAll(await FlutterHealth.getBodyMassIndex(startDate, endDate))
+            ..addAll(await FlutterHealth.getHeight(startDate, endDate))
+            ..addAll(
+                await FlutterHealth.getBodyFatPercentage(startDate, endDate))
+            ..addAll(
+                await FlutterHealth.getActiveEnergyBurned(startDate, endDate))
+            ..addAll(
+                await FlutterHealth.getBasalEnergyBurned(startDate, endDate))
+            ..addAll(
+                await FlutterHealth.getHeartRate(startDate, endDate));
+
+        } catch (error) {
+          print(error);
+        }
         setState(() {});
       } else {
         print('Not authorized');
@@ -70,9 +89,11 @@ class _MyAppState extends State<MyApp> {
             : ListView.builder(
                 itemCount: _healthDataList.length,
                 itemBuilder: (_, index) => ListTile(
-                      title: Text(_healthDataList[index].value.toString()),
-                      trailing: Text('${_healthDataList[index].dataType}: ${_healthDataList[index].unit}'),
-                      subtitle: Text('test'),
+                      title: Text(
+                          "${_healthDataList[index].dataType.toString()}: ${_healthDataList[index].value.toString()}"),
+                      trailing: Text('${_healthDataList[index].unit}'),
+                      subtitle: Text(
+                          '${DateTime.fromMillisecondsSinceEpoch(_healthDataList[index].dateFrom)} - ${DateTime.fromMillisecondsSinceEpoch(_healthDataList[index].dateTo)}'),
                     )),
       ),
     );
