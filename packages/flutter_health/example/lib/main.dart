@@ -50,7 +50,8 @@ class _MyAppState extends State<MyApp> {
           ..addAll(await FlutterHealth.getBloodPressureSystolic(startDate, endDate))
           ..addAll(await FlutterHealth.getRestingHeartRate(startDate, endDate))
           ..addAll(await FlutterHealth.getBloodGlucose(startDate, endDate))
-          ..addAll(await FlutterHealth.getBloodOxygen(startDate, endDate));
+          ..addAll(await FlutterHealth.getBloodOxygen(startDate, endDate))
+          ..addAll(await FlutterHealth.getWeight(startDate, endDate));
         setState(() {});
       } else {
         print('Not authorized');

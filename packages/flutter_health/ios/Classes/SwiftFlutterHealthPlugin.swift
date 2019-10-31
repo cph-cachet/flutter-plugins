@@ -116,6 +116,7 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
                     HKSampleType.quantityType(forIdentifier: .oxygenSaturation)!,
                     HKSampleType.quantityType(forIdentifier: .bloodGlucose)!,
                     HKSampleType.quantityType(forIdentifier: .electrodermalActivity)!,
+                    HKSampleType.quantityType(forIdentifier: .bodyMass)!,
                     ]
         }
         // Set up heart rate data types specific to the apple watch, requires iOS 12
@@ -134,30 +135,32 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
     public func unitFromDartType(type: Int) -> HKUnit {
         guard let unit: HKUnit = {
             switch (type) {
-            case 0:
+            case 0: // bodyFatPercentage
                 return HKUnit.percent()
-            case 1:
+            case 1: // height
                 return HKUnit.meter()
-            case 2:
+            case 2: // bodyMassIndex
                 return HKUnit.init(from: "")
-            case 3:
+            case 3: // stepCount
                 return HKUnit.meter()
-            case 4:
+            case 4: // stepCount
                 return HKUnit.count()
-            case 5,6:
+            case 5,6: // basalEnergyBurned, activeEnergyBurned
                 return HKUnit.kilocalorie()
-            case 7, 11, 12:
+            case 7, 11, 12: // heartRate, restingHeartRate, walkingHeartRateAverage
                 return HKUnit.init(from: "count/min")
-            case 8:
+            case 8: // bodyTemperature
                 return HKUnit.degreeCelsius()
-            case 9,10:
+            case 9,10: // bloodPressureSystolic, bloodPressureDiastolic
                 return HKUnit.millimeterOfMercury()
-            case 13:
+            case 13: // oxygenSaturation
                 return HKUnit.percent()
-            case 14:
+            case 14: // bloodGlucose
                 return HKUnit.init(from: "mg/dl")
-            case 15:
+            case 15: // electrodermalActivity
                 return HKUnit.siemen()
+            case 16: // weight
+                return HKUnit.gramUnit(with: .kilo)
             default:
                 return HKUnit.count()
             }

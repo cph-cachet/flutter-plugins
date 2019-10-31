@@ -34,9 +34,12 @@ enum HealthKitDataType {
   BLOOD_OXYGEN,
   BLOOD_GLUCOSE,
   ELECTRODERMAL_ACTIVITY,
+  WEIGHT,
+  /// HEART RATE EVENTS BELOW
   HIGH_HEART_RATE_EVENT,
   LOW_HEART_RATE_EVENT,
-  IRREGULAR_HEART_RATE_EVENT
+  IRREGULAR_HEART_RATE_EVENT,
+
 }
 
 enum GoogleFitType {
@@ -253,6 +256,15 @@ class FlutterHealth {
         : HealthKitDataType.WAIST_CIRCUMFERENCE;
     return getHealthDataFromEnum(
         startDate, endDate, type, "getWaistCircumference");
+  }
+
+  static Future<List<HealthData>> getWeight(
+      DateTime startDate, DateTime endDate) async {
+    var type = _platformType == PlatformType.ANDROID
+        ? null // Not implemented for Google Fit
+        : HealthKitDataType.WEIGHT;
+    return getHealthDataFromEnum(
+        startDate, endDate, type, "getWeight");
   }
   /// End of enum getter functions
 
