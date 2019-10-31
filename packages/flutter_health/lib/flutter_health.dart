@@ -35,11 +35,11 @@ enum HealthKitDataType {
   BLOOD_GLUCOSE,
   ELECTRODERMAL_ACTIVITY,
   WEIGHT,
+
   /// HEART RATE EVENTS BELOW
   HIGH_HEART_RATE_EVENT,
   LOW_HEART_RATE_EVENT,
   IRREGULAR_HEART_RATE_EVENT,
-
 }
 
 enum GoogleFitType {
@@ -104,28 +104,55 @@ class HealthData {
 }
 
 class FlutterHealth {
-
-  static const Map<dynamic, dynamic> lookup = {
-    HealthKitDataType.BODY_FAT : "bodyFatPercentage",
-    HealthKitDataType.HEIGHT : "height",
-    HealthKitDataType.BODY_MASS_INDEX : "bodyMassIndex",
-    HealthKitDataType.WAIST_CIRCUMFERENCE : "waistCircumference",
-    HealthKitDataType.STEPS : "stepCount",
-    HealthKitDataType.BASAL_ENERGY_BURNED : "basalEnergyBurned",
-    HealthKitDataType.ACTIVE_ENERGY_BURNED : "activeEnergyBurned",
-    HealthKitDataType.HEART_RATE : "heartRate",
-    HealthKitDataType.BODY_TEMPERATURE : "bodyTemperature",
-    HealthKitDataType.BLOOD_PRESSURE_SYSTOLIC : "bloodPressureSystolic",
-    HealthKitDataType.BLOOD_PRESSURE_DIASTOLIC : "bloodPressureDiastolic",
-    HealthKitDataType.RESTING_HEART_RATE : "restingHeartRate",
-    HealthKitDataType.WALKING_HEART_RATE : "walkingHeartRateAverage",
-    HealthKitDataType.BLOOD_OXYGEN : "oxygenSaturation",
-    HealthKitDataType.ELECTRODERMAL_ACTIVITY : "electrodermalActivity",
-    HealthKitDataType.WEIGHT : "bodyMass",
-    HealthKitDataType.HIGH_HEART_RATE_EVENT : "highHeartRateEvent",
-    HealthKitDataType.LOW_HEART_RATE_EVENT : "lowHeartRateEvent",
-    HealthKitDataType.IRREGULAR_HEART_RATE_EVENT : "irregularHeartRhythmEvent",
+  static const Map<dynamic, dynamic> lookUpTableIOS = {
+    HealthKitDataType.BODY_FAT: "bodyFatPercentage",
+    HealthKitDataType.HEIGHT: "height",
+    HealthKitDataType.BODY_MASS_INDEX: "bodyMassIndex",
+    HealthKitDataType.WAIST_CIRCUMFERENCE: "waistCircumference",
+    HealthKitDataType.STEPS: "stepCount",
+    HealthKitDataType.BASAL_ENERGY_BURNED: "basalEnergyBurned",
+    HealthKitDataType.ACTIVE_ENERGY_BURNED: "activeEnergyBurned",
+    HealthKitDataType.HEART_RATE: "heartRate",
+    HealthKitDataType.BODY_TEMPERATURE: "bodyTemperature",
+    HealthKitDataType.BLOOD_PRESSURE_SYSTOLIC: "bloodPressureSystolic",
+    HealthKitDataType.BLOOD_PRESSURE_DIASTOLIC: "bloodPressureDiastolic",
+    HealthKitDataType.RESTING_HEART_RATE: "restingHeartRate",
+    HealthKitDataType.WALKING_HEART_RATE: "walkingHeartRateAverage",
+    HealthKitDataType.BLOOD_OXYGEN: "oxygenSaturation",
+    HealthKitDataType.BLOOD_GLUCOSE: "bloodGlucose",
+    HealthKitDataType.ELECTRODERMAL_ACTIVITY: "electrodermalActivity",
+    HealthKitDataType.WEIGHT: "bodyMass",
+    HealthKitDataType.HIGH_HEART_RATE_EVENT: "highHeartRateEvent",
+    HealthKitDataType.LOW_HEART_RATE_EVENT: "lowHeartRateEvent",
+    HealthKitDataType.IRREGULAR_HEART_RATE_EVENT: "irregularHeartRhythmEvent",
   };
+
+  static const Map<dynamic, dynamic> lookUpTableAndroid = {
+    HealthKitDataType.BODY_FAT: "bodyFatPercentage",
+    HealthKitDataType.HEIGHT: "height",
+    HealthKitDataType.BODY_MASS_INDEX: null,
+    HealthKitDataType.WAIST_CIRCUMFERENCE: null,
+    HealthKitDataType.STEPS: "stepCount",
+    HealthKitDataType.BASAL_ENERGY_BURNED: null,
+    HealthKitDataType.ACTIVE_ENERGY_BURNED: null,
+    HealthKitDataType.HEART_RATE: "heartRate",
+    HealthKitDataType.BODY_TEMPERATURE: "bodyTemperature",
+    HealthKitDataType.BLOOD_PRESSURE_SYSTOLIC: null,
+    HealthKitDataType.BLOOD_PRESSURE_DIASTOLIC: null,
+    HealthKitDataType.RESTING_HEART_RATE: null,
+    HealthKitDataType.WALKING_HEART_RATE: null,
+    HealthKitDataType.BLOOD_OXYGEN: "oxygenSaturation",
+    HealthKitDataType.BLOOD_GLUCOSE: "bloodGlucose",
+    HealthKitDataType.ELECTRODERMAL_ACTIVITY: null,
+    HealthKitDataType.WEIGHT: null,
+    HealthKitDataType.HIGH_HEART_RATE_EVENT: null,
+    HealthKitDataType.LOW_HEART_RATE_EVENT: null,
+    HealthKitDataType.IRREGULAR_HEART_RATE_EVENT: null,
+  };
+
+  static String enumToDataTypeKey(HealthKitDataType type) {
+    return Platform.isAndroid ? lookUpTableAndroid[type] : lookUpTableIOS[type];
+  }
 
   static const MethodChannel _channel = const MethodChannel('flutter_health');
   static PlatformType _platformType =
@@ -155,8 +182,7 @@ class FlutterHealth {
     var type = _platformType == PlatformType.ANDROID
         ? GoogleFitType.BLOOD_GLUCOSE
         : HealthKitDataType.BLOOD_GLUCOSE;
-    return getHealthDataFromEnum(
-        startDate, endDate, type, "getBloodGlucose");
+    return getHealthDataFromEnum(startDate, endDate, type, "getBloodGlucose");
   }
 
   static Future<List<HealthData>> getBloodOxygen(
@@ -164,8 +190,7 @@ class FlutterHealth {
     var type = _platformType == PlatformType.ANDROID
         ? GoogleFitType.BLOOD_OXYGEN
         : HealthKitDataType.BLOOD_OXYGEN;
-    return getHealthDataFromEnum(
-        startDate, endDate, type, "getBloodOxygen");
+    return getHealthDataFromEnum(startDate, endDate, type, "getBloodOxygen");
   }
 
   static Future<List<HealthData>> getRestingHeartRate(
@@ -209,8 +234,7 @@ class FlutterHealth {
     var type = _platformType == PlatformType.ANDROID
         ? GoogleFitType.HEART_RATE
         : HealthKitDataType.HEART_RATE;
-    return getHealthDataFromEnum(
-        startDate, endDate, type, "getHeartRate");
+    return getHealthDataFromEnum(startDate, endDate, type, "getHeartRate");
   }
 
   static Future<List<HealthData>> getBasalEnergyBurned(
@@ -285,9 +309,9 @@ class FlutterHealth {
     var type = _platformType == PlatformType.ANDROID
         ? null // Not implemented for Google Fit
         : HealthKitDataType.WEIGHT;
-    return getHealthDataFromEnum(
-        startDate, endDate, type, "getWeight");
+    return getHealthDataFromEnum(startDate, endDate, type, "getWeight");
   }
+
   /// End of enum getter functions
 
   /// Main function for fetching health data
@@ -356,12 +380,10 @@ class FlutterHealth {
     /// Set parameters for method channel request
     Map<String, dynamic> args = {
       'index': dataTypeIndex,
-      'dataTypeKey': lookup[dataType],
+      'dataTypeKey': lookUpTableIOS[dataType],
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch
     };
-
-    print(args);
 
     try {
       List result = await _channel.invokeMethod(_methodName, args);
