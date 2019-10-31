@@ -25,6 +25,7 @@ class _MyAppState extends State<MyApp> {
     DateTime startDate = DateTime.utc(2019, 07, 01);
     DateTime endDate = DateTime.now();
 
+
     Future.delayed(Duration(seconds: 2), () async {
       _isAuthorized = await FlutterHealth.requestAuthorization();
       var isHealthDataAvailable = await FlutterHealth.checkIfHealthDataAvailable();
@@ -36,22 +37,24 @@ class _MyAppState extends State<MyApp> {
 
 /*        _healthDataList
             .addAll(await FlutterHealth.getAllHealthData(startDate, endDate));*/
+//        _healthDataList
+//          ..addAll(await FlutterHealth.getStepCount(startDate, endDate))
+//          ..addAll(await FlutterHealth.getWaistCircumference(startDate, endDate))
+//          ..addAll(await FlutterHealth.getBodyFatPercentage(startDate, endDate))
+//          ..addAll(await FlutterHealth.getBodyMassIndex(startDate, endDate))
+//          ..addAll(await FlutterHealth.getHeight(startDate, endDate))
+//          ..addAll(await FlutterHealth.getBodyFatPercentage(startDate, endDate))
+//          ..addAll(await FlutterHealth.getActiveEnergyBurned(startDate, endDate))
+//          ..addAll(await FlutterHealth.getBasalEnergyBurned(startDate, endDate))
+//          ..addAll(await FlutterHealth.getHeartRate(startDate, endDate))
+//          ..addAll(await FlutterHealth.getBloodPressureDiastolic(startDate, endDate))
+//          ..addAll(await FlutterHealth.getBloodPressureSystolic(startDate, endDate))
+//          ..addAll(await FlutterHealth.getRestingHeartRate(startDate, endDate))
+//          ..addAll(await FlutterHealth.getBloodGlucose(startDate, endDate))
+//          ..addAll(await FlutterHealth.getBloodOxygen(startDate, endDate))
+//          ..addAll(await FlutterHealth.getWeight(startDate, endDate));
         _healthDataList
-          ..addAll(await FlutterHealth.getStepCount(startDate, endDate))
-          ..addAll(await FlutterHealth.getWaistCircumference(startDate, endDate))
-          ..addAll(await FlutterHealth.getBodyFatPercentage(startDate, endDate))
-          ..addAll(await FlutterHealth.getBodyMassIndex(startDate, endDate))
-          ..addAll(await FlutterHealth.getHeight(startDate, endDate))
-          ..addAll(await FlutterHealth.getBodyFatPercentage(startDate, endDate))
-          ..addAll(await FlutterHealth.getActiveEnergyBurned(startDate, endDate))
-          ..addAll(await FlutterHealth.getBasalEnergyBurned(startDate, endDate))
-          ..addAll(await FlutterHealth.getHeartRate(startDate, endDate))
-          ..addAll(await FlutterHealth.getBloodPressureDiastolic(startDate, endDate))
-          ..addAll(await FlutterHealth.getBloodPressureSystolic(startDate, endDate))
-          ..addAll(await FlutterHealth.getRestingHeartRate(startDate, endDate))
-          ..addAll(await FlutterHealth.getBloodGlucose(startDate, endDate))
-          ..addAll(await FlutterHealth.getBloodOxygen(startDate, endDate))
-          ..addAll(await FlutterHealth.getWeight(startDate, endDate));
+          ..addAll(await FlutterHealth.getHealthDataFromEnum2(startDate, endDate, HealthKitDataType.WEIGHT, "weight"));
         setState(() {});
       } else {
         print('Not authorized');

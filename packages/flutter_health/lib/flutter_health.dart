@@ -58,7 +58,6 @@ enum PlatformType { IOS, ANDROID, UNKNOWN }
 
 class HealthData {
   double value;
-  double value2;
   String unit;
   int dateFrom;
   int dateTo;
@@ -105,6 +104,29 @@ class HealthData {
 }
 
 class FlutterHealth {
+
+  static const Map<dynamic, dynamic> lookup = {
+    HealthKitDataType.BODY_FAT : "bodyFatPercentage",
+    HealthKitDataType.HEIGHT : "height",
+    HealthKitDataType.BODY_MASS_INDEX : "bodyMassIndex",
+    HealthKitDataType.WAIST_CIRCUMFERENCE : "waistCircumference",
+    HealthKitDataType.STEPS : "stepCount",
+    HealthKitDataType.BASAL_ENERGY_BURNED : "basalEnergyBurned",
+    HealthKitDataType.ACTIVE_ENERGY_BURNED : "activeEnergyBurned",
+    HealthKitDataType.HEART_RATE : "heartRate",
+    HealthKitDataType.BODY_TEMPERATURE : "bodyTemperature",
+    HealthKitDataType.BLOOD_PRESSURE_SYSTOLIC : "bloodPressureSystolic",
+    HealthKitDataType.BLOOD_PRESSURE_DIASTOLIC : "bloodPressureDiastolic",
+    HealthKitDataType.RESTING_HEART_RATE : "restingHeartRate",
+    HealthKitDataType.WALKING_HEART_RATE : "walkingHeartRateAverage",
+    HealthKitDataType.BLOOD_OXYGEN : "oxygenSaturation",
+    HealthKitDataType.ELECTRODERMAL_ACTIVITY : "electrodermalActivity",
+    HealthKitDataType.WEIGHT : "bodyMass",
+    HealthKitDataType.HIGH_HEART_RATE_EVENT : "highHeartRateEvent",
+    HealthKitDataType.LOW_HEART_RATE_EVENT : "lowHeartRateEvent",
+    HealthKitDataType.IRREGULAR_HEART_RATE_EVENT : "irregularHeartRhythmEvent",
+  };
+
   static const MethodChannel _channel = const MethodChannel('flutter_health');
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
@@ -291,6 +313,55 @@ class FlutterHealth {
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch
     };
+
+    try {
+      List result = await _channel.invokeMethod(_methodName, args);
+
+      /// Process each data point received
+      for (var x in result) {
+        /// Add the platform_type and data_type fields
+        x["platform_type"] = _platformType.toString();
+        x["data_type"] = dataType.toString();
+
+        /// Convert to JSON
+        Map<String, dynamic> jsonData = Map<String, dynamic>.from(x);
+
+        /// Convert JSON to HealtData object
+        HealthData data = HealthData.fromJson(jsonData);
+        healthData.add(data);
+      }
+    } catch (error) {
+      print(error);
+    }
+    return healthData;
+  }
+
+  /// Main function for fetching health data
+  static Future<List<HealthData>> getHealthDataFromEnum2(DateTime startDate,
+      DateTime endDate, dynamic dataType, String dataTypeName) async {
+    List<HealthData> healthData = new List();
+
+    /// If not implemented on platform, just return the empty list
+    if (dataType == null) {
+      print(
+          "Method $dataTypeName not implemented for platform ${_platformType.toString()}");
+      return healthData;
+    }
+
+    /// Get the index of the given data type
+    int dataTypeIndex = _platformType == PlatformType.ANDROID
+        ? GoogleFitType.values.indexOf(dataType)
+        : HealthKitDataType.values.indexOf(dataType);
+
+    /// Set parameters for method channel request
+    Map<String, dynamic> args = {
+      'index': dataTypeIndex,
+      'dataTypeKey': lookup[dataType],
+      'startDate': startDate.millisecondsSinceEpoch,
+      'endDate': endDate.millisecondsSinceEpoch
+    };
+
+    print(args);
 
     try {
       List result = await _channel.invokeMethod(_methodName, args);

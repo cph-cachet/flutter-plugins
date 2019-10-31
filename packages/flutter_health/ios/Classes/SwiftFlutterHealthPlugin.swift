@@ -8,6 +8,8 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
     var healthDataTypes = [HKSampleType]()
     var heartRateEventTypes = Set<HKSampleType>()
     var allDataTypes = Set<HKSampleType>()
+    var dataTypesDict: [String: HKSampleType] = [:]
+    var unitDict: [String: HKUnit] = [:]
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_health", binaryMessenger: registrar.messenger())
@@ -32,6 +34,8 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
 
   func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
     let arguments = call.arguments as? NSDictionary
+    let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
+
     let index = (arguments?["index"] as? Int) ?? -1
     let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
     let endDate = (arguments?["endDate"] as? NSNumber) ?? 0
@@ -39,6 +43,8 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
     let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
 
     if (index >= 0 && index < healthDataTypes.count) {
+        
+        let dataType_ = dataTypesDict[dataTypeKey]
         let dataType = healthDataTypes[index]
         let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: true)
@@ -59,7 +65,6 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
                     "unit": unit.unitString,
                     "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                     "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                    "data_type_index": index,
                 ]
             })
             } else {
@@ -97,8 +102,27 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
     
   }
     func initializeTypes() {
+
         // Set up iOS 11 specific types (ordinary health data types)
         if #available(iOS 11.0, *) { 
+            dataTypesDict["bodyFatPercentage"] = HKSampleType.quantityType(forIdentifier: .bodyFatPercentage)!
+            dataTypesDict["height"] = HKSampleType.quantityType(forIdentifier: .height)!
+            dataTypesDict["bodyMassIndex"] = HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!
+            dataTypesDict["waistCircumference"] = HKSampleType.quantityType(forIdentifier: .waistCircumference)!
+            dataTypesDict["stepCount"] = HKSampleType.quantityType(forIdentifier: .stepCount)!
+            dataTypesDict["basalEnergyBurned"] = HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!
+            dataTypesDict["activeEnergyBurned"] = HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!
+            dataTypesDict["heartRate"] = HKSampleType.quantityType(forIdentifier: .heartRate)!
+            dataTypesDict["bodyTemperature"] = HKSampleType.quantityType(forIdentifier: .bodyTemperature)!
+            dataTypesDict["bloodPressureSystolic"] = HKSampleType.quantityType(forIdentifier: .bloodPressureSystolic)!
+            dataTypesDict["bloodPressureDiastolic"] = HKSampleType.quantityType(forIdentifier: .bloodPressureDiastolic)!
+            dataTypesDict["restingHeartRate"] = HKSampleType.quantityType(forIdentifier: .restingHeartRate)!
+            dataTypesDict["walkingHeartRateAverage"] = HKSampleType.quantityType(forIdentifier: .walkingHeartRateAverage)!
+            dataTypesDict["oxygenSaturation"] = HKSampleType.quantityType(forIdentifier: .oxygenSaturation)!
+            dataTypesDict["bloodGlucose"] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
+            dataTypesDict["electrodermalActivity"] = HKSampleType.quantityType(forIdentifier: .electrodermalActivity)!
+            dataTypesDict["bodyMass"] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
+
             healthDataTypes = [
                     HKSampleType.quantityType(forIdentifier: .bodyFatPercentage)!,
                     HKSampleType.quantityType(forIdentifier: .height)!,
@@ -121,6 +145,10 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
         }
         // Set up heart rate data types specific to the apple watch, requires iOS 12
         if #available(iOS 12.2, *){
+            dataTypesDict["highHeartRateEvent"] = HKSampleType.categoryType(forIdentifier: .highHeartRateEvent)!
+            dataTypesDict["lowHeartRateEvent"] = HKSampleType.categoryType(forIdentifier: .lowHeartRateEvent)!
+            dataTypesDict["irregularHeartRhythmEvent"] = HKSampleType.categoryType(forIdentifier: .irregularHeartRhythmEvent)!
+
             heartRateEventTypes =  Set([
                 HKSampleType.categoryType(forIdentifier: .highHeartRateEvent)!,
                 HKSampleType.categoryType(forIdentifier: .lowHeartRateEvent)!,
@@ -133,6 +161,26 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
     }
     
     public func unitFromDartType(type: Int) -> HKUnit {
+        unitDict["bodyFatPercentage"] = HKUnit.percent()
+        unitDict["height"] = HKUnit.meter()
+        unitDict["bodyMassIndex"] = HKUnit.init(from: "")
+        unitDict["waistCircumference"] = HKUnit.meter()
+        unitDict["stepCount"] = HKUnit.count()
+        unitDict["basalEnergyBurned"] = HKUnit.kilocalorie()
+        unitDict["activeEnergyBurned"] = HKUnit.kilocalorie()
+        unitDict["heartRate"] = HKUnit.init(from: "count/min")
+        unitDict["bodyTemperature"] = HKUnit.degreeCelsius()
+        unitDict["bloodPressureSystolic"] = HKUnit.millimeterOfMercury()
+        unitDict["bloodPressureDiastolic"] = HKUnit.millimeterOfMercury()
+        unitDict["bodyFatPercentage"] = HKUnit.percent()
+        unitDict["restingHeartRate"] = HKUnit.init(from: "count/min")
+        unitDict["walkingHeartRateAverage"] = HKUnit.init(from: "count/min")
+        unitDict["oxygenSaturation"] = HKUnit.percent()
+        unitDict["bloodGlucose"] = HKUnit.init(from: "mg/dl")
+        unitDict["electrodermalActivity"] = HKUnit.siemen()
+        unitDict["bodyMass"] = HKUnit.gramUnit(with: .kilo)
+
+
         guard let unit: HKUnit = {
             switch (type) {
             case 0: // bodyFatPercentage
@@ -141,7 +189,7 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
                 return HKUnit.meter()
             case 2: // bodyMassIndex
                 return HKUnit.init(from: "")
-            case 3: // stepCount
+            case 3: // waistCircumference
                 return HKUnit.meter()
             case 4: // stepCount
                 return HKUnit.count()
