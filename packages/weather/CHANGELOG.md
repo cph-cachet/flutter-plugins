@@ -1,3 +1,6 @@
+## 0.9.5
+* better handling of requesting location permissions
+
 ## 0.9.4
 * Updated the README
 

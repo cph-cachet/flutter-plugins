@@ -1,32 +1,30 @@
+/*
+ * Copyright 2018 Copenhagen Center for Health Technology (CACHET) at the
+ * Technical University of Denmark (DTU).
+ * Use of this source code is governed by a MIT-style license that can be
+ * found in the LICENSE file.
+ */
 import 'dart:async';
 import 'dart:convert';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
 /// Custom Exception for the plugin,
-/// thrown whenever sufficient permissions weren't granted
+/// Thrown whenever sufficient permissions weren't granted
 class LocationPermissionException implements Exception {
   String _cause;
-
   LocationPermissionException(this._cause);
 
-  @override
-  String toString() {
-    return _cause;
-  }
+  String toString() => '${this.runtimeType} - $_cause';
 }
 
 /// Custom Exception for the plugin,
-/// thrown whenever the API responds with an error and body could not be parsed.
+/// Thrown whenever the API responds with an error and body could not be parsed.
 class OpenWeatherAPIException implements Exception {
   String _cause;
-
   OpenWeatherAPIException(this._cause);
 
-  @override
-  String toString() {
-    return _cause;
-  }
+  String toString() => '${this.runtimeType} - $_cause';
 }
 
 /// A class for holding a temperature.
@@ -46,10 +44,7 @@ class Temperature {
   /// Convert temperature to Fahrenheit
   double get fahrenheit => _kelvin * (9 / 5) - 459.67;
 
-  @override
-  String toString() {
-    return '${celsius.toStringAsFixed(1)} Celsius';
-  }
+  String toString() => '${celsius.toStringAsFixed(1)} Celsius';
 }
 
 /// Safely unpack a double value from a [Map] object.
@@ -234,7 +229,7 @@ class WeatherStation {
   String _apiKey;
   static const String FORECAST = 'forecast';
   static const String WEATHER = 'weather';
-  Location location = new Location();
+  Location location;
 
   WeatherStation(this._apiKey);
 
@@ -243,9 +238,8 @@ class WeatherStation {
   /// For API documentation, see: https://openweathermap.org/current
   Future<Weather> currentWeather() async {
     try {
-      Map<String, dynamic> currentWeather =
-      await _requestOpenWeatherAPI(WEATHER);
-      return new Weather(currentWeather);
+      Map<String, dynamic> currentWeather = await _requestOpenWeatherAPI(WEATHER);
+      return Weather(currentWeather);
     } catch (exception) {
       print(exception);
     }
@@ -258,10 +252,9 @@ class WeatherStation {
   Future<List<Weather>> fiveDayForecast() async {
     List<Weather> forecasts = new List<Weather>();
     try {
-      Map<String, dynamic> jsonForecasts =
-      await _requestOpenWeatherAPI(FORECAST);
+      Map<String, dynamic> jsonForecasts = await _requestOpenWeatherAPI(FORECAST);
       List<dynamic> forecastsJson = jsonForecasts['list'];
-      forecasts = forecastsJson.map((w) => new Weather(w)).toList();
+      forecasts = forecastsJson.map((w) => Weather(w)).toList();
     } catch (exception) {
       print(exception);
     }
@@ -270,6 +263,7 @@ class WeatherStation {
 
   /// Requests permission for the location
   Future<bool> manageLocationPermission() async {
+    location = new Location();
     bool hasPermission = await location.hasPermission();
     if (hasPermission) {
       return true;
@@ -285,7 +279,7 @@ class WeatherStation {
     /// Check if device is allowed to get location
     if (permissionOK) {
       /// Build HTTP get url by passing the required parameters
-      LocationData locationData = await new Location().getLocation();
+      LocationData locationData = await location.getLocation();
       String url = 'http://api.openweathermap.org/data/2.5/' +
           '$tag?' +
           'lat=${locationData.latitude}&' +
@@ -306,13 +300,11 @@ class WeatherStation {
       /// or some other unspecified error could occur.
       /// The concrete error should be clear from the HTTP response body.
       else {
-        throw new OpenWeatherAPIException(
-            "OpenWeather API Exception: ${response.body}");
+        throw OpenWeatherAPIException("OpenWeather API Exception: ${response.body}");
       }
     }
 
     /// If permission to track location is not yet given.
-    throw new LocationPermissionException(
-        "PermissionLocation permission not granted!");
+    throw LocationPermissionException("PermissionLocation permission not granted!");
   }
 }
