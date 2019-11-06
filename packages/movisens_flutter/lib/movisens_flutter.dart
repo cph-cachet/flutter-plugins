@@ -1,19 +1,21 @@
+/*
+ * Copyright 2019 Copenhagen Center for Health Technology (CACHET) at the
+ * Technical University of Denmark (DTU).
+ * Use of this source code is governed by a MIT-style license that can be
+ * found in the LICENSE file.
+ */
 import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'dart:io' show Platform;
 
-/// Custom Exception for the plugin,
-/// thrown whenever the plugin is used on platforms other than Android
+/// Custom Exception for the plugin. Thrown whenever the plugin is used on platforms other than Android
 class MovisensException implements Exception {
   String _cause;
   MovisensException(this._cause);
 
-  @override
-  String toString() {
-    return _cause;
-  }
+  String toString() => '${this.runtimeType} - $_cause';
 }
 
 enum Gender { male, female }
@@ -33,21 +35,28 @@ enum SensorLocation {
 }
 
 class UserData {
-  int weight, height, age;
+  /// Weight of the person wearing the Movisens device in kg.
+  int weight;
 
-  /// Weight in kg, height in cm, age in years
+  /// Height of the person wearing the Movisens device in cm.
+  int height;
+
+  /// Age of the person wearing the Movisens device in years.
+  int age;
+
+  /// Gender of the person wearing the Movisens device, male or female.
   Gender gender;
 
-  /// Gender: male or female
+  /// Sensor placement on body
   SensorLocation sensorLocation;
 
-  /// Sensor placement on body
-  String sensorAddress, sensorName;
+  /// The MAC address of the sensor.
+  String sensorAddress;
 
-  /// Sensor device addresss and name
+  /// The user-friendly name of the sensor.
+  String sensorName;
 
-  UserData(this.weight, this.height, this.gender, this.age, this.sensorLocation,
-      this.sensorAddress, this.sensorName);
+  UserData(this.weight, this.height, this.gender, this.age, this.sensorLocation, this.sensorAddress, this.sensorName);
 
   Map<String, String> get asMap {
     return {
@@ -62,30 +71,50 @@ class UserData {
   }
 }
 
-String timeStampHHMMSS(DateTime timeStamp) {
-  return timeStamp.toIso8601String();
-}
+String timeStampHHMMSS(DateTime timeStamp) => timeStamp.toIso8601String();
 
 /// Keys for Movisens data points
 const String TAP_MARKER = 'tap_marker',
     BATTERY_LEVEL = 'battery_level',
-    TIMESTAMP= 'timestamp',
+    TIMESTAMP = 'timestamp',
     STEP_COUNT = 'step_count',
     MET = 'met',
     MET_LEVEL = 'met_level',
     BODY_POSITION = 'body_position',
     MOVEMENT_ACCELERATION = 'movement_acceleration',
     CONNECTION_STATUS = 'connection_status',
-    HR='hr',
-    IS_HRV_VALID='is_hrv_valid',
-    HRV='hrv';
+    HR = 'hr',
+    IS_HRV_VALID = 'is_hrv_valid',
+    HRV = 'hrv';
 
+/// The main plugin class which establishes a [MethodChannel] and an [EventChannel].
+class Movisens {
+  MethodChannel _methodChannel = MethodChannel('movisens.method_channel');
+  EventChannel _eventChannel = EventChannel('movisens.event_channel');
+  Stream<Map<String, dynamic>> _movisensStream;
+  UserData _userData;
 
-/// Factory function for converting a generic object sent through the platform channel into a concrete [MovisensDataPoint] object.
-Map<String,dynamic> parseDataPoint(dynamic javaMap) {
+  Movisens(this._userData);
+
+  Stream<Map<String, dynamic>> get movisensStream {
+    if (Platform.isAndroid) {
+      if (_movisensStream == null) {
+        Map<String, dynamic> args = {'user_data': _userData.asMap};
+        _methodChannel.invokeMethod('userData', args);
+        _movisensStream = _eventChannel.receiveBroadcastStream().map(_parseDataPoint);
+      }
+      return _movisensStream;
+    }
+    throw MovisensException('Movisens API exclusively available on Android!');
+  }
+}
+
+/*
+   Below are private factory functions for converting a generic object sent through the platform channel
+   into a concrete [MovisensDataPoint] object.
+ */
+Map<String, dynamic> _parseDataPoint(dynamic javaMap) {
   Map<String, dynamic> data = Map<String, dynamic>.from(javaMap);
-
-
 
   String _hr = data.containsKey(HR) ? data[HR] : null;
   String _isHrvValid = data.containsKey(IS_HRV_VALID) ? data[IS_HRV_VALID] : null;
@@ -101,220 +130,162 @@ Map<String,dynamic> parseDataPoint(dynamic javaMap) {
 
   print(_connectionStatus);
 
-  if(_hr!=null) return  movisensHR(_hr);
+  if (_hr != null) return _movisensHR(_hr);
 
-  if(_hrv!=null) return movisensHRV(_hrv);
+  if (_hrv != null) return _movisensHRV(_hrv);
 
   if (_batteryLevel != null) {
-    return  movisensBatteryLevel(_batteryLevel);
+    return _movisensBatteryLevel(_batteryLevel);
   }
   if (_tapMarker != null) {
-    return movisensTapMarker(_tapMarker);
+    return _movisensTapMarker(_tapMarker);
   }
 
   if (_stepCount != null) {
-    return movisensStepCount(_stepCount);
+    return _movisensStepCount(_stepCount);
   }
 
   if (_movementAcceleration != null) {
-    return movisensMovementAcceleration(_movementAcceleration);
+    return _movisensMovementAcceleration(_movementAcceleration);
   }
 
   if (_bodyPosition != null) {
-    return movisensBodyPosition(_bodyPosition);
+    return _movisensBodyPosition(_bodyPosition);
   }
 
-  if(_isHrvValid!=null) return  movisensIsHrvValid(_isHrvValid);
+  if (_isHrvValid != null) return _movisensIsHrvValid(_isHrvValid);
 
   if (_metLevel != null) {
-    return  movisensMetLevel(_metLevel);
+    return _movisensMetLevel(_metLevel);
   }
 
   if (_met != null) {
-    return movisensMet(_met);
+    return _movisensMet(_met);
   }
   if (_connectionStatus != null && _connectionStatus != 'null') {
-    return movisensStatus(_connectionStatus);
+    return _movisensStatus(_connectionStatus);
   }
   return null;
 }
 
-
-/// Deviec connection status with timeStamp
-Map<String,dynamic> movisensStatus(String connectionStatus) {
+Map<String, dynamic> _movisensStatus(String connectionStatus) {
   String _connectionStatusJson;
-  _connectionStatusJson =  connectionStatus.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:\_-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _connectionStatusJson =
+      connectionStatus.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:\_-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> statusMap= new Map() ;
+  Map<String, dynamic> statusMap = new Map();
 
-  statusMap["ConnectionStatus"]=_connectionStatusJson;
+  statusMap["ConnectionStatus"] = _connectionStatusJson;
 
   return statusMap;
-
 }
 
-Map<String,dynamic>  movisensMet(String met) {
+Map<String, dynamic> _movisensMet(String met) {
   String _metJson;
-  _metJson =  met.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _metJson = met.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> metMap= new Map() ;
+  Map<String, dynamic> metMap = new Map();
 
-  metMap["Met"]=_metJson;
+  metMap["Met"] = _metJson;
 
   return metMap;
 }
 
-
-/// Metabolic buffered level, holds met level values for a sedentary, light and moderate state.
-Map<String,dynamic> movisensMetLevel(String metLevel) {
-
+Map<String, dynamic> _movisensMetLevel(String metLevel) {
   String _metLevelJson;
-  _metLevelJson =  metLevel.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _metLevelJson =
+      metLevel.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> metLevelMap= new Map() ;
+  Map<String, dynamic> metLevelMap = new Map();
 
-  metLevelMap["MetLevel"]=_metLevelJson;
+  metLevelMap["MetLevel"] = _metLevelJson;
 
   return metLevelMap;
-
-
 }
 
-
-/// Informs if Signal is ok for HRV calculation
-Map<String,dynamic>  movisensIsHrvValid(String isHrvValid) {
-
+Map<String, dynamic> _movisensIsHrvValid(String isHrvValid) {
   String _isHrvValidJson;
-  _isHrvValidJson =  isHrvValid.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _isHrvValidJson =
+      isHrvValid.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> isHrvValidMap= new Map() ;
+  Map<String, dynamic> isHrvValidMap = new Map();
 
-  isHrvValidMap["IsHrvValid"]=_isHrvValidJson;
+  isHrvValidMap["IsHrvValid"] = _isHrvValidJson;
 
-  return  isHrvValidMap;
-
+  return isHrvValidMap;
 }
 
-/// Body the body position Json
-Map<String,dynamic> movisensBodyPosition(String bodyPosition) {
-
+Map<String, dynamic> _movisensBodyPosition(String bodyPosition) {
   String _bodyPositionJson;
-  _bodyPositionJson =  bodyPosition.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:\_-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _bodyPositionJson =
+      bodyPosition.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:\_-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
+  Map<String, dynamic> bodyPositionMap = new Map();
 
-  Map<String,dynamic> bodyPositionMap= new Map() ;
+  bodyPositionMap["BodyPosition"] = _bodyPositionJson;
 
-  bodyPositionMap["BodyPosition"]=_bodyPositionJson;
-
-  return  bodyPositionMap;
-
+  return bodyPositionMap;
 }
 
-/// Returns 3D movement Acceleration Json
-Map<String,dynamic> movisensMovementAcceleration(String movementAcceleration) {
+Map<String, dynamic> _movisensMovementAcceleration(String movementAcceleration) {
   String _movementAccelerationJson;
-  _movementAccelerationJson =  movementAcceleration.replaceAllMapped(
+  _movementAccelerationJson = movementAcceleration.replaceAllMapped(
       new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> movementAccelerationMap= new Map() ;
+  Map<String, dynamic> movementAccelerationMap = new Map();
 
-  movementAccelerationMap["MovementAcceleration"]=_movementAccelerationJson;
-  return  movementAccelerationMap;
+  movementAccelerationMap["MovementAcceleration"] = _movementAccelerationJson;
+  return movementAccelerationMap;
 }
 
-
-///StepCount Json
-Map<String,dynamic> movisensStepCount(String stepCount) {
-
+Map<String, dynamic> _movisensStepCount(String stepCount) {
   String _stepCountJson;
-  _stepCountJson =  stepCount.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _stepCountJson =
+      stepCount.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> stepCountMap= new Map() ;
+  Map<String, dynamic> stepCountMap = new Map();
 
-  stepCountMap["StepCount"]=_stepCountJson;
-  return  stepCountMap;
-
+  stepCountMap["StepCount"] = _stepCountJson;
+  return stepCountMap;
 }
 
-Map<String,dynamic> movisensTapMarker(String tapMarker) {
-
+Map<String, dynamic> _movisensTapMarker(String tapMarker) {
   String _tapMarkerJson;
-  _tapMarkerJson =  tapMarker.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _tapMarkerJson =
+      tapMarker.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> tapMarkerMap= new Map() ;
+  Map<String, dynamic> tapMarkerMap = new Map();
 
-  tapMarkerMap["TapMarker"]=_tapMarkerJson;
-  return  tapMarkerMap;
-
+  tapMarkerMap["TapMarker"] = _tapMarkerJson;
+  return tapMarkerMap;
 }
 
-Map<String,dynamic> movisensBatteryLevel(String batteryLevel) {
-
+Map<String, dynamic> _movisensBatteryLevel(String batteryLevel) {
   String _batteryLevelJson;
-  _batteryLevelJson =  batteryLevel.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _batteryLevelJson =
+      batteryLevel.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> batteryLevelMap= new Map() ;
+  Map<String, dynamic> batteryLevelMap = new Map();
 
-  batteryLevelMap["BatteryLevel"]=_batteryLevelJson;
-  return  batteryLevelMap;
-
+  batteryLevelMap["BatteryLevel"] = _batteryLevelJson;
+  return batteryLevelMap;
 }
 
-Map<String,dynamic> movisensHR(String hr)
-{
+Map<String, dynamic> _movisensHR(String hr) {
+  String _hrJson = hr.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  String _hrJson =  hr.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  Map<String, dynamic> hrMap = new Map();
 
-  Map<String,dynamic> hrMap= new Map() ;
-
-  hrMap["HR"]=_hrJson;
-  return  hrMap;
-
+  hrMap["HR"] = _hrJson;
+  return hrMap;
 }
 
-
-Map<String,dynamic> movisensHRV(String hrv)
-{
+Map<String, dynamic> _movisensHRV(String hrv) {
   String _hrvJson;
-  _hrvJson =  hrv.replaceAllMapped(
-      new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
+  _hrvJson = hrv.replaceAllMapped(new RegExp(r'([a-z\_]+)\=([a-z\d\s.\s\s:-]+)'), (g) => '"${g[1]}":"${g[2]}"');
 
-  Map<String,dynamic> hrvMap= new Map() ;
+  Map<String, dynamic> hrvMap = new Map();
 
-  hrvMap["HRV"]=_hrvJson;
-  return  hrvMap;
-}
-
-
-
-/// The main plugin class which establishes a [MethodChannel] and an [EventChannel].
-class Movisens {
-  MethodChannel _methodChannel = MethodChannel('movisens.method_channel');
-  EventChannel _eventChannel = EventChannel('movisens.event_channel');
-  Stream<Map<String,dynamic>> _movisensStream;
-  UserData _userData;
-
-  Movisens(this._userData);
-
-  Stream<Map<String,dynamic>> get movisensStream {
-    if (Platform.isAndroid) {
-      if (_movisensStream == null) {
-        Map<String, dynamic> args = {'user_data': _userData.asMap};
-        _methodChannel.invokeMethod('userData', args);
-        _movisensStream =
-            _eventChannel.receiveBroadcastStream().map(parseDataPoint);
-      }
-      return _movisensStream;
-    }
-    throw MovisensException('Movisens API exclusively available on Android!');
-  }
+  hrvMap["HRV"] = _hrvJson;
+  return hrvMap;
 }
