@@ -40,6 +40,7 @@ enum HealthDataType {
   HIGH_HEART_RATE_EVENT,
   LOW_HEART_RATE_EVENT,
   IRREGULAR_HEART_RATE_EVENT,
+  UNKNOWN
 }
 
 enum PlatformType { IOS, ANDROID, UNKNOWN }
@@ -92,7 +93,7 @@ class HealthData {
 }
 
 class FlutterHealth {
-  static const Map<HealthDataType, String> lookUpTableIOS = {
+  static const Map<HealthDataType, String> _dataTypeToStringIOS = {
     HealthDataType.BODY_FAT: "bodyFatPercentage",
     HealthDataType.HEIGHT: "height",
     HealthDataType.BODY_MASS_INDEX: "bodyMassIndex",
@@ -113,9 +114,10 @@ class FlutterHealth {
     HealthDataType.HIGH_HEART_RATE_EVENT: "highHeartRateEvent",
     HealthDataType.LOW_HEART_RATE_EVENT: "lowHeartRateEvent",
     HealthDataType.IRREGULAR_HEART_RATE_EVENT: "irregularHeartRhythmEvent",
+    HealthDataType.UNKNOWN: null,
   };
 
-  static const Map<HealthDataType, String> lookUpTableAndroid = {
+  static const Map<HealthDataType, String> _dataTypeToStringAndroid = {
     HealthDataType.BODY_FAT: "bodyFatPercentage",
     HealthDataType.HEIGHT: "height",
     HealthDataType.BODY_MASS_INDEX: null,
@@ -136,27 +138,42 @@ class FlutterHealth {
     HealthDataType.HIGH_HEART_RATE_EVENT: null,
     HealthDataType.LOW_HEART_RATE_EVENT: null,
     HealthDataType.IRREGULAR_HEART_RATE_EVENT: null,
+    HealthDataType.UNKNOWN: null,
   };
 
   static String enumToDataTypeKey(HealthDataType type) {
-    return Platform.isAndroid ? lookUpTableAndroid[type] : lookUpTableIOS[type];
+    return Platform.isAndroid
+        ? _dataTypeToStringAndroid[type]
+        : _dataTypeToStringIOS[type];
   }
 
   static const MethodChannel _channel = const MethodChannel('flutter_health');
+
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
   static String _methodName =
       _platformType == PlatformType.ANDROID ? 'getGFHealthData' : 'getData';
 
-  ///  Check of any health data is available
+  /// Check if a given data type is available on the platform
+  static bool checkIfDataTypeAvailable(HealthDataType dataType) {
+    String dataTypeKey = _platformType == PlatformType.ANDROID
+        ? _dataTypeToStringAndroid[dataType]
+        : _dataTypeToStringIOS[dataType];
+
+    /// Check that the key isn't null.
+    /// If it is, then the data type does not exist for the current platform.
+    return dataTypeKey != null;
+  }
+
+  ///  Check if GoogleFit/Apple HealthKit is enabled on the device
   static Future<bool> checkIfHealthDataAvailable() async {
     final bool isHealthDataAvailable =
         await _channel.invokeMethod('checkIfHealthDataAvailable');
     return isHealthDataAvailable;
   }
 
-  /// Request access to health data on Android or iOS
+  /// Request access to GoogleFit/Apple HealthKit
   static Future<bool> requestAuthorization() async {
     final bool isAuthorized =
         await _channel.invokeMethod('requestAuthorization');
@@ -164,22 +181,23 @@ class FlutterHealth {
   }
 
   /// Main function for fetching health data
-  static Future<List<HealthData>> getHealthDataFromType(DateTime startDate,
-      DateTime endDate, dynamic dataType) async {
+  static Future<List<HealthData>> getHealthDataFromType(
+      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     List<HealthData> healthData = new List();
 
-    /// If not implemented on platform, just return the empty list
-    if (dataType == null) {
-      print(
-          "Method ${dataType.toString()} not implemented for platform ${_platformType.toString()}");
-      return healthData;
-    }
+    String dataTypeKey = _platformType == PlatformType.ANDROID
+        ? _dataTypeToStringAndroid[dataType]
+        : _dataTypeToStringIOS[dataType];
 
-    /// Get the index of the given data type
+    /// If not implemented on platform, throw an exception
+    if (dataTypeKey == null) {
+      throw new HealthDataNotAvailableException(
+          "Method ${dataType.toString()} not implemented for platform ${_platformType.toString()}");
+    }
 
     /// Set parameters for method channel request
     Map<String, dynamic> args = {
-      'dataTypeKey': lookUpTableIOS[dataType],
+      'dataTypeKey': dataTypeKey,
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch
     };
