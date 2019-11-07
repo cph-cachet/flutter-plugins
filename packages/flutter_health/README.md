@@ -2,48 +2,36 @@
 
 This library combines both GoogleFit and AppleHealthKit. It support most of the values provided.
 
-Works on from **iOS 11.0**. Some data types are supported from **iOS 12.2**.
+Supports **iOS** and **Android X**
 
-Supports **Android X**
-
-
-## HealthKit Data Types (iOS)
-(X) = tested, (?) = not tested
-* BODY_FAT (X)
-* HEIGHT (X)
-* BODY_MASS_INDEX (X)
-* WAIST_CIRCUMFERENCE (X)
-* STEPS (X)
-* BASAL_ENERGY_BURNED (X)
-* ACTIVE_ENERGY_BURNED (X)
-* HEART_RATE (X)
-* BODY_TEMPERATURE (X)
-* BLOOD_PRESSURE_SYSTOLIC (X)
-* BLOOD_PRESSURE_DIASTOLIC (X)
-* RESTING_HEART_RATE (X) 
-* WALKING_HEART_RATE (?) (Apple Watch)
-* BLOOD_OXYGEN (X)
-* BLOOD_GLUCOSE (X)
-* ELECTRODERMAL_ACTIVITY (?) (Apple Watch)
-* HIGH_HEART_RATE_EVENT (?) (Apple Watch)
-* LOW_HEART_RATE_EVENT (?) (Apple Watch)
-* IRREGULAR_HEART_RATE_EVENT (?) (Apple Watch)
-
-## GoogleFit Data Types (Android)
-(X) = tested, (?) = not tested
-* BODY_FAT (?)
-* HEIGHT (?)
-* STEPS (?)
-* CALORIES (?)
-* HEART_RATE (?)
-* BODY_TEMPERATURE (?)
-* BLOOD_PRESSURE (?)
-* BLOOD_OXYGEN (?)
-* BLOOD_GLUCOSE (?)
-
-
+## Data Types
+| Data Type                    | Available on iOS | Available on Android | Comments             |
+|------------------------------|------------------|----------------------|----------------------|
+| `BODY_FAT`                   | yes              | yes                  |                      |
+| `HEIGHT`                     | yes              | yes                  |                      |
+| `WEIGHT`                     | yes              | yes                  |                      |
+| `BODY_MASS_INDEX`            | yes              |                      |                      |
+| `WAIST_CIRCUMFERENCE`        | yes              |                      |                      |
+| `STEPS`                      | yes              |                      |                      |
+| `BASAL_ENERGY_BURNED`        | yes              |                      |                      |
+| `ACTIVE_ENERGY_BURNED`       | yes              |                      |                      |
+| `HEART_RATE`                 | yes              |                      |                      |
+| `BODY_TEMPERATURE`           | yes              |                      |                      |
+| `BLOOD_PRESSURE_SYSTOLIC`    | yes              |                      |                      |
+| `BLOOD_PRESSURE_DIASTOLIC`   | yes              |                      |                      |
+| `RESTING_HEART_RATE`         | yes              |                      |                      |
+| `WALKING_HEART_RATE`         | yes              |                      |                      |
+| `BLOOD_OXYGEN`               | yes              |                      |                      |
+| `BLOOD_GLUCOSE`              | yes              |                      |                      |
+| `ELECTRODERMAL_ACTIVITY`     | yes              |                      | Requires Apple Watch |
+| `HIGH_HEART_RATE_EVENT`      | yes              |                      | Requires Apple Watch |
+| `LOW_HEART_RATE_EVENT`       | yes              |                      | Requires Apple Watch |
+| `IRREGULAR_HEART_RATE_EVENT` | yes              |                      | Requires Apple Watch |
 ## Setup
+### Apple HealthKit
+Coming soon!
 
+### Google Fit
 For GoogleFit, the initial setup is a bit longer, and can get frustrating.
 Just follow [this setup](https://developers.google.com/fit/android/get-started). 
 
