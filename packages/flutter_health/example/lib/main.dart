@@ -27,20 +27,25 @@ class _MyAppState extends State<MyApp> {
 
     Future.delayed(Duration(seconds: 2), () async {
       _isAuthorized = await FlutterHealth.requestAuthorization();
-      var isHealthDataAvailable =
-          await FlutterHealth.checkIfHealthDataAvailable();
+//      try {
+//        bool isHealthDataAvailable =
+//        await FlutterHealth.checkIfHealthDataAvailable();
+//        print("Health Data Available? $isHealthDataAvailable");
+//      }
+//      catch (error) {
+//        print(error.toString());
+//      }
 
       if (_isAuthorized) {
         print('Authorized');
-        print("Health Data Available? $isHealthDataAvailable");
 
-        bool weightAvailable =
-            FlutterHealth.checkIfDataTypeAvailable(HealthDataType.WEIGHT);
-        print("is WEIGHT data type available?: $weightAvailable");
-
-        bool unknownAvailable =
-            FlutterHealth.checkIfDataTypeAvailable(HealthDataType.UNKNOWN);
-        print("is WEIGHT data type available?: $unknownAvailable");
+//        bool weightAvailable =
+//            FlutterHealth.checkIfDataTypeAvailable(HealthDataType.WEIGHT);
+//        print("is WEIGHT data type available?: $weightAvailable");
+//
+//        bool unknownAvailable =
+//            FlutterHealth.checkIfDataTypeAvailable(HealthDataType.UNKNOWN);
+//        print("is UNKNOWN data type available?: $unknownAvailable");
 
         List<HealthDataType> types = [
           HealthDataType.WEIGHT,
@@ -62,12 +67,14 @@ class _MyAppState extends State<MyApp> {
         for (HealthDataType type in types) {
           try {
             List<HealthData> healthData =
-                await FlutterHealth.getHealthDataFromType(
-                    startDate, endDate, type);
+                await FlutterHealth.getHealthDataFromType(startDate, endDate, type);
             _healthDataList.addAll(healthData);
           } catch (exception) {
             print(exception.toString());
           }
+        }
+        for (var x in _healthDataList) {
+          print("Data point: $x");
         }
         setState(() {});
       } else {

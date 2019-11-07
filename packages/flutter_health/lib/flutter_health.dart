@@ -124,11 +124,11 @@ class FlutterHealth {
     HealthDataType.WAIST_CIRCUMFERENCE: null,
     HealthDataType.STEPS: "stepCount",
     HealthDataType.BASAL_ENERGY_BURNED: null,
-    HealthDataType.ACTIVE_ENERGY_BURNED: null,
+    HealthDataType.ACTIVE_ENERGY_BURNED: "activeEnergyBurned",
     HealthDataType.HEART_RATE: "heartRate",
     HealthDataType.BODY_TEMPERATURE: "bodyTemperature",
-    HealthDataType.BLOOD_PRESSURE_SYSTOLIC: null,
-    HealthDataType.BLOOD_PRESSURE_DIASTOLIC: null,
+    HealthDataType.BLOOD_PRESSURE_SYSTOLIC: "bloodPressureSystolic",
+    HealthDataType.BLOOD_PRESSURE_DIASTOLIC: "bloodPressureDiastolic",
     HealthDataType.RESTING_HEART_RATE: null,
     HealthDataType.WALKING_HEART_RATE: null,
     HealthDataType.BLOOD_OXYGEN: "oxygenSaturation",
@@ -152,8 +152,7 @@ class FlutterHealth {
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
-  static String _methodName =
-      _platformType == PlatformType.ANDROID ? 'getGFHealthData' : 'getData';
+  static String _methodName = 'getData';
 
   /// Check if a given data type is available on the platform
   static bool checkIfDataTypeAvailable(HealthDataType dataType) {

@@ -4,7 +4,6 @@ import android.app.Activity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
-import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
 import com.google.android.gms.tasks.Tasks
@@ -17,13 +16,10 @@ import android.content.Intent
 import android.os.Handler
 import android.util.Log
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
-import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import android.os.Looper
-import com.google.android.gms.fitness.data.Field
-import com.google.android.gms.fitness.data.HealthDataTypes
-import com.google.android.gms.fitness.data.HealthFields
+import com.google.android.gms.fitness.data.*
 import kotlin.collections.HashMap
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
@@ -33,15 +29,52 @@ class FlutterHealthPlugin(val activity: Activity, val channel: MethodChannel) : 
     private var result: Result? = null
     private var handler: Handler? = null
 
+    private var BODY_FAT_PERCENTAGE = "bodyFatPercentage"
+    private var HEIGHT = "height"
+    private var WEIGHT = "bodyMass"
+    private var BODY_MASS_INDEX = "bodyMassIndex"
+    private var WAIST_CIRCUMFERENCE = "waistCircumference"
+    private var STEPS = "stepCount"
+    private var BASAL_ENERGY_BURNED = "basalEnergyBurned"
+    private var ACTIVE_ENERGY_BURNED = "activeEnergyBurned"
+    private var HEART_RATE = "heartRate"
+    private var BODY_TEMPERATURE = "bodyTemperature"
+    private var BLOOD_PRESSURE_SYSTOLIC = "bloodPressureSystolic"
+    private var BLOOD_PRESSURE_DIASTOLIC = "bloodPressureDiastolic"
+    private var RESTING_HEART_RATE = "restingHeartRate"
+    private var WALKING_HEART_RATE = "walkingHeartRateAverage"
+    private var BLOOD_OXYGEN = "oxygenSaturation"
+    private var BLOOD_GLUCOSE = "bloodGlucose"
+
+    var unitDict: Map<String, Field>? = null
+
+
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "flutter_health")
             val plugin = FlutterHealthPlugin(registrar.activity(), channel)
-
+            plugin.init()
+            print(plugin.unitDict)
             registrar.addActivityResultListener(plugin)
             channel.setMethodCallHandler(plugin)
         }
+    }
+
+    fun init() {
+        unitDict = mapOf<String, Field>(
+                BODY_FAT_PERCENTAGE to Field.FIELD_PERCENTAGE,
+                HEIGHT to Field.FIELD_HEIGHT,
+                WEIGHT to Field.FIELD_WEIGHT,
+                STEPS to Field.FIELD_STEPS,
+                ACTIVE_ENERGY_BURNED to Field.FIELD_CALORIES,
+                HEART_RATE to Field.FIELD_BPM,
+                BODY_TEMPERATURE to HealthFields.FIELD_BODY_TEMPERATURE,
+                BLOOD_PRESSURE_SYSTOLIC to HealthFields.FIELD_BLOOD_PRESSURE_SYSTOLIC,
+                BLOOD_PRESSURE_DIASTOLIC to HealthFields.FIELD_BLOOD_PRESSURE_DIASTOLIC,
+                BLOOD_OXYGEN to HealthFields.FIELD_OXYGEN_SATURATION,
+                BLOOD_GLUCOSE to HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
+        )
     }
 
 
@@ -65,6 +98,7 @@ class FlutterHealthPlugin(val activity: Activity, val channel: MethodChannel) : 
         handler?.post(
                 Runnable { result?.error(errorCode, errorMessage, errorDetails) })
     }
+
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent): Boolean {
@@ -110,23 +144,26 @@ class FlutterHealthPlugin(val activity: Activity, val channel: MethodChannel) : 
                 mResult?.success(true)
                 Log.d("FLUTTER_HEALTH", "Access already granted before!")
             }
-        } else if (call.method == "getGFHealthData") {
-            val type = call.argument<Int>("index")
+        } else if (call.method == "getData") {
+            val type = call.argument<String>("dataTypeKey")
             val startTime = call.argument<Long>("startDate")
             val endTime = call.argument<Long>("endDate")
-            val fields = listOf(Field.FIELD_PERCENTAGE, Field.FIELD_HEIGHT, Field.FIELD_STEPS, Field.FIELD_CALORIES, Field.FIELD_BPM, HealthFields.FIELD_BODY_TEMPERATURE, HealthFields.FIELD_BLOOD_PRESSURE_SYSTOLIC, HealthFields.FIELD_OXYGEN_SATURATION, HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL)
+
             val dataType = when (type) {
-                0 -> DataType.TYPE_BODY_FAT_PERCENTAGE
-                1 -> DataType.TYPE_HEIGHT
-                2 -> DataType.TYPE_STEP_COUNT_DELTA
-                3 -> DataType.TYPE_CALORIES_EXPENDED
-                4 -> DataType.TYPE_HEART_RATE_BPM
-                5 -> HealthDataTypes.TYPE_BODY_TEMPERATURE
-                6 -> HealthDataTypes.TYPE_BLOOD_PRESSURE
-                7 -> HealthDataTypes.TYPE_OXYGEN_SATURATION
-                8 -> HealthDataTypes.TYPE_BLOOD_GLUCOSE
+                BODY_FAT_PERCENTAGE -> DataType.TYPE_BODY_FAT_PERCENTAGE
+                HEIGHT -> DataType.TYPE_HEIGHT
+                WEIGHT -> DataType.TYPE_WEIGHT
+                STEPS -> DataType.TYPE_STEP_COUNT_DELTA
+                ACTIVE_ENERGY_BURNED -> DataType.TYPE_CALORIES_EXPENDED
+                HEART_RATE -> DataType.TYPE_HEART_RATE_BPM
+                BODY_TEMPERATURE -> HealthDataTypes.TYPE_BODY_TEMPERATURE
+                BLOOD_PRESSURE_SYSTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
+                BLOOD_PRESSURE_DIASTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
+                BLOOD_OXYGEN -> HealthDataTypes.TYPE_OXYGEN_SATURATION
+                BLOOD_GLUCOSE -> HealthDataTypes.TYPE_BLOOD_GLUCOSE
                 else -> DataType.TYPE_STEP_COUNT_DELTA
             }
+
             thread {
                 val gsa = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
 
@@ -139,40 +176,29 @@ class FlutterHealthPlugin(val activity: Activity, val channel: MethodChannel) : 
 
                 val readDataResult = Tasks.await<DataReadResponse>(response)
                 val dataSet = readDataResult.getDataSet(dataType)
+                val unit = unitDict?.get(type)
 
                 val map = dataSet.dataPoints.map {
                     val map = HashMap<String, Any>()
+
                     map["value"] = try {
-                        it.getValue(fields[type ?: 0]).asFloat()
+                        it.getValue(unit).asFloat()
                     } catch (e1: Exception) {
                         try {
-                            it.getValue(fields[type ?: 0]).asInt()
+                            it.getValue(unit).asInt()
                         } catch (e2: Exception) {
                             try {
-                                it.getValue(fields[type ?: 0]).asString()
-                            }catch (e3: Exception){
+                                it.getValue(unit).asString()
+                            } catch (e3: Exception) {
                                 Log.e("FLUTTER_HEALTH::ERROR", e3.toString())
                             }
                         }
                     }
-                    if(dataType == HealthDataTypes.TYPE_BLOOD_PRESSURE)
-                        map["value2"] = try {
-                            it.getValue(HealthFields.FIELD_BLOOD_PRESSURE_DIASTOLIC).asFloat()
-                        } catch (e1: Exception) {
-                            try {
-                                it.getValue(fields[type ?: 0]).asInt()
-                            } catch (e2: Exception) {
-                                try {
-                                    it.getValue(fields[type ?: 0]).asString()
-                                }catch (e3: Exception){
-                                    Log.e("FLUTTER_HEALTH::ERROR", e3.toString())
-                                }
-                            }
-                        }
+
+                    print(unit)
                     map["date_from"] = it.getStartTime(TimeUnit.MILLISECONDS)
                     map["date_to"] = it.getEndTime(TimeUnit.MILLISECONDS)
-                    map["unit"] = ""
-                    map["data_type_index"] = type?:-1
+                    map["unit"] = unit.toString()
                     return@map map
                 }
                 activity.runOnUiThread { result.success(map) }
