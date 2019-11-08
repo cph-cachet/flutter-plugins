@@ -46,7 +46,7 @@ enum HealthDataType {
 enum PlatformType { IOS, ANDROID, UNKNOWN }
 
 class HealthData {
-  double value;
+  num value;
   String unit;
   int dateFrom;
   int dateTo;
@@ -134,7 +134,7 @@ class FlutterHealth {
     HealthDataType.BLOOD_OXYGEN: "oxygenSaturation",
     HealthDataType.BLOOD_GLUCOSE: "bloodGlucose",
     HealthDataType.ELECTRODERMAL_ACTIVITY: null,
-    HealthDataType.WEIGHT: null,
+    HealthDataType.WEIGHT: "bodyMass",
     HealthDataType.HIGH_HEART_RATE_EVENT: null,
     HealthDataType.LOW_HEART_RATE_EVENT: null,
     HealthDataType.IRREGULAR_HEART_RATE_EVENT: null,

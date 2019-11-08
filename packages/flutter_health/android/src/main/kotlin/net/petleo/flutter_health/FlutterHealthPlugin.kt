@@ -116,16 +116,35 @@ class FlutterHealthPlugin(val activity: Activity, val channel: MethodChannel) : 
 
     var mResult: Result? = null
 
+    fun getDataType(type: String): DataType {
+        val dataType = when (type) {
+            BODY_FAT_PERCENTAGE -> DataType.TYPE_BODY_FAT_PERCENTAGE
+            HEIGHT -> DataType.TYPE_HEIGHT
+            WEIGHT -> DataType.TYPE_WEIGHT
+            STEPS -> DataType.TYPE_STEP_COUNT_DELTA
+            ACTIVE_ENERGY_BURNED -> DataType.TYPE_CALORIES_EXPENDED
+            HEART_RATE -> DataType.TYPE_HEART_RATE_BPM
+            BODY_TEMPERATURE -> HealthDataTypes.TYPE_BODY_TEMPERATURE
+            BLOOD_PRESSURE_SYSTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
+            BLOOD_PRESSURE_DIASTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
+            BLOOD_OXYGEN -> HealthDataTypes.TYPE_OXYGEN_SATURATION
+            BLOOD_GLUCOSE -> HealthDataTypes.TYPE_BLOOD_GLUCOSE
+            else -> DataType.TYPE_STEP_COUNT_DELTA
+        }
+        return dataType
+    }
+
     val fitnessOptions = FitnessOptions.builder()
-            .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(BODY_FAT_PERCENTAGE), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(HEIGHT), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(WEIGHT), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(STEPS), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(ACTIVE_ENERGY_BURNED), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(HEART_RATE), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(BODY_TEMPERATURE), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(BLOOD_PRESSURE_SYSTOLIC), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(BLOOD_OXYGEN), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(BLOOD_GLUCOSE), FitnessOptions.ACCESS_READ)
             .build()
 
 
@@ -148,26 +167,12 @@ class FlutterHealthPlugin(val activity: Activity, val channel: MethodChannel) : 
             val type = call.argument<String>("dataTypeKey")
             val startTime = call.argument<Long>("startDate")
             val endTime = call.argument<Long>("endDate")
-
-            val dataType = when (type) {
-                BODY_FAT_PERCENTAGE -> DataType.TYPE_BODY_FAT_PERCENTAGE
-                HEIGHT -> DataType.TYPE_HEIGHT
-                WEIGHT -> DataType.TYPE_WEIGHT
-                STEPS -> DataType.TYPE_STEP_COUNT_DELTA
-                ACTIVE_ENERGY_BURNED -> DataType.TYPE_CALORIES_EXPENDED
-                HEART_RATE -> DataType.TYPE_HEART_RATE_BPM
-                BODY_TEMPERATURE -> HealthDataTypes.TYPE_BODY_TEMPERATURE
-                BLOOD_PRESSURE_SYSTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
-                BLOOD_PRESSURE_DIASTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
-                BLOOD_OXYGEN -> HealthDataTypes.TYPE_OXYGEN_SATURATION
-                BLOOD_GLUCOSE -> HealthDataTypes.TYPE_BLOOD_GLUCOSE
-                else -> DataType.TYPE_STEP_COUNT_DELTA
-            }
+            val dataType = getDataType(type!!)
 
             thread {
-                val gsa = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
+                val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
 
-                val response = Fitness.getHistoryClient(activity.applicationContext, gsa)
+                val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
                         .readData(DataReadRequest.Builder()
                                 .read(dataType)
                                 .setTimeRange(startTime ?: 0, endTime
@@ -195,7 +200,6 @@ class FlutterHealthPlugin(val activity: Activity, val channel: MethodChannel) : 
                         }
                     }
 
-                    print(unit)
                     map["date_from"] = it.getStartTime(TimeUnit.MILLISECONDS)
                     map["date_to"] = it.getEndTime(TimeUnit.MILLISECONDS)
                     map["unit"] = unit.toString()
