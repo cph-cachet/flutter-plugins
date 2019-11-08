@@ -17,9 +17,16 @@ class HealthDataNotAvailableException implements Exception {
   }
 }
 
+/// Extracts the string value from an enum
+String enumToString(enumItem) {
+  return enumItem.toString().split('.')[1];
+}
+
+/// All health data types
 enum HealthDataType {
-  BODY_FAT,
+  BODY_FAT_PERCENTAGE,
   HEIGHT,
+  WEIGHT,
   BODY_MASS_INDEX,
   WAIST_CIRCUMFERENCE,
   STEPS,
@@ -34,17 +41,54 @@ enum HealthDataType {
   BLOOD_OXYGEN,
   BLOOD_GLUCOSE,
   ELECTRODERMAL_ACTIVITY,
-  WEIGHT,
 
-  /// HEART RATE EVENTS BELOW
+  /// Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
   LOW_HEART_RATE_EVENT,
-  IRREGULAR_HEART_RATE_EVENT,
-  UNKNOWN
+  IRREGULAR_HEART_RATE_EVENT
 }
 
-enum PlatformType { IOS, ANDROID, UNKNOWN }
+const List<HealthDataType> _dataTypesIOS = [
+  HealthDataType.BODY_FAT_PERCENTAGE,
+  HealthDataType.HEIGHT,
+  HealthDataType.WEIGHT,
+  HealthDataType.BODY_MASS_INDEX,
+  HealthDataType.WAIST_CIRCUMFERENCE,
+  HealthDataType.STEPS,
+  HealthDataType.BASAL_ENERGY_BURNED,
+  HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.HEART_RATE,
+  HealthDataType.BODY_TEMPERATURE,
+  HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+  HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+  HealthDataType.RESTING_HEART_RATE,
+  HealthDataType.WALKING_HEART_RATE,
+  HealthDataType.BLOOD_OXYGEN,
+  HealthDataType.BLOOD_GLUCOSE,
+  HealthDataType.ELECTRODERMAL_ACTIVITY,
+  HealthDataType.HIGH_HEART_RATE_EVENT,
+  HealthDataType.LOW_HEART_RATE_EVENT,
+  HealthDataType.IRREGULAR_HEART_RATE_EVENT
+];
 
+const List<HealthDataType> _dataTypesAndroid = [
+  HealthDataType.BODY_FAT_PERCENTAGE,
+  HealthDataType.HEIGHT,
+  HealthDataType.WEIGHT,
+  HealthDataType.STEPS,
+  HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.HEART_RATE,
+  HealthDataType.BODY_TEMPERATURE,
+  HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+  HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+  HealthDataType.BLOOD_OXYGEN,
+  HealthDataType.BLOOD_GLUCOSE,
+];
+
+
+enum PlatformType { IOS, ANDROID }
+
+/// A [HealthData] object corresponds to a data point from GoogleFit/Apple HK
 class HealthData {
   num value;
   String unit;
@@ -71,7 +115,6 @@ class HealthData {
       platform = json['platform_type'];
     } catch (error) {
       print(error);
-      print('test');
     }
   }
 
@@ -93,60 +136,6 @@ class HealthData {
 }
 
 class FlutterHealth {
-  static const Map<HealthDataType, String> _dataTypeToStringIOS = {
-    HealthDataType.BODY_FAT: "bodyFatPercentage",
-    HealthDataType.HEIGHT: "height",
-    HealthDataType.BODY_MASS_INDEX: "bodyMassIndex",
-    HealthDataType.WAIST_CIRCUMFERENCE: "waistCircumference",
-    HealthDataType.STEPS: "stepCount",
-    HealthDataType.BASAL_ENERGY_BURNED: "basalEnergyBurned",
-    HealthDataType.ACTIVE_ENERGY_BURNED: "activeEnergyBurned",
-    HealthDataType.HEART_RATE: "heartRate",
-    HealthDataType.BODY_TEMPERATURE: "bodyTemperature",
-    HealthDataType.BLOOD_PRESSURE_SYSTOLIC: "bloodPressureSystolic",
-    HealthDataType.BLOOD_PRESSURE_DIASTOLIC: "bloodPressureDiastolic",
-    HealthDataType.RESTING_HEART_RATE: "restingHeartRate",
-    HealthDataType.WALKING_HEART_RATE: "walkingHeartRateAverage",
-    HealthDataType.BLOOD_OXYGEN: "oxygenSaturation",
-    HealthDataType.BLOOD_GLUCOSE: "bloodGlucose",
-    HealthDataType.ELECTRODERMAL_ACTIVITY: "electrodermalActivity",
-    HealthDataType.WEIGHT: "bodyMass",
-    HealthDataType.HIGH_HEART_RATE_EVENT: "highHeartRateEvent",
-    HealthDataType.LOW_HEART_RATE_EVENT: "lowHeartRateEvent",
-    HealthDataType.IRREGULAR_HEART_RATE_EVENT: "irregularHeartRhythmEvent",
-    HealthDataType.UNKNOWN: null,
-  };
-
-  static const Map<HealthDataType, String> _dataTypeToStringAndroid = {
-    HealthDataType.BODY_FAT: "bodyFatPercentage",
-    HealthDataType.HEIGHT: "height",
-    HealthDataType.BODY_MASS_INDEX: null,
-    HealthDataType.WAIST_CIRCUMFERENCE: null,
-    HealthDataType.STEPS: "stepCount",
-    HealthDataType.BASAL_ENERGY_BURNED: null,
-    HealthDataType.ACTIVE_ENERGY_BURNED: "activeEnergyBurned",
-    HealthDataType.HEART_RATE: "heartRate",
-    HealthDataType.BODY_TEMPERATURE: "bodyTemperature",
-    HealthDataType.BLOOD_PRESSURE_SYSTOLIC: "bloodPressureSystolic",
-    HealthDataType.BLOOD_PRESSURE_DIASTOLIC: "bloodPressureDiastolic",
-    HealthDataType.RESTING_HEART_RATE: null,
-    HealthDataType.WALKING_HEART_RATE: null,
-    HealthDataType.BLOOD_OXYGEN: "oxygenSaturation",
-    HealthDataType.BLOOD_GLUCOSE: "bloodGlucose",
-    HealthDataType.ELECTRODERMAL_ACTIVITY: null,
-    HealthDataType.WEIGHT: "bodyMass",
-    HealthDataType.HIGH_HEART_RATE_EVENT: null,
-    HealthDataType.LOW_HEART_RATE_EVENT: null,
-    HealthDataType.IRREGULAR_HEART_RATE_EVENT: null,
-    HealthDataType.UNKNOWN: null,
-  };
-
-  static String enumToDataTypeKey(HealthDataType type) {
-    return Platform.isAndroid
-        ? _dataTypeToStringAndroid[type]
-        : _dataTypeToStringIOS[type];
-  }
-
   static const MethodChannel _channel = const MethodChannel('flutter_health');
 
   static PlatformType _platformType =
@@ -156,13 +145,9 @@ class FlutterHealth {
 
   /// Check if a given data type is available on the platform
   static bool checkIfDataTypeAvailable(HealthDataType dataType) {
-    String dataTypeKey = _platformType == PlatformType.ANDROID
-        ? _dataTypeToStringAndroid[dataType]
-        : _dataTypeToStringIOS[dataType];
-
-    /// Check that the key isn't null.
-    /// If it is, then the data type does not exist for the current platform.
-    return dataTypeKey != null;
+    return _platformType == PlatformType.ANDROID
+        ? _dataTypesAndroid.contains(dataType)
+        : _dataTypesIOS.contains(dataType);
   }
 
   ///  Check if GoogleFit/Apple HealthKit is enabled on the device
@@ -184,9 +169,7 @@ class FlutterHealth {
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     List<HealthData> healthData = new List();
 
-    String dataTypeKey = _platformType == PlatformType.ANDROID
-        ? _dataTypeToStringAndroid[dataType]
-        : _dataTypeToStringIOS[dataType];
+    String dataTypeKey = enumToString(dataType);
 
     /// If not implemented on platform, throw an exception
     if (dataTypeKey == null) {

@@ -49,11 +49,10 @@ class _MyAppState extends State<MyApp> {
 
         List<HealthDataType> types = [
           HealthDataType.WEIGHT,
-          HealthDataType.UNKNOWN,
           HealthDataType.HEIGHT,
           HealthDataType.STEPS,
           HealthDataType.WAIST_CIRCUMFERENCE,
-          HealthDataType.BODY_FAT,
+          HealthDataType.BODY_FAT_PERCENTAGE,
           HealthDataType.ACTIVE_ENERGY_BURNED,
           HealthDataType.BASAL_ENERGY_BURNED,
           HealthDataType.HEART_RATE,
