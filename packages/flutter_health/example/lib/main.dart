@@ -11,7 +11,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   var _healthKitOutput;
-  var _healthDataList = List<HealthData>();
+  var _healthDataList = List<HealthDataPoint>();
   bool _isAuthorized = false;
 
   @override
@@ -65,7 +65,7 @@ class _MyAppState extends State<MyApp> {
 
         for (HealthDataType type in types) {
           try {
-            List<HealthData> healthData =
+            List<HealthDataPoint> healthData =
                 await FlutterHealth.getHealthDataFromType(startDate, endDate, type);
             _healthDataList.addAll(healthData);
           } catch (exception) {

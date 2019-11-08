@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
 
 /// Custom Exception for the plugin,
-/// thrown whenever the plugin is used on platforms
-/// where some health data metric isnt available
+/// thrown whenever a Health Data Type is requested,
+/// when not available on the current platform
 class HealthDataNotAvailableException implements Exception {
   String _cause;
 
@@ -22,7 +22,7 @@ String enumToString(enumItem) {
   return enumItem.toString().split('.')[1];
 }
 
-/// All health data types
+/// List of all data types
 enum HealthDataType {
   BODY_FAT_PERCENTAGE,
   HEIGHT,
@@ -48,6 +48,7 @@ enum HealthDataType {
   IRREGULAR_HEART_RATE_EVENT
 }
 
+/// List of data types available on iOS
 const List<HealthDataType> _dataTypesIOS = [
   HealthDataType.BODY_FAT_PERCENTAGE,
   HealthDataType.HEIGHT,
@@ -71,6 +72,7 @@ const List<HealthDataType> _dataTypesIOS = [
   HealthDataType.IRREGULAR_HEART_RATE_EVENT
 ];
 
+/// List of data types available on Android
 const List<HealthDataType> _dataTypesAndroid = [
   HealthDataType.BODY_FAT_PERCENTAGE,
   HealthDataType.HEIGHT,
@@ -85,11 +87,10 @@ const List<HealthDataType> _dataTypesAndroid = [
   HealthDataType.BLOOD_GLUCOSE,
 ];
 
-
 enum PlatformType { IOS, ANDROID }
 
-/// A [HealthData] object corresponds to a data point from GoogleFit/Apple HK
-class HealthData {
+/// A [HealthDataPoint] object corresponds to a data point from GoogleFit/Apple HK
+class HealthDataPoint {
   num value;
   String unit;
   int dateFrom;
@@ -97,7 +98,7 @@ class HealthData {
   String dataType;
   String platform;
 
-  HealthData(
+  HealthDataPoint(
       {this.value,
       this.unit,
       this.dateFrom,
@@ -105,7 +106,7 @@ class HealthData {
       this.dataType,
       this.platform});
 
-  HealthData.fromJson(Map<String, dynamic> json) {
+  HealthDataPoint.fromJson(Map<String, dynamic> json) {
     try {
       value = json['value'];
       unit = json['unit'];
@@ -135,13 +136,12 @@ class HealthData {
   }
 }
 
+/// Main class for the Plugin
 class FlutterHealth {
   static const MethodChannel _channel = const MethodChannel('flutter_health');
 
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
-
-  static String _methodName = 'getData';
 
   /// Check if a given data type is available on the platform
   static bool checkIfDataTypeAvailable(HealthDataType dataType) {
@@ -165,9 +165,9 @@ class FlutterHealth {
   }
 
   /// Main function for fetching health data
-  static Future<List<HealthData>> getHealthDataFromType(
+  static Future<List<HealthDataPoint>> getHealthDataFromType(
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
-    List<HealthData> healthData = new List();
+    List<HealthDataPoint> healthData = new List();
 
     String dataTypeKey = enumToString(dataType);
 
@@ -185,7 +185,7 @@ class FlutterHealth {
     };
 
     try {
-      List result = await _channel.invokeMethod(_methodName, args);
+      List result = await _channel.invokeMethod('getData', args);
 
       /// Process each data point received
       for (var x in result) {
@@ -197,7 +197,7 @@ class FlutterHealth {
         Map<String, dynamic> jsonData = Map<String, dynamic>.from(x);
 
         /// Convert JSON to HealthData object
-        HealthData data = HealthData.fromJson(jsonData);
+        HealthDataPoint data = HealthDataPoint.fromJson(jsonData);
         healthData.add(data);
       }
     } catch (error) {
