@@ -11,6 +11,28 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
     var dataTypesDict: [String: HKSampleType] = [:]
     var unitDict: [String: HKUnit] = [:]
 
+    // Health Data Type Keys
+    let BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+    let HEIGHT = "HEIGHT"
+    let WEIGHT = "WEIGHT"
+    let BODY_MASS_INDEX = "BODY_MASS_INDEX"
+    let WAIST_CIRCUMFERENCE = "WAIST_CIRCUMFERENCE"
+    let STEPS = "STEPS"
+    let BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
+    let ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
+    let HEART_RATE = "HEART_RATE"
+    let BODY_TEMPERATURE = "BODY_TEMPERATURE"
+    let BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
+    let BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
+    let RESTING_HEART_RATE = "RESTING_HEART_RATE"
+    let WALKING_HEART_RATE = "WALKING_HEART_RATE"
+    let BLOOD_OXYGEN = "BLOOD_OXYGEN"
+    let BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
+    let ELECTRODERMAL_ACTIVITY = "ELECTRODERMAL_ACTIVITY"
+    let HIGH_HEART_RATE_EVENT = "HIGH_HEART_RATE_EVENT"
+    let LOW_HEART_RATE_EVENT = "LOW_HEART_RATE_EVENT"
+    let IRREGULAR_HEART_RATE_EVENT = "IRREGULAR_HEART_RATE_EVENT"
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_health", binaryMessenger: registrar.messenger())
         let instance = SwiftFlutterHealthPlugin()
@@ -103,70 +125,51 @@ public class SwiftFlutterHealthPlugin: NSObject, FlutterPlugin {
     }
 
     func initializeTypes() {
-        unitDict["bodyFatPercentage"] = HKUnit.percent()
-        unitDict["height"] = HKUnit.meter()
-        unitDict["bodyMassIndex"] = HKUnit.init(from: "")
-        unitDict["waistCircumference"] = HKUnit.meter()
-        unitDict["stepCount"] = HKUnit.count()
-        unitDict["basalEnergyBurned"] = HKUnit.kilocalorie()
-        unitDict["activeEnergyBurned"] = HKUnit.kilocalorie()
-        unitDict["heartRate"] = HKUnit.init(from: "count/min")
-        unitDict["bodyTemperature"] = HKUnit.degreeCelsius()
-        unitDict["bloodPressureSystolic"] = HKUnit.millimeterOfMercury()
-        unitDict["bloodPressureDiastolic"] = HKUnit.millimeterOfMercury()
-        unitDict["bodyFatPercentage"] = HKUnit.percent()
-        unitDict["restingHeartRate"] = HKUnit.init(from: "count/min")
-        unitDict["walkingHeartRateAverage"] = HKUnit.init(from: "count/min")
-        unitDict["oxygenSaturation"] = HKUnit.percent()
-        unitDict["bloodGlucose"] = HKUnit.init(from: "mg/dl")
-        unitDict["electrodermalActivity"] = HKUnit.siemen()
-        unitDict["bodyMass"] = HKUnit.gramUnit(with: .kilo)
+        unitDict[BODY_FAT_PERCENTAGE] = HKUnit.percent()
+        unitDict[HEIGHT] = HKUnit.meter()
+        unitDict[BODY_MASS_INDEX] = HKUnit.init(from: "")
+        unitDict[WAIST_CIRCUMFERENCE] = HKUnit.meter()
+        unitDict[STEPS] = HKUnit.count()
+        unitDict[BASAL_ENERGY_BURNED] = HKUnit.kilocalorie()
+        unitDict[ACTIVE_ENERGY_BURNED] = HKUnit.kilocalorie()
+        unitDict[HEART_RATE] = HKUnit.init(from: "count/min")
+        unitDict[BODY_TEMPERATURE] = HKUnit.degreeCelsius()
+        unitDict[BLOOD_PRESSURE_SYSTOLIC] = HKUnit.millimeterOfMercury()
+        unitDict[BLOOD_PRESSURE_DIASTOLIC] = HKUnit.millimeterOfMercury()
+        unitDict[RESTING_HEART_RATE] = HKUnit.init(from: "count/min")
+        unitDict[WALKING_HEART_RATE] = HKUnit.init(from: "count/min")
+        unitDict[BLOOD_OXYGEN] = HKUnit.percent()
+        unitDict[BLOOD_GLUCOSE] = HKUnit.init(from: "mg/dl")
+        unitDict[ELECTRODERMAL_ACTIVITY] = HKUnit.siemen()
+        unitDict[WEIGHT] = HKUnit.gramUnit(with: .kilo)
 
         // Set up iOS 11 specific types (ordinary health data types)
         if #available(iOS 11.0, *) { 
-            dataTypesDict["bodyFatPercentage"] = HKSampleType.quantityType(forIdentifier: .bodyFatPercentage)!
-            dataTypesDict["height"] = HKSampleType.quantityType(forIdentifier: .height)!
-            dataTypesDict["bodyMassIndex"] = HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!
-            dataTypesDict["waistCircumference"] = HKSampleType.quantityType(forIdentifier: .waistCircumference)!
-            dataTypesDict["stepCount"] = HKSampleType.quantityType(forIdentifier: .stepCount)!
-            dataTypesDict["basalEnergyBurned"] = HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!
-            dataTypesDict["activeEnergyBurned"] = HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!
-            dataTypesDict["heartRate"] = HKSampleType.quantityType(forIdentifier: .heartRate)!
-            dataTypesDict["bodyTemperature"] = HKSampleType.quantityType(forIdentifier: .bodyTemperature)!
-            dataTypesDict["bloodPressureSystolic"] = HKSampleType.quantityType(forIdentifier: .bloodPressureSystolic)!
-            dataTypesDict["bloodPressureDiastolic"] = HKSampleType.quantityType(forIdentifier: .bloodPressureDiastolic)!
-            dataTypesDict["restingHeartRate"] = HKSampleType.quantityType(forIdentifier: .restingHeartRate)!
-            dataTypesDict["walkingHeartRateAverage"] = HKSampleType.quantityType(forIdentifier: .walkingHeartRateAverage)!
-            dataTypesDict["oxygenSaturation"] = HKSampleType.quantityType(forIdentifier: .oxygenSaturation)!
-            dataTypesDict["bloodGlucose"] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
-            dataTypesDict["electrodermalActivity"] = HKSampleType.quantityType(forIdentifier: .electrodermalActivity)!
-            dataTypesDict["bodyMass"] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
+            dataTypesDict[BODY_FAT_PERCENTAGE] = HKSampleType.quantityType(forIdentifier: .bodyFatPercentage)!
+            dataTypesDict[HEIGHT] = HKSampleType.quantityType(forIdentifier: .height)!
+            dataTypesDict[BODY_MASS_INDEX] = HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!
+            dataTypesDict[WAIST_CIRCUMFERENCE] = HKSampleType.quantityType(forIdentifier: .waistCircumference)!
+            dataTypesDict[STEPS] = HKSampleType.quantityType(forIdentifier: .stepCount)!
+            dataTypesDict[BASAL_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!
+            dataTypesDict[ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!
+            dataTypesDict[HEART_RATE] = HKSampleType.quantityType(forIdentifier: .heartRate)!
+            dataTypesDict[BODY_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .bodyTemperature)!
+            dataTypesDict[BLOOD_PRESSURE_SYSTOLIC] = HKSampleType.quantityType(forIdentifier: .bloodPressureSystolic)!
+            dataTypesDict[BLOOD_PRESSURE_DIASTOLIC] = HKSampleType.quantityType(forIdentifier: .bloodPressureDiastolic)!
+            dataTypesDict[RESTING_HEART_RATE] = HKSampleType.quantityType(forIdentifier: .restingHeartRate)!
+            dataTypesDict[WALKING_HEART_RATE] = HKSampleType.quantityType(forIdentifier: .walkingHeartRateAverage)!
+            dataTypesDict[BLOOD_OXYGEN] = HKSampleType.quantityType(forIdentifier: .oxygenSaturation)!
+            dataTypesDict[BLOOD_GLUCOSE] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
+            dataTypesDict[ELECTRODERMAL_ACTIVITY] = HKSampleType.quantityType(forIdentifier: .electrodermalActivity)!
+            dataTypesDict[WEIGHT] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
 
-            healthDataTypes = [
-                    HKSampleType.quantityType(forIdentifier: .bodyFatPercentage)!,
-                    HKSampleType.quantityType(forIdentifier: .height)!,
-                    HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!,
-                    HKSampleType.quantityType(forIdentifier: .waistCircumference)!,
-                    HKSampleType.quantityType(forIdentifier: .stepCount)!,
-                    HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!,
-                    HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!,
-                    HKSampleType.quantityType(forIdentifier: .heartRate)!,
-                    HKSampleType.quantityType(forIdentifier: .bodyTemperature)!,
-                    HKSampleType.quantityType(forIdentifier: .bloodPressureSystolic)!,
-                    HKSampleType.quantityType(forIdentifier: .bloodPressureDiastolic)!,
-                    HKSampleType.quantityType(forIdentifier: .restingHeartRate)!,
-                    HKSampleType.quantityType(forIdentifier: .walkingHeartRateAverage)!,
-                    HKSampleType.quantityType(forIdentifier: .oxygenSaturation)!,
-                    HKSampleType.quantityType(forIdentifier: .bloodGlucose)!,
-                    HKSampleType.quantityType(forIdentifier: .electrodermalActivity)!,
-                    HKSampleType.quantityType(forIdentifier: .bodyMass)!,
-                    ]
+            healthDataTypes = Array(dataTypesDict.values)
         }
         // Set up heart rate data types specific to the apple watch, requires iOS 12
         if #available(iOS 12.2, *){
-            dataTypesDict["highHeartRateEvent"] = HKSampleType.categoryType(forIdentifier: .highHeartRateEvent)!
-            dataTypesDict["lowHeartRateEvent"] = HKSampleType.categoryType(forIdentifier: .lowHeartRateEvent)!
-            dataTypesDict["irregularHeartRhythmEvent"] = HKSampleType.categoryType(forIdentifier: .irregularHeartRhythmEvent)!
+            dataTypesDict[HIGH_HEART_RATE_EVENT] = HKSampleType.categoryType(forIdentifier: .highHeartRateEvent)!
+            dataTypesDict[LOW_HEART_RATE_EVENT] = HKSampleType.categoryType(forIdentifier: .lowHeartRateEvent)!
+            dataTypesDict[IRREGULAR_HEART_RATE_EVENT] = HKSampleType.categoryType(forIdentifier: .irregularHeartRhythmEvent)!
 
             heartRateEventTypes =  Set([
                 HKSampleType.categoryType(forIdentifier: .highHeartRateEvent)!,
