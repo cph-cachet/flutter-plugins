@@ -161,7 +161,7 @@ class Health {
 
   /// Main function for fetching health data
   static Future<List<HealthDataPoint>> _androidBodyMassIndex(
-      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+      DateTime startDate, DateTime endDate) async {
     List<HealthDataPoint> heights =
         await getHealthDataFromType(startDate, endDate, HealthDataType.HEIGHT);
     List<HealthDataPoint> weights =
@@ -184,10 +184,15 @@ class Health {
   /// Main function for fetching health data
   static Future<List<HealthDataPoint>> getHealthDataFromType(
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
-
     /// If not implemented on platform, throw an exception
     if (isDataTypeAvailable(dataType)) {
       throw new HealthDataNotAvailableException(dataType, _platformType);
+    }
+
+    /// If BodyMassIndex is requested on Android, calculate this manually in Dart
+    else if (dataType == HealthDataType.BODY_MASS_INDEX &&
+        _platformType == PlatformType.ANDROID) {
+      return _androidBodyMassIndex(startDate, endDate);
     }
 
     /// Set parameters for method channel request
