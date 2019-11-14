@@ -37,9 +37,16 @@ Step 1: Append the Info.plist with the following 2 entries
 <string>We will sync your data with the Apple Health app to give you better insights</string>
 ```
 
-Step 2: Enable "HealthKit" inside "Capabilities"
+Step 2: Enable "HealthKit" inside the "Capabilities" tab.
 
 ### Google Fit
-For GoogleFit, the initial setup is a bit longer, and can get frustrating.
-Just follow [this setup](https://developers.google.com/fit/android/get-started). 
+Follow [this setup](https://developers.google.com/fit/android/get-started). 
 
+### Android X
+Replace the content of the `android/gradle.properties` file with the following lines:
+
+```bash
+org.gradle.jvmargs=-Xmx1536M
+android.enableJetifier=true
+android.useAndroidX=true
+```

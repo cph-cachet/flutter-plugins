@@ -185,7 +185,7 @@ class Health {
   static Future<List<HealthDataPoint>> getHealthDataFromType(
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     /// If not implemented on platform, throw an exception
-    if (isDataTypeAvailable(dataType)) {
+    if (!isDataTypeAvailable(dataType)) {
       throw new HealthDataNotAvailableException(dataType, _platformType);
     }
 
