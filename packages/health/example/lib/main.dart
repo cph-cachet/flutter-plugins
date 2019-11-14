@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
         print('Authorized');
 
         bool weightAvailable =
-            Health.checkIfDataTypeAvailable(HealthDataType.WEIGHT);
+            Health.isDataTypeAvailable(HealthDataType.WEIGHT);
         print("is WEIGHT data type available?: $weightAvailable");
 
         /// Specify the wished data types

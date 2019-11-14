@@ -16,6 +16,6 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    expect(Health.checkIfDataTypeAvailable(HealthDataType.WEIGHT), true);
+    expect(Health.isDataTypeAvailable(HealthDataType.WEIGHT), true);
   });
 }

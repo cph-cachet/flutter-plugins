@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
 
@@ -7,19 +6,28 @@ import 'dart:io' show Platform;
 /// thrown whenever a Health Data Type is requested,
 /// when not available on the current platform
 class HealthDataNotAvailableException implements Exception {
-  String _cause;
+  HealthDataType _dataType;
+  PlatformType _platformType;
 
-  HealthDataNotAvailableException(this._cause);
+  HealthDataNotAvailableException(this._dataType, this._platformType);
 
   @override
   String toString() {
-    return _cause;
+    return "Method ${_dataType.toString()} not implemented for platform ${_platformType.toString()}";
   }
 }
 
 /// Extracts the string value from an enum
 String enumToString(enumItem) {
   return enumItem.toString().split('.')[1];
+}
+
+enum HealthDataUnit {
+  BMI,
+  KILOGRAMS,
+  METERS,
+  COUNT,
+  BEATS_PER_MINUTE,
 }
 
 /// List of all data types
@@ -98,13 +106,8 @@ class HealthDataPoint {
   String dataType;
   String platform;
 
-  HealthDataPoint(
-      {this.value,
-        this.unit,
-        this.dateFrom,
-        this.dateTo,
-        this.dataType,
-        this.platform});
+  HealthDataPoint(this.value, this.unit, this.dateFrom, this.dateTo,
+      this.dataType, this.platform);
 
   HealthDataPoint.fromJson(Map<String, dynamic> json) {
     try {
@@ -141,41 +144,60 @@ class Health {
   static const MethodChannel _channel = const MethodChannel('flutter_health');
 
   static PlatformType _platformType =
-  Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
   /// Check if a given data type is available on the platform
-  static bool checkIfDataTypeAvailable(HealthDataType dataType) {
-    return _platformType == PlatformType.ANDROID
-        ? _dataTypesAndroid.contains(dataType)
-        : _dataTypesIOS.contains(dataType);
-  }
+  static bool isDataTypeAvailable(HealthDataType dataType) =>
+      _platformType == PlatformType.ANDROID
+          ? _dataTypesAndroid.contains(dataType)
+          : _dataTypesIOS.contains(dataType);
 
   /// Request access to GoogleFit/Apple HealthKit
   static Future<bool> requestAuthorization() async {
     final bool isAuthorized =
-    await _channel.invokeMethod('requestAuthorization');
+        await _channel.invokeMethod('requestAuthorization');
     return isAuthorized;
+  }
+
+  /// Main function for fetching health data
+  static Future<List<HealthDataPoint>> _androidBodyMassIndex(
+      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+    List<HealthDataPoint> heights =
+        await getHealthDataFromType(startDate, endDate, HealthDataType.HEIGHT);
+    List<HealthDataPoint> weights =
+        await getHealthDataFromType(startDate, endDate, HealthDataType.WEIGHT);
+
+    num bmiValue =
+        weights.last.value / (heights.last.value * heights.last.value);
+
+    HealthDataPoint bmi = HealthDataPoint(
+        bmiValue,
+        HealthDataUnit.BMI.toString(),
+        startDate.millisecond,
+        endDate.millisecond,
+        HealthDataType.BODY_MASS_INDEX.toString(),
+        PlatformType.ANDROID.toString());
+
+    return [bmi];
   }
 
   /// Main function for fetching health data
   static Future<List<HealthDataPoint>> getHealthDataFromType(
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
-    List<HealthDataPoint> healthData = new List();
-
-    String dataTypeKey = enumToString(dataType);
 
     /// If not implemented on platform, throw an exception
-    if (dataTypeKey == null) {
-      throw new HealthDataNotAvailableException(
-          "Method ${dataType.toString()} not implemented for platform ${_platformType.toString()}");
+    if (isDataTypeAvailable(dataType)) {
+      throw new HealthDataNotAvailableException(dataType, _platformType);
     }
 
     /// Set parameters for method channel request
     Map<String, dynamic> args = {
-      'dataTypeKey': dataTypeKey,
+      'dataTypeKey': enumToString(dataType),
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch
     };
+
+    List<HealthDataPoint> healthData = new List();
 
     try {
       List result = await _channel.invokeMethod('getData', args);
