@@ -40,6 +40,7 @@ class _MyAppState extends State<MyApp> {
           HealthDataType.WEIGHT,
           HealthDataType.HEIGHT,
           HealthDataType.STEPS,
+          HealthDataType.BODY_MASS_INDEX,
           HealthDataType.WAIST_CIRCUMFERENCE,
           HealthDataType.BODY_FAT_PERCENTAGE,
           HealthDataType.ACTIVE_ENERGY_BURNED,
