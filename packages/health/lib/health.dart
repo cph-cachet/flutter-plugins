@@ -23,11 +23,23 @@ String enumToString(enumItem) {
 }
 
 enum HealthDataUnit {
-  BMI,
   KILOGRAMS,
+  PERCENTAGE,
   METERS,
   COUNT,
   BEATS_PER_MINUTE,
+  CALORIES,
+  DEGREE_CELSIUS,
+  NO_UNIT,
+  SIEMENS,
+
+  /// ELECTRODERMAL_ACTIVITY
+  MILLIMETER_OF_MERCURY,
+
+  /// BLOOD PRESSURE
+  MILLIGRAM_PER_DECILITER
+
+  /// BLOOD GLUCOSE
 }
 
 /// List of all data types
@@ -55,6 +67,32 @@ enum HealthDataType {
   LOW_HEART_RATE_EVENT,
   IRREGULAR_HEART_RATE_EVENT
 }
+
+/// Map a [HealthDataType] to a [HealthDataUnit].
+const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
+  HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENTAGE,
+  HealthDataType.HEIGHT: HealthDataUnit.METERS,
+  HealthDataType.WEIGHT: HealthDataUnit.KILOGRAMS,
+  HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
+  HealthDataType.WAIST_CIRCUMFERENCE: HealthDataUnit.METERS,
+  HealthDataType.STEPS: HealthDataUnit.COUNT,
+  HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.CALORIES,
+  HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataUnit.CALORIES,
+  HealthDataType.HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
+  HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
+  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
+  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
+  HealthDataType.RESTING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
+  HealthDataType.WALKING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
+  HealthDataType.BLOOD_OXYGEN: HealthDataUnit.PERCENTAGE,
+  HealthDataType.BLOOD_GLUCOSE: HealthDataUnit.MILLIGRAM_PER_DECILITER,
+  HealthDataType.ELECTRODERMAL_ACTIVITY: HealthDataUnit.SIEMENS,
+
+  /// Heart Rate events (specific to Apple Watch)
+  HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
+  HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
+  HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT
+};
 
 /// List of data types available on iOS
 const List<HealthDataType> _dataTypesIOS = [
@@ -168,18 +206,37 @@ class Health {
     List<HealthDataPoint> weights =
         await getHealthDataFromType(startDate, endDate, HealthDataType.WEIGHT);
 
+    /// Calculate the BMI using the last observed height- and last weight values.
     num bmiValue =
         weights.last.value / (heights.last.value * heights.last.value);
 
+    HealthDataType dataType = HealthDataType.BODY_MASS_INDEX;
+    HealthDataUnit unit = _dataTypeToUnit[dataType];
+
     HealthDataPoint bmi = HealthDataPoint(
         bmiValue,
-        HealthDataUnit.BMI.toString(),
+        enumToString(unit),
         startDate.millisecond,
         endDate.millisecond,
-        HealthDataType.BODY_MASS_INDEX.toString(),
+        enumToString(dataType),
         PlatformType.ANDROID.toString());
 
     return [bmi];
+  }
+
+  static HealthDataPoint processDataPoint(
+      var dataPoint, HealthDataType dataType, HealthDataUnit unit) {
+    /// Set the platform_type and data_type fields
+    dataPoint["platform_type"] = _platformType.toString();
+
+    /// Set the [DataType] fields
+    dataPoint["data_type"] = enumToString(dataType);
+
+    /// Overwrite unit with a Flutter Unit
+    dataPoint["unit"] = enumToString(unit);
+
+    /// Convert to JSON, and then to HealthData object
+    return HealthDataPoint.fromJson(Map<String, dynamic>.from(dataPoint));
   }
 
   /// Main function for fetching health data
@@ -204,21 +261,25 @@ class Health {
     };
 
     List<HealthDataPoint> healthData = new List();
+    HealthDataUnit unit = _dataTypeToUnit[dataType];
 
     try {
-      List result = await _channel.invokeMethod('getData', args);
+      List fetchedDataPoints = await _channel.invokeMethod('getData', args);
 
       /// Process each data point received
-      for (var x in result) {
-        /// Add the platform_type and data_type fields
-        x["platform_type"] = _platformType.toString();
-        x["data_type"] = dataType.toString();
+      for (var dataPoint in fetchedDataPoints) {
+//        /// Set the platform_type and data_type fields
+//        dataPoint["platform_type"] = _platformType.toString();
+//
+//        /// Set the [DataType] fields
+//        dataPoint["data_type"] = enumToString(dataType);
+//
+//        /// Overwrite unit with a Flutter Unit
+//        dataPoint["unit"] = enumToString(unit);
 
-        /// Convert to JSON
-        Map<String, dynamic> jsonData = Map<String, dynamic>.from(x);
-
-        /// Convert JSON to HealthData object
-        HealthDataPoint data = HealthDataPoint.fromJson(jsonData);
+        /// Convert to JSON, and then to HealthData object
+        HealthDataPoint data = processDataPoint(dataPoint, dataType, unit);
+//            HealthDataPoint.fromJson(Map<String, dynamic>.from(dataPoint));
         healthData.add(data);
       }
     } catch (error) {
@@ -226,4 +287,6 @@ class Health {
     }
     return healthData;
   }
+
+
 }

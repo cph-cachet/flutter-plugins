@@ -54,6 +54,18 @@ android.useAndroidX=true
 ## Usage
 Below is a snippet from the `example app` showing the plugin in use.
 
+### Health data
+A `HealthData` object contains the following fields:
+```dart
+num value;
+String unit;
+int dateFrom;
+int dateTo;
+String dataType;
+String platform;
+```
+A `HealthData healthData` object can be serialized to JSON with the `healthData.toJson()` method.
+
 
 ### Check authorization
 The following example shows prompting the user for authorization to the API, which is necessary in order to fetch any data. 
@@ -90,10 +102,15 @@ bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
 ```
 
 ### Fetch data for a given type
-Given the list of data types (`types`) we can now fetch all the data, for each data type with a call to the `Health.getHealthDataFromType` function.
+Given the list of data types (`types`) as well as a `startData` and an `endDate`, we can now fetch all the data, for each data type with a call to the `Health.getHealthDataFromType` function.
 
-This call must be inside a try catch block, since when some data type is not available, an exception will be thrown. 
-Also, make sure the access to the API has been authorized (see __Check authorization__).
+Set up dates:
+```dart
+DateTime startDate = DateTime.utc(2001, 01, 01);
+DateTime endDate = DateTime.now();
+```
+
+Make the fetch call:
 
 ```dart
 List<HealthDataPoint> healthDataList = List<HealthDataPoint>();
@@ -108,3 +125,6 @@ for (HealthDataType type in types) {
     }
 }
 ```
+
+This call must be inside a try catch block, since when some data type is not available, an exception will be thrown. 
+Also, make sure the access to the API has been authorized (see __Check authorization__).
