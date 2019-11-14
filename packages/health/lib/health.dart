@@ -85,6 +85,7 @@ const List<HealthDataType> _dataTypesAndroid = [
   HealthDataType.BODY_FAT_PERCENTAGE,
   HealthDataType.HEIGHT,
   HealthDataType.WEIGHT,
+  HealthDataType.BODY_MASS_INDEX,
   HealthDataType.STEPS,
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.HEART_RATE,
