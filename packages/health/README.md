@@ -74,11 +74,11 @@ Calls to fetch data from the API should be done within the inner if-clause.
 
 ```dart
 Future.delayed(Duration(seconds: 2), () async {
-    _isAuthorized = await Health.requestAuthorization();
+    bool _isAuthorized = await Health.requestAuthorization();
     if (_isAuthorized) {
-        /// Do something with the API here
+    /// Do something with the API here
     }
-}
+});
 ```
 ### Specify data type
 Data types indicate the type of data to fetch from the API and are available from the enum class `HealthDataType`. 
@@ -128,3 +128,40 @@ for (HealthDataType type in types) {
 
 This call must be inside a try catch block, since when some data type is not available, an exception will be thrown. 
 Also, make sure the access to the API has been authorized (see __Check authorization__).
+
+
+### Full example
+```dart
+void _getHealthDataPoints() async {
+
+    List<HealthDataType> types = [
+        HealthDataType.WEIGHT,
+        HealthDataType.HEIGHT,
+        HealthDataType.STEPS,
+    ];
+
+    DateTime startDate = DateTime.utc(2001, 01, 01);
+    DateTime endDate = DateTime.now();
+
+    List<HealthDataPoint> healthDataList = List<HealthDataPoint>();
+
+    Future.delayed(Duration(seconds: 2), () async {
+        bool isAuthorized = await Health.requestAuthorization();
+        if (isAuthorized) {
+            for (HealthDataType type in types) {
+                /// Calls to 'Health.getHealthDataFromType' must be wrapped in a try catch block.
+                try {
+                    List<HealthDataPoint> healthData = await Health.getHealthDataFromType(startDate, endDate, type);
+                    healthDataList.addAll(healthData);
+                } catch (exception) {
+                    print(exception.toString());
+                }
+            }
+        }
+        /// Do something with the health data list
+        for (var healthData in healthDataList) {
+            print(healthData);
+        }
+    });
+}
+```

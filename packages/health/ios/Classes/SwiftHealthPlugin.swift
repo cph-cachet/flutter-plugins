@@ -63,6 +63,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
 
     func requestAuthorization(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? NSDictionary
+        let dataTypeKeys = (arguments?["dataTypeKeys"] as? Array) ?? []
+        var dataTypesToRequest = Set<HKSampleType>()
+        
+        for key in dataTypeKeys {
+            let keyString = "\(key)"
+            dataTypesToRequest.insert(dataTypeLookUp(key: keyString))
+        }
+
         if #available(iOS 11.0, *) {
             healthStore.requestAuthorization(toShare: nil, read: allDataTypes) { (success, error) in
                 result(success)
@@ -78,6 +87,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
         let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
         let endDate = (arguments?["endDate"] as? NSNumber) ?? 0
+
+        // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
 
@@ -99,7 +110,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     
                     return [
                         "value": sample.quantity.doubleValue(for: unit),
-                        "unit": unit.unitString,
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                     ]
