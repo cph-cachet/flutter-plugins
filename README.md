@@ -16,11 +16,12 @@ These are the available plugins in this repository.
 | [light](./packages/light) | Track light sensor readings | ✔️ | ❌ |  [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
 | [pedometer](./packages/pedometer) | Track step count |  ✔️ | ✔️ | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
 | [noise_meter](./packages/noise_meter) | Read noise level in Decibel | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |
-| [app_usage](./packages/app_usage) | Track usage of all applications on phone. | ✔️ | ❌  | [![pub package](https://img.shields.io/pub/v/app_usage.svg)](https://pub.dartlang.org/packages/app_usage) |
+| [app_usage](./packages/app_usage) | Track usage of all applications on phone. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/app_usage.svg)](https://pub.dartlang.org/packages/app_usage) |
 | [weather](./packages/weather) | Get current weather, as well as forecasting using the OpenWeatherMap API. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather) |
 | [notifications](./packages/notifications) | Track device notifications. | ✔️ | ❌  | [![pub package](https://img.shields.io/pub/v/notifications.svg)](https://pub.dartlang.org/packages/notifications) |
 | [movisens_flutter](./packages/movisens_flutter) | Movisens sensor communication. | ✔️ | ❌  | [![pub package](https://img.shields.io/pub/v/movisens_flutter.svg)](https://pub.dartlang.org/packages/movisens_flutter) |
 | [esense_flutter](./packages/esense_flutter) | eSense ear sensor plugin. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/esense_flutter.svg)](https://pub.dartlang.org/packages/esense_flutter) |
+| [health](./packages/health) | eSense ear sensor plugin. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/health.svg)](https://pub.dartlang.org/packages/health) |
 
 ## Issues
 
