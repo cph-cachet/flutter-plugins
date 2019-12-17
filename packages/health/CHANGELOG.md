@@ -1,3 +1,3 @@
-## 0.0.1
+## 1.0.1
 
-* TODO: Describe initial release.
+* Streamlined DataType units in Flutter.
