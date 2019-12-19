@@ -21,17 +21,21 @@ String key = 'XXX38456b2b85c92647d8b65090e29f957638c77';
 AirQuality airQuality = new AirQuality(key);
 ```
 
-## Getting Air Quality Feed
+## Air Quality Feed Examples
 ```dart
 /// Via city name (Munich)
-AirQualityData feedFromCity = await airQuality.feedFromCity('munich');
+AirQualityData feedFromCity = 
+    await airQuality.feedFromCity('munich');
 
 /// Via station ID (Gothenburg weather station)
-AirQualityData feedFromStationId = await airQuality.feedFromStationId('7867');
+AirQualityData feedFromStationId = 
+    await airQuality.feedFromStationId('7867');
 
 /// Via Geo Location (Berlin)
-AirQualityData feedFromGeoLocation = await airQuality.feedFromGeoLocation('52.6794', '12.5346');
+AirQualityData feedFromGeoLocation = 
+    await airQuality.feedFromGeoLocation('52.6794', '12.5346');
 
 /// Via IP (depends on service provider)
-AirQualityData fromIP = await airQuality.feedFromIP();
+AirQualityData fromIP = 
+    await airQuality.feedFromIP();
 ```
