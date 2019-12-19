@@ -8,7 +8,6 @@ library air_quality;
  */
 import 'dart:async';
 import 'dart:convert';
-import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
 /// Custom Exception for the plugin,
@@ -47,22 +46,31 @@ AirQualityLevel airQualityIndexToLevel(int index) {
     return AirQualityLevel.HAZARDOUS;
 }
 
-/// A class for storing a weather-query response from OpenWeatherMap.
-/// This includes various measures such as location,
-/// temperature, wind, snow, rain and humidity.
+/// A class for storing Air Quality JSON Data fetched from the API.
 class AirQualityData {
-  String _airQualityIndex, _source, _place, _lat, _lon;
+  String _airQualityIndex, _source, _place, _latitude, _longitude;
   AirQualityLevel _airQualityLevel;
 
   AirQualityData(Map<String, dynamic> airQualityJson) {
     _airQualityIndex = airQualityJson['data']['aqi'].toString();
     _place = airQualityJson['data']['city']['name'].toString();
-    _source =
-        airQualityJson['data']['attributions'][0]['name'].toString();
-    _lat = airQualityJson['data']['city']['geo'][0].toString();
-    _lon = airQualityJson['data']['city']['geo'][1].toString();
+    _source = airQualityJson['data']['attributions'][0]['name'].toString();
+    _latitude = airQualityJson['data']['city']['geo'][0].toString();
+    _longitude = airQualityJson['data']['city']['geo'][1].toString();
     _airQualityLevel = airQualityIndexToLevel(int.parse(_airQualityIndex));
   }
+
+  get airQualityIndex => _airQualityIndex;
+
+  get place => _place;
+
+  get source => _source;
+
+  get latitude => _latitude;
+
+  get longitude => _longitude;
+
+  get airQualityLevel => _airQualityLevel;
 
   String toString() {
     return '''
@@ -70,48 +78,37 @@ class AirQualityData {
     AQI: $_airQualityIndex
     Place Name: $_place
     Source: $_source
-    Location: ($_lat, $_lon)
+    Location: ($_latitude, $_longitude)
     ''';
   }
 }
 
 /// Plugin for fetching weather data in JSON.
 class AirQuality {
-  String _apiKey;
-  Location location;
+  String _token;
+  String _endpoint = 'https://api.waqi.info/feed/';
 
-  AirQuality(this._apiKey);
+  AirQuality(this._token);
 
-  /// Fetch current weather based on geographical coordinates
-  /// Result is JSON.
-  /// For API documentation, see: https://openweathermap.org/current
-  Future<AirQualityData> currentAirQuality(String city) async {
-    try {
-      Map<String, dynamic> airQualityJson = await _requestOpenWeatherAPI(city);
-      return AirQualityData(airQualityJson);
-    } catch (exception) {
-      print(exception);
-    }
-    return null;
-  }
+  /// Returns an [AirQualityData] object given a city name or a weather station ID
+  Future<AirQualityData> feedFromCity(String city) async =>
+      await _airQualityFromUrl(city);
 
-  /// Requests permission for the location
-  Future<bool> manageLocationPermission() async {
-    location = new Location();
-    bool hasPermission = await location.hasPermission();
-    if (hasPermission) {
-      return true;
-    } else {
-      bool permissionWasGranted = await location.requestPermission();
-      return permissionWasGranted;
-    }
-  }
+  /// Returns an [AirQualityData] object given a city name or a weather station ID
+  Future<AirQualityData> feedFromStationId(String stationId) async =>
+      await _airQualityFromUrl('@$stationId');
 
-  Future<Map<String, dynamic>> _requestOpenWeatherAPI(String city) async {
-    /// Build HTTP get url by passing the required parameters
-    String url =
-        'https://api.waqi.info/feed/' + '$city' + '/?token=' + '$_apiKey';
-    print(url);
+  /// Returns an [AirQualityData] object given a latitude and longitude.
+  Future<AirQualityData> feedFromGeoLocation(String lat, String lon) async =>
+      await _airQualityFromUrl('geo:$lat;$lon');
+
+  /// Returns an [AirQualityData] object given using the IP address.
+  Future<AirQualityData> feedFromIP() async => await _airQualityFromUrl('here');
+
+  /// Send API request given a URL
+  Future<Map<String, dynamic>> _requestAirQualityFromURL(String keyword) async {
+    /// Make url using the keyword
+    String url = '$_endpoint/$keyword/?token=$_token';
 
     /// Send HTTP get response with the url
     http.Response response = await http.get(url);
@@ -123,5 +120,19 @@ class AirQuality {
       return jsonBody;
     }
     throw AirQualityAPIException("OpenWeather API Exception: ${response.body}");
+  }
+
+  /// Fetch current weather based on geographical coordinates
+  /// Result is JSON.
+  /// For API documentation, see: https://openweathermap.org/current
+  Future<AirQualityData> _airQualityFromUrl(String url) async {
+    try {
+      Map<String, dynamic> airQualityJson =
+      await _requestAirQualityFromURL(url);
+      return AirQualityData(airQualityJson);
+    } catch (exception) {
+      print(exception);
+    }
+    return null;
   }
 }

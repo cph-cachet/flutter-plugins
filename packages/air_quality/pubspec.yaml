@@ -1,8 +1,9 @@
 name: air_quality
-description: Air quality index
-version: 0.0.1
-author:
-homepage:
+description: Air quality index using the https://waqi.info/ endpoint.
+version: 1.0.2
+author: CACHET Team <cph.cachet@gmail.com>
+homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/air_quality
+
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

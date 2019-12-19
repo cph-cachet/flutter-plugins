@@ -18,7 +18,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String message = 'Unknown';
   String key = '9e538456b2b85c92647d8b65090e29f957638c77';
-  String city = 'copenhagen';
   AirQuality airQuality;
 
   @override
@@ -34,9 +33,29 @@ class _MyAppState extends State<MyApp> {
   }
 
   void sendQuery() async {
-    AirQualityData data = await airQuality.currentAirQuality(city);
+    /// Via city name (Munich)
+    AirQualityData feedFromCity = await airQuality.feedFromCity('munich');
+
+    /// Via station ID (Gothenburg weather station)
+    AirQualityData feedFromStationId =
+        await airQuality.feedFromStationId('7867');
+
+    /// Via Geo Location (Berlin)
+    AirQualityData feedFromGeoLocation =
+        await airQuality.feedFromGeoLocation('52.6794', '12.5346');
+
+    /// Via IP (depends on service provider)
+    AirQualityData fromIP = await airQuality.feedFromIP();
+
+    // Update screen state
     setState(() {
-      message = data.toString();
+      message = feedFromCity.toString() +
+          '\n' +
+          feedFromStationId.toString() +
+          '\n' +
+          feedFromGeoLocation.toString() +
+          '\n' +
+          fromIP.toString();
     });
   }
 
@@ -57,7 +76,8 @@ class _MyAppState extends State<MyApp> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(onPressed: sendQuery, child: Icon(Icons.cloud_download)),
+        floatingActionButton: FloatingActionButton(
+            onPressed: sendQuery, child: Icon(Icons.cloud_download)),
       ),
     );
   }
