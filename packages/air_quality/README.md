@@ -1,27 +1,29 @@
-# air_quality
+# Air Quality Index
 
-Air quality index using the https://waqi.info/ endpoint.
+Collects air quality index from the [World's Air Quality Index](https://waqi.info/) service.
 
-# Permissions
+## Permissions
 No permissions needed.
 
-# Usage
-## Imports
+## Usage
+### Imports
 The location package is also needed for the AirQuality package.
 ```dart
 import 'package:air_quality/air_quality.dart';
 ```
 
-## Initialization
+### Initialization
 An API key is needed in order to perform queries. An API key is obtained here: https://aqicn.org/api/
 
 Example:
+
 ```dart
 String key = 'XXX38456b2b85c92647d8b65090e29f957638c77';
 AirQuality airQuality = new AirQuality(key);
 ```
 
-## Air Quality Feed Examples
+### Air Quality Feed Examples
+
 ```dart
 /// Via city name (Munich)
 AirQualityData feedFromCity = 
