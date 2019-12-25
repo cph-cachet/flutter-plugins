@@ -20,7 +20,14 @@ class AirQualityAPIException implements Exception {
   String toString() => '${this.runtimeType} - $_cause';
 }
 
-enum AirQualityLevel { GOOD, MODERATE, UNHEALTHY_FOR_SENSITIVE_GROUPS, UNHEALTHY, VERY_UNHEALTHY, HAZARDOUS }
+enum AirQualityLevel {
+  GOOD,
+  MODERATE,
+  UNHEALTHY_FOR_SENSITIVE_GROUPS,
+  UNHEALTHY,
+  VERY_UNHEALTHY,
+  HAZARDOUS
+}
 
 AirQualityLevel airQualityIndexToLevel(int index) {
   if (index < 0)
@@ -84,13 +91,16 @@ class AirQuality {
   AirQuality(this._token);
 
   /// Returns an [AirQualityData] object given a city name or a weather station ID
-  Future<AirQualityData> feedFromCity(String city) async => await _airQualityFromUrl(city);
+  Future<AirQualityData> feedFromCity(String city) async =>
+      await _airQualityFromUrl(city);
 
   /// Returns an [AirQualityData] object given a city name or a weather station ID
-  Future<AirQualityData> feedFromStationId(String stationId) async => await _airQualityFromUrl('@$stationId');
+  Future<AirQualityData> feedFromStationId(String stationId) async =>
+      await _airQualityFromUrl('@$stationId');
 
   /// Returns an [AirQualityData] object given a latitude and longitude.
-  Future<AirQualityData> feedFromGeoLocation(String lat, String lon) async => await _airQualityFromUrl('geo:$lat;$lon');
+  Future<AirQualityData> feedFromGeoLocation(String lat, String lon) async =>
+      await _airQualityFromUrl('geo:$lat;$lon');
 
   /// Returns an [AirQualityData] object given using the IP address.
   Future<AirQualityData> feedFromIP() async => await _airQualityFromUrl('here');
@@ -117,7 +127,8 @@ class AirQuality {
   /// For API documentation, see: https://openweathermap.org/current
   Future<AirQualityData> _airQualityFromUrl(String url) async {
     try {
-      Map<String, dynamic> airQualityJson = await _requestAirQualityFromURL(url);
+      Map<String, dynamic> airQualityJson =
+      await _requestAirQualityFromURL(url);
       return AirQualityData(airQualityJson);
     } catch (exception) {
       print(exception);
