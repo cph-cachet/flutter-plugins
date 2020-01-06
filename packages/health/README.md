@@ -1,4 +1,4 @@
-# health
+# Health
 This library combines both GoogleFit and AppleHealthKit. It support most of the values provided.
 
 Supports **iOS** and **Android X**
