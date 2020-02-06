@@ -1,3 +1,6 @@
+## 0.2.1
+* updated Swift implementation to version 5
+
 ## 0.2.0+2
 * update to readme on iOS 
 * added bluetooth permission to `Info.plist`
