@@ -16,7 +16,7 @@ These are the available plugins in this repository.
 | [light](./packages/light) | Track light sensor readings | ✔️ | ❌ |  [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
 | [pedometer](./packages/pedometer) | Track step count |  ✔️ | ✔️ | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
 | [noise_meter](./packages/noise_meter) | Read noise level in Decibel | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |
-| [app_usage](./packages/app_usage) | Track usage of all applications on phone. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/app_usage.svg)](https://pub.dartlang.org/packages/app_usage) |
+| [app_usage](./packages/app_usage) | Track usage of all applications on phone. | ✔️ | ❌  | [![pub package](https://img.shields.io/pub/v/app_usage.svg)](https://pub.dartlang.org/packages/app_usage) |
 | [weather](./packages/weather) | Get current weather, as well as forecasting using the OpenWeatherMap API. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather) |
 | [air_quality](./packages/air_quality) | Get the air quality index using the WAQI API. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/air_quality.svg)](https://pub.dartlang.org/packages/air_quality) |
 | [notifications](./packages/notifications) | Track device notifications. | ✔️ | ❌  | [![pub package](https://img.shields.io/pub/v/notifications.svg)](https://pub.dartlang.org/packages/notifications) |
