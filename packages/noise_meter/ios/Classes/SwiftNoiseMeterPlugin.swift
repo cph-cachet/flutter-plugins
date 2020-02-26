@@ -54,8 +54,6 @@ public class SwiftNoiseMeterPlugin: NSObject, FlutterPlugin, FlutterStreamHandle
             let samples = buffer.floatChannelData?[0]
             // audio callback, samples in samples[0]...samples[buffer.frameLength-1]
             let arr = Array(UnsafeBufferPointer(start: samples, count: Int(buffer.frameLength)))
-            // Send values to flutter
-            print("Swift: \(arr)")
             self.emitValues(values: arr)
         }
         
