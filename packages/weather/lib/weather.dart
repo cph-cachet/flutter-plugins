@@ -6,13 +6,15 @@
  */
 import 'dart:async';
 import 'dart:convert';
-import 'package:location/location.dart';
+
 import 'package:http/http.dart' as http;
+import 'package:location/location.dart';
 
 /// Custom Exception for the plugin,
 /// Thrown whenever sufficient permissions weren't granted
 class LocationPermissionException implements Exception {
   String _cause;
+
   LocationPermissionException(this._cause);
 
   String toString() => '${this.runtimeType} - $_cause';
@@ -22,6 +24,7 @@ class LocationPermissionException implements Exception {
 /// Thrown whenever the API responds with an error and body could not be parsed.
 class OpenWeatherAPIException implements Exception {
   String _cause;
+
   OpenWeatherAPIException(this._cause);
 
   String toString() => '${this.runtimeType} - $_cause';
@@ -67,6 +70,16 @@ String _unpackString(Map<String, dynamic> M, String k) {
   return "";
 }
 
+/// Safely unpack an integer value from a [Map] object.
+int _unpackInteger(Map<String, dynamic> M, String k) {
+  if (M != null) {
+    if (M.containsKey(k)) {
+      return M[k];
+    }
+  }
+  return 0;
+}
+
 /// Safely unpacks a unix timestamp from a [Map] object,
 /// i.e. an integer value of milliseconds and converts this to a [DateTime] object.
 DateTime _unpackDate(Map<String, dynamic> M, String k) {
@@ -90,8 +103,9 @@ Temperature _unpackTemperature(Map<String, dynamic> M, String k) {
 /// This includes various measures such as location,
 /// temperature, wind, snow, rain and humidity.
 class Weather {
+  int _weatherId;
   String _country, _areaName, _weatherMain, _weatherDescription, _weatherIcon;
-  Temperature _temperature, _tempMin, _tempMax;
+  Temperature _temperature, _tempMin, _tempMax, _tempFeelsLike;
   DateTime _date, _sunrise, _sunset;
   double _latitude,
       _longitude,
@@ -122,6 +136,7 @@ class Weather {
     _sunrise = _unpackDate(sys, 'sunrise');
     _sunset = _unpackDate(sys, 'sunset');
 
+    _weatherId = _unpackInteger(weather, 'id');
     _weatherMain = _unpackString(weather, 'main');
     _weatherDescription = _unpackString(weather, 'description');
     _weatherIcon = _unpackString(weather, 'icon');
@@ -129,6 +144,8 @@ class Weather {
     _temperature = _unpackTemperature(main, 'temp');
     _tempMin = _unpackTemperature(main, 'temp_min');
     _tempMax = _unpackTemperature(main, 'temp_max');
+    _tempFeelsLike = _unpackTemperature(main, 'feels_like');
+
     _humidity = _unpackDouble(main, 'humidity');
     _pressure = _unpackDouble(main, 'pressure');
 
@@ -151,8 +168,8 @@ class Weather {
     return '''
     Place Name: $_areaName ($_country)
     Date: $_date
-    Weather: $_weatherMain, $_weatherDescription
-    Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax
+    Weather: $_weatherMain, $_weatherDescription ($_weatherId)
+    Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax,  Temp (feelsLike): $_tempFeelsLike
     Sunrise: $_sunrise, Sunset: $_sunset
     ''';
   }
@@ -163,8 +180,11 @@ class Weather {
   /// A brief description of the weather
   String get weatherMain => _weatherMain;
 
-  /// A brief description of the weather
+  /// Icon depicting current weather
   String get weatherIcon => _weatherIcon;
+
+  /// A unique weather id
+  int get weatherId => _weatherId;
 
   /// The level of cloudiness in Okta (0-9 scale)
   double get cloudiness => _cloudiness;
@@ -183,6 +203,9 @@ class Weather {
 
   /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
   Temperature get temperature => _temperature;
+
+  /// Feels like [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLike => _tempFeelsLike;
 
   /// Pressure in Pascal
   double get pressure => _pressure;
@@ -238,7 +261,8 @@ class WeatherStation {
   /// For API documentation, see: https://openweathermap.org/current
   Future<Weather> currentWeather() async {
     try {
-      Map<String, dynamic> currentWeather = await _requestOpenWeatherAPI(WEATHER);
+      Map<String, dynamic> currentWeather =
+          await _requestOpenWeatherAPI(WEATHER);
       return Weather(currentWeather);
     } catch (exception) {
       print(exception);
@@ -252,7 +276,8 @@ class WeatherStation {
   Future<List<Weather>> fiveDayForecast() async {
     List<Weather> forecasts = new List<Weather>();
     try {
-      Map<String, dynamic> jsonForecasts = await _requestOpenWeatherAPI(FORECAST);
+      Map<String, dynamic> jsonForecasts =
+          await _requestOpenWeatherAPI(FORECAST);
       List<dynamic> forecastsJson = jsonForecasts['list'];
       forecasts = forecastsJson.map((w) => Weather(w)).toList();
     } catch (exception) {
@@ -264,12 +289,12 @@ class WeatherStation {
   /// Requests permission for the location
   Future<bool> manageLocationPermission() async {
     location = new Location();
-    bool hasPermission = await location.hasPermission();
-    if (hasPermission) {
+    var hasPermission = await location.hasPermission();
+    if (hasPermission == PermissionStatus.GRANTED) {
       return true;
     } else {
-      bool permissionWasGranted = await location.requestPermission();
-      return permissionWasGranted;
+      var permissionWasGranted = await location.requestPermission();
+      return permissionWasGranted == PermissionStatus.GRANTED;
     }
   }
 
@@ -300,11 +325,13 @@ class WeatherStation {
       /// or some other unspecified error could occur.
       /// The concrete error should be clear from the HTTP response body.
       else {
-        throw OpenWeatherAPIException("OpenWeather API Exception: ${response.body}");
+        throw OpenWeatherAPIException(
+            "OpenWeather API Exception: ${response.body}");
       }
     }
 
     /// If permission to track location is not yet given.
-    throw LocationPermissionException("PermissionLocation permission not granted!");
+    throw LocationPermissionException(
+        "PermissionLocation permission not granted!");
   }
 }
