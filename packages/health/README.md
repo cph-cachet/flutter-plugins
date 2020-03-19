@@ -52,17 +52,20 @@ Get your keystore SHA1 fingerprint:
 
 Example output:
 ```
-Owner: C=US, O=Android, CN=Android Debug
-Issuer: C=US, O=Android, CN=Android Debug
-Serial number: 1
-Valid from: Thu Nov 08 16:37:20 CET 2018 until: Sat Oct 31 16:37:20 CET 2048
+Alias name: androiddebugkey
+Creation date: Jan 01, 2013
+Entry type: PrivateKeyEntry
+Certificate chain length: 1
+Certificate[1]:
+Owner: CN=Android Debug, O=Android, C=US
+Issuer: CN=Android Debug, O=Android, C=US
+Serial number: 4aa9b300
+Valid from: Mon Jan 01 08:04:04 UTC 2013 until: Mon Jan 01 18:04:04 PST 2033
 Certificate fingerprints:
-     MD5:  34:0E:6A:70:70:D1:23:DA:A0:3F:4D:35:AB:16:7D:08
-     SHA1: AA:BF:D7:82:33:24:BD:BF:9E:FF:DB:21:6F:20:71:3D:35:99:13:76
-     SHA256: 73:B2:16:1E:0A:1F:B9:A2:4C:4F:4B:F0:F1:AB:72:AC:77:17:69:1C:ED:2E:18:BD:1D:E3:1E:A7:04:BB:8E:2A
-Signature algorithm name: SHA1withRSA
-Subject Public Key Algorithm: 1024-bit RSA key
-Version: 1 
+     MD5:  AE:9F:95:D0:A6:86:89:BC:A8:70:BA:34:FF:6A:AC:F9
+     SHA1: BB:0D:AC:74:D3:21:E1:43:07:71:9B:62:90:AF:A1:66:6E:44:5D:75
+     Signature algorithm name: SHA1withRSA
+     Version: 3
 ```
 
 Follow the instructions at https://console.developers.google.com/flows/enableapi?apiid=fitness for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
