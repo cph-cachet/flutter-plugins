@@ -28,7 +28,7 @@ Supports **iOS** and **Android X**
 | `IRREGULAR_HEART_RATE_EVENT` | yes              |                      | Requires Apple Watch |
 
 ## Setup
-### Apple HealthKit
+### Apple HealthKit (iOS)
 Step 1: Append the Info.plist with the following 2 entries 
 ```xml
 <key>NSHealthShareUsageDescription</key>
@@ -39,8 +39,35 @@ Step 1: Append the Info.plist with the following 2 entries
 
 Step 2: Enable "HealthKit" inside the "Capabilities" tab.
 
-### Google Fit
-Follow [this setup](https://developers.google.com/fit/android/get-started). 
+### Google Fit (Android)
+Follow the guide at https://developers.google.com/fit/android/get-api-key
+
+Below is an example of following the guide:
+
+Change directory to your key-store directory (MacOS):
+```cd ~/.android/```
+
+Get your keystore SHA1 fingerprint:
+```keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android```
+
+Example output:
+```
+Owner: C=US, O=Android, CN=Android Debug
+Issuer: C=US, O=Android, CN=Android Debug
+Serial number: 1
+Valid from: Thu Nov 08 16:37:20 CET 2018 until: Sat Oct 31 16:37:20 CET 2048
+Certificate fingerprints:
+     MD5:  34:0E:6A:70:70:D1:23:DA:A0:3F:4D:35:AB:16:7D:08
+     SHA1: AA:BF:D7:82:33:24:BD:BF:9E:FF:DB:21:6F:20:71:3D:35:99:13:76
+     SHA256: 73:B2:16:1E:0A:1F:B9:A2:4C:4F:4B:F0:F1:AB:72:AC:77:17:69:1C:ED:2E:18:BD:1D:E3:1E:A7:04:BB:8E:2A
+Signature algorithm name: SHA1withRSA
+Subject Public Key Algorithm: 1024-bit RSA key
+Version: 1 
+```
+
+Follow the instructions at https://console.developers.google.com/flows/enableapi?apiid=fitness for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
+
+The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`
 
 ### Android X
 Replace the content of the `android/gradle.properties` file with the following lines:
