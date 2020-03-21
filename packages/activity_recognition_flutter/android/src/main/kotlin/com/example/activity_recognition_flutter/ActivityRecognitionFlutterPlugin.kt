@@ -1,45 +1,49 @@
 package com.example.activity_recognition_flutter
 
+import android.util.Log
 import androidx.annotation.NonNull;
+import com.example.activity_recognition_flutter.activity.ActivityClient
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.*
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
+/*
+ * Copyright (c) 2020. Thomas Nilsson
+ * Licensed under Apache License v2.0
+ */
 /** ActivityRecognitionFlutterPlugin */
-public class ActivityRecognitionFlutterPlugin: FlutterPlugin, MethodCallHandler {
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    val channel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "activity_recognition_flutter")
-    channel.setMethodCallHandler(ActivityRecognitionFlutterPlugin());
-  }
+class ActivityRecognitionFlutterPlugin : FlutterPlugin, ActivityAware {
 
-  // This static function is optional and equivalent to onAttachedToEngine. It supports the old
-  // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
-  // plugin registration via this function while apps migrate to use the new Android APIs
-  // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
-  //
-  // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
-  // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
-  // depending on the user's project. onAttachedToEngine or registerWith must both be defined
-  // in the same class.
-  companion object {
-    @JvmStatic
-    fun registerWith(registrar: Registrar) {
-      val channel = MethodChannel(registrar.messenger(), "activity_recognition_flutter")
-      channel.setMethodCallHandler(ActivityRecognitionFlutterPlugin())
+    lateinit var activityClient: ActivityClient
+    lateinit var activityChannel: ActivityChannel
+    lateinit var messenger: BinaryMessenger
+
+    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        Log.d("Kotlin", "onAttachedToEngine")
+        messenger = flutterPluginBinding.getFlutterEngine().getDartExecutor()
     }
-  }
 
-  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-    if (call.method == "getPlatformVersion") {
-      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-    } else {
-      result.notImplemented()
+    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     }
-  }
 
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-  }
+    override fun onDetachedFromActivity() {
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        Log.d("Kotlin", "onAttachedToActivity")
+        activityClient = ActivityClient(binding.activity)
+        activityChannel = ActivityChannel(activityClient)
+        activityChannel.register(messenger)
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+    }
+
 }
