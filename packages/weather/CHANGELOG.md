@@ -1,3 +1,7 @@
+## 0.9.7
+* add possibility to set a custom location for a WeatherStation
+* add possibility to get weather for a city by a query
+
 ## 0.9.6
 * upgrade to using location plugin v. 2.5.4
 
