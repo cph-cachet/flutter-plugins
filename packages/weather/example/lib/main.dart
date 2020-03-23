@@ -20,6 +20,7 @@ class _MyAppState extends State<MyApp> {
   String _res = 'Unknown';
   String key = '12b6e28582eb9298577c734a31ba9f4f';
   WeatherStation ws;
+  String _errMessage;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _MyAppState extends State<MyApp> {
   void queryForecast() async {
     List<Weather> f = await ws.fiveDayForecast();
     setState(() {
+      _errMessage = null;
       _res = f.toString();
     });
   }
@@ -43,6 +45,7 @@ class _MyAppState extends State<MyApp> {
   void queryWeather() async {
     Weather w = await ws.currentWeather();
     setState(() {
+      _errMessage = null;
       _res = w.toString();
     });
   }
@@ -60,6 +63,19 @@ class _MyAppState extends State<MyApp> {
     queryWeather();
   }
 
+  void getLocationByQuery(String q) async {
+    ws.currentWeather(q: q).then((Weather w) {
+      setState(() {
+        _errMessage = null;
+        _res = w.toString();
+      });
+    }).catchError((err) {
+      setState(() {
+        _errMessage = err.response['message'];
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -71,6 +87,22 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Padding(
+                padding: EdgeInsets.all(16.0),
+                child: TextField(
+                  maxLines: 1,
+                  onSubmitted: (String input) {
+                    getLocationByQuery(input);
+                  },
+                  decoration: InputDecoration(
+                    errorText: _errMessage,
+                    helperText: "Search for a City",
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(20.0),
+              ),
               Text(
                 _res,
               ),

@@ -22,7 +22,8 @@ class LocationPermissionException implements Exception {
 /// Thrown whenever the API responds with an error and body could not be parsed.
 class OpenWeatherAPIException implements Exception {
   String _cause;
-  OpenWeatherAPIException(this._cause);
+  Map<String, dynamic> response;
+  OpenWeatherAPIException(this._cause, {this.response});
 
   String toString() => '${this.runtimeType} - $_cause';
 }
@@ -235,31 +236,34 @@ class WeatherStation {
   WeatherStation(this._apiKey, {this.locationData});
 
   /// Fetch current weather based on geographical coordinates
+  /// Or if a Query is provided by this Query
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
-  Future<Weather> currentWeather() async {
+  Future<Weather> currentWeather({String q}) async {
     try {
       Map<String, dynamic> currentWeather =
-          await _requestOpenWeatherAPI(WEATHER);
+          await _requestOpenWeatherAPI(WEATHER, q: q);
       return Weather(currentWeather);
     } catch (exception) {
       print(exception);
+      return Future.error(exception);
     }
-    return null;
   }
 
   /// Fetch current weather based on geographical coordinates.
+  /// Or if a Query is provided by this Query
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/forecast5
-  Future<List<Weather>> fiveDayForecast() async {
+  Future<List<Weather>> fiveDayForecast({String q}) async {
     List<Weather> forecasts = new List<Weather>();
     try {
       Map<String, dynamic> jsonForecasts =
-          await _requestOpenWeatherAPI(FORECAST);
+          await _requestOpenWeatherAPI(FORECAST, q: q);
       List<dynamic> forecastsJson = jsonForecasts['list'];
       forecasts = forecastsJson.map((w) => Weather(w)).toList();
     } catch (exception) {
       print(exception);
+      return Future.error(exception);
     }
     return forecasts;
   }
@@ -274,22 +278,34 @@ class WeatherStation {
     return (status == PermissionStatus.GRANTED);
   }
 
-  Future<Map<String, dynamic>> _requestOpenWeatherAPI(String tag) async {
+  Future<Map<String, dynamic>> _requestOpenWeatherAPI(
+    String tag, {
+    String q,
+  }) async {
     bool permissionOK = await manageLocationPermission();
 
     /// Check if device is allowed to get location
-    if (permissionOK || locationData != null) {
-      /// Request current location if location is null
-      if (locationData == null) {
-        locationData = await location.getLocation();
+    if (permissionOK || locationData != null || q != null) {
+      /// Build HTTP get url
+      String url = 'http://api.openweathermap.org/data/2.5/' + '$tag?';
+
+      if (q != null) {
+        /// Add search query to url
+        url = url + 'q=$q&';
+      } else {
+        /// Request current location if location is null
+        if (locationData == null) {
+          locationData = await location.getLocation();
+        }
+
+        /// add location to url
+        url = url +
+            'lat=${locationData.latitude}&' +
+            'lon=${locationData.longitude}&';
       }
 
-      /// Build HTTP get url by passing the required parameters
-      String url = 'http://api.openweathermap.org/data/2.5/' +
-          '$tag?' +
-          'lat=${locationData.latitude}&' +
-          'lon=${locationData.longitude}&' +
-          'appid=$_apiKey';
+      /// add appid to url
+      url = url + 'appid=$_apiKey';
 
       /// Send HTTP get response with the url
       http.Response response = await http.get(url);
@@ -306,7 +322,9 @@ class WeatherStation {
       /// The concrete error should be clear from the HTTP response body.
       else {
         throw OpenWeatherAPIException(
-            "OpenWeather API Exception: ${response.body}");
+          "OpenWeather API Exception: ${response.body}",
+          response: jsonDecode(response.body),
+        );
       }
     }
 
