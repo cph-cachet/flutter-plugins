@@ -42,6 +42,8 @@ GeneratedPluginRegistrant.m
 GeneratedPluginRegistrant.java
 build/
 .flutter-plugins
+**/.flutter-plugins-dependencies
+**/flutter_export_environment.sh
 
 ### Eclipse Patch ###
 # Legacy Eclipse project files
