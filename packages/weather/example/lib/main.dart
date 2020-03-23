@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:weather/weather.dart';
+import 'package:location/location.dart';
 
 void main() => runApp(MyApp());
 
@@ -46,6 +47,19 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void resetLocation() {
+    ws.locationData = null;
+    queryWeather();
+  }
+
+  void setLocation() {
+    ws.locationData = LocationData.fromMap({
+      'latitude': 48.573509,
+      'longitude': 13.463970,
+    });
+    queryWeather();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -63,7 +77,22 @@ class _MyAppState extends State<MyApp> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(onPressed: queryWeather, child: Icon(Icons.cloud_download)),
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            FloatingActionButton(
+              onPressed: setLocation,
+              child: Icon(Icons.location_on),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+            ),
+            FloatingActionButton(
+              onPressed: resetLocation,
+              child: Icon(Icons.cloud_download),
+            ),
+          ],
+        ),
       ),
     );
   }

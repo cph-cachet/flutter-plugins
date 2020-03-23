@@ -230,15 +230,17 @@ class WeatherStation {
   static const String FORECAST = 'forecast';
   static const String WEATHER = 'weather';
   Location location;
+  LocationData locationData;
 
-  WeatherStation(this._apiKey);
+  WeatherStation(this._apiKey, {this.locationData});
 
   /// Fetch current weather based on geographical coordinates
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
   Future<Weather> currentWeather() async {
     try {
-      Map<String, dynamic> currentWeather = await _requestOpenWeatherAPI(WEATHER);
+      Map<String, dynamic> currentWeather =
+          await _requestOpenWeatherAPI(WEATHER);
       return Weather(currentWeather);
     } catch (exception) {
       print(exception);
@@ -252,7 +254,8 @@ class WeatherStation {
   Future<List<Weather>> fiveDayForecast() async {
     List<Weather> forecasts = new List<Weather>();
     try {
-      Map<String, dynamic> jsonForecasts = await _requestOpenWeatherAPI(FORECAST);
+      Map<String, dynamic> jsonForecasts =
+          await _requestOpenWeatherAPI(FORECAST);
       List<dynamic> forecastsJson = jsonForecasts['list'];
       forecasts = forecastsJson.map((w) => Weather(w)).toList();
     } catch (exception) {
@@ -265,7 +268,8 @@ class WeatherStation {
   Future<bool> manageLocationPermission() async {
     location = new Location();
     PermissionStatus status = await location.hasPermission();
-    if (status != PermissionStatus.GRANTED) status = await location.requestPermission();
+    if (status != PermissionStatus.GRANTED)
+      status = await location.requestPermission();
 
     return (status == PermissionStatus.GRANTED);
   }
@@ -274,9 +278,13 @@ class WeatherStation {
     bool permissionOK = await manageLocationPermission();
 
     /// Check if device is allowed to get location
-    if (permissionOK) {
+    if (permissionOK || locationData != null) {
+      /// Request current location if location is null
+      if (locationData == null) {
+        locationData = await location.getLocation();
+      }
+
       /// Build HTTP get url by passing the required parameters
-      LocationData locationData = await location.getLocation();
       String url = 'http://api.openweathermap.org/data/2.5/' +
           '$tag?' +
           'lat=${locationData.latitude}&' +
@@ -297,11 +305,13 @@ class WeatherStation {
       /// or some other unspecified error could occur.
       /// The concrete error should be clear from the HTTP response body.
       else {
-        throw OpenWeatherAPIException("OpenWeather API Exception: ${response.body}");
+        throw OpenWeatherAPIException(
+            "OpenWeather API Exception: ${response.body}");
       }
     }
 
     /// If permission to track location is not yet given.
-    throw LocationPermissionException("PermissionLocation permission not granted!");
+    throw LocationPermissionException(
+        "PermissionLocation permission not granted!");
   }
 }
