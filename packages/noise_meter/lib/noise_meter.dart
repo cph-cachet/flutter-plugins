@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:core';
 import 'package:flutter/services.dart';
-import 'dart:io' show Platform;
+import 'dart:math';
 
 /// Custom Exception for the plugin,
 /// thrown whenever the plugin is used on platforms other than Android
 class NoiseMeterException implements Exception {
   String _cause;
+
   NoiseMeterException(this._cause);
 
   @override
@@ -15,47 +16,55 @@ class NoiseMeterException implements Exception {
   }
 }
 
-/** A [NoiseEvent] holds a decibel value for a particular noise level reading.**/
-class NoiseEvent {
-  NoiseEvent(this._decibel);
+/** A [NoiseReading] holds a decibel value for a particular noise level reading.**/
+class NoiseReading {
 
-  num _decibel;
+  double _db = 0;
 
-  int get decibel => _decibel.round();
+  NoiseReading(List<dynamic> volumes) {
+    /// Sorted volumes such that the last element is max amplitude
+    volumes.sort();
+
+    /// Compute average peak-amplitude using the min and max amplitude
+    double min = volumes.first + 0.0;
+    double max = volumes.last + 0.0;
+    double avg = 0.5 * (min.abs() + max.abs());
+
+    /// Max amplitude is 2^15
+    double maxAmp = pow(2, 15) + 0.0;
+
+    /// Calculate decibel values as 20 * log10(x)
+    _db = 20 * log(maxAmp * avg) * log10e;
+  }
+
+  double get db => _db;
 
   @override
   String toString() {
-    return "[Decibel Reading: $_decibel dB]";
+    return "[VolumeReading: $db dB]";
   }
 }
 
-NoiseEvent _noiseEvent(num decibel) {
-  return new NoiseEvent(decibel);
+NoiseReading _noiseReading(List<dynamic> volumes) {
+  return new NoiseReading(volumes);
 }
 
-/** A [Noise] object is reponsible for connecting to to the native environment.
+/** A [NoiseMeter] object is reponsible for connecting to to the native environment.
  * Uses a frequency (in milliseconds) for controlling how frequently readings
  * are received from the native environment**/
 
-class Noise {
-  Noise(this._frequency);
-
+class NoiseMeter {
   static const EventChannel _noiseEventChannel =
-  EventChannel('noiseLevel.eventChannel');
+      EventChannel('noise_meter.eventChannel');
 
-  int _frequency;
-  Stream<NoiseEvent> _noiseStream;
+  Stream<NoiseReading> _noiseStream;
 
-  Stream<NoiseEvent> get noiseStream {
-    if (Platform.isAndroid) {
-      Map<String, dynamic> args = {'frequency': '$_frequency'};
-      if (_noiseStream == null) {
-        _noiseStream = _noiseEventChannel
-            .receiveBroadcastStream(args)
-            .map((db) => _noiseEvent(db));
-      }
-      return _noiseStream;
+  Stream<NoiseReading> get noiseStream {
+    if (_noiseStream == null) {
+      _noiseStream = _noiseEventChannel
+          .receiveBroadcastStream()
+          .map((volumes) => _noiseReading(volumes));
     }
-    throw NoiseMeterException('Noise Meter currently only implemented for Android!');
+    return _noiseStream;
   }
 }

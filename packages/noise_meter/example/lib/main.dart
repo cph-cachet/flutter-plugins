@@ -1,6 +1,7 @@
 import 'package:noise_meter/noise_meter.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:math';
 
 void main() {
   runApp(new MyApp());
@@ -13,28 +14,28 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isRecording = false;
-  StreamSubscription<NoiseEvent> _noiseSubscription;
-  String _noiseLevel;
-  Noise _noise;
+  StreamSubscription<NoiseReading> _noiseSubscription;
+  NoiseMeter _noiseMeter;
 
   @override
   void initState() {
     super.initState();
   }
 
-  void onData(NoiseEvent e) {
+  void onData(NoiseReading noiseReading) {
     this.setState(() {
-      this._noiseLevel = "${e.decibel} dB";
       if (!this._isRecording) {
         this._isRecording = true;
       }
     });
+    print(noiseReading.toString());
   }
 
   void startRecorder() async {
+    print('***NEW RECORDING***');
     try {
-      _noise = new Noise(500); // New observation every 500 ms
-      _noiseSubscription = _noise.noiseStream.listen(onData);
+      _noiseMeter = new NoiseMeter();
+      _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
     } on NoiseMeterException catch (exception) {
       print(exception);
     }
@@ -54,6 +55,11 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  void printWrapped(String text) {
+    final pattern = new RegExp('.{1,800}'); // 800 is the size of each chunk
+    pattern.allMatches(text).forEach((match) => print(match.group(0)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -69,7 +75,7 @@ class _MyAppState extends State<MyApp> {
                 "Noise Level",
               ),
               Text(
-                _noiseLevel == null ? 'unknown' : '$_noiseLevel',
+                'MIC ${(_isRecording ? 'ON' : 'OFF')} \n(Check Flutter log for data)',
                 style: Theme.of(context).textTheme.display1,
               ),
             ],

@@ -15,6 +15,7 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide
@@ -106,7 +107,8 @@
                 android:screenOrientation="portrait">
         </activity>
 
-        <service android:name="de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService" />
+        <service android:enabled="true" android:name="de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService" android:exported="false"
+                 android:stopWithTask="false" />
 
         <receiver android:name="de.kn.uni.smartact.movisenslibrary.reboot.RebootReceiver">
             <intent-filter>
