@@ -282,7 +282,9 @@ class WeatherStation {
     String tag, {
     String q,
   }) async {
-    bool permissionOK = await manageLocationPermission();
+    bool permissionOK = false;
+
+    if (q == null) permissionOK = await manageLocationPermission();
 
     /// Check if device is allowed to get location
     if (permissionOK || locationData != null || q != null) {
