@@ -1,3 +1,6 @@
+## 0.9.6
+* upgrade to using location plugin v. 2.5.4
+
 ## 0.9.5
 * better handling of requesting location permissions
 
