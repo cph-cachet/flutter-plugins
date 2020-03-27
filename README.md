@@ -23,6 +23,7 @@ These are the available plugins in this repository.
 | [movisens_flutter](./packages/movisens_flutter) | Movisens sensor communication. | ✔️ | ❌  | [![pub package](https://img.shields.io/pub/v/movisens_flutter.svg)](https://pub.dartlang.org/packages/movisens_flutter) |
 | [esense_flutter](./packages/esense_flutter) | eSense ear sensor plugin. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/esense_flutter.svg)](https://pub.dartlang.org/packages/esense_flutter) |
 | [health](./packages/health) | Apple HealthKit and Google Fit interface plugin. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/health.svg)](https://pub.dartlang.org/packages/health) |
+| [activity_recognition](./packages/activity_recognition_flutter) | Activity Recognition | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/activity_recognition_flutter.svg)](https://pub.dartlang.org/packages/activity_recognition_flutter) |
 
 ## Issues
 
