@@ -24,6 +24,7 @@ These are the available plugins in this repository.
 | [esense_flutter](./packages/esense_flutter) | eSense ear sensor plugin. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/esense_flutter.svg)](https://pub.dartlang.org/packages/esense_flutter) |
 | [health](./packages/health) | Apple HealthKit and Google Fit interface plugin. | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/health.svg)](https://pub.dartlang.org/packages/health) |
 | [activity_recognition](./packages/activity_recognition_flutter) | Activity Recognition | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/activity_recognition_flutter.svg)](https://pub.dartlang.org/packages/activity_recognition_flutter) |
+| [audio_streamer](./packages/audio_streamer) | Stream audio as PCM from mic| ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/audio_streamer.svg)](https://pub.dartlang.org/packages/audio_streamer) |
 
 ## Issues
 
