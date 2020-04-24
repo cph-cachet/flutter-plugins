@@ -239,6 +239,38 @@ class Health {
     return HealthDataPoint.fromJson(Map<String, dynamic>.from(dataPoint));
   }
 
+  static Future<List> getAllSubscriptions() async {
+
+    try {
+    List response = await _channel.invokeMethod('getAllSubscriptions');
+
+    return response;
+    } catch (e) {
+    print("Subscriber ALL Meathod Call Exception :" + e.toString());
+
+    }
+  }
+
+
+  /// RecordingAPI Subscription
+  static Future<bool> subscribeRecording(HealthDataType dataType) async {
+    if (!isDataTypeAvailable(dataType)) {
+      throw new HealthDataNotAvailableException(dataType, _platformType);
+    }
+    Map<String, dynamic> args = {
+      'dataTypeKey': enumToString(dataType),
+    };
+    try {
+      var status = await _channel.invokeMethod(
+          'subscribeRecording', args);
+      return true;
+    } catch (e) {
+      print("Subscriber Meathod Call Exception :" + e.toString());
+      return false;
+    }
+  }
+
+
   /// Main function for fetching health data
   static Future<List<HealthDataPoint>> getHealthDataFromType(
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {

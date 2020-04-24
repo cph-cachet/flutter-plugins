@@ -129,6 +129,24 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         }
     }
 
+    private fun setDataType(type: DataType?): String {
+        return when (type) {
+            DataType.TYPE_BODY_FAT_PERCENTAGE -> BODY_FAT_PERCENTAGE
+            DataType.TYPE_HEIGHT -> HEIGHT
+            DataType.TYPE_WEIGHT -> WEIGHT
+            DataType.TYPE_STEP_COUNT_DELTA -> STEPS
+            DataType.TYPE_CALORIES_EXPENDED -> ACTIVE_ENERGY_BURNED
+            DataType.TYPE_HEART_RATE_BPM -> HEART_RATE
+            HealthDataTypes.TYPE_BODY_TEMPERATURE -> BODY_TEMPERATURE
+            HealthDataTypes.TYPE_BLOOD_PRESSURE -> BLOOD_PRESSURE_SYSTOLIC
+            HealthDataTypes.TYPE_BLOOD_PRESSURE -> BLOOD_PRESSURE_DIASTOLIC
+            HealthDataTypes.TYPE_OXYGEN_SATURATION -> BLOOD_OXYGEN
+            HealthDataTypes.TYPE_BLOOD_GLUCOSE -> BLOOD_GLUCOSE
+            else -> "STEP_COUNT_DELTA"
+        }
+    }
+
+
     private fun getUnit(type: String): Field {
         return when (type) {
             BODY_FAT_PERCENTAGE -> Field.FIELD_PERCENTAGE
@@ -219,11 +237,60 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
 
     }
 
+
+    private fun getAllSubscriptions(call: MethodCall, result: Result) {
+
+        val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
+        try {
+            val response = Fitness.getRecordingClient(activity.applicationContext, googleSignInAccount).listSubscriptions()
+
+            thread {
+                val subscriptions = Tasks.await(response)
+
+                val subscriptionsArray = subscriptions.mapIndexed { _, subscription ->
+                    return@mapIndexed hashMapOf(
+                            "dataType" to setDataType(subscription.getDataType()),
+                            "dataSource" to subscription.getDataSource()
+                    )
+
+                }
+
+                activity.runOnUiThread { result.success(subscriptionsArray) }
+            }
+
+        } catch (e: SecurityException) {
+            Log.e("All Subscription Exception : ", e.toString())
+
+            activity.runOnUiThread { result.success(false) }
+        }
+
+    }
+
+    private fun subscribeRecording(call: MethodCall, result: Result) {
+
+        val type = call.argument<String>("dataTypeKey")!!
+        val dataType = getDataType(type)
+        val unit = getUnit(type)
+
+
+        val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
+        try {
+            val response = Fitness.getRecordingClient(activity.applicationContext, googleSignInAccount).subscribe(dataType)
+            activity.runOnUiThread { result.success(true) }
+        } catch (e: SecurityException) {
+            Log.e("Subscription Exception : ", e.toString())
+            activity.runOnUiThread { result.success(false) }
+        }
+    }
+
+
     /// Handle calls from the MethodChannel
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
+            "subscribeRecording" -> subscribeRecording(call, result)
+            "getAllSubscriptions" -> getAllSubscriptions(call, result)
             else -> result.notImplemented()
         }
     }
