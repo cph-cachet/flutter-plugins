@@ -130,6 +130,20 @@ Not all data types are available on both platforms. In order to check whether or
 ```dart
 bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
 ```
+### Support for RecordingClient
+This can be used to record user data in the background.
+
+To subscribe to a datatype
+```
+bool status =  await Health.subscribeRecording(type);
+```
+
+To list all Subscribed Data
+```
+List lst =  await Health.getAllSubscriptions();
+```
+The list contains maps which consist of dataType and dataSource. In case an information is not available, it is set to null.
+
 
 ### Fetch data for a given type
 Given the list of data types (`types`) as well as a `startData` and an `endDate`, we can now fetch all the data, for each data type with a call to the `Health.getHealthDataFromType` function.
@@ -192,6 +206,14 @@ void _getHealthDataPoints() async {
         for (var healthData in healthDataList) {
             print(healthData);
         }
+        
+        List subscriptions =  await Health.getAllSubscriptions();
+        for (var subscription in subscriptions) {
+            print(subscription);
+        }
+        
+        bool status =  await Health.subscribeRecording(HealthDataType.WEIGHT);
+        
     });
 }
 ```
