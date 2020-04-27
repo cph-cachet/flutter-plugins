@@ -44,6 +44,7 @@ class Weather {
       _rainLast3Hours,
       _snowLastHour,
       _snowLast3Hours;
+  int _weatherConditionCode;
 
   Weather(Map<String, dynamic> weatherData) {
     Map<String, dynamic> main = weatherData['main'];
@@ -65,6 +66,7 @@ class Weather {
     _weatherMain = _unpackString(weather, 'main');
     _weatherDescription = _unpackString(weather, 'description');
     _weatherIcon = _unpackString(weather, 'icon');
+    _weatherConditionCode = _unpackInt(weather, 'id');
 
     _temperature = _unpackTemperature(main, 'temp');
     _tempMin = _unpackTemperature(main, 'temp_min');
@@ -105,6 +107,9 @@ class Weather {
 
   /// A brief description of the weather
   String get weatherIcon => _weatherIcon;
+
+  /// Weather condition codes
+  int get weatherConditionCode => _weatherConditionCode;
 
   /// The level of cloudiness in Okta (0-9 scale)
   double get cloudiness => _cloudiness;
