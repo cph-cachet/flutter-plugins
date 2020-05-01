@@ -1,5 +1,5 @@
-## 0.1.1
-* fix of issue [#22](https://github.com/cph-cachet/flutter-plugins/issues/22) (UIThread exception in Android)
+## 1.1.0
+* Moved native source code to the AudioStreamer plugin (https://pub.dev/packages/audio_streamer).
 
-## 0.1.0
-* Initial release.
+## 1.0.0
+* Able to stream NoiseReadings on iOS and Android.

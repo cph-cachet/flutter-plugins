@@ -1,6 +1,6 @@
 # noise_meter
 
-[![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter)
+A noise meter package for iOS and Android.
 
 ## Install
 Add ```noise_meter``` as a dependency in  `pubspec.yaml`.
@@ -18,24 +18,23 @@ On *iOS* enable the following:
 
 
 ## Usage
-### Initalization
+### Initialization
 Keep these three variables accessible:
 ```dart
 bool _isRecording = false;
 StreamSubscription<NoiseReading> _noiseSubscription;
-NoiseMeter _noiseMeter;
+NoiseMeter _noiseMeter = _noiseMeter = new NoiseMeter();
 ```
 
 ### Start listening
 The easiest thing to do is to create a new instance of the NoiseMeter every time a new recording is started.
 ```dart
-void startRecorder() async {
-  try {
-    _noiseMeter = new NoiseMeter();
-    _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
-  } on NoiseMeterException catch (exception) {
-    print(exception);
-  }
+void start() async {
+try {
+  _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
+} on NoiseMeterException catch (exception) {
+  print(exception);
+}
 }
 ```
 
@@ -91,9 +90,3 @@ Thereafter computing the decibel value is performed as follows:
 ```python
 db = 20 * log10(2**15 * avg)
 ```
-
-
-
-
-
-

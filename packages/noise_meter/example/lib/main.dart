@@ -15,7 +15,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool _isRecording = false;
   StreamSubscription<NoiseReading> _noiseSubscription;
-  NoiseMeter _noiseMeter;
+  NoiseMeter _noiseMeter = new NoiseMeter();
 
   @override
   void initState() {
@@ -31,17 +31,15 @@ class _MyAppState extends State<MyApp> {
     print(noiseReading.toString());
   }
 
-  void startRecorder() async {
-    print('***NEW RECORDING***');
+  void start() async {
     try {
-      _noiseMeter = new NoiseMeter();
       _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
-    } on NoiseMeterException catch (exception) {
-      print(exception);
+    } catch (err) {
+      print(err);
     }
   }
 
-  void stopRecorder() async {
+  void stop() async {
     try {
       if (_noiseSubscription != null) {
         _noiseSubscription.cancel();
@@ -55,40 +53,30 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void printWrapped(String text) {
-    final pattern = new RegExp('.{1,800}'); // 800 is the size of each chunk
-    pattern.allMatches(text).forEach((match) => print(match.group(0)));
-  }
+  List<Widget> getContent() => <Widget>[
+        Container(
+            margin: EdgeInsets.all(25),
+            child: Column(children: [
+              Container(
+                child: Text(_isRecording ? "Mic: ON" : "Mic: OFF",
+                    style: TextStyle(fontSize: 25, color: Colors.blue)),
+                margin: EdgeInsets.only(top: 20),
+              )
+            ])),
+      ];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text("Noise Level Example"),
-        ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                "Noise Level",
-              ),
-              Text(
-                'MIC ${(_isRecording ? 'ON' : 'OFF')} \n(Check Flutter log for data)',
-                style: Theme.of(context).textTheme.display1,
-              ),
-            ],
-          ),
-        ),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: getContent())),
         floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              if (!this._isRecording) {
-                return this.startRecorder();
-              }
-              this.stopRecorder();
-            },
-            child: Icon(this._isRecording ? Icons.stop : Icons.mic)),
+            backgroundColor: _isRecording ? Colors.red : Colors.green,
+            onPressed: _isRecording ? stop : start,
+            child: _isRecording ? Icon(Icons.stop) : Icon(Icons.mic)),
       ),
     );
   }

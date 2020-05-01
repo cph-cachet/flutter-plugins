@@ -1,27 +1,15 @@
+library noise_meter;
+
 import 'dart:async';
 import 'dart:core';
-import 'package:flutter/services.dart';
 import 'dart:math';
-
-/// Custom Exception for the plugin,
-/// thrown whenever the plugin is used on platforms other than Android
-class NoiseMeterException implements Exception {
-  String _cause;
-
-  NoiseMeterException(this._cause);
-
-  @override
-  String toString() {
-    return _cause;
-  }
-}
+import 'package:audio_streamer/audio_streamer.dart';
 
 /** A [NoiseReading] holds a decibel value for a particular noise level reading.**/
 class NoiseReading {
-
   double _db = 0;
 
-  NoiseReading(List<dynamic> volumes) {
+  NoiseReading(List<double> volumes) {
     /// Sorted volumes such that the last element is max amplitude
     volumes.sort();
 
@@ -45,26 +33,43 @@ class NoiseReading {
   }
 }
 
-NoiseReading _noiseReading(List<dynamic> volumes) {
-  return new NoiseReading(volumes);
-}
-
-/** A [NoiseMeter] object is reponsible for connecting to to the native environment.
- * Uses a frequency (in milliseconds) for controlling how frequently readings
- * are received from the native environment**/
+/** A [NoiseMeter] object is reponsible for connecting to to
+ *  the native environment.**/
 
 class NoiseMeter {
-  static const EventChannel _noiseEventChannel =
-      EventChannel('noise_meter.eventChannel');
+  AudioStreamer _streamer = AudioStreamer();
+  bool _isRecording = false;
+  List<double> _audio = [];
 
-  Stream<NoiseReading> _noiseStream;
+  StreamController<NoiseReading> _controller;
 
   Stream<NoiseReading> get noiseStream {
-    if (_noiseStream == null) {
-      _noiseStream = _noiseEventChannel
-          .receiveBroadcastStream()
-          .map((volumes) => _noiseReading(volumes));
+    _controller = StreamController<NoiseReading>.broadcast(
+        onListen: _start, onCancel: _stop);
+    return _controller.stream;
+  }
+
+  /// Whenever an array of PCM data comes in,
+  /// they are converted to a [NoiseReading],
+  /// and then send out via the stream
+  void _onAudio(List<double> buffer) {
+    _controller.add(NoiseReading(buffer));
+  }
+
+  /// Start noise monitoring.
+  /// This will trigger a permission request
+  /// if it hasn't yet been granted
+  void _start() async {
+    try {
+      _streamer.start(_onAudio);
+      _isRecording = true;
+    } catch (error) {
+      print(error);
     }
-    return _noiseStream;
+  }
+
+  /// Stop noise monitoring
+  void _stop() async {
+    _isRecording = await _streamer.stop();
   }
 }
