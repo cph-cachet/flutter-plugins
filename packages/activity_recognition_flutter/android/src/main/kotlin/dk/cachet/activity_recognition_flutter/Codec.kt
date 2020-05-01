@@ -3,7 +3,7 @@
  * Licensed under Apache License v2.0
  */
 
-package com.example.activity_recognition_flutter
+package dk.cachet.activity_recognition_flutter
 
 import com.google.android.gms.location.DetectedActivity
 

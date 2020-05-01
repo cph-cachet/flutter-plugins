@@ -3,7 +3,7 @@
  * Licensed under Apache License v2.0
  */
 
-package com.example.activity_recognition_flutter.activity
+package dk.cachet.activity_recognition_flutter.activity
 
 import android.app.IntentService
 import android.content.Context
@@ -11,8 +11,8 @@ import android.content.Intent
 import android.os.Build
 import android.preference.PreferenceManager
 import android.util.Log
-import com.example.activity_recognition_flutter.Codec
-import com.example.activity_recognition_flutter.Constants
+import dk.cachet.activity_recognition_flutter.Codec
+import dk.cachet.activity_recognition_flutter.Constants
 import com.google.android.gms.location.ActivityRecognitionResult
 
 class ActivityRecognizedService(name: String = "ActivityRecognizedService") : IntentService(name) {

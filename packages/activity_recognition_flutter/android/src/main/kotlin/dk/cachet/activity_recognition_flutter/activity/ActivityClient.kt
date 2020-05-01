@@ -3,7 +3,7 @@
  * Licensed under Apache License v2.0
  */
 
-package com.example.activity_recognition_flutter.activity
+package dk.cachet.activity_recognition_flutter.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -14,7 +14,7 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.preference.PreferenceManager
 import android.util.Log
-import com.example.activity_recognition_flutter.Constants
+import dk.cachet.activity_recognition_flutter.Constants
 import com.google.android.gms.location.ActivityRecognition
 
 

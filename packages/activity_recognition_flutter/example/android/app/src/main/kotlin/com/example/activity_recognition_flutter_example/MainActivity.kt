@@ -1,4 +1,4 @@
-package com.example.activity_recognition_flutter_example
+package dk.cachet.activity_recognition_flutter_example
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

@@ -1,8 +1,8 @@
-package com.example.activity_recognition_flutter
+package dk.cachet.activity_recognition_flutter
 
 import android.util.Log
 import androidx.annotation.NonNull;
-import com.example.activity_recognition_flutter.activity.ActivityClient
+import dk.cachet.activity_recognition_flutter.activity.ActivityClient
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding

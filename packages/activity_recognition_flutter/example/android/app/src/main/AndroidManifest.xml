@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.activity_recognition_flutter_example">
+    package="dk.cachet.activity_recognition_flutter_example">
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide
@@ -14,7 +14,7 @@
         android:label="activity_recognition_flutter_example"
         android:icon="@mipmap/ic_launcher">
 
-        <service android:name="com.example.activity_recognition_flutter.activity.ActivityRecognizedService" />
+        <service android:name="dk.cachet.activity_recognition_flutter.activity.ActivityRecognizedService" />
 
         <activity
             android:name=".MainActivity"

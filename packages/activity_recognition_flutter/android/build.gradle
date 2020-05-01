@@ -1,4 +1,4 @@
-group 'com.example.activity_recognition_flutter'
+group 'dk.cachet.activity_recognition_flutter'
 version '1.0-SNAPSHOT'
 
 buildscript {

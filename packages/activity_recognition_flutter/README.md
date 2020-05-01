@@ -19,7 +19,7 @@ Add permission to your Android Manifest:
 
 Add the plugin service inside the `<application>` tags:
 ```xml
-<service android:name="com.example.activity_recognition_flutter.activity.ActivityRecognizedService" />
+<service android:name="dk.cachet.activity_recognition_flutter.activity.ActivityRecognizedService" />
 ```
 
 ### iOS Permissions

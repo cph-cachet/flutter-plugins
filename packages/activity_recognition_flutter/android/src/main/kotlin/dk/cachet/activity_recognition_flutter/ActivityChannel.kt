@@ -3,9 +3,9 @@
  * Licensed under Apache License v2.0
  */
 
-package com.example.activity_recognition_flutter
+package dk.cachet.activity_recognition_flutter
 
-import com.example.activity_recognition_flutter.activity.ActivityClient
+import dk.cachet.activity_recognition_flutter.activity.ActivityClient
 import io.flutter.plugin.common.*
 
 class ActivityChannel(private val activityClient: ActivityClient) :

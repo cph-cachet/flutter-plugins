@@ -3,12 +3,12 @@
  * Licensed under Apache License v2.0
  */
 
-package com.example.activity_recognition_flutter
+package dk.cachet.activity_recognition_flutter
 
 class Constants {
     companion object {
 
-        private val PACKAGE_NAME = "com.example.activity_recognition_flutter"
+        private val PACKAGE_NAME = "dk.cachet.activity_recognition_flutter"
 
         val KEY_ACTIVITY_UPDATES_REQUESTED = "$PACKAGE_NAME.ACTIVITY_UPDATES_REQUESTED"
 
