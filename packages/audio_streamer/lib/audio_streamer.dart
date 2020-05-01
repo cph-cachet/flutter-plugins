@@ -63,8 +63,12 @@ class AudioStreamer {
         } catch (err) {
           _print('AudioStreamer: startRecorder() error: $err');
         }
-      } else {
+      }
+      /// If permission wasn't yet given, then
+      /// ask for it, and then try recording again.
+      else {
         await AudioStreamer.requestPermission();
+        start(onData);
       }
     }
     return _isRecording;
