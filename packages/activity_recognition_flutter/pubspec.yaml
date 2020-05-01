@@ -1,6 +1,6 @@
 name: activity_recognition_flutter
 description: Activity recognition plugin for Android and iOS using the native APIs with updated Kotlin version to 1.2.51, forked from https://github.com/Morosko/flutter_activity_recognition. ActivityRecognitionClient on Android, CoreMotion on iOS.
-version: 1.0.0
+version: 1.1.0
 author: CACHET Team <cph.cachet@gmail.com>
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages
 

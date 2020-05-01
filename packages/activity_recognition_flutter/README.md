@@ -2,6 +2,8 @@
 
 [![pub package](https://img.shields.io/pub/v/activity_recognition_flutter.svg)](https://pub.dartlang.org/packages/activity_recognition)
 
+## Important
+This package uses the Android Embedding API v2. In order to use this in pre-Flutter 1.12 projects, you need to follow this guide: https://github.com/flutter/flutter/wiki/Upgrading-pre-1.12-Android-projects
 Activity recognition plugin for Android and iOS. Only working while App is running (= not terminated by the user or OS).
 
 ## Getting Started
