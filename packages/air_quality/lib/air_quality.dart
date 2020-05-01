@@ -20,11 +20,19 @@ class AirQualityAPIException implements Exception {
   String toString() => '${this.runtimeType} - $_cause';
 }
 
-enum AirQualityLevel { GOOD, MODERATE, UNHEALTHY_FOR_SENSITIVE_GROUPS, UNHEALTHY, VERY_UNHEALTHY, HAZARDOUS }
+enum AirQualityLevel {
+  UNKNOWN,
+  GOOD,
+  MODERATE,
+  UNHEALTHY_FOR_SENSITIVE_GROUPS,
+  UNHEALTHY,
+  VERY_UNHEALTHY,
+  HAZARDOUS
+}
 
 AirQualityLevel airQualityIndexToLevel(int index) {
   if (index < 0)
-    throw AirQualityAPIException('Index value cannot be negative!');
+    return AirQualityLevel.UNKNOWN;
   else if (index <= 50)
     return AirQualityLevel.GOOD;
   else if (index <= 100)
@@ -41,29 +49,37 @@ AirQualityLevel airQualityIndexToLevel(int index) {
 
 /// A class for storing Air Quality JSON Data fetched from the API.
 class AirQualityData {
-  String _airQualityIndex, _source, _place, _latitude, _longitude;
+  int _airQualityIndex;
+  String _source, _place;
+  double _latitude, _longitude;
   AirQualityLevel _airQualityLevel;
 
   AirQualityData(Map<String, dynamic> airQualityJson) {
-    _airQualityIndex = airQualityJson['data']['aqi'].toString();
+    _airQualityIndex =
+        int.tryParse(airQualityJson['data']['aqi'].toString()) ?? -1;
     _place = airQualityJson['data']['city']['name'].toString();
     _source = airQualityJson['data']['attributions'][0]['name'].toString();
-    _latitude = airQualityJson['data']['city']['geo'][0].toString();
-    _longitude = airQualityJson['data']['city']['geo'][1].toString();
-    _airQualityLevel = airQualityIndexToLevel(int.parse(_airQualityIndex));
+    _latitude =
+        double.tryParse(airQualityJson['data']['city']['geo'][0].toString()) ??
+            -1.0;
+    _longitude =
+        double.tryParse(airQualityJson['data']['city']['geo'][1].toString()) ??
+            -1.0;
+
+    _airQualityLevel = airQualityIndexToLevel(_airQualityIndex);
   }
 
-  get airQualityIndex => _airQualityIndex;
+  int get airQualityIndex => _airQualityIndex;
 
-  get place => _place;
+  String get place => _place;
 
-  get source => _source;
+  String get source => _source;
 
-  get latitude => _latitude;
+  double get latitude => _latitude;
 
-  get longitude => _longitude;
+  double get longitude => _longitude;
 
-  get airQualityLevel => _airQualityLevel;
+  AirQualityLevel get airQualityLevel => _airQualityLevel;
 
   String toString() {
     return '''
@@ -84,13 +100,16 @@ class AirQuality {
   AirQuality(this._token);
 
   /// Returns an [AirQualityData] object given a city name or a weather station ID
-  Future<AirQualityData> feedFromCity(String city) async => await _airQualityFromUrl(city);
+  Future<AirQualityData> feedFromCity(String city) async =>
+      await _airQualityFromUrl(city);
 
   /// Returns an [AirQualityData] object given a city name or a weather station ID
-  Future<AirQualityData> feedFromStationId(String stationId) async => await _airQualityFromUrl('@$stationId');
+  Future<AirQualityData> feedFromStationId(String stationId) async =>
+      await _airQualityFromUrl('@$stationId');
 
   /// Returns an [AirQualityData] object given a latitude and longitude.
-  Future<AirQualityData> feedFromGeoLocation(String lat, String lon) async => await _airQualityFromUrl('geo:$lat;$lon');
+  Future<AirQualityData> feedFromGeoLocation(String lat, String lon) async =>
+      await _airQualityFromUrl('geo:$lat;$lon');
 
   /// Returns an [AirQualityData] object given using the IP address.
   Future<AirQualityData> feedFromIP() async => await _airQualityFromUrl('here');
@@ -117,7 +136,9 @@ class AirQuality {
   /// For API documentation, see: https://openweathermap.org/current
   Future<AirQualityData> _airQualityFromUrl(String url) async {
     try {
-      Map<String, dynamic> airQualityJson = await _requestAirQualityFromURL(url);
+      Map<String, dynamic> airQualityJson =
+          await _requestAirQualityFromURL(url);
+      print(airQualityJson);
       return AirQualityData(airQualityJson);
     } catch (exception) {
       print(exception);
