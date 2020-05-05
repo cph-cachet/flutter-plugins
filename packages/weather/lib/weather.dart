@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 /// Thrown whenever sufficient permissions weren't granted
 class LocationPermissionException implements Exception {
   String _cause;
+
   LocationPermissionException(this._cause);
 
   String toString() => '${this.runtimeType} - $_cause';
@@ -22,6 +23,7 @@ class LocationPermissionException implements Exception {
 /// Thrown whenever the API responds with an error and body could not be parsed.
 class OpenWeatherAPIException implements Exception {
   String _cause;
+
   OpenWeatherAPIException(this._cause);
 
   String toString() => '${this.runtimeType} - $_cause';
@@ -227,18 +229,19 @@ class Weather {
 /// Plugin for fetching weather data in JSON.
 class WeatherStation {
   String _apiKey;
-  static const String FORECAST = 'forecast';
-  static const String WEATHER = 'weather';
-  Location location;
+  static const String FIVE_DAY_FORECAST = 'forecast';
+  static const String CURRENT_WEATHER = 'weather';
+  static const int STATUS_OK = 200;
 
   WeatherStation(this._apiKey);
 
   /// Fetch current weather based on geographical coordinates
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
-  Future<Weather> currentWeather() async {
+  Future<Weather> currentWeather({double lat, double lon}) async {
     try {
-      Map<String, dynamic> currentWeather = await _requestOpenWeatherAPI(WEATHER);
+      Map<String, dynamic> currentWeather =
+          await _requestOpenWeatherAPI(CURRENT_WEATHER, lat, lon);
       return Weather(currentWeather);
     } catch (exception) {
       print(exception);
@@ -249,10 +252,11 @@ class WeatherStation {
   /// Fetch current weather based on geographical coordinates.
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/forecast5
-  Future<List<Weather>> fiveDayForecast() async {
+  Future<List<Weather>> fiveDayForecast({double lat, double lon}) async {
     List<Weather> forecasts = new List<Weather>();
     try {
-      Map<String, dynamic> jsonForecasts = await _requestOpenWeatherAPI(FORECAST);
+      Map<String, dynamic> jsonForecasts =
+          await _requestOpenWeatherAPI(FIVE_DAY_FORECAST, lat, lon);
       List<dynamic> forecastsJson = jsonForecasts['list'];
       forecasts = forecastsJson.map((w) => Weather(w)).toList();
     } catch (exception) {
@@ -262,46 +266,54 @@ class WeatherStation {
   }
 
   /// Requests permission for the location
-  Future<bool> manageLocationPermission() async {
-    location = new Location();
-    PermissionStatus status = await location.hasPermission();
-    if (status != PermissionStatus.GRANTED) status = await location.requestPermission();
+  Future<bool> _requestLocation() async {
+    PermissionStatus status = await Location().hasPermission();
+    if (status != PermissionStatus.GRANTED)
+      status = await Location().requestPermission();
 
     return (status == PermissionStatus.GRANTED);
   }
 
-  Future<Map<String, dynamic>> _requestOpenWeatherAPI(String tag) async {
-    bool permissionOK = await manageLocationPermission();
-
-    /// Check if device is allowed to get location
-    if (permissionOK) {
-      /// Build HTTP get url by passing the required parameters
-      LocationData locationData = await location.getLocation();
-      String url = 'http://api.openweathermap.org/data/2.5/' +
-          '$tag?' +
-          'lat=${locationData.latitude}&' +
-          'lon=${locationData.longitude}&' +
-          'appid=$_apiKey';
-
-      /// Send HTTP get response with the url
-      http.Response response = await http.get(url);
-
-      /// Perform error checking on response:
-      /// Status code 200 means everything went well
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonBody = json.decode(response.body);
-        return jsonBody;
-      }
-
-      /// The API key is invalid, the API may be down
-      /// or some other unspecified error could occur.
-      /// The concrete error should be clear from the HTTP response body.
-      else {
-        throw OpenWeatherAPIException("OpenWeather API Exception: ${response.body}");
+  Future<Map<String, dynamic>> _requestOpenWeatherAPI(
+      String tag, double lat, double lon) async {
+    /// If latitude and longitude were not provided, get it locally
+    if (lat == null || lon == null) {
+      /// Check if device is allowed to get location
+      bool locationPermissionGranted = await _requestLocation();
+      if (locationPermissionGranted) {
+        LocationData locationData = await Location().getLocation();
+        lat = locationData.latitude;
+        lon = locationData.longitude;
+      } else {
+        throw OpenWeatherAPIException("Location cannot be accessed.");
       }
     }
 
-    /// If permission to track location is not yet given.
-    throw LocationPermissionException("PermissionLocation permission not granted!");
+    /// Build HTTP get url by passing the required parameters
+    String url = 'http://api.openweathermap.org/data/2.5/' +
+        '$tag?' +
+        'lat=$lat&' +
+        'lon=$lon&' +
+        'appid=$_apiKey';
+
+    print(url);
+
+    /// Send HTTP get response with the url
+    http.Response response = await http.get(url);
+
+    /// Perform error checking on response:
+    /// Status code 200 means everything went well
+    if (response.statusCode == STATUS_OK) {
+      Map<String, dynamic> jsonBody = json.decode(response.body);
+      return jsonBody;
+    }
+
+    /// The API key is invalid, the API may be down
+    /// or some other unspecified error could occur.
+    /// The concrete error should be clear from the HTTP response body.
+    else {
+      throw OpenWeatherAPIException(
+          "The API threw an exception: ${response.body}");
+    }
   }
 }
