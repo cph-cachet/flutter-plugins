@@ -32,7 +32,10 @@ public class SwiftPedometerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     public func onListen(withArguments arguments: Any?, eventSink: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = eventSink
         let now = Date()
-        pedometer.startUpdates(from: now) { (pedometerData, error) in
+        let systemUptime = ProcessInfo.processInfo.systemUptime;
+        let timeNow = Date().timeIntervalSince1970
+        let dateOfLastReboot = Date(timeIntervalSince1970: timeNow-systemUptime)
+        pedometer.startUpdates(from: dateOfLastReboot) { (pedometerData, error) in
             if let data = pedometerData {
 
                 // Dispatch method to main thread with an async call

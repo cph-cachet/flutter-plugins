@@ -12,7 +12,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Pedometer _pedometer;
   StreamSubscription<int> _subscription;
-  String _stepCountValue = 'unknown';
+  String _stepCountValue = '?';
 
   @override
   void initState() {
@@ -39,24 +39,40 @@ class _MyAppState extends State<MyApp> {
     _subscription.cancel();
   }
 
-  void _onData(int stepCountValue) async {
-    setState(() => _stepCountValue = "$stepCountValue");
+  void _onData(int newValue) async {
+    print('New step count value: $newValue');
+    setState(() => _stepCountValue = "$newValue");
   }
 
   void _onDone() => print("Finished pedometer tracking");
 
   void _onError(error) => print("Flutter Pedometer Error: $error");
 
-
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
-        appBar: new AppBar(
-          title: const Text('Pedometer example app'),
-        ),
-        body: new Text('Step count: $_stepCountValue')
-      ),
+          appBar: new AppBar(
+            title: const Text('Pedometer example app'),
+          ),
+          body: Center(
+              child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              new Icon(
+                Icons.directions_walk,
+                size: 90,
+              ),
+              new Text(
+                'Steps taken:',
+                style: TextStyle(fontSize: 30),
+              ),
+              new Text(
+                '$_stepCountValue',
+                style: TextStyle(fontSize: 100, color: Colors.blue),
+              )
+            ],
+          ))),
     );
   }
 }
