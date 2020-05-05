@@ -1,6 +1,6 @@
 # audio_streamer
 
-Streaming of PCM audio from Android and iOS
+Streaming of PCM audio from Android and iOS with a sample rate of 44,100 Hz
 
 ## Permissions
 On *Android* you need to add a permission to `AndroidManifest.xml`:

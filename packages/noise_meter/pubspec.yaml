@@ -1,7 +1,6 @@
 name: noise_meter
 description: A noise meter package for Android and iOS.
-version: 1.1.0
-author: CACHET Team <cph.cachet@gmail.com>
+version: 1.1.5
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/noise_meter
 
 
@@ -11,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audio_streamer: ^1.1.0
+  audio_streamer: ^1.1.5
 
 dev_dependencies:
   flutter_test:

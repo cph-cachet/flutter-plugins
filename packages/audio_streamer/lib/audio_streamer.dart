@@ -10,9 +10,10 @@ const String EVENT_CHANNEL_NAME = 'audio_streamer.eventChannel';
 class AudioStreamer {
   bool _isRecording = false;
   bool debug = false;
-  int sampleRate = 44100;
 
   AudioStreamer({this.debug = false});
+
+  int get sampleRate => 44100;
 
   static const EventChannel _noiseEventChannel =
       EventChannel(EVENT_CHANNEL_NAME);

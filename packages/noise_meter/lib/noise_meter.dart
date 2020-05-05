@@ -41,6 +41,9 @@ class NoiseMeter {
   bool _isRecording = false;
   List<double> _audio = [];
 
+  /// The rate at which the audio is sampled
+  int get sampleRate => _streamer.sampleRate;
+
   StreamController<NoiseReading> _controller;
 
   Stream<NoiseReading> get noiseStream {
