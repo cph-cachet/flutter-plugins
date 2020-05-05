@@ -1,8 +1,7 @@
 name: pedometer
 description: A Pedometer plugin for streaming step count updates, for iOS and Android.
-version: 1.1.0
+version: 1.2.0
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/pedometer
-author: CACHET Team <cph.cachet@gmail.com>
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
