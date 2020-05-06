@@ -1,5 +1,13 @@
+## 1.1.1
+* Updated docs
+
+## 1.1.0
+* No longer relies on the Location package.
+* Location can only be fetched by providing a latitude and longitude.
+
 ## 0.9.6
 * upgrade to using location plugin v. 2.5.4
+
 
 ## 0.9.5
 * better handling of requesting location permissions

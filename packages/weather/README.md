@@ -1,7 +1,7 @@
 # weather
 This package uses the [OpenWeatherMAP API](https://openweathermap.org/) to get the current weather status as well as weather forecasts.
 
-The weather can be fetched with the device location or with a custom location.
+The weather can currently only be fetched by providing a location, i.e. latitude and longitude coordinates..
 
 [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather)
 
@@ -77,15 +77,10 @@ WeatherStation weatherStation = new WeatherStation("YOUR_API_KEY");
 ### Query current weather
 For specific documentation on the current weather API, see the [OpenWeatherMap weather API docs](https://openweathermap.org/current).
 
-With device location
 ```dart
-Weather weather = await weatherStation.currentWeather();
+Weather weather = await weatherStation.currentWeather(lat, lon);
 ```
 
-With custom location
-```dart
-Weather weather = await weatherStation.currentWeather(lat: LATITUDE, lon: LONGITUDE);
-```
 For a complete list of all the properties of the [Weather](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html) class, check the [documentation](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html)
 
 #### Get temperature
@@ -99,14 +94,8 @@ double kelvin = weather.temperature.kelvin;
 ### Query 5 day forecast
 For API documentation on the forecast API, see the [OpenWeatherMap forecast API docs](https://openweathermap.org/forecast5).
 
-With device location
 ```dart
-List<Weather> forecasts = await weatherStation.fiveDayForecast();
-```
-
-With custom location
-```dart
-List<Weather> forecasts = await weatherStation.fiveDayForecast(lat: LATITUDE, lon: LONGITUDE);
+List<Weather> forecasts = await weatherStation.fiveDayForecast(lat, lon);
 ```
 
 ### Exceptions
