@@ -6,7 +6,7 @@
  */
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:weather/weather.dart';
+import 'package:weather/weather_library.dart';
 
 enum AppState { NOT_DOWNLOADED, DOWNLOADING, FINISHED_DOWNLOADING }
 
@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.DOWNLOADING;
     });
 
-    List<Weather> forecasts = await ws.fiveDayForecast(lat: lat, lon: lon);
+    List<Weather> forecasts = await ws.fiveDayForecast(lat, lon);
     setState(() {
       _data = forecasts;
       _state = AppState.FINISHED_DOWNLOADING;
@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.DOWNLOADING;
     });
 
-    Weather weather = await ws.currentWeather(lat: lat, lon: lon);
+    Weather weather = await ws.currentWeather(lat, lon);
     setState(() {
       _data = [weather];
       _state = AppState.FINISHED_DOWNLOADING;
@@ -173,7 +173,6 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               _latTextField(),
               _lonTextField(),
-              Text('If left blank, device location will be used.'),
               _weatherButton(),
               _forecastButton(),
               Text(

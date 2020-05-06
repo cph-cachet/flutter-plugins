@@ -4,30 +4,7 @@
  * Use of this source code is governed by a MIT-style license that can be
  * found in the LICENSE file.
  */
-import 'dart:async';
-import 'dart:convert';
-import 'package:location/location.dart';
-import 'package:http/http.dart' as http;
-
-/// Custom Exception for the plugin,
-/// Thrown whenever sufficient permissions weren't granted
-class LocationPermissionException implements Exception {
-  String _cause;
-
-  LocationPermissionException(this._cause);
-
-  String toString() => '${this.runtimeType} - $_cause';
-}
-
-/// Custom Exception for the plugin,
-/// Thrown whenever the API responds with an error and body could not be parsed.
-class OpenWeatherAPIException implements Exception {
-  String _cause;
-
-  OpenWeatherAPIException(this._cause);
-
-  String toString() => '${this.runtimeType} - $_cause';
-}
+part of weather_library;
 
 /// A class for holding a temperature.
 /// Can output temperature as Kelvin, Celsius or Fahrenheit.
@@ -47,45 +24,6 @@ class Temperature {
   double get fahrenheit => _kelvin * (9 / 5) - 459.67;
 
   String toString() => '${celsius.toStringAsFixed(1)} Celsius';
-}
-
-/// Safely unpack a double value from a [Map] object.
-double _unpackDouble(Map<String, dynamic> M, String k) {
-  if (M != null) {
-    if (M.containsKey(k)) {
-      return M[k] + 0.0;
-    }
-  }
-  return 0.0;
-}
-
-/// Safely unpack a string value from a [Map] object.
-String _unpackString(Map<String, dynamic> M, String k) {
-  if (M != null) {
-    if (M.containsKey(k)) {
-      return M[k];
-    }
-  }
-  return "";
-}
-
-/// Safely unpacks a unix timestamp from a [Map] object,
-/// i.e. an integer value of milliseconds and converts this to a [DateTime] object.
-DateTime _unpackDate(Map<String, dynamic> M, String k) {
-  if (M != null) {
-    if (M.containsKey(k)) {
-      int millis = M[k] * 1000;
-      return DateTime.fromMillisecondsSinceEpoch(millis);
-    }
-  }
-  return null;
-}
-
-/// Unpacks a [double] value from a [Map] object and converts this to
-/// a [Temperature] object.
-Temperature _unpackTemperature(Map<String, dynamic> M, String k) {
-  double kelvin = _unpackDouble(M, k);
-  return Temperature(kelvin);
 }
 
 /// A class for storing a weather-query response from OpenWeatherMap.
@@ -226,94 +164,3 @@ class Weather {
   double get snowLast3Hours => _snowLast3Hours;
 }
 
-/// Plugin for fetching weather data in JSON.
-class WeatherStation {
-  String _apiKey;
-  static const String FIVE_DAY_FORECAST = 'forecast';
-  static const String CURRENT_WEATHER = 'weather';
-  static const int STATUS_OK = 200;
-
-  WeatherStation(this._apiKey);
-
-  /// Fetch current weather based on geographical coordinates
-  /// Result is JSON.
-  /// For API documentation, see: https://openweathermap.org/current
-  Future<Weather> currentWeather({double lat, double lon}) async {
-    try {
-      Map<String, dynamic> currentWeather =
-          await _requestOpenWeatherAPI(CURRENT_WEATHER, lat, lon);
-      return Weather(currentWeather);
-    } catch (exception) {
-      print(exception);
-    }
-    return null;
-  }
-
-  /// Fetch current weather based on geographical coordinates.
-  /// Result is JSON.
-  /// For API documentation, see: https://openweathermap.org/forecast5
-  Future<List<Weather>> fiveDayForecast({double lat, double lon}) async {
-    List<Weather> forecasts = new List<Weather>();
-    try {
-      Map<String, dynamic> jsonForecasts =
-          await _requestOpenWeatherAPI(FIVE_DAY_FORECAST, lat, lon);
-      List<dynamic> forecastsJson = jsonForecasts['list'];
-      forecasts = forecastsJson.map((w) => Weather(w)).toList();
-    } catch (exception) {
-      print(exception);
-    }
-    return forecasts;
-  }
-
-  /// Requests permission for the location
-  Future<bool> _requestLocation() async {
-    PermissionStatus status = await Location().hasPermission();
-    if (status != PermissionStatus.GRANTED)
-      status = await Location().requestPermission();
-
-    return (status == PermissionStatus.GRANTED);
-  }
-
-  Future<Map<String, dynamic>> _requestOpenWeatherAPI(
-      String tag, double lat, double lon) async {
-    /// If latitude and longitude were not provided, get it locally
-    if (lat == null || lon == null) {
-      /// Check if device is allowed to get location
-      bool locationPermissionGranted = await _requestLocation();
-      if (locationPermissionGranted) {
-        LocationData locationData = await Location().getLocation();
-        lat = locationData.latitude;
-        lon = locationData.longitude;
-      } else {
-        throw OpenWeatherAPIException("Location cannot be accessed.");
-      }
-    }
-
-    /// Build HTTP get url by passing the required parameters
-    String url = 'http://api.openweathermap.org/data/2.5/' +
-        '$tag?' +
-        'lat=$lat&' +
-        'lon=$lon&' +
-        'appid=$_apiKey';
-
-    print(url);
-
-    /// Send HTTP get response with the url
-    http.Response response = await http.get(url);
-
-    /// Perform error checking on response:
-    /// Status code 200 means everything went well
-    if (response.statusCode == STATUS_OK) {
-      Map<String, dynamic> jsonBody = json.decode(response.body);
-      return jsonBody;
-    }
-
-    /// The API key is invalid, the API may be down
-    /// or some other unspecified error could occur.
-    /// The concrete error should be clear from the HTTP response body.
-    else {
-      throw OpenWeatherAPIException(
-          "The API threw an exception: ${response.body}");
-    }
-  }
-}

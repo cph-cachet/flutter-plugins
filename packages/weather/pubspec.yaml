@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  location: ^2.5.4
   http: ^0.12.0
 
 dev_dependencies:
