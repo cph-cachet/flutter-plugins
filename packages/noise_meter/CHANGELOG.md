@@ -1,3 +1,6 @@
+## 1.2.0
+* Changed to api of a NoiseReading to include max and mean decibel.
+
 ## 1.1.5
 * Added a getter for the sample rate field.
 

@@ -7,29 +7,34 @@ import 'package:audio_streamer/audio_streamer.dart';
 
 /** A [NoiseReading] holds a decibel value for a particular noise level reading.**/
 class NoiseReading {
-  double _db = 0;
+  double _meanDecibel, _maxDecibel;
 
   NoiseReading(List<double> volumes) {
     /// Sorted volumes such that the last element is max amplitude
     volumes.sort();
 
     /// Compute average peak-amplitude using the min and max amplitude
-    double min = volumes.first + 0.0;
-    double max = volumes.last + 0.0;
-    double avg = 0.5 * (min.abs() + max.abs());
+    double min = volumes.first;
+    double max = volumes.last;
+    double mean = 0.5 * (min.abs() + max.abs());
 
     /// Max amplitude is 2^15
     double maxAmp = pow(2, 15) + 0.0;
 
-    /// Calculate decibel values as 20 * log10(x)
-    _db = 20 * log(maxAmp * avg) * log10e;
+    _maxDecibel = 20 * log(maxAmp * max) * log10e;
+    _meanDecibel = 20 * log(maxAmp * mean) * log10e;
   }
 
-  double get db => _db;
+  double get maxDecibel => _maxDecibel;
+
+  double get meanDecibel => _meanDecibel;
 
   @override
   String toString() {
-    return "[VolumeReading: $db dB]";
+    return '''[VolumeReading]
+      - max dB    $maxDecibel
+      - mean dB   $meanDecibel
+    ''';
   }
 }
 
