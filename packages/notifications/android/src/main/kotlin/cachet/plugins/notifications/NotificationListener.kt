@@ -23,11 +23,8 @@ class NotificationListener : NotificationListenerService() {
     }
 
     companion object {
-        @JvmField
-        var NOTIFICATION_INTENT = "notification_event"
-        @JvmField
-        var NOTIFICATION_PACKAGE_NAME = "package_name"
-        @JvmField
-        var NOTIFICATION_PACKAGE_MESSAGE = "package_message"
+        const val NOTIFICATION_INTENT = "notification_event"
+        const val NOTIFICATION_PACKAGE_NAME = "package_name"
+        const val NOTIFICATION_PACKAGE_MESSAGE = "package_message"
     }
 }
