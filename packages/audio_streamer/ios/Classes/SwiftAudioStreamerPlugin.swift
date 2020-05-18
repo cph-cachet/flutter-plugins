@@ -47,6 +47,9 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 
     func startRecording() {
         engine = AVAudioEngine()
+      
+        try! AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.record)
+      
         let input = engine.inputNode
         let bus = 0
 
