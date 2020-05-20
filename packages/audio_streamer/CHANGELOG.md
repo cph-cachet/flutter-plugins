@@ -1,3 +1,6 @@
+## 1.1.6
+* Upgrade to `permission_handler` v. 5.
+
 ## 1.1.5
 * Added a getter for the sample rate field. 
 

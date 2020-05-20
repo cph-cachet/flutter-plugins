@@ -5,7 +5,7 @@ import 'dart:core';
 import 'dart:math';
 import 'package:audio_streamer/audio_streamer.dart';
 
-/** A [NoiseReading] holds a decibel value for a particular noise level reading.**/
+/// A [NoiseReading] holds a decibel value for a particular noise level reading.
 class NoiseReading {
   double _meanDecibel, _maxDecibel;
 
@@ -38,9 +38,8 @@ class NoiseReading {
   }
 }
 
-/** A [NoiseMeter] object is reponsible for connecting to to
- *  the native environment.**/
-
+/// A [NoiseMeter] object is reponsible for connecting to to
+/// the native environment.
 class NoiseMeter {
   AudioStreamer _streamer = AudioStreamer();
   bool _isRecording = false;
@@ -52,8 +51,7 @@ class NoiseMeter {
   StreamController<NoiseReading> _controller;
 
   Stream<NoiseReading> get noiseStream {
-    _controller = StreamController<NoiseReading>.broadcast(
-        onListen: _start, onCancel: _stop);
+    _controller = StreamController<NoiseReading>.broadcast(onListen: _start, onCancel: _stop);
     return _controller.stream;
   }
 
