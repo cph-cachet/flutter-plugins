@@ -1,13 +1,14 @@
 name: audio_streamer
-description: Streaming of PCM audio from Android and iOS
-version: 1.1.5
+description: Streaming of Pulse-code modulation (PCM) audio from Android and iOS
+version: 1.1.6
+author:  CACHET Team <cph.cachet@gmail.com>
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
-  permission_handler: ^4.4.0
+  permission_handler: ^5.0.0
   flutter:
     sdk: flutter
 

@@ -15,8 +15,7 @@ class AudioStreamer {
 
   int get sampleRate => 44100;
 
-  static const EventChannel _noiseEventChannel =
-      EventChannel(EVENT_CHANNEL_NAME);
+  static const EventChannel _noiseEventChannel = EventChannel(EVENT_CHANNEL_NAME);
 
   Stream<List<double>> _stream;
   StreamSubscription<List<dynamic>> _subscription;
@@ -35,17 +34,11 @@ class AudioStreamer {
     return _stream;
   }
 
-  static Future<bool> checkPermission() async {
-    /// Verify that it was granted
-    PermissionStatus permission = await PermissionHandler()
-        .checkPermissionStatus(PermissionGroup.microphone);
-    return permission == PermissionStatus.granted;
-  }
+  /// Verify that it was granted
+  static Future<bool> checkPermission() async => Permission.microphone.request().isGranted;
 
-  static Future<void> requestPermission() async {
-    /// Request the microphone permission
-    await PermissionHandler().requestPermissions([PermissionGroup.microphone]);
-  }
+  /// Request the microphone permission
+  static Future<void> requestPermission() async => Permission.microphone.request();
 
   Future<bool> start(Function onData) async {
     _print('AudioStreamer: startRecorder()');
@@ -65,6 +58,7 @@ class AudioStreamer {
           _print('AudioStreamer: startRecorder() error: $err');
         }
       }
+
       /// If permission wasn't yet given, then
       /// ask for it, and then try recording again.
       else {
