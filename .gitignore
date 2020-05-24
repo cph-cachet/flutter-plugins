@@ -51,3 +51,4 @@ build/
 
 # Annotation Processing
 .apt_generated
+packages/weather/example/ios/Flutter/flutter_export_environment.sh
