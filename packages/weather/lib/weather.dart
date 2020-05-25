@@ -272,10 +272,10 @@ class WeatherStation {
   Future<bool> manageLocationPermission() async {
     location = new Location();
     PermissionStatus status = await location.hasPermission();
-    if (status != PermissionStatus.GRANTED)
+    if (status != PermissionStatus.granted)
       status = await location.requestPermission();
 
-    return (status == PermissionStatus.GRANTED);
+    return (status == PermissionStatus.granted);
   }
 
   Future<Map<String, dynamic>> _requestOpenWeatherAPI(
