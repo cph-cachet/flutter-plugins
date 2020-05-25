@@ -163,10 +163,14 @@ class HealthDataPoint {
     return data;
   }
 
-  String toString() {
-    Map<String, dynamic> json = this.toJson();
-    return json.toString();
-  }
+  String toString() => '${this.runtimeType} - '
+      'value: $value, '
+      'unit: $unit, '
+      'date_from: $dateFrom, '
+      'dateFrom: $dateFrom, '
+      'dateTo: $dateTo, '
+      'dataType: $dataType, '
+      'platform: $platform';
 }
 
 /// Main class for the Plugin
@@ -185,12 +189,11 @@ class Health {
     return isAuthorized;
   }
 
-  // Main function for fetching health data
+  // Calculate the BMI using the last observed height and weight values.
   static Future<List<HealthDataPoint>> _androidBodyMassIndex(DateTime startDate, DateTime endDate) async {
     List<HealthDataPoint> heights = await getHealthDataFromType(startDate, endDate, HealthDataType.HEIGHT);
     List<HealthDataPoint> weights = await getHealthDataFromType(startDate, endDate, HealthDataType.WEIGHT);
 
-    // Calculate the BMI using the last observed height and weight values.
     num bmiValue = weights.last.value / (heights.last.value * heights.last.value);
 
     HealthDataType dataType = HealthDataType.BODY_MASS_INDEX;
