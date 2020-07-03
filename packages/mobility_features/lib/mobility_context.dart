@@ -8,9 +8,8 @@ class MobilityContext {
   List<Stop> _stops;
   List<Place> _allPlaces, _places;
 
-  List<Stop> get stops => _stops;
   List<Move> _moves;
-  DateTime _timestamp, date;
+  DateTime _timestamp, _date;
   _HourMatrix _hourMatrix;
 
   /// Features
@@ -21,16 +20,14 @@ class MobilityContext {
       _homeStay,
       _distanceTravelled,
       _routineIndex;
-  List<MobilityContext> contexts;
+  List<MobilityContext> _contexts;
 
   /// Private constructor, cannot be instantiated from outside
-  MobilityContext._(this._stops, this._allPlaces, this._moves,
-      {this.contexts, this.date}) {
+  MobilityContext._(this._stops, this._allPlaces, this._moves, this._contexts, this._date) {
     _timestamp = DateTime.now();
-    date = date ?? _timestamp.midnight;
 
     _places = _allPlaces
-        .where((p) => p.durationForDate(date).inMilliseconds > 0)
+        .where((p) => p.durationForDate(_date).inMilliseconds > 0)
         .toList();
 
     // Compute all the features
@@ -51,14 +48,26 @@ class MobilityContext {
     _routineIndex = _calculateRoutineIndex();
   }
 
-  /// Get the time stamp for computing the features
+  // Get the date of the context
+  DateTime get date => _date;
+
+  /// Get stops today
+  List<Stop> get stops => _stops;
+
+  /// Get moves today
+  List<Move> get moves => _moves;
+
+  /// Get places today
+  List<Place> get places => _places;
+
+  /// Get all places, i.e. for the whole period
+  List<Place> get allPlaces => _allPlaces;
+
+  /// Get the timestamp at which the features were computed
   DateTime get timestamp => _timestamp;
 
   /// Get the routine index for today
   double get routineIndex => _routineIndex;
-
-  /// Get places today
-  List<Place> get places => _places;
 
   /// Number of Places today
   int get numberOfPlaces => _numberOfPlaces;
@@ -161,10 +170,10 @@ class MobilityContext {
   /// Routine index (overlap) calculation
   double _calculateRoutineIndex() {
     // We require at least 2 days to compute the routine index
-    if (contexts.isEmpty) return -1.0;
+    if (_contexts.isEmpty) return -1.0;
 
     /// Compute the HourMatrix for each context that is older
-    List<_HourMatrix> matrices = contexts
+    List<_HourMatrix> matrices = _contexts
         .where((c) => c.date.isBefore(this.date))
         .map((c) => c._hourMatrix)
         .toList();
@@ -176,9 +185,6 @@ class MobilityContext {
     return _hourMatrix.computeOverlap(routine);
   }
 
-  List<Place> get allPlaces => _allPlaces;
-
-  List<Move> get moves => _moves;
 
   Map<String, dynamic> toJson() => {
         "date": date.toIso8601String(),

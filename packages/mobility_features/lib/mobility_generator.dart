@@ -1,6 +1,6 @@
 part of mobility_features;
 
-class ContextGenerator {
+class MobilityGenerator {
   static const String LOCATION_SAMPLES = 'location_samples',
       STOPS = 'stops',
       MOVES = 'moves';
@@ -33,7 +33,7 @@ class ContextGenerator {
     return samples;
   }
 
-  static Future<MobilityContext> generate(
+  static Future<MobilityContext> computeFeatures(
       {bool usePriorContexts: false,
       DateTime today,
       double placeRadius: 50,
@@ -47,8 +47,10 @@ class ContextGenerator {
     _MobilitySerializer<Move> moveSerializer =
         _MobilitySerializer<Move>._(await _file(MOVES));
 
-    // Define today as the midnight time
+    // Define today as today if it is not defined
     today = today ?? DateTime.now();
+
+    // Set date to midnight 00:00
     today = today.midnight;
 
     // Filter out stops/moves older than 28 days
@@ -56,7 +58,6 @@ class ContextGenerator {
     List<Move> moves = await moveSerializer.load();
     stops = _filterStops(stops, today);
     moves = _filterMoves(moves, today);
-
 
     /// Load samples from disk, sort by datetime
     List<LocationSample> samples = await sampleSerializer.load();
@@ -113,10 +114,10 @@ class ContextGenerator {
         List<Stop> stopsOnDate = _stopsForDate(stops, date);
         List<Move> movesOnDate = _movesForDate(moves, date);
 
-        // If there are any stops, make a MobilityContext object
+        // If there are any stops, make a MobilityContext object with no prior contexts
         if (stopsOnDate.length > 0) {
           MobilityContext mc =
-              MobilityContext._(stopsOnDate, places, movesOnDate, date: date);
+              MobilityContext._(stopsOnDate, places, movesOnDate, [], date);
           priorContexts.add(mc);
         }
       }
@@ -124,8 +125,8 @@ class ContextGenerator {
 
     // Make a MobilityContext for today, use the prior Contexts
     // (the array may be empty)
-    return MobilityContext._(stopsToday, places, movesToday,
-        contexts: priorContexts, date: today);
+    return MobilityContext._(
+        stopsToday, places, movesToday, priorContexts, today);
   }
 
   static List<Stop> _stopsForDate(List<Stop> stops, DateTime date) {

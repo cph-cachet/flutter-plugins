@@ -14,4 +14,4 @@ part 'mobility_domain.dart';
 part 'mobility_intermediate.dart';
 part 'mobility_context.dart';
 part 'mobility_serializer.dart';
-part 'mobility_context_generator.dart';
+part 'mobility_generator.dart';

@@ -78,9 +78,9 @@ void main() async {
 
       flushFiles();
 
-      await ContextGenerator.saveSamples(dataset);
+      await MobilityGenerator.saveSamples(dataset);
 
-      List<LocationSample> loaded = await ContextGenerator.loadSamples();
+      List<LocationSample> loaded = await MobilityGenerator.loadSamples();
       expect(loaded.length, dataset.length);
     });
 
@@ -103,11 +103,11 @@ void main() async {
         ];
 
         /// Save
-        await ContextGenerator.saveSamples(locationSamples);
+        await MobilityGenerator.saveSamples(locationSamples);
         dataset.addAll(locationSamples);
 
         /// Load, make sure data from previous days is not stored.
-        List<LocationSample> loaded = await ContextGenerator.loadSamples();
+        List<LocationSample> loaded = await MobilityGenerator.loadSamples();
         expect(loaded.length, dataset.length);
       }
     });
@@ -125,10 +125,10 @@ void main() async {
       ];
 
       /// Save samples to disk
-      await ContextGenerator.saveSamples(samples);
+      await MobilityGenerator.saveSamples(samples);
 
       /// Compute features
-      MobilityContext context = await ContextGenerator.generate(today: jan01);
+      MobilityContext context = await MobilityGenerator.computeFeatures(today: jan01);
 
       expect(context.homeStay, 1.0);
       expect(context.stops.length, 1);
@@ -163,11 +163,11 @@ void main() async {
         LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
       ];
 
-      await ContextGenerator.saveSamples(locationSamples);
+      await MobilityGenerator.saveSamples(locationSamples);
 
       /// Calculate and save context
       MobilityContext context =
-          await ContextGenerator.generate(usePriorContexts: true, today: jan01);
+          await MobilityGenerator.computeFeatures(usePriorContexts: true, today: jan01);
 
       Duration homeTime = Duration(hours: 8);
       Duration timeTracked =
@@ -199,10 +199,10 @@ void main() async {
           LocationSample(pos2, date.add(Duration(hours: 9, minutes: 0))),
         ];
 
-        await ContextGenerator.saveSamples(locationSamples);
+        await MobilityGenerator.saveSamples(locationSamples);
 
         /// Calculate and save context
-        MobilityContext context = await ContextGenerator.generate(
+        MobilityContext context = await MobilityGenerator.computeFeatures(
             usePriorContexts: true, today: date);
 
         double routineIndex = context.routineIndex;
@@ -245,10 +245,10 @@ void main() async {
               pos1, date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
         ];
 
-        await ContextGenerator.saveSamples(locationSamples);
+        await MobilityGenerator.saveSamples(locationSamples);
 
         /// Calculate and save context
-        MobilityContext context = await ContextGenerator.generate(
+        MobilityContext context = await MobilityGenerator.computeFeatures(
             usePriorContexts: true, today: date);
 
         /// Verify that stops are not shared among days
@@ -300,10 +300,11 @@ void main() async {
             pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
-      await ContextGenerator.saveSamples(samplesNoDuplicates);
+      printList(samplesWithDuplicates.map((e) => e.datetime).toSet().toList());
+      await MobilityGenerator.saveSamples(samplesNoDuplicates);
 
       /// Calculate and save context
-      MobilityContext context1 = await ContextGenerator.generate(today: jan01);
+      MobilityContext context1 = await MobilityGenerator.computeFeatures(today: jan01);
 
       /// Verify that stops are not shared among days
       /// This should not be the case since samples from
@@ -314,10 +315,10 @@ void main() async {
 
       flushFiles();
 
-      await ContextGenerator.saveSamples(samplesWithDuplicates);
+      await MobilityGenerator.saveSamples(samplesWithDuplicates);
 
       /// Calculate and save context
-      MobilityContext context2 = await ContextGenerator.generate(today: jan01);
+      MobilityContext context2 = await MobilityGenerator.computeFeatures(today: jan01);
 
 
       /// Verify that stops are not shared among days
