@@ -87,6 +87,8 @@ class MobilityContext {
 
   /// Private home stay calculation
   double _calculateHomeStay() {
+    if (stops.isEmpty) return -1.0;
+
     // Latest known sample time
     DateTime latestTime = _stops.last.departure;
 
@@ -159,11 +161,7 @@ class MobilityContext {
   /// Routine index (overlap) calculation
   double _calculateRoutineIndex() {
     // We require at least 2 days to compute the routine index
-    if (contexts == null) {
-      return -1.0;
-    } else if (contexts.isEmpty) {
-      return -1.0;
-    }
+    if (contexts.isEmpty) return -1.0;
 
     /// Compute the HourMatrix for each context that is older
     List<_HourMatrix> matrices = contexts
