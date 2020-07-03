@@ -57,14 +57,10 @@ class ContextGenerator {
     stops = _filterStops(stops, today);
     moves = _filterMoves(moves, today);
 
-    for (var x in stops) print(x);
-    print('----');
 
     /// Load samples from disk, sort by datetime
     List<LocationSample> samples = await sampleSerializer.load();
     samples.sort((a, b) => a.datetime.compareTo(b.datetime));
-    for (var x in samples) print(x);
-    print('----');
 
     // Find the dates of the stored samples
     List<DateTime> sampleDates =
