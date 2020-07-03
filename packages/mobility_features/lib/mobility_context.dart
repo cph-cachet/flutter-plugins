@@ -128,7 +128,7 @@ class MobilityContext {
       return -1.0;
     }
     // The Entropy is zero when one outcome is certain to occur.
-    else if (places.length < 2) {
+    else if (places.length == 1) {
       return 0.0;
     }
     // Calculate time spent at different places
@@ -147,7 +147,7 @@ class MobilityContext {
 
   /// Private normalized entropy calculation
   double _calculateNormalizedEntropy() {
-    if (numberOfPlaces < 2) {
+    if (numberOfPlaces == 1) {
       return 0.0;
     }
     return entropy / log(numberOfPlaces);
