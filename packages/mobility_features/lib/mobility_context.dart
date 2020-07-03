@@ -177,6 +177,7 @@ class MobilityContext {
         .where((c) => c.date.isBefore(this.date))
         .map((c) => c._hourMatrix)
         .toList();
+    if (matrices.isEmpty) return -1.0;
 
     /// Compute the 'average day' from the matrices
     _HourMatrix routine = _HourMatrix.routineMatrix(matrices);
