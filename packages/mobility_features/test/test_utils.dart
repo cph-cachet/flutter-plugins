@@ -10,3 +10,8 @@ void printList(List l) {
 
 double abs(double x) => x >= 0 ? x : -x;
 
+class LocationPlugin<T> {
+  Stream<T> stream;
+}
+
+class MockLocationPlugin<T> extends Mock implements LocationPlugin {}

@@ -20,7 +20,7 @@ class _MobilitySerializer<E> {
   Future<void> save(List<_Serializable> elements) async {
     String jsonString = "";
     for (_Serializable e in elements) {
-      jsonString += json.encode(e._toJson()) + delimiter;
+      jsonString += json.encode(e.toJson()) + delimiter;
     }
     await file.writeAsString(jsonString, mode: FileMode.writeOnlyAppend);
   }

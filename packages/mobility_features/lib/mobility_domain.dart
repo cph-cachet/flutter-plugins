@@ -5,7 +5,7 @@ const int HOURS_IN_A_DAY = 24;
 /// Abstract class to enforce functions
 /// to serialize and deserialize an object
 abstract class _Serializable {
-  Map<String, dynamic> _toJson();
+  Map<String, dynamic> toJson();
 
   _Serializable._fromJson(Map<String, dynamic> json);
 }
@@ -14,6 +14,10 @@ abstract class _Serializable {
 /// implementing this class has a location
 abstract class _Geospatial {
   GeoPosition get geoPosition;
+}
+
+abstract class _Timestamped {
+  DateTime get datetime;
 }
 
 class Distance {
@@ -57,7 +61,7 @@ class GeoPosition implements _Serializable, _Geospatial {
 
   double get longitude => _longitude;
 
-  Map<String, dynamic> _toJson() =>
+  Map<String, dynamic> toJson() =>
       {"latitude": latitude, "longitude": longitude};
 
   @override
@@ -68,7 +72,7 @@ class GeoPosition implements _Serializable, _Geospatial {
 
 /// A [LocationSample] holds a 2D [GeoPosition] spatial data point
 /// as well as a [DateTime] value s.t. it may be temporally ordered
-class LocationSample implements _Serializable, _Geospatial {
+class LocationSample implements _Serializable, _Geospatial, _Timestamped {
   GeoPosition _geoPosition;
   DateTime _datetime;
 
@@ -78,8 +82,8 @@ class LocationSample implements _Serializable, _Geospatial {
 
   DateTime get datetime => _datetime;
 
-  Map<String, dynamic> _toJson() => {
-        "geo_position": geoPosition._toJson(),
+  Map<String, dynamic> toJson() => {
+        "geo_position": geoPosition.toJson(),
         "datetime": json.encode(datetime.millisecondsSinceEpoch)
       };
 
@@ -102,7 +106,7 @@ class LocationSample implements _Serializable, _Geospatial {
 /// A [Stop] has an assigned [placeId] which links it to a [Place].
 /// At initialization a stop will be assigned to the 'Noise' place (with id -1),
 /// and only after all places have been identified will a [Place] be assigned.
-class Stop implements _Serializable, _Geospatial {
+class Stop implements _Serializable, _Geospatial, _Timestamped {
   GeoPosition _geoPosition;
   int placeId;
   DateTime _arrival, _departure;
@@ -123,6 +127,8 @@ class Stop implements _Serializable, _Geospatial {
   DateTime get departure => _departure;
 
   DateTime get arrival => _arrival;
+
+  DateTime get datetime => _arrival;
 
   List<double> get hourSlots {
     /// Start and end should be on the same date!
@@ -161,8 +167,8 @@ class Stop implements _Serializable, _Geospatial {
       milliseconds:
           departure.millisecondsSinceEpoch - arrival.millisecondsSinceEpoch);
 
-  Map<String, dynamic> _toJson() => {
-        "centroid": geoPosition._toJson(),
+  Map<String, dynamic> toJson() => {
+        "centroid": geoPosition.toJson(),
         "place_id": placeId,
         "arrival": arrival.millisecondsSinceEpoch,
         "departure": departure.millisecondsSinceEpoch
@@ -217,7 +223,7 @@ class Place {
 /// A [Move] is a transfer from one [Stop] to another.
 /// A set of features can be derived from this such as the haversine distance between
 /// the stops, the duration of the move, and thereby also the average travel speed.
-class Move implements _Serializable {
+class Move implements _Serializable, _Timestamped {
   Stop _stopFrom, _stopTo;
   double _distance;
 
@@ -255,9 +261,11 @@ class Move implements _Serializable {
 
   Stop get stopTo => _stopTo;
 
-  Map<String, dynamic> _toJson() => {
-        "stop_from": _stopFrom._toJson(),
-        "stop_to": _stopTo._toJson(),
+  DateTime get datetime => stopFrom.arrival;
+
+  Map<String, dynamic> toJson() => {
+        "stop_from": _stopFrom.toJson(),
+        "stop_to": _stopTo.toJson(),
         "distance": _distance
       };
 
@@ -275,6 +283,7 @@ class Move implements _Serializable {
     Distance: $distance
     ''';
   }
+
 }
 
 class _HourMatrix {

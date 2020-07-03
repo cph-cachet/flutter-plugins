@@ -1,9 +1,14 @@
 library mobility_test;
 
+import 'dart:async';
+import 'dart:collection';
+
 import 'package:mobility_features/mobility_features.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:async/async.dart';
 
 part 'test_utils.dart';
 
@@ -12,21 +17,21 @@ const String LOCATION_SAMPLES = 'location_samples',
     MOVES = 'moves';
 
 const String datasetPath = 'lib/data/example-multi.json';
-const String testDataDir = 'test/data';
+const String testDataDir = 'test/testdata';
 
 Duration takeTime(DateTime start, DateTime end) {
   int ms = end.millisecondsSinceEpoch - start.millisecondsSinceEpoch;
   return Duration(milliseconds: ms);
 }
 
-Future<void> flushFiles() async {
+void flushFiles() async {
   File samples = new File('$testDataDir/$LOCATION_SAMPLES.json');
   File stops = new File('$testDataDir/$STOPS.json');
   File moves = new File('$testDataDir/$MOVES.json');
 
-  await samples.writeAsStringSync('');
-  await stops.writeAsStringSync('');
-  await moves.writeAsStringSync('');
+  samples.writeAsStringSync('');
+  stops.writeAsStringSync('');
+  moves.writeAsStringSync('');
 }
 
 void main() async {
@@ -71,7 +76,7 @@ void main() async {
 
       List<LocationSample> dataset = [x, x, x];
 
-      await flushFiles();
+      flushFiles();
 
       await ContextGenerator.saveSamples(dataset);
 
@@ -81,7 +86,7 @@ void main() async {
 
     test('Serialize and load and multiple days', () async {
       /// Clean file every time test is run
-      await flushFiles();
+      flushFiles();
       List<LocationSample> dataset = [];
 
       for (int i = 0; i < 5; i++) {
@@ -108,10 +113,9 @@ void main() async {
     });
 
     test('Features: Single Stop', () async {
-      await flushFiles();
+      flushFiles();
 
       Duration timeTracked = Duration(hours: 17);
-
 
       /// Collect location samples (synthetic data set)
       List<LocationSample> samples = [
@@ -134,7 +138,7 @@ void main() async {
 
     test('Features: Single day, multiple locations', () async {
       /// Clean file every time test is run
-      await flushFiles();
+      flushFiles();
 
       List<LocationSample> locationSamples = [
         // 5 hours spent at home
@@ -180,7 +184,7 @@ void main() async {
 
     test('Features: Multiple days, multiple locations', () async {
       /// Clean file every time test is run
-      await flushFiles();
+      flushFiles();
 
       for (int i = 0; i < 5; i++) {
         DateTime date = jan01.add(Duration(days: i));
@@ -222,7 +226,7 @@ void main() async {
 
     test('Stops: Multiple days, multiple locations, with overlap', () async {
       /// Clean file every time test is run
-      await flushFiles();
+      flushFiles();
 
       for (int i = 0; i < 5; i++) {
         DateTime date = jan01.add(Duration(days: i));
@@ -254,6 +258,118 @@ void main() async {
         expect(context.places.length, 2);
         expect(context.moves.length, 2);
       }
+    });
+
+    test('Remove duplicate samples', () async {
+      /// Clean file every time test is run
+      await flushFiles();
+
+      List<LocationSample> samplesNoDuplicates = [
+        // 5 hours spent at home
+        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+
+        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+
+        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
+        LocationSample(
+            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+      ];
+
+      /// Todays data
+      List<LocationSample> samplesWithDuplicates = [
+        // 5 hours spent at home
+        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+
+        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+
+        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+
+        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
+        LocationSample(
+            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+      ];
+
+      await ContextGenerator.saveSamples(samplesNoDuplicates);
+
+      /// Calculate and save context
+      MobilityContext context1 = await ContextGenerator.generate(today: jan01);
+
+      /// Verify that stops are not shared among days
+      /// This should not be the case since samples from
+      /// previous days are filtered out.
+      expect(context1.stops.length, 3);
+      expect(context1.places.length, 2);
+      expect(context1.moves.length, 2);
+
+      flushFiles();
+
+      await ContextGenerator.saveSamples(samplesWithDuplicates);
+
+      /// Calculate and save context
+      MobilityContext context2 = await ContextGenerator.generate(today: jan01);
+
+
+      /// Verify that stops are not shared among days
+      /// This should not be the case since samples from
+      /// previous days are filtered out.
+      expect(context2.stops.length, 3);
+      expect(context2.places.length, 2);
+      expect(context2.moves.length, 2);
+    });
+
+    test('Stream from location plugin', () async {
+      final streamedData = [];
+
+      // Handle stream data
+      void onData(dynamic x) {
+        streamedData.add(x);
+      }
+
+      // Create mock location plugin.
+      final plugin = MockLocationPlugin<int>();
+
+      // Data to be streamed
+      final data = [1, 2, 3, 4];
+
+      // Set up a mock stream by feeding it the data
+      when(plugin.stream).thenAnswer((_) => Stream.fromIterable(data));
+
+      // Stream the provided data
+      plugin.stream.listen(onData);
+      print(streamedData);
+    });
+
+    test('Stream listen test', () {
+      DateTime date = jan01;
+
+      List<LocationSample> locationSamples = [
+        // 5 hours spent at home
+        LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 6, minutes: 0))),
+
+        LocationSample(pos2, date.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, date.add(Duration(hours: 9, minutes: 0))),
+
+        LocationSample(pos1, date.add(Duration(hours: 21, minutes: 0))),
+        LocationSample(
+            pos1, date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+      ];
+
+      List<Map<String, dynamic>> data =
+          locationSamples.map((x) => x.toJson()).toList();
+
+      final s = Stream.fromIterable(data);
     });
   });
 

@@ -1,7 +1,7 @@
 part of mobility_features;
 
 /// Find the stops in a sequence of gps data points
-List<Stop> _findStops(List<LocationSample> data, DateTime date,
+List<Stop> _findStops(List<LocationSample> data,
     {double stopRadius = 25.0,
     Duration stopDuration = const Duration(minutes: 3)}) {
   if (data.isEmpty) return [];
