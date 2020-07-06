@@ -7,6 +7,8 @@ import 'dart:core';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 
 part 'mobility_functions.dart';
@@ -15,6 +17,7 @@ part 'mobility_intermediate.dart';
 part 'mobility_context.dart';
 part 'mobility_serializer.dart';
 part 'mobility_generator.dart';
+part 'mobility_db.dart';
 
 
 const String LATITUDE = 'latitude', LONGITUDE = 'longitude', DATETIME = 'datetime';

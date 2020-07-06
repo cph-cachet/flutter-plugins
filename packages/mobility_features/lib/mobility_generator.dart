@@ -23,8 +23,9 @@ class MobilityFactory {
     _stream.listen(_onData);
   }
 
-  void _onData(LocationSample sample) {
-    saveSamples([sample]);
+  void _onData(LocationSample sample) async {
+    print(sample);
+    await saveSamples([sample]);
   }
 
   set usePriorContexts(bool value) {
@@ -67,9 +68,7 @@ class MobilityFactory {
   }
 
   Future<List<LocationSample>> loadSamples() async {
-    List<LocationSample> samples =
-        await (await _locationSampleSerializer).load();
-    return samples;
+    return await (await _locationSampleSerializer).load();
   }
 
   Future<MobilityContext> computeFeatures({DateTime date}) async {

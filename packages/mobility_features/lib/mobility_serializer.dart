@@ -13,8 +13,10 @@ class _MobilitySerializer<E> {
   }
 
   /// Deletes the content of the file
-  Future<void> flush() async =>
-      await file.writeAsString('', mode: FileMode.write);
+  Future<void> flush() async {
+    await file.writeAsString('', mode: FileMode.write);
+  }
+
 
   /// Writes a list of [_Serializable] to the file given in the constructor.
   Future<void> save(List<_Serializable> elements) async {
