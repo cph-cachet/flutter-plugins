@@ -15,3 +15,6 @@ part 'mobility_intermediate.dart';
 part 'mobility_context.dart';
 part 'mobility_serializer.dart';
 part 'mobility_generator.dart';
+
+
+const String LATITUDE = 'latitude', LONGITUDE = 'longitude', DATETIME = 'datetime';

@@ -71,6 +71,10 @@ void main() async {
 
   group("Mobility Context Tests", () {
     test('Serialize and load three location samples', () async {
+
+      MobilityFactory mf = MobilityFactory.instance;
+
+
       LocationSample x =
           LocationSample(GeoPosition(123.456, 123.456), DateTime(2020, 01, 01));
 
@@ -78,15 +82,19 @@ void main() async {
 
       flushFiles();
 
-      await MobilityGenerator.saveSamples(dataset);
+      await mf.saveSamples(dataset);
 
-      List<LocationSample> loaded = await MobilityGenerator.loadSamples();
+      List<LocationSample> loaded = await mf.loadSamples();
+      printList(loaded);
       expect(loaded.length, dataset.length);
     });
 
     test('Serialize and load and multiple days', () async {
       /// Clean file every time test is run
       flushFiles();
+
+      MobilityFactory mf = MobilityFactory.instance;
+
       List<LocationSample> dataset = [];
 
       for (int i = 0; i < 5; i++) {
@@ -103,11 +111,11 @@ void main() async {
         ];
 
         /// Save
-        await MobilityGenerator.saveSamples(locationSamples);
+        await mf.saveSamples(locationSamples);
         dataset.addAll(locationSamples);
 
         /// Load, make sure data from previous days is not stored.
-        List<LocationSample> loaded = await MobilityGenerator.loadSamples();
+        List<LocationSample> loaded = await mf.loadSamples();
         expect(loaded.length, dataset.length);
       }
     });
@@ -115,6 +123,7 @@ void main() async {
     test('Features: Single Stop', () async {
       flushFiles();
 
+      MobilityFactory mf = MobilityFactory.instance;
       Duration timeTracked = Duration(hours: 17);
 
       /// Collect location samples (synthetic data set)
@@ -125,10 +134,11 @@ void main() async {
       ];
 
       /// Save samples to disk
-      await MobilityGenerator.saveSamples(samples);
+      await mf.saveSamples(samples);
 
       /// Compute features
-      MobilityContext context = await MobilityGenerator.computeFeatures(today: jan01);
+      MobilityContext context =
+          await mf.computeFeatures(date: jan01);
 
       expect(context.homeStay, 1.0);
       expect(context.stops.length, 1);
@@ -139,6 +149,9 @@ void main() async {
     test('Features: Single day, multiple locations', () async {
       /// Clean file every time test is run
       flushFiles();
+
+      MobilityFactory mf = MobilityFactory.instance;
+      mf.usePriorContexts = true;
 
       List<LocationSample> locationSamples = [
         // 5 hours spent at home
@@ -163,11 +176,10 @@ void main() async {
         LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
       ];
 
-      await MobilityGenerator.saveSamples(locationSamples);
+      await mf.saveSamples(locationSamples);
 
       /// Calculate and save context
-      MobilityContext context =
-          await MobilityGenerator.computeFeatures(usePriorContexts: true, today: jan01);
+      MobilityContext context = await mf.computeFeatures(date: jan01);
 
       Duration homeTime = Duration(hours: 8);
       Duration timeTracked =
@@ -186,6 +198,9 @@ void main() async {
       /// Clean file every time test is run
       flushFiles();
 
+      MobilityFactory mf = MobilityFactory.instance;
+      mf.usePriorContexts = true;
+
       for (int i = 0; i < 5; i++) {
         DateTime date = jan01.add(Duration(days: i));
 
@@ -199,11 +214,11 @@ void main() async {
           LocationSample(pos2, date.add(Duration(hours: 9, minutes: 0))),
         ];
 
-        await MobilityGenerator.saveSamples(locationSamples);
+        await mf.saveSamples(locationSamples);
 
         /// Calculate and save context
-        MobilityContext context = await MobilityGenerator.computeFeatures(
-            usePriorContexts: true, today: date);
+        MobilityContext context = await mf.computeFeatures(date: date);
+
 
         double routineIndex = context.routineIndex;
         double homeStay = context.homeStay;
@@ -228,6 +243,8 @@ void main() async {
       /// Clean file every time test is run
       flushFiles();
 
+      MobilityFactory mf = MobilityFactory.instance;
+
       for (int i = 0; i < 5; i++) {
         DateTime date = jan01.add(Duration(days: i));
 
@@ -245,11 +262,10 @@ void main() async {
               pos1, date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
         ];
 
-        await MobilityGenerator.saveSamples(locationSamples);
+        await mf.saveSamples(locationSamples);
 
         /// Calculate and save context
-        MobilityContext context = await MobilityGenerator.computeFeatures(
-            usePriorContexts: true, today: date);
+        MobilityContext context = await mf.computeFeatures(date: date);
 
         /// Verify that stops are not shared among days
         /// This should not be the case since samples from
@@ -258,6 +274,33 @@ void main() async {
         expect(context.places.length, 2);
         expect(context.moves.length, 2);
       }
+    });
+
+    test('Test that samples persist', () async {
+      /// Clean file every time test is run
+      await flushFiles();
+
+      List<LocationSample> samples = [
+        // 5 hours spent at home
+        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+
+        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+
+        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
+        LocationSample(
+            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+      ];
+
+      await MobilityFactory.instance.saveSamples(samples);
+
+      /// Calculate and save context
+      MobilityContext context =
+          await MobilityFactory.instance.computeFeatures(date: jan01);
+
+      final loaded = await MobilityFactory.instance.loadSamples();
+      printList(loaded);
     });
 
     test('Remove duplicate samples', () async {
@@ -301,10 +344,11 @@ void main() async {
       ];
 
       printList(samplesWithDuplicates.map((e) => e.datetime).toSet().toList());
-      await MobilityGenerator.saveSamples(samplesNoDuplicates);
+      await MobilityFactory.instance.saveSamples(samplesNoDuplicates);
 
       /// Calculate and save context
-      MobilityContext context1 = await MobilityGenerator.computeFeatures(today: jan01);
+      MobilityContext context1 =
+          await MobilityFactory.instance.computeFeatures(date: jan01);
 
       /// Verify that stops are not shared among days
       /// This should not be the case since samples from
@@ -315,11 +359,11 @@ void main() async {
 
       flushFiles();
 
-      await MobilityGenerator.saveSamples(samplesWithDuplicates);
+      await MobilityFactory.instance.saveSamples(samplesWithDuplicates);
 
       /// Calculate and save context
-      MobilityContext context2 = await MobilityGenerator.computeFeatures(today: jan01);
-
+      MobilityContext context2 =
+          await MobilityFactory.instance.computeFeatures(date: jan01);
 
       /// Verify that stops are not shared among days
       /// This should not be the case since samples from
@@ -371,6 +415,52 @@ void main() async {
           locationSamples.map((x) => x.toJson()).toList();
 
       final s = Stream.fromIterable(data);
+    });
+
+    test('Stream listen test', () async {
+      List<LocationDTO> samples = [
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+        LocationDTO(123.123, 123.123),
+      ];
+
+      Stream<LocationDTO> locationStream = Stream.fromIterable(samples);
+
+      MobilityFactory mf = MobilityFactory.instance;
+
+      mf.locationStream = locationStream.map((dto) =>
+          LocationSample(GeoPosition(dto.lat, dto.lon), DateTime.now()));
+
+      final loaded = await mf.loadSamples();
+
+      printList(loaded);
     });
   });
 

@@ -22,8 +22,8 @@ abstract class _Timestamped {
 
 class Distance {
   static double fromGeospatial(_Geospatial a, _Geospatial b) {
-    return fromList([a.geoPosition._latitude, a.geoPosition._longitude],
-        [b.geoPosition._latitude, b.geoPosition._longitude]);
+    return fromList([a.geoPosition.latitude, a.geoPosition.longitude],
+        [b.geoPosition.latitude, b.geoPosition.longitude]);
   }
 
   static double fromList(List<double> p1, List<double> p2) {
@@ -50,19 +50,19 @@ class GeoPosition implements _Serializable, _Geospatial {
   GeoPosition(this._latitude, this._longitude);
 
   factory GeoPosition.fromJson(Map<String, dynamic> x) {
-    num lat = x['latitude'] as double;
-    num lon = x['longitude'] as double;
+    num lat = x[LATITUDE] as double;
+    num lon = x[LONGITUDE] as double;
     return GeoPosition(lat, lon);
   }
-
-  GeoPosition get geoPosition => this;
 
   double get latitude => _latitude;
 
   double get longitude => _longitude;
 
+  GeoPosition get geoPosition => this;
+
   Map<String, dynamic> toJson() =>
-      {"latitude": latitude, "longitude": longitude};
+      {LATITUDE: latitude, LONGITUDE: longitude};
 
   @override
   String toString() {
@@ -73,14 +73,19 @@ class GeoPosition implements _Serializable, _Geospatial {
 /// A [LocationSample] holds a 2D [GeoPosition] spatial data point
 /// as well as a [DateTime] value s.t. it may be temporally ordered
 class LocationSample implements _Serializable, _Geospatial, _Timestamped {
-  GeoPosition _geoPosition;
+//  GeoPosition _geoPosition;
   DateTime _datetime;
+  GeoPosition _geoPosition;
 
   LocationSample(this._geoPosition, this._datetime);
 
-  GeoPosition get geoPosition => _geoPosition;
+  double get latitude => geoPosition.latitude;
+
+  double get longitude => geoPosition.longitude;
 
   DateTime get datetime => _datetime;
+
+  GeoPosition get geoPosition => _geoPosition;
 
   Map<String, dynamic> toJson() => {
         "geo_position": geoPosition.toJson(),
@@ -89,15 +94,15 @@ class LocationSample implements _Serializable, _Geospatial, _Timestamped {
 
   factory LocationSample._fromJson(Map<String, dynamic> json) {
     /// Parse, i.e. perform type check
-    GeoPosition loc = GeoPosition.fromJson(json['geo_position']);
-    int millis = int.parse(json['datetime']);
+    GeoPosition pos = GeoPosition.fromJson(json['geo_position']);
+    int millis = int.parse(json[DATETIME]);
     DateTime dt = DateTime.fromMillisecondsSinceEpoch(millis);
-    return LocationSample(loc, dt);
+    return LocationSample(pos, dt);
   }
 
   @override
   String toString() {
-    return '$_geoPosition @ $_datetime';
+    return '($latitude, $longitude) @ $_datetime';
   }
 }
 
@@ -111,14 +116,16 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
   int placeId;
   DateTime _arrival, _departure;
 
-  Stop._(this._geoPosition, this._arrival, this._departure, {this.placeId = -1});
+  Stop._(this._geoPosition, this._arrival, this._departure,
+      {this.placeId = -1});
 
   /// Construct stop from point cloud
   factory Stop._fromLocationSamples(List<LocationSample> locationSamples,
       {int placeId = -1}) {
     /// Calculate center
     GeoPosition center = _computeCentroid(locationSamples);
-    return Stop._(center, locationSamples.first.datetime, locationSamples.last.datetime,
+    return Stop._(
+        center, locationSamples.first.datetime, locationSamples.last.datetime,
         placeId: placeId);
   }
 
@@ -283,13 +290,11 @@ class Move implements _Serializable, _Timestamped {
     Distance: $distance
     ''';
   }
-
 }
 
 class _HourMatrix {
   List<List<double>> _matrix;
   int _numberOfPlaces;
-
 
   _HourMatrix(this._matrix) {
     _numberOfPlaces = _matrix.first.length;

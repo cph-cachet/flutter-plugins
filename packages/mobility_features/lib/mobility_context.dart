@@ -22,6 +22,8 @@ class MobilityContext {
       _routineIndex;
   List<MobilityContext> _contexts;
 
+//  factory MobilityContext.from
+
   /// Private constructor, cannot be instantiated from outside
   MobilityContext._(this._stops, this._allPlaces, this._moves, this._contexts, this._date) {
     _timestamp = DateTime.now();

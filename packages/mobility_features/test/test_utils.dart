@@ -15,3 +15,11 @@ class LocationPlugin<T> {
 }
 
 class MockLocationPlugin<T> extends Mock implements LocationPlugin {}
+
+
+class LocationDTO {
+  double lat, lon;
+
+  LocationDTO(this.lat, this.lon);
+
+}
