@@ -2,6 +2,7 @@ library mobility_test;
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:isolate';
 
 import 'package:mobility_features/mobility_features.dart';
 import 'dart:io';
@@ -457,5 +458,33 @@ void main() async {
       expect(loaded.length, dtos.length);
 
     });
+
+    test('Test for isolate', () async {
+      /// Clean file every time test is run
+      await flushFiles();
+      MobilityFactory mf = MobilityFactory.instance;
+
+      List<LocationSample> samples = [
+        // 5 hours spent at home
+        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+
+        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+
+        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
+        LocationSample(
+            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+      ];
+
+      await mf.saveSamples(samples);
+
+      /// Calculate and save context
+      MobilityContext context = await mf.computeStuff(date: jan01);
+
+      final loaded = await mf.loadSamples();
+      printList(loaded);
+    });
+
   });
 }
