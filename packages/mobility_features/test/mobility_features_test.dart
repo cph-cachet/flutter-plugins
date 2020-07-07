@@ -9,16 +9,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:async/async.dart';
-import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 
 part 'test_utils.dart';
 
-const String LOCATION_SAMPLES = 'location_samples',
-    STOPS = 'stops',
-    MOVES = 'moves';
+
 
 const String datasetPath = 'lib/data/example-multi.json';
 const String testDataDir = 'test/testdata';
@@ -29,9 +23,9 @@ Duration takeTime(DateTime start, DateTime end) {
 }
 
 void flushFiles() async {
-  File samples = new File('$testDataDir/$LOCATION_SAMPLES.json');
-  File stops = new File('$testDataDir/$STOPS.json');
-  File moves = new File('$testDataDir/$MOVES.json');
+  File samples = new File('$testDataDir/location_samples.json');
+  File stops = new File('$testDataDir/stops.json');
+  File moves = new File('$testDataDir/moves.json');
 
   await samples.writeAsString('');
   await stops.writeAsString('');
@@ -78,7 +72,7 @@ void main() async {
       MobilityFactory mf = MobilityFactory.instance;
 
       LocationSample x =
-      LocationSample(GeoPosition(123.456, 123.456), DateTime(2020, 01, 01));
+          LocationSample(GeoPosition(123.456, 123.456), DateTime(2020, 01, 01));
 
       List<LocationSample> dataset = [x, x, x];
 
@@ -184,7 +178,7 @@ void main() async {
 
       Duration homeTime = Duration(hours: 8);
       Duration timeTracked =
-      Duration(hours: locationSamples.last.datetime.hour);
+          Duration(hours: locationSamples.last.datetime.hour);
       double homeStayTruth =
           homeTime.inMilliseconds / timeTracked.inMilliseconds;
 
@@ -297,8 +291,7 @@ void main() async {
       await mf.saveSamples(samples);
 
       /// Calculate and save context
-      MobilityContext context =
-      await mf.computeFeatures(date: jan01);
+      MobilityContext context = await mf.computeFeatures(date: jan01);
 
       final loaded = await mf.loadSamples();
       printList(loaded);
@@ -349,7 +342,7 @@ void main() async {
 
       /// Calculate and save context
       MobilityContext context1 =
-      await MobilityFactory.instance.computeFeatures(date: jan01);
+          await MobilityFactory.instance.computeFeatures(date: jan01);
 
       /// Verify that stops are not shared among days
       /// This should not be the case since samples from
@@ -364,7 +357,7 @@ void main() async {
 
       /// Calculate and save context
       MobilityContext context2 =
-      await MobilityFactory.instance.computeFeatures(date: jan01);
+          await MobilityFactory.instance.computeFeatures(date: jan01);
 
       /// Verify that stops are not shared among days
       /// This should not be the case since samples from
@@ -374,32 +367,36 @@ void main() async {
       expect(context2.moves.length, 2);
     });
 
-    test('Stream from location plugin', () async {
-      final streamedData = [];
+    test('Save samples one at a time', () async {
+      flushFiles();
 
-      // Handle stream data
-      void onData(dynamic x) {
-        streamedData.add(x);
+      MobilityFactory mf = MobilityFactory.instance;
+
+      List<LocationSample> samples = [
+        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
+        LocationSample(
+            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+      ];
+
+      // Save samples, one by one
+      for (var s in samples) {
+        mf.saveSamples([s]);
       }
 
-      // Create mock location plugin.
-      final plugin = MockLocationPlugin<int>();
-
-      // Data to be streamed
-      final data = [1, 2, 3, 4];
-
-      // Set up a mock stream by feeding it the data
-      when(plugin.stream).thenAnswer((_) => Stream.fromIterable(data));
-
-      // Stream the provided data
-      plugin.stream.listen(onData);
-      print(streamedData);
+      // Load samples again, verify that they were all saved
+      final loaded = await mf.loadSamples();
+      expect(samples.length, loaded.length);
     });
 
-    test('Stream listen test', () {
+    test('Stream LocationSamples one by one', () async {
+      flushFiles();
       DateTime date = jan01;
 
-      List<LocationSample> locationSamples = [
+      List<LocationSample> samples = [
         // 5 hours spent at home
         LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
         LocationSample(pos1, date.add(Duration(hours: 6, minutes: 0))),
@@ -412,53 +409,53 @@ void main() async {
             pos1, date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
-      List<Map<String, dynamic>> data =
-      locationSamples.map((x) => x.toJson()).toList();
 
-      final s = Stream.fromIterable(data);
+      MobilityFactory mf = MobilityFactory.instance;
+      mf.saveEvery = 1;
+
+      Stream<LocationSample> stream = Stream.fromIterable(samples);
+
+      // Stream all the samples one by one
+      await mf.startListening(stream);
+
+      // After all data has been streamed, load the saved data
+      final loaded = await mf.loadSamples();
+
+      // Verify that all data was streamed and stored
+      expect(loaded.length, samples.length);
+
     });
 
-    test('Stream listen test', () async {
+    test('Stream Location DTOs one by one', () async {
       flushFiles();
 
-      List<LocationDTO> samples = [
+      // Array of location DTOs, mocking DTOs from an external plugin
+      List<LocationDTO> dtos = [
         LocationDTO(111.123, 123.123),
         LocationDTO(222.123, 123.123),
         LocationDTO(333.123, 123.123),
       ];
 
-      Stream<LocationDTO> locationStream = Stream.fromIterable(samples);
+      // Convert DTO array to DTO stream
+      Stream<LocationDTO> locationStream = Stream.fromIterable(dtos);
+
+      // Convert DTO stream to LocationSample stream via a mapper function
       Stream<LocationSample> stream = locationStream.map((dto) =>
           LocationSample(GeoPosition(dto.lat, dto.lon), DateTime.now()));
 
+      // Instantiate the MobilityFactory
       MobilityFactory mf = MobilityFactory.instance;
+      mf.saveEvery = 1;
 
-      mf.locationStream = stream;
+      // Stream all the samples one by one
+      await mf.startListening(stream);
 
+      // After all data has been streamed, load the saved data
       final loaded = await mf.loadSamples();
-      print('-' * 50);
 
+      // Verify that all data was streamed and stored
+      expect(loaded.length, dtos.length);
 
-      printList(loaded);
-    });
-
-    test('DB sqlfite test', () async {
-      sqfliteFfiInit();
-      var databaseFactory = databaseFactoryFfi;
-      var db = await databaseFactory.openDatabase(inMemoryDatabasePath);
-      await db.execute('''
-      CREATE TABLE Product (
-          id INTEGER PRIMARY KEY,
-          title TEXT
-      )
-      ''');
-      await db.insert('Product', <String, dynamic>{'title': 'Product 1'});
-      await db.insert('Product', <String, dynamic>{'title': 'Product 1'});
-
-      var result = await db.query('Product');
-      print(result);
-      // prints [{id: 1, title: Product 1}, {id: 2, title: Product 1}]
-      await db.close();
     });
   });
 }
