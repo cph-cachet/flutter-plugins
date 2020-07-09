@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Mobility Features Demo'),
     );
   }
 }
@@ -44,7 +44,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     setUpLocationStream();
-    mobilityFactory.stopDuration = Duration(minutes: 0);
+    mobilityFactory.stopDuration = Duration(seconds: 1);
+    mobilityFactory.placeRadius = 50;
+    mobilityFactory.stopRadius = 25;
   }
 
   void setUpLocationStream() {
@@ -174,35 +176,18 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     print('Calculating features...');
-    ReceivePort receivePort = ReceivePort();
-    await Isolate.spawn(_asyncComputation, receivePort.sendPort);
-    SendPort sendPort = await receivePort.first;
 
-    MobilityContext mc = await relay(sendPort);
-
+    DateTime start = DateTime.now();
+    MobilityContext mc = await mobilityFactory.computeFeatures();
+    DateTime end = DateTime.now();
+    Duration dur = Duration(milliseconds: end.millisecondsSinceEpoch - start.millisecondsSinceEpoch);
+    print('Computed features in $dur');
     setState(() {
       _mobilityContext = mc;
       _state = AppState.FEATURES_READY;
     });
   }
 
-  Future relay(SendPort sendPort) {
-    ReceivePort receivePort = ReceivePort();
-    Map args = {'sendPort': receivePort.sendPort};
-    sendPort.send(args);
-    return receivePort.first;
-  }
-
-  static void _asyncComputation(SendPort sendPort) async {
-    ReceivePort receivePort = ReceivePort();
-    sendPort.send(receivePort.sendPort);
-    Map args = await receivePort.first;
-    SendPort replyPort = args['sendPort'];
-
-    MobilityFactory mf = MobilityFactory.instance;
-    MobilityContext context = await mf.computeFeatures();
-    replyPort.send(context);
-  }
 
   @override
   Widget build(BuildContext context) {

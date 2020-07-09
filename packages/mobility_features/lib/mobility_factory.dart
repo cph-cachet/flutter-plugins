@@ -110,72 +110,6 @@ class MobilityFactory {
     return await serializer.load();
   }
 
-  Future<MobilityContext> computeFeatures({DateTime date}) async {
-    /// Init serializers
-    final sampleSerializer = await _locationSampleSerializer;
-    final stopSerializer = await _stopSerializer;
-    final moveSerializer = await _moveSerializer;
-
-    // Define today as today if it is not defined
-    date = date ?? DateTime.now();
-
-    // Set date to midnight 00:00
-    date = date.midnight;
-
-    // Filter out stops/moves older than 28 days
-    List<Stop> stops = await stopSerializer.load();
-    List<Move> moves = await moveSerializer.load();
-    stops = _filterElements(stops, date);
-    moves = _filterElements(moves, date);
-
-    /// Load samples from disk, sort by datetime
-    List<LocationSample> samples = await sampleSerializer.load();
-    samples.sort((a, b) => a.datetime.compareTo(b.datetime));
-
-    // Find the dates of the stored samples
-    List<DateTime> sampleDates =
-        samples.map((e) => e.datetime.midnight).toSet().toList();
-
-    // Group the samples by date
-    final groupedSamples = sampleDates
-        .map((d) => samples.where((e) => e.datetime.midnight == d).toList())
-        .toList();
-
-    // Find stops and moves for each date
-    for (List<LocationSample> samplesOnDate in groupedSamples) {
-      final stopsOnDate = _findStops(samplesOnDate,
-          stopRadius: _stopRadius, stopDuration: _stopDuration);
-      final movesOnDate = _findMoves(samplesOnDate, stopsOnDate);
-      stops += stopsOnDate;
-      moves += movesOnDate;
-    }
-
-    /// Find places for the period
-    List<Place> places = _findPlaces(stops, placeRadius: _placeRadius);
-
-    /// Save Stops and Moves to disk
-    stopSerializer.flush();
-    moveSerializer.flush();
-    sampleSerializer.flush();
-
-    // Extract stops and moves from today
-    List<Stop> stopsToday = _elementsForDate(stops, date);
-    List<Move> movesToday = _elementsForDate(moves, date);
-    List<LocationSample> samplesToday = _elementsForDate(samples, date);
-
-    // Save
-    sampleSerializer.save(samplesToday);
-    stopSerializer.save(stops);
-    moveSerializer.save(moves);
-
-    /// Find prior contexts, if prior is not chosen just leave empty
-    List<MobilityContext> contexts =
-        _priorContexts(_usePriorContexts, date, stops, moves, places);
-
-    // Make a MobilityContext for today, use the prior MobilityContexts
-    return MobilityContext._(stopsToday, places, movesToday, contexts, date);
-  }
-
   static List<MobilityContext> _priorContexts(bool usePriorContexts,
       DateTime date, List<Stop> stops, List<Move> moves, List<Place> places) {
     // Find prior contexts, if prior is not chosen just leave empty
@@ -189,8 +123,8 @@ class MobilityFactory {
 
       // Get the stops and moves for each date
       for (DateTime dateHist in dates) {
-        List<Stop> stopsOnDate = _elementsForDate(stops, dateHist);
-        List<Move> movesOnDate = _elementsForDate(moves, dateHist);
+        List<Stop> stopsOnDate = _getElementsForDate(stops, dateHist);
+        List<Move> movesOnDate = _getElementsForDate(moves, dateHist);
 
         // If there are any stops, make a MobilityContext object with no prior contexts
         if (stopsOnDate.length > 0) {
@@ -203,7 +137,8 @@ class MobilityFactory {
     return priorContexts;
   }
 
-  Future<MobilityContext> computeStuff({DateTime date}) async {
+  /// Async computation using isolates
+  Future<MobilityContext> computeFeatures({DateTime date}) async {
     ReceivePort receivePort = ReceivePort();
     await Isolate.spawn(_asyncComputation, receivePort.sendPort);
     SendPort sendPort = await receivePort.first;
@@ -222,8 +157,8 @@ class MobilityFactory {
     // Filter out stops/moves older than 28 days
     List<Stop> stops = await stopSerializer.load();
     List<Move> moves = await moveSerializer.load();
-    stops = _filterElements(stops, date);
-    moves = _filterElements(moves, date);
+    stops = _getRecentHistoricalElements(stops, date);
+    moves = _getRecentHistoricalElements(moves, date);
 
     /// Load samples from disk, sort by datetime
     List<LocationSample> samples = await sampleSerializer.load();
@@ -238,18 +173,20 @@ class MobilityFactory {
         .map((d) => samples.where((e) => e.datetime.midnight == d).toList())
         .toList();
 
-    // PERFORM ASYNC COMPUTATION
-    List args = [
-      groupedSamples,
-      stops,
-      moves,
-      _stopRadius,
-      _stopDuration,
-      _placeRadius,
-      _usePriorContexts,
-      date
-    ];
-    List results = await relay(sendPort, args);
+    // Prepare arguments for async computation
+    Map arguments = {
+      'groupedSamples': groupedSamples,
+      'stops': stops,
+      'moves': moves,
+      '_stopRadius': _stopRadius,
+      '_stopDuration': _stopDuration,
+      '_placeRadius': _placeRadius,
+      '_usePriorContexts': _usePriorContexts,
+      'date': date,
+    };
+
+    /// Off-load computation to background and await results
+    List results = await offloadToBackgroundWithMap(sendPort, arguments);
 
     // Extract results from async computation
     List<MobilityContext> contexts = results[0];
@@ -263,9 +200,9 @@ class MobilityFactory {
     sampleSerializer.flush();
 
     // Extract stops and moves from today
-    List<Stop> stopsToday = _elementsForDate(stopsFinal, date);
-    List<Move> movesToday = _elementsForDate(movesFinal, date);
-    List<LocationSample> samplesToday = _elementsForDate(samples, date);
+    List<Stop> stopsToday = _getElementsForDate(stopsFinal, date);
+    List<Move> movesToday = _getElementsForDate(movesFinal, date);
+    List<LocationSample> samplesToday = _getElementsForDate(samples, date);
 
     // Save
     sampleSerializer.save(samplesToday);
@@ -276,28 +213,27 @@ class MobilityFactory {
     return MobilityContext._(stopsToday, places, movesToday, contexts, date);
   }
 
-  Future relay(SendPort sendPort, List args) {
+  /// Off-loads the arguments to background
+  Future offloadToBackgroundWithMap(SendPort sendPort, Map args) {
     ReceivePort receivePort = ReceivePort();
-    List<dynamic> args2 = [];
-    args2.add(receivePort.sendPort);
-    args2.addAll(args);
-    sendPort.send(args2);
+    args['replyPort'] = receivePort.sendPort;
+    sendPort.send(args);
     return receivePort.first;
   }
 
   static void _asyncComputation(SendPort sendPort) async {
     ReceivePort receivePort = ReceivePort();
     sendPort.send(receivePort.sendPort);
-    List args = await receivePort.first;
-    SendPort replyPort = args[0];
-    final groupedSamples = args[1];
-    List<Stop> stops = args[2];
-    List<Move> moves = args[3];
-    double _stopRadius = args[4];
-    Duration _stopDuration = args[5];
-    double _placeRadius = args[6];
-    bool _usePriorContexts = args[7];
-    DateTime date = args[8];
+    Map args = await receivePort.first;
+    SendPort replyPort = args['replyPort'];
+    final groupedSamples = args['groupedSamples'];
+    List<Stop> stops = args['stops'];
+    List<Move> moves = args['moves'];
+    double _stopRadius = args['_stopRadius'];
+    Duration _stopDuration = args['_stopDuration'];
+    double _placeRadius = args['_placeRadius'];
+    bool _usePriorContexts = args['_usePriorContexts'];
+    DateTime date = args['date'];
 
     // Find stops and moves for each date
     for (List<LocationSample> samplesOnDate in groupedSamples) {
@@ -318,12 +254,12 @@ class MobilityFactory {
     replyPort.send([priorContexts, stops, moves, places]);
   }
 
-  static List<_Timestamped> _elementsForDate(
+  static List<_Timestamped> _getElementsForDate(
       List<_Timestamped> elements, DateTime date) {
     return elements.where((e) => e.datetime.midnight == date).toList();
   }
 
-  static List<_Timestamped> _filterElements(
+  static List<_Timestamped> _getRecentHistoricalElements(
       List<_Timestamped> elements, DateTime date) {
     DateTime fourWeeksPrior = date.subtract(Duration(days: 28));
     return elements

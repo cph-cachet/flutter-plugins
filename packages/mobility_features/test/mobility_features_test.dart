@@ -480,7 +480,7 @@ void main() async {
       await mf.saveSamples(samples);
 
       /// Calculate and save context
-      MobilityContext context = await mf.computeStuff(date: jan01);
+      MobilityContext context = await mf.computeFeatures(date: jan01);
 
       final loaded = await mf.loadSamples();
       printList(loaded);
