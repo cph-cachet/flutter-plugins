@@ -11,7 +11,23 @@ Add the package to your `pubspec.yaml` file and import the package
 import 'package:mobility_features/mobility_features.dart';
 ```
 
-### Step 1: Collect location data
+### Step 1: Init the MobilityFactory instance
+```dart
+MobilityFactory mobilityFactory = MobilityFactory.instance;
+```
+
+Optionally, the following configurations can be made, which will influence the algorithms for producing features.
+
+In the example below, the default values are shown:
+
+```dart
+mobilityFactory.stopDuration = Duration(minutes: 3);
+mobilityFactory.placeRadius = 50;
+mobilityFactory.stopRadius = 25;
+mobilityFactory.usePriorContexts = false;
+```
+
+### Step 2: Collect location data
 Location data collection is not directly supported by this package, for this you have to use a location plugin such as `https://pub.dev/packages/geolocator`. 
 
 From here, you can to convert from whichever Data Transfer Object is used 
@@ -20,8 +36,6 @@ by the location plugin to a `LocationSample`.
 Below is shown an example using the `geolocator` plugin, where a `Position` stream is converted into a `LocationSample` stream by using a map-function.
 
 ```dart
-List<LocationSample> locationSamples = [];
-...
 void setUpLocationStream() {
   // Set up a Position stream, and make it into a broadcast stream
   Stream<Position> positionStream =
@@ -36,26 +50,13 @@ void setUpLocationStream() {
 }
 ```
 
-### Step 2: Save location data
-The location data must be saved on the device such that it can be used in the future. 
-
-Saving the data to persistent storage also prevents it from being lost should the app be shut down.
-
-Given that the location samples have been collected in a list `List<LocationSample> locationSamples` the data is serialized like so:
-
-```dart
-await ContextGenerator.saveSamples(locationSamples);
-```
-
-Ideally, saving the data is done with a certain interval, such as every time 100 `LocationSamples` are collected. 
-
 ### Step 3: Compute features
 The features can be computed using the `ContextGenerator` which uses stored data to compute the features.
 
 There most basic computation is done as follows:
 
 ```dart
-MobilityContext context = await ContextGenerator.generate();
+MobilityContext mc = await mobilityFactory.computeFeatures();
 ```
 
 All features are implemented as getters for the `MobilityContext` object.
@@ -79,22 +80,22 @@ It must be intantiated through the `ContextGenerator.generate()` method.
 #### Step 3.1 : Compute features with prior contexts
 Should you wish to compute the Routine Index feature (see Theoretical Background) as well, then prior contexts are needed. 
 
-Concretely, you will have to track for at least 2 days, to compute this feature.
-
-The computation using prior contexts is done as follows
+Concretely, you will have to track for at least 2 days, to compute this feature and set the `usePriorContexts` field to true.
 
 ```dart
- 
+mobilityFactory.usePriorContexts = ttrue;
 ```
+
+The computation is carried out in the same way as in Step 3.
 
 #### Step 3.2: Compute features for a specific date
 By default, the `MobilityContext` object uses the current date as reference to filter 
 and group data, however, should you wish to compute the features for 
-a specific date, then it is possible to do so using the `today` parameter.
+a specific date, then it is possible to do so using the `date` parameter.
 
 ```dart
 DateTime myDate = DateTime(01, 01, 2020);
-MobilityContext context = await ContextGenerator.generate(today: myDate);
+MobilityContext context = await ContextGenerator.generate(date: myDate);
 ```
 
 ### Feature-specific instructions
@@ -102,7 +103,7 @@ When a feature cannot be evaluated, it will result in a value of -1.0.
 
 The Home Stay feature requires at least *some* data to be collected between 00:00 and 06:00, otherwise the feature cannot be evaluated. 
 
-The Routine Index feature requires at least two days of sufficient data to be evaulated.
+The Routine Index feature requires at least two days of sufficient data to be computed.
 
 The Entropy and Normalized Entropy features require at least 2 places 
 to be evaluated. If only a single place was found, 

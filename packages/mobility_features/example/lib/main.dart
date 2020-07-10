@@ -47,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     mobilityFactory.stopDuration = Duration(seconds: 1);
     mobilityFactory.placeRadius = 50;
     mobilityFactory.stopRadius = 25;
+    mobilityFactory.usePriorContexts = true;
   }
 
   void setUpLocationStream() {
