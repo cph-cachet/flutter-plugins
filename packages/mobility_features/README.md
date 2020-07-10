@@ -12,20 +12,27 @@ import 'package:mobility_features/mobility_features.dart';
 ```
 
 ### Step 1: Collect location data
-Location data collection is not supported by this package, for this you have to use a location plugin such as `https://pub.dev/packages/geolocator`. 
+Location data collection is not directly supported by this package, for this you have to use a location plugin such as `https://pub.dev/packages/geolocator`. 
 
 From here, you can to convert from whichever Data Transfer Object is used 
 by the location plugin to a `LocationSample`. 
-Below is shown an example where `Position` objects are coming in from the `GeoLocator` plugin and are being handled in the `_onData()` call-back method.
+
+Below is shown an example using the `geolocator` plugin, where a `Position` stream is converted into a `LocationSample` stream by using a map-function.
 
 ```dart
 List<LocationSample> locationSamples = [];
 ...
+void setUpLocationStream() {
+  // Set up a Position stream, and make it into a broadcast stream
+  Stream<Position> positionStream =
+    Geolocator().getPositionStream().asBroadcastStream(); 
 
-void _onData(Position d) async {
-    GeoPosition geoPos = GeoPosition(d.latitude, d.longitude);
-    LocationSample sample = LocationSample(geoPos, d.timestamp);
-    locationSamples.add(sample);
+  // Convert the Position stream into a LocationSample stream
+  Stream<LocationSample> locationSampleStream = positionStream.map((e) =>
+    LocationSample(GeoPosition(e.latitude, e.longitude), e.timestamp));
+
+  // Make the Mobility Factory start listening to location updates
+  mobilityFactory.startListening(locationSampleStream);
 }
 ```
 

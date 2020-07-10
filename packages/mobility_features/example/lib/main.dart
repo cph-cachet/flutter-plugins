@@ -52,6 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void setUpLocationStream() {
     Stream<Position> positionStream =
         Geolocator().getPositionStream().asBroadcastStream();
+
     Stream<LocationSample> locationSampleStream = positionStream.map((e) =>
         LocationSample(GeoPosition(e.latitude, e.longitude), e.timestamp));
 

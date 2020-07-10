@@ -154,9 +154,13 @@ class MobilityFactory {
     // Set date to midnight 00:00
     date = date.midnight;
 
-    // Filter out stops/moves older than 28 days
+    // Load saved stops and moves
     List<Stop> stops = await stopSerializer.load();
     List<Move> moves = await moveSerializer.load();
+
+    // Filter out stops/moves older than 28 days as well as
+    // elements on the current date, if current date is the most recent date,
+    // i.e. data is still being collected on that date
     stops = _getRecentHistoricalElements(stops, date);
     moves = _getRecentHistoricalElements(moves, date);
 
@@ -168,8 +172,7 @@ class MobilityFactory {
     List<DateTime> sampleDates =
         samples.map((e) => e.datetime.midnight).toSet().toList();
 
-    // Group the samples by date
-    final groupedSamples = sampleDates
+    List<List<LocationSample>> groupedSamples = sampleDates
         .map((d) => samples.where((e) => e.datetime.midnight == d).toList())
         .toList();
 
@@ -186,35 +189,36 @@ class MobilityFactory {
     };
 
     /// Off-load computation to background and await results
-    List results = await offloadToBackgroundWithMap(sendPort, arguments);
+    List results = await offloadToBackground(sendPort, arguments);
 
     // Extract results from async computation
     List<MobilityContext> contexts = results[0];
-    List<Stop> stopsFinal = results[1];
-    List<Move> movesFinal = results[2];
-    List<Place> places = results[3];
+    List<Stop> allStops = results[1];
+    List<Move> allMoves = results[2];
+    List<Place> allPlaces = results[3];
+
+    // Extract stops and moves from today
+    List<Stop> stopsToday = _getElementsForDate(allStops, date);
+    List<Move> movesToday = _getElementsForDate(allMoves, date);
+    List<LocationSample> samplesToKeep = _getElementsAfterDate(samples, date);
+
+    sampleSerializer.flush();
+    sampleSerializer.save(samplesToKeep);
 
     /// Save Stops and Moves to disk
     stopSerializer.flush();
     moveSerializer.flush();
-    sampleSerializer.flush();
-
-    // Extract stops and moves from today
-    List<Stop> stopsToday = _getElementsForDate(stopsFinal, date);
-    List<Move> movesToday = _getElementsForDate(movesFinal, date);
-    List<LocationSample> samplesToday = _getElementsForDate(samples, date);
 
     // Save
-    sampleSerializer.save(samplesToday);
-    stopSerializer.save(stopsFinal);
-    moveSerializer.save(movesFinal);
+    stopSerializer.save(allStops);
+    moveSerializer.save(allMoves);
 
     // Make a MobilityContext for today, use the prior MobilityContexts
-    return MobilityContext._(stopsToday, places, movesToday, contexts, date);
+    return MobilityContext._(stopsToday, allPlaces, movesToday, contexts, date);
   }
 
   /// Off-loads the arguments to background
-  Future offloadToBackgroundWithMap(SendPort sendPort, Map args) {
+  Future offloadToBackground(SendPort sendPort, Map args) {
     ReceivePort receivePort = ReceivePort();
     args['replyPort'] = receivePort.sendPort;
     sendPort.send(args);
@@ -259,13 +263,27 @@ class MobilityFactory {
     return elements.where((e) => e.datetime.midnight == date).toList();
   }
 
+  static List<_Timestamped> _getElementsAfterDate(
+      List<_Timestamped> elements, DateTime date) {
+    return elements.where((e) => e.datetime.midnight.isAfter(date)).toList();
+  }
+
   static List<_Timestamped> _getRecentHistoricalElements(
       List<_Timestamped> elements, DateTime date) {
     DateTime fourWeeksPrior = date.subtract(Duration(days: 28));
-    return elements
-        .where((e) =>
-            e.datetime.midnight.isAfter(fourWeeksPrior) &&
-            e.datetime.midnight.isBefore(date))
+    List<DateTime> dates = elements.map((e) => e.datetime.midnight).toList();
+
+    List<_Timestamped> filtered = elements
+        .where((e) => e.datetime.midnight.isAfter(fourWeeksPrior))
         .toList();
+
+    /// If we are generating features from a previous date,
+    /// don't filter dates out after it.
+    if (dates.isNotEmpty && date == dates.last) {
+      filtered =
+          filtered.where((e) => e.datetime.midnight.isBefore(date)).toList();
+    }
+
+    return filtered;
   }
 }

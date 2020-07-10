@@ -13,8 +13,6 @@ import 'package:async/async.dart';
 
 part 'test_utils.dart';
 
-
-
 const String datasetPath = 'lib/data/example-multi.json';
 const String testDataDir = 'test/testdata';
 
@@ -410,7 +408,6 @@ void main() async {
             pos1, date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
-
       MobilityFactory mf = MobilityFactory.instance;
       mf.saveEvery = 1;
 
@@ -424,7 +421,6 @@ void main() async {
 
       // Verify that all data was streamed and stored
       expect(loaded.length, samples.length);
-
     });
 
     test('Stream Location DTOs one by one', () async {
@@ -456,7 +452,6 @@ void main() async {
 
       // Verify that all data was streamed and stored
       expect(loaded.length, dtos.length);
-
     });
 
     test('Test for isolate', () async {
@@ -486,5 +481,49 @@ void main() async {
       printList(loaded);
     });
 
+    test('Multiple days, stream', () async {
+      /// Clean file every time test is run
+      flushFiles();
+
+      MobilityFactory mf = MobilityFactory.instance;
+      List<LocationSample> data = [];
+
+      for (int i = 0; i < 5; i++) {
+        DateTime date = jan01.add(Duration(days: i));
+
+        /// Todays data
+        List<LocationSample> locationSamples = [
+          // 5 hours spent at home
+          LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
+          LocationSample(pos1, date.add(Duration(hours: 6, minutes: 0))),
+
+          LocationSample(pos2, date.add(Duration(hours: 8, minutes: 0))),
+          LocationSample(pos2, date.add(Duration(hours: 9, minutes: 0))),
+
+          LocationSample(pos1, date.add(Duration(hours: 21, minutes: 0))),
+          LocationSample(
+              pos1, date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+        ];
+
+        data.addAll(locationSamples);
+      }
+
+      Stream<LocationSample> stream = Stream.fromIterable(data);
+      mf.startListening(stream);
+
+      List<DateTime> oddOrderedDates = [
+        DateTime(2020, 01, 04),
+        DateTime(2020, 01, 05),
+        DateTime(2020, 01, 03),
+        DateTime(2020, 01, 01),
+        DateTime(2020, 01, 02)
+      ];
+      for (var date in oddOrderedDates) {
+        MobilityContext context = await mf.computeFeatures(date: date);
+        expect(context.stops.length, 3);
+        expect(context.places.length, 2);
+        expect(context.moves.length, 2);
+      }
+    });
   });
 }
