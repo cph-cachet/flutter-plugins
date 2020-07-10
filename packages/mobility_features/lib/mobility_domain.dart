@@ -5,7 +5,7 @@ const int HOURS_IN_A_DAY = 24;
 /// Abstract class to enforce functions
 /// to serialize and deserialize an object
 abstract class _Serializable {
-  Map<String, dynamic> _toJson();
+  Map<String, dynamic> toJson();
 
   _Serializable._fromJson(Map<String, dynamic> json);
 }
@@ -16,10 +16,14 @@ abstract class _Geospatial {
   GeoPosition get geoPosition;
 }
 
+abstract class _Timestamped {
+  DateTime get datetime;
+}
+
 class Distance {
   static double fromGeospatial(_Geospatial a, _Geospatial b) {
-    return fromList([a.geoPosition._latitude, a.geoPosition._longitude],
-        [b.geoPosition._latitude, b.geoPosition._longitude]);
+    return fromList([a.geoPosition.latitude, a.geoPosition.longitude],
+        [b.geoPosition.latitude, b.geoPosition.longitude]);
   }
 
   static double fromList(List<double> p1, List<double> p2) {
@@ -46,19 +50,19 @@ class GeoPosition implements _Serializable, _Geospatial {
   GeoPosition(this._latitude, this._longitude);
 
   factory GeoPosition.fromJson(Map<String, dynamic> x) {
-    num lat = x['latitude'] as double;
-    num lon = x['longitude'] as double;
+    num lat = x[LATITUDE] as double;
+    num lon = x[LONGITUDE] as double;
     return GeoPosition(lat, lon);
   }
-
-  GeoPosition get geoPosition => this;
 
   double get latitude => _latitude;
 
   double get longitude => _longitude;
 
-  Map<String, dynamic> _toJson() =>
-      {"latitude": latitude, "longitude": longitude};
+  GeoPosition get geoPosition => this;
+
+  Map<String, dynamic> toJson() =>
+      {LATITUDE: latitude, LONGITUDE: longitude};
 
   @override
   String toString() {
@@ -68,32 +72,37 @@ class GeoPosition implements _Serializable, _Geospatial {
 
 /// A [LocationSample] holds a 2D [GeoPosition] spatial data point
 /// as well as a [DateTime] value s.t. it may be temporally ordered
-class LocationSample implements _Serializable, _Geospatial {
-  GeoPosition _geoPosition;
+class LocationSample implements _Serializable, _Geospatial, _Timestamped {
+//  GeoPosition _geoPosition;
   DateTime _datetime;
+  GeoPosition _geoPosition;
 
   LocationSample(this._geoPosition, this._datetime);
 
-  GeoPosition get geoPosition => _geoPosition;
+  double get latitude => geoPosition.latitude;
+
+  double get longitude => geoPosition.longitude;
 
   DateTime get datetime => _datetime;
 
-  Map<String, dynamic> _toJson() => {
-        "geo_position": geoPosition._toJson(),
+  GeoPosition get geoPosition => _geoPosition;
+
+  Map<String, dynamic> toJson() => {
+        "geo_position": geoPosition.toJson(),
         "datetime": json.encode(datetime.millisecondsSinceEpoch)
       };
 
   factory LocationSample._fromJson(Map<String, dynamic> json) {
     /// Parse, i.e. perform type check
-    GeoPosition loc = GeoPosition.fromJson(json['geo_position']);
-    int millis = int.parse(json['datetime']);
+    GeoPosition pos = GeoPosition.fromJson(json['geo_position']);
+    int millis = int.parse(json[DATETIME]);
     DateTime dt = DateTime.fromMillisecondsSinceEpoch(millis);
-    return LocationSample(loc, dt);
+    return LocationSample(pos, dt);
   }
 
   @override
   String toString() {
-    return '$_geoPosition @ $_datetime';
+    return '($latitude, $longitude) @ $_datetime';
   }
 }
 
@@ -102,19 +111,21 @@ class LocationSample implements _Serializable, _Geospatial {
 /// A [Stop] has an assigned [placeId] which links it to a [Place].
 /// At initialization a stop will be assigned to the 'Noise' place (with id -1),
 /// and only after all places have been identified will a [Place] be assigned.
-class Stop implements _Serializable, _Geospatial {
+class Stop implements _Serializable, _Geospatial, _Timestamped {
   GeoPosition _geoPosition;
   int placeId;
   DateTime _arrival, _departure;
 
-  Stop._(this._geoPosition, this._arrival, this._departure, {this.placeId = -1});
+  Stop._(this._geoPosition, this._arrival, this._departure,
+      {this.placeId = -1});
 
   /// Construct stop from point cloud
   factory Stop._fromLocationSamples(List<LocationSample> locationSamples,
       {int placeId = -1}) {
     /// Calculate center
     GeoPosition center = _computeCentroid(locationSamples);
-    return Stop._(center, locationSamples.first.datetime, locationSamples.last.datetime,
+    return Stop._(
+        center, locationSamples.first.datetime, locationSamples.last.datetime,
         placeId: placeId);
   }
 
@@ -123,6 +134,8 @@ class Stop implements _Serializable, _Geospatial {
   DateTime get departure => _departure;
 
   DateTime get arrival => _arrival;
+
+  DateTime get datetime => _arrival;
 
   List<double> get hourSlots {
     /// Start and end should be on the same date!
@@ -161,8 +174,8 @@ class Stop implements _Serializable, _Geospatial {
       milliseconds:
           departure.millisecondsSinceEpoch - arrival.millisecondsSinceEpoch);
 
-  Map<String, dynamic> _toJson() => {
-        "centroid": geoPosition._toJson(),
+  Map<String, dynamic> toJson() => {
+        "centroid": geoPosition.toJson(),
         "place_id": placeId,
         "arrival": arrival.millisecondsSinceEpoch,
         "departure": departure.millisecondsSinceEpoch
@@ -217,7 +230,7 @@ class Place {
 /// A [Move] is a transfer from one [Stop] to another.
 /// A set of features can be derived from this such as the haversine distance between
 /// the stops, the duration of the move, and thereby also the average travel speed.
-class Move implements _Serializable {
+class Move implements _Serializable, _Timestamped {
   Stop _stopFrom, _stopTo;
   double _distance;
 
@@ -255,9 +268,11 @@ class Move implements _Serializable {
 
   Stop get stopTo => _stopTo;
 
-  Map<String, dynamic> _toJson() => {
-        "stop_from": _stopFrom._toJson(),
-        "stop_to": _stopTo._toJson(),
+  DateTime get datetime => stopFrom.arrival;
+
+  Map<String, dynamic> toJson() => {
+        "stop_from": _stopFrom.toJson(),
+        "stop_to": _stopTo.toJson(),
         "distance": _distance
       };
 
@@ -280,7 +295,6 @@ class Move implements _Serializable {
 class _HourMatrix {
   List<List<double>> _matrix;
   int _numberOfPlaces;
-
 
   _HourMatrix(this._matrix) {
     _numberOfPlaces = _matrix.first.length;
