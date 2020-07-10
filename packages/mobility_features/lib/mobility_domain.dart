@@ -1,6 +1,14 @@
 part of mobility_features;
 
 const int HOURS_IN_A_DAY = 24;
+const String _LATITUDE = 'latitude',
+    _LONGITUDE = 'longitude',
+    _DATETIME = 'datetime',
+    _CENTROID = 'centroid',
+    _ARRIVAL = 'arrival',
+    _DEPARTURE = 'departure',
+    _PLACE_ID = 'place_id',
+    _STOP_FROM = 'stop_from', _STOP_TO = 'stop_to', _DISTANCE = 'distance';
 
 /// Abstract class to enforce functions
 /// to serialize and deserialize an object
@@ -50,8 +58,8 @@ class GeoPosition implements _Serializable, _Geospatial {
   GeoPosition(this._latitude, this._longitude);
 
   factory GeoPosition.fromJson(Map<String, dynamic> x) {
-    num lat = x[LATITUDE] as double;
-    num lon = x[LONGITUDE] as double;
+    num lat = x[_LATITUDE] as double;
+    num lon = x[_LONGITUDE] as double;
     return GeoPosition(lat, lon);
   }
 
@@ -61,8 +69,7 @@ class GeoPosition implements _Serializable, _Geospatial {
 
   GeoPosition get geoPosition => this;
 
-  Map<String, dynamic> toJson() =>
-      {LATITUDE: latitude, LONGITUDE: longitude};
+  Map<String, dynamic> toJson() => {_LATITUDE: latitude, _LONGITUDE: longitude};
 
   @override
   String toString() {
@@ -95,7 +102,7 @@ class LocationSample implements _Serializable, _Geospatial, _Timestamped {
   factory LocationSample._fromJson(Map<String, dynamic> json) {
     /// Parse, i.e. perform type check
     GeoPosition pos = GeoPosition.fromJson(json['geo_position']);
-    int millis = int.parse(json[DATETIME]);
+    int millis = int.parse(json[_DATETIME]);
     DateTime dt = DateTime.fromMillisecondsSinceEpoch(millis);
     return LocationSample(pos, dt);
   }
@@ -175,18 +182,17 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
           departure.millisecondsSinceEpoch - arrival.millisecondsSinceEpoch);
 
   Map<String, dynamic> toJson() => {
-        "centroid": geoPosition.toJson(),
-        "place_id": placeId,
-        "arrival": arrival.millisecondsSinceEpoch,
-        "departure": departure.millisecondsSinceEpoch
+        _CENTROID: geoPosition.toJson(),
+        _PLACE_ID: placeId,
+        _DEPARTURE: departure.millisecondsSinceEpoch
       };
 
   factory Stop._fromJson(Map<String, dynamic> json) {
     return Stop._(
-        GeoPosition.fromJson(json['centroid']),
-        DateTime.fromMillisecondsSinceEpoch(json['arrival']),
-        DateTime.fromMillisecondsSinceEpoch(json['departure']),
-        placeId: json['place_id']);
+        GeoPosition.fromJson(json[_CENTROID]),
+        DateTime.fromMillisecondsSinceEpoch(json[_ARRIVAL]),
+        DateTime.fromMillisecondsSinceEpoch(json[_DEPARTURE]),
+        placeId: json[_PLACE_ID]);
   }
 
   @override
@@ -271,14 +277,14 @@ class Move implements _Serializable, _Timestamped {
   DateTime get datetime => stopFrom.arrival;
 
   Map<String, dynamic> toJson() => {
-        "stop_from": _stopFrom.toJson(),
-        "stop_to": _stopTo.toJson(),
-        "distance": _distance
+        _STOP_FROM: _stopFrom.toJson(),
+        _STOP_TO: _stopTo.toJson(),
+        _DISTANCE: _distance
       };
 
   factory Move._fromJson(Map<String, dynamic> _json) {
-    return Move._(Stop._fromJson(_json["stop_from"]),
-        Stop._fromJson(_json["stop_to"]), _json["distance"]);
+    return Move._(Stop._fromJson(_json[_STOP_FROM]),
+        Stop._fromJson(_json[_STOP_TO]), _json[_DISTANCE]);
   }
 
   @override

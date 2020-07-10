@@ -1,3 +1,7 @@
+## [1.3.0] - Streaming based API
+* Refactored API to support streaming
+* An example app is now included
+
 ## [1.2.0] - Restructuring
 * MobilitySerializer is now private.
 

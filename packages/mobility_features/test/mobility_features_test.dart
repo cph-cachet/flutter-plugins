@@ -1,15 +1,9 @@
 library mobility_test;
 
 import 'dart:async';
-import 'dart:collection';
-import 'dart:isolate';
-
 import 'package:mobility_features/mobility_features.dart';
 import 'dart:io';
-import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
-import 'package:async/async.dart';
 
 part 'test_utils.dart';
 
