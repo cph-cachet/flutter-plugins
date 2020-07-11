@@ -8,7 +8,10 @@ const String _LATITUDE = 'latitude',
     _ARRIVAL = 'arrival',
     _DEPARTURE = 'departure',
     _PLACE_ID = 'place_id',
-    _STOP_FROM = 'stop_from', _STOP_TO = 'stop_to', _DISTANCE = 'distance';
+    _STOP_FROM = 'stop_from',
+    _STOP_TO = 'stop_to',
+    _DISTANCE = 'distance',
+    _GEO_LOCATION = 'geo_location';
 
 /// Abstract class to enforce functions
 /// to serialize and deserialize an object
@@ -21,7 +24,7 @@ abstract class _Serializable {
 /// Simple abstract class to let the compiler know that an object
 /// implementing this class has a location
 abstract class _Geospatial {
-  GeoPosition get geoPosition;
+  GeoLocation get geoLocation;
 }
 
 abstract class _Timestamped {
@@ -30,8 +33,8 @@ abstract class _Timestamped {
 
 class Distance {
   static double fromGeospatial(_Geospatial a, _Geospatial b) {
-    return fromList([a.geoPosition.latitude, a.geoPosition.longitude],
-        [b.geoPosition.latitude, b.geoPosition.longitude]);
+    return fromList([a.geoLocation.latitude, a.geoLocation.longitude],
+        [b.geoLocation.latitude, b.geoLocation.longitude]);
   }
 
   static double fromList(List<double> p1, List<double> p2) {
@@ -49,25 +52,25 @@ class Distance {
   }
 }
 
-/// A [GeoPosition] object contains a latitude and longitude
+/// A [GeoLocation] object contains a latitude and longitude
 /// and represents a 2D spatial coordinates
-class GeoPosition implements _Serializable, _Geospatial {
+class GeoLocation implements _Serializable, _Geospatial {
   double _latitude;
   double _longitude;
 
-  GeoPosition(this._latitude, this._longitude);
+  GeoLocation(this._latitude, this._longitude);
 
-  factory GeoPosition.fromJson(Map<String, dynamic> x) {
+  factory GeoLocation.fromJson(Map<String, dynamic> x) {
     num lat = x[_LATITUDE] as double;
     num lon = x[_LONGITUDE] as double;
-    return GeoPosition(lat, lon);
+    return GeoLocation(lat, lon);
   }
 
   double get latitude => _latitude;
 
   double get longitude => _longitude;
 
-  GeoPosition get geoPosition => this;
+  GeoLocation get geoLocation => this;
 
   Map<String, dynamic> toJson() => {_LATITUDE: latitude, _LONGITUDE: longitude};
 
@@ -77,31 +80,30 @@ class GeoPosition implements _Serializable, _Geospatial {
   }
 }
 
-/// A [LocationSample] holds a 2D [GeoPosition] spatial data point
+/// A [LocationSample] holds a 2D [GeoLocation] spatial data point
 /// as well as a [DateTime] value s.t. it may be temporally ordered
 class LocationSample implements _Serializable, _Geospatial, _Timestamped {
-//  GeoPosition _geoPosition;
   DateTime _datetime;
-  GeoPosition _geoPosition;
+  GeoLocation _geoLocation;
 
-  LocationSample(this._geoPosition, this._datetime);
+  LocationSample(this._geoLocation, this._datetime);
 
-  double get latitude => geoPosition.latitude;
+  double get latitude => geoLocation.latitude;
 
-  double get longitude => geoPosition.longitude;
+  double get longitude => geoLocation.longitude;
 
   DateTime get datetime => _datetime;
 
-  GeoPosition get geoPosition => _geoPosition;
+  GeoLocation get geoLocation => _geoLocation;
 
   Map<String, dynamic> toJson() => {
-        "geo_position": geoPosition.toJson(),
-        "datetime": json.encode(datetime.millisecondsSinceEpoch)
+        _GEO_LOCATION: geoLocation.toJson(),
+        _DATETIME: json.encode(datetime.millisecondsSinceEpoch)
       };
 
   factory LocationSample._fromJson(Map<String, dynamic> json) {
     /// Parse, i.e. perform type check
-    GeoPosition pos = GeoPosition.fromJson(json['geo_position']);
+    GeoLocation pos = GeoLocation.fromJson(json[_GEO_LOCATION]);
     int millis = int.parse(json[_DATETIME]);
     DateTime dt = DateTime.fromMillisecondsSinceEpoch(millis);
     return LocationSample(pos, dt);
@@ -119,24 +121,24 @@ class LocationSample implements _Serializable, _Geospatial, _Timestamped {
 /// At initialization a stop will be assigned to the 'Noise' place (with id -1),
 /// and only after all places have been identified will a [Place] be assigned.
 class Stop implements _Serializable, _Geospatial, _Timestamped {
-  GeoPosition _geoPosition;
+  GeoLocation _geoLocation;
   int placeId;
   DateTime _arrival, _departure;
 
-  Stop._(this._geoPosition, this._arrival, this._departure,
+  Stop._(this._geoLocation, this._arrival, this._departure,
       {this.placeId = -1});
 
   /// Construct stop from point cloud
   factory Stop._fromLocationSamples(List<LocationSample> locationSamples,
       {int placeId = -1}) {
     /// Calculate center
-    GeoPosition center = _computeCentroid(locationSamples);
+    GeoLocation center = _computeCentroid(locationSamples);
     return Stop._(
         center, locationSamples.first.datetime, locationSamples.last.datetime,
         placeId: placeId);
   }
 
-  GeoPosition get geoPosition => _geoPosition;
+  GeoLocation get geoLocation => _geoLocation;
 
   DateTime get departure => _departure;
 
@@ -182,14 +184,15 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
           departure.millisecondsSinceEpoch - arrival.millisecondsSinceEpoch);
 
   Map<String, dynamic> toJson() => {
-        _CENTROID: geoPosition.toJson(),
+        _GEO_LOCATION: geoLocation.toJson(),
         _PLACE_ID: placeId,
+        _ARRIVAL: arrival.millisecondsSinceEpoch,
         _DEPARTURE: departure.millisecondsSinceEpoch
       };
 
   factory Stop._fromJson(Map<String, dynamic> json) {
     return Stop._(
-        GeoPosition.fromJson(json[_CENTROID]),
+        GeoLocation.fromJson(json[_GEO_LOCATION]),
         DateTime.fromMillisecondsSinceEpoch(json[_ARRIVAL]),
         DateTime.fromMillisecondsSinceEpoch(json[_DEPARTURE]),
         placeId: json[_PLACE_ID]);
@@ -197,7 +200,7 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
 
   @override
   String toString() {
-    return 'Stop at place $placeId,  (${_geoPosition.toString()}) [$arrival - $departure] ($duration) ';
+    return 'Stop at place $placeId,  (${_geoLocation.toString()}) [$arrival - $departure] ($duration) ';
   }
 }
 
@@ -206,7 +209,7 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
 class Place {
   int _id;
   List<Stop> _stops;
-  GeoPosition _geoPosition;
+  GeoLocation _geoLocation;
 
   Place._(this._id, this._stops);
 
@@ -218,18 +221,18 @@ class Place {
       .map((s) => s.duration)
       .fold(Duration(), (a, b) => a + b);
 
-  GeoPosition get geoPosition {
-    if (_geoPosition == null) {
-      _geoPosition = _computeCentroid(_stops);
+  GeoLocation get geoLocation {
+    if (_geoLocation == null) {
+      _geoLocation = _computeCentroid(_stops);
     }
-    return _geoPosition;
+    return _geoLocation;
   }
 
   int get id => _id;
 
   @override
   String toString() {
-    return 'Place ID: $_id, at ${geoPosition.toString()} ($duration)';
+    return 'Place ID: $_id, at ${geoLocation.toString()} ($duration)';
   }
 }
 

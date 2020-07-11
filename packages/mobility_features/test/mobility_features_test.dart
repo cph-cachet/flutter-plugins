@@ -26,28 +26,20 @@ void flushFiles() async {
 }
 
 void main() async {
-  List<DateTime> dates = [
-    DateTime(2020, 02, 12),
-    DateTime(2020, 02, 13),
-    DateTime(2020, 02, 14),
-    DateTime(2020, 02, 15),
-    DateTime(2020, 02, 16),
-    DateTime(2020, 02, 17),
-  ];
 
   DateTime jan01 = DateTime(2020, 01, 01);
 
   // Poppelgade 7, home
-  GeoPosition pos1 = GeoPosition(55.692035, 12.558575);
+  GeoLocation pos1 = GeoLocation(55.692035, 12.558575);
 
   // Falkoner Alle
-  GeoPosition pos2 = GeoPosition(55.685329, 12.538601);
+  GeoLocation pos2 = GeoLocation(55.685329, 12.538601);
 
   // Dronning Louises Bro
-  GeoPosition pos3 = GeoPosition(55.686723, 12.563769);
+  GeoLocation pos3 = GeoLocation(55.686723, 12.563769);
 
   // Assistentens Kirkegaard
-  GeoPosition pos4 = GeoPosition(55.690862, 12.549545);
+  GeoLocation pos4 = GeoLocation(55.690862, 12.549545);
 
   /// This test  verifies that the 'midnight' extension
   /// works for two DateTime objects on the same date.
@@ -65,7 +57,7 @@ void main() async {
       MobilityFactory mf = MobilityFactory.instance;
 
       LocationSample x =
-          LocationSample(GeoPosition(123.456, 123.456), DateTime(2020, 01, 01));
+          LocationSample(GeoLocation(123.456, 123.456), DateTime(2020, 01, 01));
 
       List<LocationSample> dataset = [x, x, x];
 
@@ -432,7 +424,7 @@ void main() async {
 
       // Convert DTO stream to LocationSample stream via a mapper function
       Stream<LocationSample> stream = locationStream.map((dto) =>
-          LocationSample(GeoPosition(dto.lat, dto.lon), DateTime.now()));
+          LocationSample(GeoLocation(dto.lat, dto.lon), DateTime.now()));
 
       // Instantiate the MobilityFactory
       MobilityFactory mf = MobilityFactory.instance;

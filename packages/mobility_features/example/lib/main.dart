@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Geolocator().getPositionStream().asBroadcastStream();
 
     Stream<LocationSample> locationSampleStream = positionStream.map((e) =>
-        LocationSample(GeoPosition(e.latitude, e.longitude), e.timestamp));
+        LocationSample(GeoLocation(e.latitude, e.longitude), e.timestamp));
 
     mobilityFactory.startListening(locationSampleStream);
     subscription = positionStream.listen(onData);

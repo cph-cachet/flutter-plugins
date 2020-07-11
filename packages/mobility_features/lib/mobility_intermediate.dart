@@ -14,7 +14,7 @@ List<Stop> _findStops(List<LocationSample> data,
   while (start < n) {
     int end = start + 1;
     List<LocationSample> subset = data.sublist(start, end);
-    GeoPosition centroid = _computeCentroid(subset);
+    GeoLocation centroid = _computeCentroid(subset);
 
     /// Expand cluster until either all samples have been considered,
     /// or the current sample lies outside the radius.
@@ -47,7 +47,7 @@ List<Place> _findPlaces(List<Stop> stops, {double placeRadius = 50.0}) {
 
   /// Extract gps coordinates from stops
   List<List<double>> stopCoordinates =
-      stops.map((s) => ([s.geoPosition.latitude, s.geoPosition.longitude])).toList();
+      stops.map((s) => ([s.geoLocation.latitude, s.geoLocation.longitude])).toList();
 
   /// Run DBSCAN on stops
   dbscan.run(stopCoordinates);
@@ -106,12 +106,12 @@ List<Move> _findMoves(List<LocationSample> data, List<Stop> stops,
   return moves.where((m) => m.duration >= moveDuration).toList();
 }
 
-GeoPosition _computeCentroid(List<_Geospatial> data) {
+GeoLocation _computeCentroid(List<_Geospatial> data) {
   double lat =
-      Stats.fromData(data.map((d) => (d.geoPosition.latitude)).toList())
+      Stats.fromData(data.map((d) => (d.geoLocation.latitude)).toList())
           .median as double;
   double lon =
-      Stats.fromData(data.map((d) => (d.geoPosition.longitude)).toList())
+      Stats.fromData(data.map((d) => (d.geoLocation.longitude)).toList())
           .median as double;
-  return GeoPosition(lat, lon);
+  return GeoLocation(lat, lon);
 }
