@@ -9,9 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  simple_cluster: ^0.2.0
-  stats: ^0.2.0+3
-  path_provider: ^1.6.10
+  simple_cluster: ^0.2.1
+  stats: ^1.0.0
+  path_provider: ^1.6.11
 
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,6 @@
+## [1.3.3] - Dependencies
+* Updated dependencies
+
 ## [1.3.2] - Streaming based API
 * Renamed GeoPosition to GeoLocation due to naming conflicts with another package.
 
