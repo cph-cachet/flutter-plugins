@@ -4,7 +4,14 @@ part of weather_library;
 int _unpackInt(Map<String, dynamic> M, String k) {
   if (M != null) {
     if (M.containsKey(k)) {
-      return M[k] + 0;
+      final val = M[k];
+      if (val.runtimeType == String) {
+        return int.parse(M[k]) ?? -1;
+      }
+      else if (val.runtimeType == int) {
+        return M[k];
+      }
+      return -1;
     }
   }
   return 0;

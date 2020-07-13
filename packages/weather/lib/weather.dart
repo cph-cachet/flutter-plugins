@@ -96,6 +96,7 @@ class Weather {
     Weather: $_weatherMain, $_weatherDescription
     Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax
     Sunrise: $_sunrise, Sunset: $_sunset
+    Weather Condition code: $_weatherConditionCode
     ''';
   }
 

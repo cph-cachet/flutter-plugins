@@ -1,3 +1,6 @@
+## 1.1.5
+* Added the Weather Condition Code (see https://github.com/cph-cachet/flutter-plugins/pull/73)
+
 ## 1.1.1
 * Updated docs
 
