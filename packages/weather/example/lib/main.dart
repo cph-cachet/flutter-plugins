@@ -118,47 +118,60 @@ class _MyAppState extends State<MyApp> {
     print(lon);
   }
 
-  Widget _latTextField() {
-    return Container(
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor))),
-        padding: EdgeInsets.all(10),
-        child: TextField(
-            decoration: InputDecoration(
-                border: OutlineInputBorder(), hintText: 'Enter longitude'),
-            keyboardType: TextInputType.number,
-            onChanged: _saveLat,
-            onSubmitted: _saveLat));
-  }
-
-  Widget _lonTextField() {
-    return Container(
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor))),
-        padding: EdgeInsets.all(10),
-        child: TextField(
-            decoration: InputDecoration(
-                border: OutlineInputBorder(), hintText: 'Enter longitude'),
-            keyboardType: TextInputType.number,
-            onChanged: _saveLon,
-            onSubmitted: _saveLon));
-  }
-
-  Widget _weatherButton() {
-    return FlatButton(
-      child: Text('Fetch weather'),
-      onPressed: queryWeather,
-      color: Colors.blue,
+  Widget _coordinateInputs() {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Container(
+              margin: EdgeInsets.all(5),
+              child: TextField(
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter latitude'),
+                  keyboardType: TextInputType.number,
+                  onChanged: _saveLat,
+                  onSubmitted: _saveLat)),
+        ),
+        Expanded(
+            child: Container(
+                margin: EdgeInsets.all(5),
+                child: TextField(
+                    decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Enter longitude'),
+                    keyboardType: TextInputType.number,
+                    onChanged: _saveLon,
+                    onSubmitted: _saveLon)))
+      ],
     );
   }
 
-  Widget _forecastButton() {
-    return FlatButton(
-      child: Text('Fetch forecast'),
-      onPressed: queryForecast,
-      color: Colors.blue,
+  Widget _buttons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.all(5),
+          child: FlatButton(
+            child: Text(
+              'Fetch weather',
+              style: TextStyle(color: Colors.white),
+            ),
+            onPressed: queryWeather,
+            color: Colors.blue,
+          ),
+        ),
+        Container(
+            margin: EdgeInsets.all(5),
+            child: FlatButton(
+              child: Text(
+                'Fetch forecast',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: queryForecast,
+              color: Colors.blue,
+            ))
+      ],
     );
   }
 
@@ -171,10 +184,8 @@ class _MyAppState extends State<MyApp> {
           ),
           body: Column(
             children: <Widget>[
-              _latTextField(),
-              _lonTextField(),
-              _weatherButton(),
-              _forecastButton(),
+              _coordinateInputs(),
+              _buttons(),
               Text(
                 'Output:',
                 style: TextStyle(fontSize: 20),

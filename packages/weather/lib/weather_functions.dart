@@ -1,6 +1,23 @@
 part of weather_library;
 
 /// Safely unpack a double value from a [Map] object.
+int _unpackInt(Map<String, dynamic> M, String k) {
+  if (M != null) {
+    if (M.containsKey(k)) {
+      final val = M[k];
+      if (val.runtimeType == String) {
+        return int.parse(M[k]) ?? -1;
+      }
+      else if (val.runtimeType == int) {
+        return M[k];
+      }
+      return -1;
+    }
+  }
+  return 0;
+}
+
+/// Safely unpack a double value from a [Map] object.
 double _unpackDouble(Map<String, dynamic> M, String k) {
   if (M != null) {
     if (M.containsKey(k)) {
