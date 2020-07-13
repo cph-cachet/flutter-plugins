@@ -1,4 +1,4 @@
-package cachet.plugins.screenstate;
+package dk.cachet.screen_state;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

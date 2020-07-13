@@ -36,7 +36,7 @@ class Screen {
 
   ScreenStateEvent _parseScreenStateEvent(String event) {
     switch (event) {
-      /** Android **/
+    /** Android **/
       case 'android.intent.action.SCREEN_OFF':
         return ScreenStateEvent.SCREEN_OFF;
       case 'android.intent.action.SCREEN_ON':

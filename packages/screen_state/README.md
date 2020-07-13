@@ -4,7 +4,8 @@
 A Flutter plugin for tracking the screen state.
 
 ## Install
-Add ```screen_state``` as a dependency in  `pubspec.yaml`.
+Add `screen_state` as a dependency in  `pubspec.yaml`.
+
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
 ## Usage
