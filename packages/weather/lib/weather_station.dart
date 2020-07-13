@@ -26,11 +26,11 @@ class WeatherStation {
   /// Fetch current weather based on geographical coordinates.
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/forecast5
-  Future<List<Weather>> fiveDayForecast(double lat, double lon) async {
+  Future<List<Weather>> fiveDayForecast(double latitude, double longitude) async {
     List<Weather> forecasts = new List<Weather>();
     try {
       Map<String, dynamic> jsonForecasts =
-      await _requestOpenWeatherAPI(FIVE_DAY_FORECAST, lat, lon);
+      await _requestOpenWeatherAPI(FIVE_DAY_FORECAST, latitude, longitude);
       List<dynamic> forecastsJson = jsonForecasts['list'];
       forecasts = forecastsJson.map((w) => Weather(w)).toList();
     } catch (exception) {

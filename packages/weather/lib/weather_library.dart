@@ -14,4 +14,4 @@ import 'package:http/http.dart' as http;
 part 'weather.dart';
 part 'weather_station.dart';
 part 'exceptions.dart';
-part 'weather_functions.dart';
+part 'weather_parsing.dart';

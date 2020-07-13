@@ -31,7 +31,8 @@ class Temperature {
 /// temperature, wind, snow, rain and humidity.
 class Weather {
   String _country, _areaName, _weatherMain, _weatherDescription, _weatherIcon;
-  Temperature _temperature, _tempMin, _tempMax;
+  Temperature _temperature, _tempMin, _tempMax, _tempFeelsLike;
+
   DateTime _date, _sunrise, _sunset;
   double _latitude,
       _longitude,
@@ -44,6 +45,7 @@ class Weather {
       _rainLast3Hours,
       _snowLastHour,
       _snowLast3Hours;
+
   int _weatherConditionCode;
 
   Weather(Map<String, dynamic> weatherData) {
@@ -71,6 +73,8 @@ class Weather {
     _temperature = _unpackTemperature(main, 'temp');
     _tempMin = _unpackTemperature(main, 'temp_min');
     _tempMax = _unpackTemperature(main, 'temp_max');
+    _tempFeelsLike = _unpackTemperature(main, 'feels_like');
+
     _humidity = _unpackDouble(main, 'humidity');
     _pressure = _unpackDouble(main, 'pressure');
 
@@ -94,7 +98,7 @@ class Weather {
     Place Name: $_areaName ($_country)
     Date: $_date
     Weather: $_weatherMain, $_weatherDescription
-    Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax
+    Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax,  Temp (feels like): $_tempFeelsLike
     Sunrise: $_sunrise, Sunset: $_sunset
     Weather Condition code: $_weatherConditionCode
     ''';
@@ -106,7 +110,7 @@ class Weather {
   /// A brief description of the weather
   String get weatherMain => _weatherMain;
 
-  /// A brief description of the weather
+  /// Icon depicting current weather
   String get weatherIcon => _weatherIcon;
 
   /// Weather condition codes
@@ -129,6 +133,9 @@ class Weather {
 
   /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
   Temperature get temperature => _temperature;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLike => _tempFeelsLike;
 
   /// Pressure in Pascal
   double get pressure => _pressure;
@@ -169,4 +176,3 @@ class Weather {
   /// Rain fall last 3 hours measured in volume
   double get snowLast3Hours => _snowLast3Hours;
 }
-

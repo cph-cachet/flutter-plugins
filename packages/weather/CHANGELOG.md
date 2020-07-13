@@ -1,5 +1,9 @@
+## 1.1.6
+* Added Temperature (Feels Like) to the Weather object. See https://github.com/cph-cachet/flutter-plugins/pull/58
+
 ## 1.1.5
 * Added the Weather Condition Code (see https://github.com/cph-cachet/flutter-plugins/pull/73)
+
 
 ## 1.1.1
 * Updated docs
