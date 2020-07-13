@@ -95,7 +95,7 @@ class Weather {
 
   String toString() {
     return '''
-    Place Name: $_areaName ($_country)
+    Place Name: $_areaName [$_country] ($latitude, $longitude)
     Date: $_date
     Weather: $_weatherMain, $_weatherDescription
     Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax,  Temp (feels like): $_tempFeelsLike
@@ -175,4 +175,23 @@ class Weather {
 
   /// Rain fall last 3 hours measured in volume
   double get snowLast3Hours => _snowLast3Hours;
+}
+
+List<Weather> _parseForecast(Map<String, dynamic> jsonForecast) {
+  List<dynamic> forecastList = jsonForecast['list'];
+  Map<String, dynamic> city = jsonForecast['city'];
+  Map<String, dynamic> coord = city['coord'];
+  String country = city['country'];
+  String name = _unpackString(city, 'name');
+  double lat = _unpackDouble(coord, 'lat');
+  double lon = _unpackDouble(coord, 'lon');
+
+  // Convert the json list to a Weather list
+  return forecastList.map((w) {
+    // Put the general fields inside inside every weather object
+    w['name'] = name;
+    w['sys'] = {'country' : country};
+    w['coord'] = {'lat' : lat, 'lon' : lon};
+    return Weather(w);
+  }).toList();
 }

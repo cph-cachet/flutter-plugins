@@ -7,19 +7,42 @@ void main() async {
     setUpAll(() {});
     setUp(() {});
 
+    double lat = 55.0111;
+    double lon = 15.0569;
+    String key = '856822fd8e22db5e1ba48c0e7d69844a';
+    String cityName = 'Kongens Lyngby';
+    WeatherFactory wf = WeatherFactory(key);
+
     test('- Fetch weather via lat and lon', () async {
-      double lat = 55.0111;
-      double lon = 15.0569;
-      String key = '856822fd8e22db5e1ba48c0e7d69844a';
-      WeatherStation weatherStation = WeatherStation(key);
-      Weather w = await weatherStation.currentWeather(lat, lon);
+      Weather w = await wf.currentWeatherByLocation(lat, lon);
+      print('Weather by Location:');
       print(w);
+      print('-'*50);
     });
 
-    test('- Construct from From JSON', () {
-      Weather w = new Weather(weatherJsonExample());
-      print(w.toString());
+
+    test('- Fetch weather via city name', () async {
+      Weather w = await wf.currentWeatherByCityName(cityName);
+      print('Weather by city name:');
+      print(w);
+      print('-'*50);
     });
+
+    test('- Fetch forecast via lat and lon', () async {
+      print('Forecast by city name:');
+      List<Weather> forecast = await wf.fiveDayForecastByLocation(lat, lon);
+      for (var w in forecast) print(w);
+      print('-'*50);
+    });
+
+
+    test('- Fetch forecast via city name', () async {
+      print('Forecast by city name:');
+      List<Weather> forecast = await wf.fiveDayForecastByCityName(cityName);
+      for (var w in forecast) print(w);
+      print('-'*50);
+    });
+
   });
 
 }

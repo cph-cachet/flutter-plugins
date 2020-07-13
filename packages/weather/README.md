@@ -1,14 +1,106 @@
 # weather
 This package uses the [OpenWeatherMAP API](https://openweathermap.org/) to get the current weather status as well as weather forecasts.
 
-The weather can currently only be fetched by providing a location, i.e. latitude and longitude coordinates..
+The weather can currently be fetched by providing a geolocation or a city name.
 
 [![pub package](https://img.shields.io/pub/v/weather.svg)](https://pub.dartlang.org/packages/weather)
 
 ## Install (Flutter)
 Add ```weather``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [pubspec documenation](https://flutter.io/using-packages/).
-## AndroidX support
+
+## Permissions
+No permissions are needed for this package in isolatation, however for getting the device's geolocation we recommend using the [geolocator](https://pub.dev/packages/geolocator) plugin.
+
+## Usage
+First and foremost you need an API key from OpenWeatherMap, which can be acquired for free [here](https://openweathermap.org/price).
+
+Next, an instance of a `WeatherFactory is created using the API key.
+
+```dart
+import 'package:weather/weather.dart';
+
+...
+
+WeatherFactory wf = new WeatherFactory("YOUR_API_KEY");
+```
+
+### Current Weather
+For specific documentation on the current weather API, see the [OpenWeatherMap weather API docs](https://openweathermap.org/current).
+
+The current weather is queried either through a latitude and longitude or through a city name, i.e.
+
+```dart
+double lat = 55.0111;
+double lon = 15.0569;
+String key = '856822fd8e22db5e1ba48c0e7d69844a';
+String cityName = 'Kongens Lyngby';
+WeatherFactory wf = WeatherFactory(key);
+```
+
+Through geolocation:
+```dart
+Weather w = await wf.currentWeatherByLocation(lat, lon);
+```
+
+Through city name:
+
+```dart
+Weather w = await wf.currentWeatherByCityName(cityName);
+```
+
+Example output:
+
+```bash
+Place Name: Kongens Lyngby [DK] (55.77, 12.5)
+Date: 2020-07-13 17:17:34.000
+Weather: Clouds, broken clouds
+Temp: 17.1 Celsius, Temp (min): 16.7 Celsius, Temp (max): 18.0 Celsius,  Temp (feels like): 13.4 Celsius
+Sunrise: 2020-07-13 04:43:53.000, Sunset: 2020-07-13 21:47:15.000
+Weather Condition code: 803
+```
+
+For a complete list of all the properties of the [Weather](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html) class, check the [documentation](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html)
+
+#### Temperature unit
+The [Temperature](https://pub.dartlang.org/documentation/weather/latest/weather/Temperature-class.html) class holds a temperature and can output the temperature in the following units: 
+* Celsius
+* Fahrenheit
+* Kelvin
+
+This can be done as given a `Weather` object `w`
+```dart
+double celsius = w.temperature.celsius;
+double fahrenheit = w.temperature.celsius;
+double kelvin = w.temperature.kelvin;
+```
+
+### Five-day Weather Forecast
+For API documentation on the forecast API, see the [OpenWeatherMap forecast API docs](https://openweathermap.org/forecast5).
+
+The forecast is a 5-day prediction and contains a list of Weather objects with 3 hours between them. 
+
+The forecast can also be fetched via geolocation or city name.
+
+Via geolocation
+
+```dart
+List<Weather> forecast = await wf.fiveDayForecastByLocation(lat, lon);
+```
+
+Via city name
+
+```dart
+List<Weather> forecast = await wf.fiveDayForecastByCityName(cityName);
+```
+
+### Exceptions
+The following are cases for which an exception will be thrown:
+
+* The provided OpenWeather API key is invalid
+* An bad response was given by the API; it may be down.
+
+## NB: AndroidX support
 **Only for Android API level 28**
 
 Update the contents of the `android/gradle.properties` file with the following:
@@ -28,80 +120,4 @@ dependencies {
 
 And finally, set the Android compile- and minimum SDK versions to `compileSdkVersion 28`, and `minSdkVersion 21` respectively, inside the `android/app/build.gradle` file.
 
-## Permissions
-The package uses your location to fetch weather data, therefore location tracking must be enabled.
-
-
-### Android
-Add the following entry to your `manifest.xml` file, in the Android project of your application:
-
-```xml
-<uses-permission android:name="android.permission.INTERNET"/>
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-```
-
-In addition, it is recommended to set your __minimum SDK version to 21__.
-
-### iOS
-1. Open the XCode project of your app, named `Runner.xcodeproj`
-2. Locate the `info.plist` file in the `Runner` directory.
-3. Right click `info.plist` and choose `Open as > Source Code`.
-4. Add the following entries inside the `<dict></dict>` tags`:
-
-```xml
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>This app uses location to forecast the weather.</string>
-<key>NSLocationAlwaysUsageDescription</key>
-<string>This app uses location to forecast the weather.</string>
-```
-
-#### Known issues
-There is an issue with the `location` plugin which this package depends on, where an error with the following message 
-
-`The use of Swift 3 @objc inference in Swift 4 mode is deprecated` 
-
-may be thrown. For a solution, check the following stack overflow question:
-https://stackoverflow.com/questions/44379348/the-use-of-swift-3-objc-inference-in-swift-4-mode-is-deprecated
-
-
-## Usage
-First and foremost you need an API key from OpenWeatherMap, which can be acquired for free [here](https://openweathermap.org/price).
-
-```dart
-import 'package:weather/weather.dart';
-
-...
-
-WeatherStation weatherStation = new WeatherStation("YOUR_API_KEY");
-```
-### Query current weather
-For specific documentation on the current weather API, see the [OpenWeatherMap weather API docs](https://openweathermap.org/current).
-
-```dart
-Weather weather = await weatherStation.currentWeather(lat, lon);
-```
-
-For a complete list of all the properties of the [Weather](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html) class, check the [documentation](https://pub.dartlang.org/documentation/weather/latest/weather/Weather-class.html)
-
-#### Get temperature
-The [Temperature](https://pub.dartlang.org/documentation/weather/latest/weather/Temperature-class.html) class holds a temperature and can output the temperature in Celsius, Fahrenheit, and Kelvin:
-```dart
-double celsius = weather.temperature.celsius;
-double fahrenheit = weather.temperature.celsius;
-double kelvin = weather.temperature.kelvin;
-```
-
-### Query 5 day forecast
-For API documentation on the forecast API, see the [OpenWeatherMap forecast API docs](https://openweathermap.org/forecast5).
-
-```dart
-List<Weather> forecasts = await weatherStation.fiveDayForecast(lat, lon);
-```
-
-### Exceptions
-The following are cases for which an exception will be thrown:
-
-* No Location permission was given
-* The provided OpenWeather API key is invalid
-* An bad response was given by the API; it may be down.
 
