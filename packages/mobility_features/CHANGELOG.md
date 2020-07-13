@@ -1,3 +1,9 @@
+## [1.3.3] - Dependencies
+* Updated dependencies
+
+## [1.3.2] - Streaming based API
+* Renamed GeoPosition to GeoLocation due to naming conflicts with another package.
+
 ## [1.3.0] - Streaming based API
 * Refactored API to support streaming
 * An example app is now included

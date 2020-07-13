@@ -43,7 +43,7 @@ void setUpLocationStream() {
 
   // Convert the Position stream into a LocationSample stream
   Stream<LocationSample> locationSampleStream = positionStream.map((e) =>
-    LocationSample(GeoPosition(e.latitude, e.longitude), e.timestamp));
+    LocationSample(GeoLocation(e.latitude, e.longitude), e.timestamp));
 
   // Make the Mobility Factory start listening to location updates
   mobilityFactory.startListening(locationSampleStream);
@@ -51,7 +51,7 @@ void setUpLocationStream() {
 ```
 
 ### Step 3: Compute features
-The features can be computed using the `ContextGenerator` which uses stored data to compute the features.
+The features can be computed using the `MobilityFactory` class which uses stored data to compute the features.
 
 There most basic computation is done as follows:
 
@@ -75,7 +75,7 @@ context.routineIndex;
 ```
 
 Note: it is not possible to instantiate a `MobilityContext` object directly. 
-It must be intantiated through the `ContextGenerator.generate()` method.
+It must be intantiated through the `mobilityFactory.computeFeatures()` method.
 
 #### Step 3.1 : Compute features with prior contexts
 Should you wish to compute the Routine Index feature (see Theoretical Background) as well, then prior contexts are needed. 
@@ -95,7 +95,7 @@ a specific date, then it is possible to do so using the `date` parameter.
 
 ```dart
 DateTime myDate = DateTime(01, 01, 2020);
-MobilityContext context = await ContextGenerator.generate(date: myDate);
+MobilityContext context = await mobilityFactory.computeFeatures(date: myDate);
 ```
 
 ### Feature-specific instructions
