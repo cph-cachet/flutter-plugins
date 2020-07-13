@@ -95,7 +95,7 @@ All operations on the eSense device happens via the [`ESenseManager`](https://pu
 When connecting, specify the name of the device (typically on the form `eSense-xxxx`).
 
 ```dart
-import 'package:esense/esense.dart';
+import 'package:esense_flutter/esense.dart';
 
 ...
 
