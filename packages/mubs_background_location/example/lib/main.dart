@@ -12,9 +12,11 @@ class MyApp extends StatefulWidget {
 
 enum Status { UNKNOWN, RUNNING, STOPPED }
 
-class _MyAppState extends State<MyApp> {
-  ReceivePort port = ReceivePort();
+String dtoToString(LocationDto dto) =>
+    '${dto.latitude}, ${dto.longitude} @ ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
 
+
+class _MyAppState extends State<MyApp> {
   String logStr = '';
   LocationDto lastLocation;
   DateTime lastTimeLocation;
@@ -26,12 +28,13 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    // Subscribe to stream in case it is already running
     stream = locationManager.dtoStream;
     subscription = stream.listen(onData);
   }
 
   void onData(LocationDto dto) {
-    print('DTO: ${dto}');
+    print(dtoToString(dto));
     setState(() {
       if (_status == Status.UNKNOWN) {
         _status = Status.RUNNING;
@@ -42,31 +45,33 @@ class _MyAppState extends State<MyApp> {
   }
 
   void start() async {
-    if (subscription != null) {
-      subscription.cancel();
-    }
-    subscription = stream.listen(onData);
-    await locationManager.start();
     setState(() {
       _status = Status.RUNNING;
     });
+    // Subscribe if it hasnt been done already
+    if (subscription == null) {
+      subscription = stream.listen(onData);
+    }
+    await locationManager.start();
   }
 
   void stop() async {
-    subscription.cancel();
-    await locationManager.stop();
     setState(() {
       _status = Status.STOPPED;
     });
+    subscription.cancel();
+    await locationManager.stop();
   }
 
   Widget button() {
     Function f = start;
     String msg = 'START';
+
     if (_status == Status.RUNNING) {
       f = stop;
       msg = 'STOP';
     }
+
     return SizedBox(
       width: double.maxFinite,
       child: RaisedButton(
@@ -81,12 +86,10 @@ class _MyAppState extends State<MyApp> {
     return Text("Status: $msg");
   }
 
-  String locationStr(LocationDto dto) =>
-      '${lastLocation.latitude}, ${lastLocation.longitude} @ ${DateTime.fromMillisecondsSinceEpoch(lastLocation.time ~/ 1)}';
 
   Widget lastLoc() {
     return Text(lastLocation != null
-        ? locationStr(lastLocation)
+        ? dtoToString(lastLocation)
         : 'Unknown last location');
   }
 
@@ -97,6 +100,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    print(_status);
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
