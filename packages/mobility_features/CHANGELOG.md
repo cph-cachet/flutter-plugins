@@ -1,3 +1,6 @@
+## [1.3.4] - Flushing data
+* Fixed an error where location samples were being flushed when they shouldn't
+
 ## [1.3.3] - Dependencies
 * Updated dependencies
 

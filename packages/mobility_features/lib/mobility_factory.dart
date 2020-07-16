@@ -148,19 +148,19 @@ class MobilityFactory {
     final stopSerializer = await _stopSerializer;
     final moveSerializer = await _moveSerializer;
 
-    // Define today as today if it is not defined
+    /// Define today as today if it is not defined
     date = date ?? DateTime.now();
 
-    // Set date to midnight 00:00
+    /// Set date to midnight 00:00
     date = date.midnight;
 
-    // Load saved stops and moves
+    /// Load saved stops and moves
     List<Stop> stops = await stopSerializer.load();
     List<Move> moves = await moveSerializer.load();
 
-    // Filter out stops/moves older than 28 days as well as
-    // elements on the current date, if current date is the most recent date,
-    // i.e. data is still being collected on that date
+    /// Filter out stops/moves older than 28 days as well as
+    /// elements on the current date, if current date is the most recent date,
+    /// i.e. data is still being collected on that date
     stops = _getRecentHistoricalElements(stops, date);
     moves = _getRecentHistoricalElements(moves, date);
 
@@ -168,7 +168,7 @@ class MobilityFactory {
     List<LocationSample> samples = await sampleSerializer.load();
     samples.sort((a, b) => a.datetime.compareTo(b.datetime));
 
-    // Find the dates of the stored samples
+    /// Find the dates of the stored samples
     List<DateTime> sampleDates =
         samples.map((e) => e.datetime.midnight).toSet().toList();
 
@@ -176,7 +176,7 @@ class MobilityFactory {
         .map((d) => samples.where((e) => e.datetime.midnight == d).toList())
         .toList();
 
-    // Prepare arguments for async computation
+    /// Prepare arguments for async computation
     Map arguments = {
       'groupedSamples': groupedSamples,
       'stops': stops,
@@ -191,16 +191,22 @@ class MobilityFactory {
     /// Off-load computation to background and await results
     List results = await offloadToBackground(sendPort, arguments);
 
-    // Extract results from async computation
+    /// Extract results from async computation
     List<MobilityContext> contexts = results[0];
     List<Stop> allStops = results[1];
     List<Move> allMoves = results[2];
     List<Place> allPlaces = results[3];
 
-    // Extract stops and moves from today
+    /// Extract stops and moves from today
     List<Stop> stopsToday = _getElementsForDate(allStops, date);
     List<Move> movesToday = _getElementsForDate(allMoves, date);
-    List<LocationSample> samplesToKeep = _getElementsAfterDate(samples, date);
+    List<LocationSample> samplesToKeep = [];
+
+    /// Keep the location data from the last known date
+    /// since more data may be coming in later
+    if (groupedSamples.isNotEmpty) {
+      samplesToKeep = groupedSamples.last;
+    }
 
     sampleSerializer.flush();
     sampleSerializer.save(samplesToKeep);
@@ -209,11 +215,11 @@ class MobilityFactory {
     stopSerializer.flush();
     moveSerializer.flush();
 
-    // Save
+    /// Save stops and moves
     stopSerializer.save(allStops);
     moveSerializer.save(allMoves);
 
-    // Make a MobilityContext for today, use the prior MobilityContexts
+    /// Make a MobilityContext for today, use the prior MobilityContexts
     return MobilityContext._(stopsToday, allPlaces, movesToday, contexts, date);
   }
 
@@ -263,10 +269,6 @@ class MobilityFactory {
     return elements.where((e) => e.datetime.midnight == date).toList();
   }
 
-  static List<_Timestamped> _getElementsAfterDate(
-      List<_Timestamped> elements, DateTime date) {
-    return elements.where((e) => e.datetime.midnight.isAfter(date)).toList();
-  }
 
   static List<_Timestamped> _getRecentHistoricalElements(
       List<_Timestamped> elements, DateTime date) {
