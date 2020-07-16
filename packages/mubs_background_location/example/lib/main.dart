@@ -15,7 +15,6 @@ enum Status { UNKNOWN, RUNNING, STOPPED }
 String dtoToString(LocationDto dto) =>
     '${dto.latitude}, ${dto.longitude} @ ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
 
-
 class _MyAppState extends State<MyApp> {
   String logStr = '';
   LocationDto lastLocation;
@@ -45,14 +44,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   void start() async {
+
+    // Subscribe if it hasnt been done already
+    if (subscription != null) {
+      subscription.cancel();
+    }
+    subscription = stream.listen(onData);
+    await locationManager.start();
     setState(() {
       _status = Status.RUNNING;
     });
-    // Subscribe if it hasnt been done already
-    if (subscription == null) {
-      subscription = stream.listen(onData);
-    }
-    await locationManager.start();
   }
 
   void stop() async {
@@ -61,17 +62,25 @@ class _MyAppState extends State<MyApp> {
     });
     subscription.cancel();
     await locationManager.stop();
+
   }
 
-  Widget button() {
+  Widget stopButton() {
+    Function f = stop;
+    String msg = 'STOP';
+
+    return SizedBox(
+      width: double.maxFinite,
+      child: RaisedButton(
+        child: Text(msg),
+        onPressed: f,
+      ),
+    );
+  }
+
+  Widget startButton() {
     Function f = start;
     String msg = 'START';
-
-    if (_status == Status.RUNNING) {
-      f = stop;
-      msg = 'STOP';
-    }
-
     return SizedBox(
       width: double.maxFinite,
       child: RaisedButton(
@@ -86,7 +95,6 @@ class _MyAppState extends State<MyApp> {
     return Text("Status: $msg");
   }
 
-
   Widget lastLoc() {
     return Text(lastLocation != null
         ? dtoToString(lastLocation)
@@ -100,7 +108,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    print(_status);
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -112,7 +119,12 @@ class _MyAppState extends State<MyApp> {
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[button(), status(), lastLoc()],
+              children: <Widget>[
+                startButton(),
+                stopButton(),
+                status(),
+                lastLoc()
+              ],
             ),
           ),
         ),
