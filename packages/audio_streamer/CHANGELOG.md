@@ -1,3 +1,6 @@
+## 1.2.0
+* Fixed an issue where the AVAudioRecorder would crash on iOS (see https://github.com/cph-cachet/flutter-plugins/issues/91)
+
 ## 1.1.6
 * Upgrade to `permission_handler` v. 5.
 

@@ -1,3 +1,5 @@
-## 0.0.1
+## 1.0.0
+* Migrated to new Android Plugin API (Flutter 1.12)
 
-* TODO: Describe initial release.
+## 0.5.0
+* Migrated to AndroidX

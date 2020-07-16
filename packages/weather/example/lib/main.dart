@@ -19,7 +19,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String key = '856822fd8e22db5e1ba48c0e7d69844a';
-  WeatherStation ws;
+  WeatherFactory ws;
   List<Weather> _data = [];
   AppState _state = AppState.NOT_DOWNLOADED;
   double lat, lon;
@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    ws = new WeatherStation(key);
+    ws = new WeatherFactory(key);
   }
 
   void queryForecast() async {
@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.DOWNLOADING;
     });
 
-    List<Weather> forecasts = await ws.fiveDayForecast(lat, lon);
+    List<Weather> forecasts = await ws.fiveDayForecastByLocation(lat, lon);
     setState(() {
       _data = forecasts;
       _state = AppState.FINISHED_DOWNLOADING;
@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.DOWNLOADING;
     });
 
-    Weather weather = await ws.currentWeather(lat, lon);
+    Weather weather = await ws.currentWeatherByLocation(lat, lon);
     setState(() {
       _data = [weather];
       _state = AppState.FINISHED_DOWNLOADING;
@@ -118,47 +118,60 @@ class _MyAppState extends State<MyApp> {
     print(lon);
   }
 
-  Widget _latTextField() {
-    return Container(
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor))),
-        padding: EdgeInsets.all(10),
-        child: TextField(
-            decoration: InputDecoration(
-                border: OutlineInputBorder(), hintText: 'Enter longitude'),
-            keyboardType: TextInputType.number,
-            onChanged: _saveLat,
-            onSubmitted: _saveLat));
-  }
-
-  Widget _lonTextField() {
-    return Container(
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor))),
-        padding: EdgeInsets.all(10),
-        child: TextField(
-            decoration: InputDecoration(
-                border: OutlineInputBorder(), hintText: 'Enter longitude'),
-            keyboardType: TextInputType.number,
-            onChanged: _saveLon,
-            onSubmitted: _saveLon));
-  }
-
-  Widget _weatherButton() {
-    return FlatButton(
-      child: Text('Fetch weather'),
-      onPressed: queryWeather,
-      color: Colors.blue,
+  Widget _coordinateInputs() {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Container(
+              margin: EdgeInsets.all(5),
+              child: TextField(
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter latitude'),
+                  keyboardType: TextInputType.number,
+                  onChanged: _saveLat,
+                  onSubmitted: _saveLat)),
+        ),
+        Expanded(
+            child: Container(
+                margin: EdgeInsets.all(5),
+                child: TextField(
+                    decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Enter longitude'),
+                    keyboardType: TextInputType.number,
+                    onChanged: _saveLon,
+                    onSubmitted: _saveLon)))
+      ],
     );
   }
 
-  Widget _forecastButton() {
-    return FlatButton(
-      child: Text('Fetch forecast'),
-      onPressed: queryForecast,
-      color: Colors.blue,
+  Widget _buttons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.all(5),
+          child: FlatButton(
+            child: Text(
+              'Fetch weather',
+              style: TextStyle(color: Colors.white),
+            ),
+            onPressed: queryWeather,
+            color: Colors.blue,
+          ),
+        ),
+        Container(
+            margin: EdgeInsets.all(5),
+            child: FlatButton(
+              child: Text(
+                'Fetch forecast',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: queryForecast,
+              color: Colors.blue,
+            ))
+      ],
     );
   }
 
@@ -171,10 +184,8 @@ class _MyAppState extends State<MyApp> {
           ),
           body: Column(
             children: <Widget>[
-              _latTextField(),
-              _lonTextField(),
-              _weatherButton(),
-              _forecastButton(),
+              _coordinateInputs(),
+              _buttons(),
               Text(
                 'Output:',
                 style: TextStyle(fontSize: 20),

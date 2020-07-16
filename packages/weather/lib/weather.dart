@@ -31,7 +31,8 @@ class Temperature {
 /// temperature, wind, snow, rain and humidity.
 class Weather {
   String _country, _areaName, _weatherMain, _weatherDescription, _weatherIcon;
-  Temperature _temperature, _tempMin, _tempMax;
+  Temperature _temperature, _tempMin, _tempMax, _tempFeelsLike;
+
   DateTime _date, _sunrise, _sunset;
   double _latitude,
       _longitude,
@@ -44,6 +45,8 @@ class Weather {
       _rainLast3Hours,
       _snowLastHour,
       _snowLast3Hours;
+
+  int _weatherConditionCode;
 
   Weather(Map<String, dynamic> weatherData) {
     Map<String, dynamic> main = weatherData['main'];
@@ -65,10 +68,13 @@ class Weather {
     _weatherMain = _unpackString(weather, 'main');
     _weatherDescription = _unpackString(weather, 'description');
     _weatherIcon = _unpackString(weather, 'icon');
+    _weatherConditionCode = _unpackInt(weather, 'id');
 
     _temperature = _unpackTemperature(main, 'temp');
     _tempMin = _unpackTemperature(main, 'temp_min');
     _tempMax = _unpackTemperature(main, 'temp_max');
+    _tempFeelsLike = _unpackTemperature(main, 'feels_like');
+
     _humidity = _unpackDouble(main, 'humidity');
     _pressure = _unpackDouble(main, 'pressure');
 
@@ -89,11 +95,12 @@ class Weather {
 
   String toString() {
     return '''
-    Place Name: $_areaName ($_country)
+    Place Name: $_areaName [$_country] ($latitude, $longitude)
     Date: $_date
     Weather: $_weatherMain, $_weatherDescription
-    Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax
+    Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax,  Temp (feels like): $_tempFeelsLike
     Sunrise: $_sunrise, Sunset: $_sunset
+    Weather Condition code: $_weatherConditionCode
     ''';
   }
 
@@ -103,8 +110,11 @@ class Weather {
   /// A brief description of the weather
   String get weatherMain => _weatherMain;
 
-  /// A brief description of the weather
+  /// Icon depicting current weather
   String get weatherIcon => _weatherIcon;
+
+  /// Weather condition codes
+  int get weatherConditionCode => _weatherConditionCode;
 
   /// The level of cloudiness in Okta (0-9 scale)
   double get cloudiness => _cloudiness;
@@ -123,6 +133,9 @@ class Weather {
 
   /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
   Temperature get temperature => _temperature;
+
+  /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
+  Temperature get tempFeelsLike => _tempFeelsLike;
 
   /// Pressure in Pascal
   double get pressure => _pressure;
@@ -164,3 +177,21 @@ class Weather {
   double get snowLast3Hours => _snowLast3Hours;
 }
 
+List<Weather> _parseForecast(Map<String, dynamic> jsonForecast) {
+  List<dynamic> forecastList = jsonForecast['list'];
+  Map<String, dynamic> city = jsonForecast['city'];
+  Map<String, dynamic> coord = city['coord'];
+  String country = city['country'];
+  String name = _unpackString(city, 'name');
+  double lat = _unpackDouble(coord, 'lat');
+  double lon = _unpackDouble(coord, 'lon');
+
+  // Convert the json list to a Weather list
+  return forecastList.map((w) {
+    // Put the general fields inside inside every weather object
+    w['name'] = name;
+    w['sys'] = {'country' : country};
+    w['coord'] = {'lat' : lat, 'lon' : lon};
+    return Weather(w);
+  }).toList();
+}

@@ -1,3 +1,16 @@
+## 1.2.0
+* Renamed WeatherStation to WeatherFactory to reflect its purpose (it does not represent a physical weather station)
+* Refactored parsing of forecasts
+* Weather and Forecast can now also be queried using city name (previously only geolocation)
+* Cleaned up the unit tests and documentation which was slightly wrong
+
+## 1.1.6
+* Added Temperature (Feels Like) to the Weather object. See https://github.com/cph-cachet/flutter-plugins/pull/58
+
+## 1.1.5
+* Added the Weather Condition Code (see https://github.com/cph-cachet/flutter-plugins/pull/73)
+
+
 ## 1.1.1
 * Updated docs
 
