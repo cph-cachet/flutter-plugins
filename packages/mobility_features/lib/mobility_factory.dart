@@ -122,14 +122,14 @@ class MobilityFactory {
       dates.remove(date);
 
       // Get the stops and moves for each date
-      for (DateTime dateHist in dates) {
-        List<Stop> stopsOnDate = _getElementsForDate(stops, dateHist);
-        List<Move> movesOnDate = _getElementsForDate(moves, dateHist);
+      for (DateTime d in dates) {
+        List<Stop> stopsOnDate = _getElementsForDate(stops, d);
+        List<Move> movesOnDate = _getElementsForDate(moves, d);
 
         // If there are any stops, make a MobilityContext object with no prior contexts
         if (stopsOnDate.length > 0) {
           MobilityContext mc =
-              MobilityContext._(stopsOnDate, places, movesOnDate, [], dateHist);
+              MobilityContext._(stopsOnDate, places, movesOnDate, [], d);
           priorContexts.add(mc);
         }
       }
@@ -155,20 +155,55 @@ class MobilityFactory {
     date = date.midnight;
 
     /// Load saved stops and moves
-    List<Stop> stops = await stopSerializer.load();
-    List<Move> moves = await moveSerializer.load();
+    List<Stop> loadedStops = await stopSerializer.load();
+    List<Move> loadedMoves = await moveSerializer.load();
 
     /// Filter out stops/moves older than 28 days as well as
     /// elements on the current date, if current date is the most recent date,
     /// i.e. data is still being collected on that date
-    stops = _getRecentHistoricalElements(stops, date);
-    moves = _getRecentHistoricalElements(moves, date);
+    final filteredStops = _getRecentHistoricalElements(loadedStops, date);
+    final filteredMoves = _getRecentHistoricalElements(loadedMoves, date);
+
+//    List<DateTime> historicalDates =
+//        loadedStops.map((e) => e.datetime.midnight).toSet().toList();
+//
+//    /// Check if we have to calculate it at all
+//    if (historicalDates.isNotEmpty && historicalDates.last.isAfter(date)){
+//
+//
+//      /// Extract stops and moves from today
+//      List<Stop> stopsForDate = _getElementsForDate(loadedStops, date);
+//      List<Move> movesForDate = _getElementsForDate(loadedMoves, date);
+//
+//      /// Prepare arguments for async computation
+//      Map arguments = {
+//        'groupedSamples': [],
+//        'stops': stopsForDate,
+//        'moves': movesForDate,
+//        '_stopRadius': _stopRadius,
+//        '_stopDuration': _stopDuration,
+//        '_placeRadius': _placeRadius,
+//        '_usePriorContexts': _usePriorContexts,
+//        'date': date,
+//      };
+//
+//      /// Off-load computation to background and await results
+//      List results = await offloadToBackground(sendPort, arguments);
+//
+//      /// Extract results from async computation
+//      List<MobilityContext> contexts = results[0];
+//      List<Stop> allStops = results[1];
+//      List<Move> allMoves = results[2];
+//      List<Place> allPlaces = results[3];
+//
+//    }
 
     /// Load samples from disk, sort by datetime
     List<LocationSample> samples = await sampleSerializer.load();
     samples.sort((a, b) => a.datetime.compareTo(b.datetime));
 
-    /// Find the dates of the stored samples
+    /// Find the dates of the stored samples from today or earlier
+    /// Not in the future (only relevant if computed old features)
     List<DateTime> sampleDates =
         samples.map((e) => e.datetime.midnight).toSet().toList();
 
@@ -179,8 +214,8 @@ class MobilityFactory {
     /// Prepare arguments for async computation
     Map arguments = {
       'groupedSamples': groupedSamples,
-      'stops': stops,
-      'moves': moves,
+      'stops': filteredStops,
+      'moves': filteredMoves,
       '_stopRadius': _stopRadius,
       '_stopDuration': _stopDuration,
       '_placeRadius': _placeRadius,
@@ -192,22 +227,14 @@ class MobilityFactory {
     List results = await offloadToBackground(sendPort, arguments);
 
     /// Extract results from async computation
-    List<MobilityContext> contexts = results[0];
+    MobilityContext context = results[0];
     List<Stop> allStops = results[1];
     List<Move> allMoves = results[2];
-    List<Place> allPlaces = results[3];
-
-    /// Extract stops and moves from today
-    List<Stop> stopsToday = _getElementsForDate(allStops, date);
-    List<Move> movesToday = _getElementsForDate(allMoves, date);
-    List<LocationSample> samplesToKeep = [];
 
     /// Keep the location data from the last known date
     /// since more data may be coming in later
-    if (groupedSamples.isNotEmpty) {
-      samplesToKeep = groupedSamples.last;
-    }
-
+    List<LocationSample> samplesToKeep =
+        groupedSamples.isNotEmpty ? groupedSamples.last : [];
     sampleSerializer.flush();
     sampleSerializer.save(samplesToKeep);
 
@@ -220,7 +247,7 @@ class MobilityFactory {
     moveSerializer.save(allMoves);
 
     /// Make a MobilityContext for today, use the prior MobilityContexts
-    return MobilityContext._(stopsToday, allPlaces, movesToday, contexts, date);
+    return context;
   }
 
   /// Off-loads the arguments to background
@@ -254,14 +281,23 @@ class MobilityFactory {
       moves += movesOnDate;
     }
 
+    List<Stop> uniqueStops = timetampedSet(stops);
+    List<Move> uniqueMoves = timetampedSet(moves);
+
     /// Find places for the period
     List<Place> places = _findPlaces(stops, placeRadius: _placeRadius);
 
     // Find prior contexts, if prior is not chosen just leave empty
-    List<MobilityContext> priorContexts =
-        _priorContexts(_usePriorContexts, date, stops, moves, places);
+    List<MobilityContext> priorContexts = _priorContexts(
+        _usePriorContexts, date, uniqueStops, uniqueMoves, places);
 
-    replyPort.send([priorContexts, stops, moves, places]);
+    List<Stop> stopsToday = _getElementsForDate(uniqueStops, date);
+    List<Move> movesToday = _getElementsForDate(uniqueMoves, date);
+
+    MobilityContext mc =
+        MobilityContext._(stopsToday, places, movesToday, priorContexts, date);
+
+    replyPort.send([mc, uniqueStops, uniqueMoves, places]);
   }
 
   static List<_Timestamped> _getElementsForDate(
@@ -269,11 +305,11 @@ class MobilityFactory {
     return elements.where((e) => e.datetime.midnight == date).toList();
   }
 
-
   static List<_Timestamped> _getRecentHistoricalElements(
       List<_Timestamped> elements, DateTime date) {
     DateTime fourWeeksPrior = date.subtract(Duration(days: 28));
-    List<DateTime> dates = elements.map((e) => e.datetime.midnight).toList();
+    List<DateTime> dates =
+        elements.map((e) => e.datetime.midnight).toSet().toList();
 
     List<_Timestamped> filtered = elements
         .where((e) => e.datetime.midnight.isAfter(fourWeeksPrior))
@@ -287,5 +323,20 @@ class MobilityFactory {
     }
 
     return filtered;
+  }
+
+  static List<_Timestamped> timetampedSet(List<_Timestamped> elements) {
+    List<int> seen = [];
+
+    elements.sort((a, b) => a.datetime.compareTo(b.datetime));
+
+    return elements.where((e) {
+      int ms = e.datetime.millisecondsSinceEpoch;
+      if (!seen.contains(ms)) {
+        seen.add(ms);
+        return true;
+      }
+      return false;
+    }).toList();
   }
 }
