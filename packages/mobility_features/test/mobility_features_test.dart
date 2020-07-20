@@ -377,6 +377,10 @@ void main() async {
     });
 
     test('Stream LocationSamples one by one', () async {
+      void onContext(MobilityContext mc) {
+        print(mc.toJson());
+      }
+
       flushFiles();
       DateTime date = jan01;
 
@@ -389,23 +393,32 @@ void main() async {
         LocationSample(pos2, date.add(Duration(hours: 9, minutes: 0))),
 
         LocationSample(pos1, date.add(Duration(hours: 21, minutes: 0))),
-        LocationSample(
-            pos1, date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+        LocationSample(pos1, date.add(Duration(hours: 22, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 22, minutes: 1))),
+        LocationSample(pos1, date.add(Duration(hours: 22, minutes: 2))),
       ];
 
-      MobilityFactory mf = MobilityFactory.instance;
-      mf.saveEvery = 1;
+      /// Create stream controller to stream the individual samples
+      /// to the MobilityFactory instance
+      StreamController<LocationSample> controller =
+          StreamController.broadcast();
 
-      Stream<LocationSample> stream = Stream.fromIterable(samples);
+      /// Set up stream
+      MobilityFactory mf = MobilityFactory.instance;
+      mf.date = date;
+      await mf.startListening(controller.stream);
+
+      int expectedContexts = 2;
+
+      /// Listen to the Context stream
+      Stream<MobilityContext> contextStream = mf.contextStream;
+      contextStream.listen(expectAsync1(onContext, count: expectedContexts));
 
       // Stream all the samples one by one
-      await mf.startListening(stream);
+      for (LocationSample s in samples) {
+        controller.add(s);
+      }
 
-      // After all data has been streamed, load the saved data
-      final loaded = await mf.loadSamples();
-
-      // Verify that all data was streamed and stored
-      expect(loaded.length, samples.length);
     });
 
     test('Stream Location DTOs one by one', () async {
@@ -427,7 +440,6 @@ void main() async {
 
       // Instantiate the MobilityFactory
       MobilityFactory mf = MobilityFactory.instance;
-      mf.saveEvery = 1;
 
       // Stream all the samples one by one
       await mf.startListening(stream);
@@ -454,7 +466,7 @@ void main() async {
 
         LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
         LocationSample(
-            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 0))),
       ];
 
       await mf.saveSamples(samples);
@@ -472,7 +484,6 @@ void main() async {
 
       MobilityFactory mf = MobilityFactory.instance;
       List<LocationSample> data = [];
-      mf.saveEvery = 1;
 
       for (int i = 0; i < 5; i++) {
         DateTime date = jan01.add(Duration(days: i));
@@ -518,7 +529,6 @@ void main() async {
       flushFiles();
 
       MobilityFactory mf = MobilityFactory.instance;
-      mf.saveEvery = 1;
 
       List<DateTime> dates = [
         DateTime(2020, 01, 01),
@@ -565,7 +575,6 @@ void main() async {
       flushFiles();
 
       MobilityFactory mf = MobilityFactory.instance;
-      mf.saveEvery = 1;
 
       List<LocationSample> data = [];
 

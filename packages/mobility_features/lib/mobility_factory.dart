@@ -6,12 +6,24 @@ class MobilityFactory {
   double _stopRadius = 25;
   Duration _stopDuration = const Duration(minutes: 3);
   Duration _moveDuration = const Duration(seconds: 1);
-  int _saveEvery = 10;
-  List<LocationSample> _buffer = [];
+  DateTime _date = DateTime.now().midnight;
+
   StreamSubscription<LocationSample> _subscription;
   _MobilitySerializer<LocationSample> _serializerSamples;
   _MobilitySerializer<Stop> _serializerStops;
   _MobilitySerializer<Move> _serializerMoves;
+  List<Stop> _stops = [];
+  List<Move> _moves = [];
+  List<Place> _places = [];
+  List<LocationSample> _cluster = [];
+  List<LocationSample> _prevCluster = [];
+  Stop _stopPrev;
+
+  /// Outgoing stream
+  StreamController<MobilityContext> _streamController =
+      StreamController<MobilityContext>.broadcast();
+
+  Stream<MobilityContext> get contextStream => _streamController.stream;
 
   /// Private constructor
   MobilityFactory._();
@@ -25,11 +37,12 @@ class MobilityFactory {
   /// Listen to a Stream of [LocationSample]
   /// The subscription will be stored as a [StreamSubscription]
   /// which may be cancelled later
-  Future startListening(Stream<LocationSample> stream) async {
+  Future startListening(Stream<LocationSample> s) async {
     if (_subscription != null) {
       await _subscription.cancel();
     }
-    _subscription = stream.listen(_onData);
+    _subscription = s.listen(_onData);
+    await _initSerializers();
   }
 
   /// Cancel the [StreamSubscription]
@@ -41,12 +54,51 @@ class MobilityFactory {
 
   /// Call-back method for handling incoming [LocationSample]s
   void _onData(LocationSample sample) async {
-    _buffer.add(sample);
-    // If buffer is exceeded, store it to disk and empty it
-    if (_buffer.length >= _saveEvery) {
-      await saveSamples(_buffer);
-      _buffer = [];
+    print(sample);
+    if (_cluster.isNotEmpty) {
+      // Compute median location of the collected samples
+      GeoLocation centroid = _computeCentroid(_cluster);
+
+      /// If the new data point is far away from the centroid,
+      /// convert the cluster to a stop.
+      double distFromMedian = Distance.fromGeospatial(centroid, sample);
+      if (distFromMedian > _stopRadius) {
+        _newStopFound(sample);
+      }
     }
+    _cluster.add(sample);
+  }
+
+  void _newStopFound(LocationSample sample) {
+    Stop stopJustLeft = Stop._fromLocationSamples(_cluster);
+    _stops.add(stopJustLeft);
+
+    /// Filter out OLD filler stops
+    _stops = _stops.where((s) => !s.filler).toList();
+
+    /// Make a new filler stop, this will be filtered
+    /// out next time a stop is made
+    Stop stopFiller = Stop._fromLocationSamples([sample], filler: true);
+    _stops.add(stopFiller);
+
+    /// If a previous stop exists
+    if (_stopPrev != null) {
+      /// Compute the move between the two stops
+      Move m = _findMove(stopJustLeft, _stopPrev, _prevCluster + _cluster);
+      _moves.add(m);
+    }
+
+    /// Find places
+    _places = _findPlaces(_stops);
+
+    /// Update previous stop and reset the cluster
+    _stopPrev = stopJustLeft;
+    _cluster = [];
+
+    MobilityContext context = MobilityContext._(_stops, _places, _moves, _date);
+    _streamController.add(context);
+
+    print(_stops);
   }
 
   /// Configure whether or not to use prior contexts
@@ -70,17 +122,21 @@ class MobilityFactory {
     _stopRadius = value;
   }
 
+  /// Configure the move duration, used for filtering noisy moves.
   set moveDuration(Duration value) {
     _moveDuration = value;
   }
 
-  /// Configure the buffer size for the streamed data.
-  /// When the buffer is full the buffer is stored to disk.
-  /// A smaller buffer size means data is stored more frequently,
-  /// which decreases the chance of losing data. However this comes at
-  /// the cost of an increased compute-overhead used for storing data.
-  set saveEvery(int value) {
-    _saveEvery = value;
+  /// Allows override of the current date
+  set date(DateTime value) {
+    _date = value;
+  }
+
+  Future<void> _initSerializers() async {
+    _serializerSamples =
+        _serializerSamples = _MobilitySerializer<LocationSample>();
+    _serializerStops = _MobilitySerializer<Stop>();
+    _serializerMoves = _MobilitySerializer<Move>();
   }
 
   Future<_MobilitySerializer<LocationSample>>
@@ -134,7 +190,7 @@ class MobilityFactory {
         // If there are any stops, make a MobilityContext object with no prior contexts
         if (stopsOnDate.length > 0) {
           MobilityContext mc =
-              MobilityContext._(stopsOnDate, places, movesOnDate, [], d);
+              MobilityContext._(stopsOnDate, places, movesOnDate, d);
           priorContexts.add(mc);
         }
       }
@@ -268,8 +324,8 @@ class MobilityFactory {
     List<Stop> stopsToday = _getElementsForDate(uniqueStops, date);
     List<Move> movesToday = _getElementsForDate(uniqueMoves, date);
 
-    MobilityContext mc =
-        MobilityContext._(stopsToday, places, movesToday, priorContexts, date);
+    MobilityContext mc = MobilityContext._(stopsToday, places, movesToday, date,
+        contexts: priorContexts);
 
     replyPort.send([mc, uniqueStops, uniqueMoves, places]);
   }

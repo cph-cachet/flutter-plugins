@@ -124,18 +124,19 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
   GeoLocation _geoLocation;
   int placeId;
   DateTime _arrival, _departure;
+  bool filler;
 
   Stop._(this._geoLocation, this._arrival, this._departure,
-      {this.placeId = -1});
+      {this.placeId = -1, this.filler = false});
 
   /// Construct stop from point cloud
   factory Stop._fromLocationSamples(List<LocationSample> locationSamples,
-      {int placeId = -1}) {
+      {int placeId = -1, filler = false}) {
     /// Calculate center
     GeoLocation center = _computeCentroid(locationSamples);
     return Stop._(
         center, locationSamples.first.datetime, locationSamples.last.datetime,
-        placeId: placeId);
+        placeId: placeId, filler: filler);
   }
 
   GeoLocation get geoLocation => _geoLocation;

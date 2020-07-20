@@ -106,6 +106,16 @@ List<Move> _findMoves(List<LocationSample> data, List<Stop> stops,
   return moves.where((m) => m.duration >= moveDuration).toList();
 }
 
+Move _findMove(Stop a, Stop b, List<LocationSample> samples) {
+  List<LocationSample> samplesInBetween = samples
+      .where((d) =>
+  a.departure.leq(d.datetime) && d.datetime.leq(b.arrival))
+      .toList();
+
+  return Move._fromPath(a, b, samplesInBetween);
+
+}
+
 GeoLocation _computeCentroid(List<_Geospatial> data) {
   double lat =
       Stats.fromData(data.map((d) => (d.geoLocation.latitude)).toList())
