@@ -5,6 +5,7 @@ class MobilityFactory {
   double _placeRadius = 50;
   double _stopRadius = 25;
   Duration _stopDuration = const Duration(minutes: 3);
+  Duration _moveDuration = const Duration(seconds: 1);
   int _saveEvery = 10;
   List<LocationSample> _buffer = [];
   StreamSubscription<LocationSample> _subscription;
@@ -67,6 +68,10 @@ class MobilityFactory {
   /// Configure the Stop-radius for the Stop algorithm
   set stopRadius(double value) {
     _stopRadius = value;
+  }
+
+  set moveDuration(Duration value) {
+    _moveDuration = value;
   }
 
   /// Configure the buffer size for the streamed data.
@@ -164,40 +169,6 @@ class MobilityFactory {
     final filteredStops = _getRecentHistoricalElements(loadedStops, date);
     final filteredMoves = _getRecentHistoricalElements(loadedMoves, date);
 
-//    List<DateTime> historicalDates =
-//        loadedStops.map((e) => e.datetime.midnight).toSet().toList();
-//
-//    /// Check if we have to calculate it at all
-//    if (historicalDates.isNotEmpty && historicalDates.last.isAfter(date)){
-//
-//
-//      /// Extract stops and moves from today
-//      List<Stop> stopsForDate = _getElementsForDate(loadedStops, date);
-//      List<Move> movesForDate = _getElementsForDate(loadedMoves, date);
-//
-//      /// Prepare arguments for async computation
-//      Map arguments = {
-//        'groupedSamples': [],
-//        'stops': stopsForDate,
-//        'moves': movesForDate,
-//        '_stopRadius': _stopRadius,
-//        '_stopDuration': _stopDuration,
-//        '_placeRadius': _placeRadius,
-//        '_usePriorContexts': _usePriorContexts,
-//        'date': date,
-//      };
-//
-//      /// Off-load computation to background and await results
-//      List results = await offloadToBackground(sendPort, arguments);
-//
-//      /// Extract results from async computation
-//      List<MobilityContext> contexts = results[0];
-//      List<Stop> allStops = results[1];
-//      List<Move> allMoves = results[2];
-//      List<Place> allPlaces = results[3];
-//
-//    }
-
     /// Load samples from disk, sort by datetime
     List<LocationSample> samples = await sampleSerializer.load();
     samples.sort((a, b) => a.datetime.compareTo(b.datetime));
@@ -218,6 +189,7 @@ class MobilityFactory {
       'moves': filteredMoves,
       '_stopRadius': _stopRadius,
       '_stopDuration': _stopDuration,
+      '_moveDuration': _moveDuration,
       '_placeRadius': _placeRadius,
       '_usePriorContexts': _usePriorContexts,
       'date': date,
@@ -268,6 +240,7 @@ class MobilityFactory {
     List<Move> moves = args['moves'];
     double _stopRadius = args['_stopRadius'];
     Duration _stopDuration = args['_stopDuration'];
+    Duration _moveDuration = args['_moveDuration'];
     double _placeRadius = args['_placeRadius'];
     bool _usePriorContexts = args['_usePriorContexts'];
     DateTime date = args['date'];
@@ -276,13 +249,14 @@ class MobilityFactory {
     for (List<LocationSample> samplesOnDate in groupedSamples) {
       final stopsOnDate = _findStops(samplesOnDate,
           stopRadius: _stopRadius, stopDuration: _stopDuration);
-      final movesOnDate = _findMoves(samplesOnDate, stopsOnDate);
+      final movesOnDate =
+          _findMoves(samplesOnDate, stopsOnDate, moveDuration: _moveDuration);
       stops += stopsOnDate;
       moves += movesOnDate;
     }
 
-    List<Stop> uniqueStops = timetampedSet(stops);
-    List<Move> uniqueMoves = timetampedSet(moves);
+    List<Stop> uniqueStops = timestampSet(stops);
+    List<Move> uniqueMoves = timestampSet(moves);
 
     /// Find places for the period
     List<Place> places = _findPlaces(stops, placeRadius: _placeRadius);
@@ -325,7 +299,7 @@ class MobilityFactory {
     return filtered;
   }
 
-  static List<_Timestamped> timetampedSet(List<_Timestamped> elements) {
+  static List<_Timestamped> timestampSet(List<_Timestamped> elements) {
     List<int> seen = [];
 
     elements.sort((a, b) => a.datetime.compareTo(b.datetime));

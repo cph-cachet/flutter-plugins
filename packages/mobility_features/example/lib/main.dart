@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:isolate';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+
+//import 'package:geolocator/geolocator.dart';
+import 'package:mubs_background_location/mubs_background_location.dart';
 import 'package:mobility_features/mobility_features.dart';
 
 void main() => runApp(MyApp());
@@ -26,6 +27,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
+String dtoToString(LocationDto dto) =>
+    '${dto.latitude}, ${dto.longitude} @ ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
+
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
@@ -41,31 +45,45 @@ class _MyHomePageState extends State<MyHomePage> {
   AppState _state = AppState.NO_FEATURES;
   MobilityContext _mobilityContext;
 
+  LocationManager locationManager = LocationManager.instance;
+  Stream<LocationDto> dtoStream;
+  StreamSubscription<LocationDto> dtoSubscription;
+
   @override
   void initState() {
-    setUpLocationStream();
-    mobilityFactory.stopDuration = Duration(seconds: 1);
-    mobilityFactory.placeRadius = 50;
-    mobilityFactory.stopRadius = 25;
+    mobilityFactory.stopDuration = Duration(seconds: 30);
+    mobilityFactory.moveDuration = Duration(seconds: 1);
+    mobilityFactory.placeRadius = 20;
+    mobilityFactory.stopRadius = 10;
     mobilityFactory.usePriorContexts = true;
+
+    locationManager.interval = 1;
+    locationManager.distanceFilter = 0;
+    locationManager.notificationTitle = 'Mobility Features';
+    locationManager.notificationMsg = 'Your geo-location is being tracked';
+
+    // Subscribe to stream in case it is already running (Android only)
+    dtoStream = locationManager.dtoStream;
+    dtoSubscription = dtoStream.listen(onData);
+    setUpLocationStream();
   }
 
-  void setUpLocationStream() {
-    Stream<Position> positionStream =
-        Geolocator().getPositionStream().asBroadcastStream();
+  void setUpLocationStream() async {
+    // Subscribe if it hasnt been done already
+    if (dtoSubscription != null) {
+      dtoSubscription.cancel();
+    }
+    dtoSubscription = dtoStream.listen(onData);
+    await locationManager.start();
 
-    Stream<LocationSample> locationSampleStream = positionStream.map((e) =>
-        LocationSample(GeoLocation(e.latitude, e.longitude), e.timestamp));
+    Stream<LocationSample> locationSampleStream = dtoStream.map((e) =>
+        LocationSample(GeoLocation(e.latitude, e.longitude), DateTime.now()));
 
     mobilityFactory.startListening(locationSampleStream);
-    subscription = positionStream.listen(onData);
   }
 
-  void onData(Position p) {
-    print(p);
-    setState(() {
-      location = p.toString();
-    });
+  void onData(LocationDto dto) {
+    print(dtoToString(dto));
   }
 
   Widget entry(String key, String value, IconData icon) {
@@ -82,6 +100,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget get featuresOverview {
     return ListView(
       children: <Widget>[
+        entry("Stops", "${_mobilityContext.stops.length}",
+            Icons.airline_seat_recline_normal),
+        entry(
+            "Moves", "${_mobilityContext.moves.length}", Icons.directions_run),
+        entry("Significant Places", "${_mobilityContext.numberOfPlaces}",
+            Icons.place),
         entry(
             "Routine Index",
             _mobilityContext.routineIndex < 0
@@ -98,8 +122,6 @@ class _MyHomePageState extends State<MyHomePage> {
             "Distance Travelled",
             "${(_mobilityContext.distanceTravelled / 1000).toStringAsFixed(2)} km",
             Icons.directions_walk),
-        entry("Significant Places", "${_mobilityContext.numberOfPlaces}",
-            Icons.place),
         entry(
             "Normalized Entropy",
             "${_mobilityContext.normalizedEntropy.toStringAsFixed(2)}",
@@ -182,14 +204,18 @@ class _MyHomePageState extends State<MyHomePage> {
     DateTime start = DateTime.now();
     MobilityContext mc = await mobilityFactory.computeFeatures();
     DateTime end = DateTime.now();
-    Duration dur = Duration(milliseconds: end.millisecondsSinceEpoch - start.millisecondsSinceEpoch);
+    Duration dur = Duration(
+        milliseconds:
+            end.millisecondsSinceEpoch - start.millisecondsSinceEpoch);
     print('Computed features in $dur');
     setState(() {
       _mobilityContext = mc;
       _state = AppState.FEATURES_READY;
     });
+    for (var x in _mobilityContext.stops) print(x);
+    for (var x in _mobilityContext.moves) print(x);
+    for (var x in _mobilityContext.places) print(x);
   }
-
 
   @override
   Widget build(BuildContext context) {

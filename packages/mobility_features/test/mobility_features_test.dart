@@ -611,7 +611,7 @@ void main() async {
       }
 
       stops.shuffle();
-      final stopSet = MobilityFactory.timetampedSet(stops);
+      final stopSet = MobilityFactory.timestampSet(stops);
       expect(stopSet.length, 15);
       printList(stopSet);
     });
