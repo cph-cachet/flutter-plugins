@@ -26,7 +26,6 @@ void flushFiles() async {
 }
 
 void main() async {
-
   DateTime jan01 = DateTime(2020, 01, 01);
 
   // Poppelgade 7, home
@@ -473,6 +472,7 @@ void main() async {
 
       MobilityFactory mf = MobilityFactory.instance;
       List<LocationSample> data = [];
+      mf.saveEvery = 1;
 
       for (int i = 0; i < 5; i++) {
         DateTime date = jan01.add(Duration(days: i));
@@ -500,6 +500,7 @@ void main() async {
       List<DateTime> oddOrderedDates = [
         DateTime(2020, 01, 04),
         DateTime(2020, 01, 05),
+        DateTime(2020, 01, 04),
         DateTime(2020, 01, 03),
         DateTime(2020, 01, 01),
         DateTime(2020, 01, 02)
@@ -510,6 +511,109 @@ void main() async {
         expect(context.places.length, 2);
         expect(context.moves.length, 2);
       }
+    });
+
+    test('Multiple days, nested', () async {
+      /// Clean file every time test is run
+      flushFiles();
+
+      MobilityFactory mf = MobilityFactory.instance;
+      mf.saveEvery = 1;
+
+      List<DateTime> dates = [
+        DateTime(2020, 01, 01),
+        DateTime(2020, 01, 02),
+        DateTime(2020, 01, 03),
+        DateTime(2020, 01, 04),
+        DateTime(2020, 01, 05),
+      ];
+
+      int n = dates.length;
+
+      for (int i = 0; i < n; i++) {
+        DateTime _date = dates[i];
+
+        /// Todays data
+        List<LocationSample> locationSamples = [
+          // 5 hours spent at home
+          LocationSample(pos1, _date.add(Duration(hours: 0, minutes: 0))),
+          LocationSample(pos1, _date.add(Duration(hours: 6, minutes: 0))),
+
+          LocationSample(pos2, _date.add(Duration(hours: 8, minutes: 0))),
+          LocationSample(pos2, _date.add(Duration(hours: 9, minutes: 0))),
+
+          LocationSample(pos1, _date.add(Duration(hours: 21, minutes: 0))),
+          LocationSample(
+              pos1, _date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+        ];
+
+        Stream<LocationSample> stream = Stream.fromIterable(locationSamples);
+        mf.startListening(stream);
+
+        for (var date in dates.sublist(0, i + 1)) {
+          MobilityContext context = await mf.computeFeatures(date: date);
+          expect(context.stops.length, 3);
+          expect(context.places.length, 2);
+          expect(context.moves.length, 2);
+        }
+        mf.stopListening();
+      }
+    });
+
+    test('Custom set function', () async {
+      /// Clean file every time test is run
+      flushFiles();
+
+      MobilityFactory mf = MobilityFactory.instance;
+      mf.saveEvery = 1;
+
+      List<LocationSample> data = [];
+
+      List<DateTime> dates = [
+        DateTime(2020, 01, 01),
+        DateTime(2020, 01, 02),
+        DateTime(2020, 01, 03),
+        DateTime(2020, 01, 04),
+        DateTime(2020, 01, 05),
+      ];
+
+      int n = dates.length;
+
+      for (int i = 0; i < n; i++) {
+        DateTime _date = dates[i];
+
+        /// Todays data
+        List<LocationSample> locationSamples = [
+          // 5 hours spent at home
+          LocationSample(pos1, _date.add(Duration(hours: 0, minutes: 0))),
+          LocationSample(pos1, _date.add(Duration(hours: 6, minutes: 0))),
+
+          LocationSample(pos2, _date.add(Duration(hours: 8, minutes: 0))),
+          LocationSample(pos2, _date.add(Duration(hours: 9, minutes: 0))),
+
+          LocationSample(pos1, _date.add(Duration(hours: 21, minutes: 0))),
+          LocationSample(
+              pos1, _date.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+        ];
+        data.addAll(locationSamples);
+      }
+
+      Stream<LocationSample> stream = Stream.fromIterable(data);
+      mf.startListening(stream);
+
+      List<Stop> stops = [];
+
+      for (var date in dates) {
+        MobilityContext context = await mf.computeFeatures(date: date);
+        stops.addAll(context.stops);
+        stops.addAll(context.stops);
+        stops.addAll(context.stops);
+      }
+
+      stops.shuffle();
+      final stopSet = MobilityFactory.timestampSet(stops);
+      expect(stopSet.length, 15);
+      printList(stopSet);
     });
   });
 }
