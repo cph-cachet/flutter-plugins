@@ -3,7 +3,7 @@ part of mobility_features;
 class MobilityFactory {
   bool _usePriorContexts = false;
   double _placeRadius = 50;
-  double _stopRadius = 10;
+  double _stopRadius = 5;
   Duration _stopDuration = const Duration(minutes: 3);
   Duration _moveDuration = const Duration(seconds: 1);
 
@@ -42,19 +42,23 @@ class MobilityFactory {
       await _subscription.cancel();
     }
     _subscription = s.listen(_onData);
-    _initSerializers();
+    await _handleInit();
+  }
+
+  Future<void> _handleInit() async {
+    _serializerSamples =
+        _serializerSamples = _MobilitySerializer<LocationSample>();
+    _serializerStops = _MobilitySerializer<Stop>();
+    _serializerMoves = _MobilitySerializer<Move>();
+
     _stops = await _serializerStops.load();
     _moves = await _serializerMoves.load();
     _cluster = await _serializerSamples.load();
     _stops = uniqueElements(_stops);
     _moves = uniqueElements(_moves);
 
-    _handleInit();
-
-  }
-
-  void _handleInit() {
-    if (_cluster.isNotEmpty) print('Loaded ${_cluster.length} location samples from disk');
+    if (_cluster.isNotEmpty)
+      print('Loaded ${_cluster.length} location samples from disk');
     if (_stops.isNotEmpty) print('Loaded ${_stops.length} stops from disk');
     if (_moves.isNotEmpty) print('Loaded ${_moves.length} moves from disk');
 
@@ -69,7 +73,8 @@ class MobilityFactory {
       for (var m in _moves) print(m);
 
       /// Compute features
-      MobilityContext context = MobilityContext._(_stops, _places, _moves, date);
+      MobilityContext context =
+          MobilityContext._(_stops, _places, _moves, date);
       _streamController.add(context);
     }
   }
@@ -201,14 +206,6 @@ class MobilityFactory {
   /// Configure the move duration, used for filtering noisy moves.
   set moveDuration(Duration value) {
     _moveDuration = value;
-  }
-
-  void _initSerializers() {
-    _serializerSamples =
-        _serializerSamples = _MobilitySerializer<LocationSample>();
-    _serializerStops = _MobilitySerializer<Stop>();
-    _serializerMoves = _MobilitySerializer<Move>();
-    print('Serializers initialized');
   }
 
   Future<_MobilitySerializer<LocationSample>>

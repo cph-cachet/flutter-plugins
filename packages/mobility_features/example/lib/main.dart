@@ -62,24 +62,24 @@ class _MyHomePageState extends State<MyHomePage> {
     locationManager.distanceFilter = 0;
     locationManager.notificationTitle = 'Mobility Features';
     locationManager.notificationMsg = 'Your geo-location is being tracked';
+    streamInit();
+  }
 
+void onMobilityContext(MobilityContext context) {
+  print('Context received: ${context.toJson()}');
+  setState(() {
+    _state = AppState.FEATURES_READY;
+    _mobilityContext = context;
+  });
+}
+
+  void streamInit() async {
     /// Set up streams:
     /// * Subscribe to stream in case it is already running (Android only)
     /// * Subscribe to MobilityContext updates
     dtoStream = locationManager.dtoStream;
     dtoSubscription = dtoStream.listen(onData);
-    streamInit();
-  }
 
-  void onMobilityContext(MobilityContext context) {
-    print('Context received: ${context.toJson()}');
-    setState(() {
-      _state = AppState.FEATURES_READY;
-      _mobilityContext = context;
-    });
-  }
-
-  void streamInit() async {
     // Subscribe if it hasn't been done already
     if (dtoSubscription != null) {
       dtoSubscription.cancel();
