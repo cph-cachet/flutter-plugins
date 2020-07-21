@@ -106,6 +106,7 @@ List<Move> _findMoves(List<LocationSample> data, List<Stop> stops,
   return moves.where((m) => m.duration >= moveDuration).toList();
 }
 
+
 GeoLocation _computeCentroid(List<_Geospatial> data) {
   double lat =
       Stats.fromData(data.map((d) => (d.geoLocation.latitude)).toList())

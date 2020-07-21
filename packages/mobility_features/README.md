@@ -3,9 +3,13 @@ Author: Thomas Nilsson (tnni@dtu.dk)
 
 ## Usage
 
-### Step 0: Get the package
+### Initial setup
 
 Add the package to your `pubspec.yaml` file and import the package
+
+No permissions are required to use the package, however, a location plugin should be used to stream data. 
+
+We recommend the plugin `https://pub.dev/packages/mubs_background_location` which works on both Android and iOS as of July 2020.
 
 ```dart
 import 'package:mobility_features/mobility_features.dart';
@@ -16,51 +20,70 @@ import 'package:mobility_features/mobility_features.dart';
 MobilityFactory mobilityFactory = MobilityFactory.instance;
 ```
 
-Optionally, the following configurations can be made, which will influence the algorithms for producing features.
+Optionally, the following configurations can be made, which will influence the algorithms for producing features. 
 
-In the example below, the default values are shown:
+In general the stop radius should be kept low (5-20 meters) and the place radius somewhat higher (25-50 meters). 
+Computation of features is triggered when users move around and change their geo-position.
+Low parameter values will make the features more fine grained but will trigger computation more often.
 
 ```dart
-mobilityFactory.stopDuration = Duration(minutes: 3);
-mobilityFactory.placeRadius = 50;
-mobilityFactory.stopRadius = 25;
-mobilityFactory.usePriorContexts = false;
+
+StreamSubscription<MobilityContext> mobilitySubscription;
+MobilityFactory mobilityFactory = MobilityFactory.instance;
+MobilityContext _mobilityContext;
+
+void initState() {
+    ...
+    mobilityFactory.stopDuration = Duration(seconds: 30);
+    mobilityFactory.placeRadius = 20;
+    mobilityFactory.stopRadius = 5;
+}
 ```
 
-### Step 2: Collect location data
-Location data collection is not directly supported by this package, for this you have to use a location plugin such as `https://pub.dev/packages/geolocator`. 
+### Step 2: Set up streaming
+Location data collection is not directly supported by this package, for this you have to use a location plugin such as `https://pub.dev/packages/mubs_background_location`. 
 
 From here, you can to convert from whichever Data Transfer Object is used 
 by the location plugin to a `LocationSample`. 
 
-Below is shown an example using the `geolocator` plugin, where a `Position` stream is converted into a `LocationSample` stream by using a map-function.
+Next, you need to subscribe to the MobilityFactory instance's `contextStream` to be be notified each time a new set of features has been computed. 
+
+
+Below is shown an example using the `mubs_background_location` plugin, where a `LocationDto` stream is converted into a `LocationSample` stream by using a map-function.
 
 ```dart
-void setUpLocationStream() {
-  // Set up a Position stream, and make it into a broadcast stream
-  Stream<Position> positionStream =
-    Geolocator().getPositionStream().asBroadcastStream(); 
+/// Start the streaming of location data and mobility features
+void streamInit() async {
+    /// Get the location data stream (specific to mubs_background_location)
+    Stream<LocationDto> dtoStream = locationManager.dtoStream;
+    
+    /// Start the location service (specific to mubs_background_location)
+    await locationManager.start();
+    
+    /// Convert from [LocationDto] to [LocationSample]
+    Stream<LocationSample> locationSampleStream = dtoStream.map((e) =>
+        LocationSample(GeoLocation(e.latitude, e.longitude), DateTime.now()));
 
-  // Convert the Position stream into a LocationSample stream
-  Stream<LocationSample> locationSampleStream = positionStream.map((e) =>
-    LocationSample(GeoLocation(e.latitude, e.longitude), e.timestamp));
-
-  // Make the Mobility Factory start listening to location updates
-  mobilityFactory.startListening(locationSampleStream);
+    /// Provide the MobilityFactory instance with the LocationSample stream
+    mobilityFactory.startListening(locationSampleStream);
+    
+    /// Start listening to incoming MobilityContext objects
+    mobilityFactory.contextStream.listen(onMobilityContext);
 }
 ```
 
-### Step 3: Compute features
-The features can be computed using the `MobilityFactory` class which uses stored data to compute the features.
-
-There most basic computation is done as follows:
+### Step 3: Handle features
+A call-back method is used to handle incoming MobilityContext objects:
 
 ```dart
-MobilityContext mc = await mobilityFactory.computeFeatures();
+/// Handle incoming contexts
+void onMobilityContext(MobilityContext context) {
+  /// Do something with the context
+  print('Context received: ${context.toJson()}');
+}
 ```
 
-All features are implemented as getters for the `MobilityContext` object.
-
+All features are implemented as getters for a `MobilityContext` object.
 ```dart
 context.places;
 context.stops;
@@ -71,32 +94,9 @@ context.homeStay;
 context.entropy;
 context.normalizedEntropy;
 context.distanceTravelled;
-context.routineIndex;
 ```
 
 Note: it is not possible to instantiate a `MobilityContext` object directly. 
-It must be intantiated through the `mobilityFactory.computeFeatures()` method.
-
-#### Step 3.1 : Compute features with prior contexts
-Should you wish to compute the Routine Index feature (see Theoretical Background) as well, then prior contexts are needed. 
-
-Concretely, you will have to track for at least 2 days, to compute this feature and set the `usePriorContexts` field to true.
-
-```dart
-mobilityFactory.usePriorContexts = ttrue;
-```
-
-The computation is carried out in the same way as in Step 3.
-
-#### Step 3.2: Compute features for a specific date
-By default, the `MobilityContext` object uses the current date as reference to filter 
-and group data, however, should you wish to compute the features for 
-a specific date, then it is possible to do so using the `date` parameter.
-
-```dart
-DateTime myDate = DateTime(01, 01, 2020);
-MobilityContext context = await mobilityFactory.computeFeatures(date: myDate);
-```
 
 ### Feature-specific instructions
 When a feature cannot be evaluated, it will result in a value of -1.0.
@@ -152,6 +152,3 @@ The normalized entropy with respect to time spent at places.
 
 **Distance Travelled**
 The total distance travelled today (in meters), i.e. not limited to walking or running.
-
-**Routine Index**
-The percentage of today that overlapped with the previous, maximally, 28 days.

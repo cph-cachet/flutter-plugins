@@ -130,7 +130,7 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
 
   /// Construct stop from point cloud
   factory Stop._fromLocationSamples(List<LocationSample> locationSamples,
-      {int placeId = -1}) {
+      {int placeId = -1, filler = false}) {
     /// Calculate center
     GeoLocation center = _computeCentroid(locationSamples);
     return Stop._(
