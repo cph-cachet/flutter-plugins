@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-//import 'package:geolocator/geolocator.dart';
 import 'package:mubs_background_location/mubs_background_location.dart';
 import 'package:mobility_features/mobility_features.dart';
 
@@ -39,37 +38,49 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String location = '';
-  StreamSubscription subscription;
-  MobilityFactory mobilityFactory = MobilityFactory.instance;
   AppState _state = AppState.NO_FEATURES;
-  MobilityContext _mobilityContext;
 
+  /// Location Streaming
   LocationManager locationManager = LocationManager.instance;
   Stream<LocationDto> dtoStream;
   StreamSubscription<LocationDto> dtoSubscription;
 
+  /// Mobility Features stream
+  StreamSubscription<MobilityContext> mobilitySubscription;
+  MobilityFactory mobilityFactory = MobilityFactory.instance;
+  MobilityContext _mobilityContext;
+
   @override
   void initState() {
+    /// Set up Mobility Features
     mobilityFactory.stopDuration = Duration(seconds: 30);
-    mobilityFactory.moveDuration = Duration(seconds: 1);
     mobilityFactory.placeRadius = 20;
-    mobilityFactory.stopRadius = 10;
-    mobilityFactory.usePriorContexts = true;
+    mobilityFactory.stopRadius = 5;
 
+    /// Setup Location Manager
     locationManager.interval = 1;
     locationManager.distanceFilter = 0;
     locationManager.notificationTitle = 'Mobility Features';
     locationManager.notificationMsg = 'Your geo-location is being tracked';
 
-    // Subscribe to stream in case it is already running (Android only)
+    /// Set up streams:
+    /// * Subscribe to stream in case it is already running (Android only)
+    /// * Subscribe to MobilityContext updates
     dtoStream = locationManager.dtoStream;
     dtoSubscription = dtoStream.listen(onData);
-    setUpLocationStream();
+    streamInit();
   }
 
-  void setUpLocationStream() async {
-    // Subscribe if it hasnt been done already
+  void onMobilityContext(MobilityContext context) {
+    print('Context received: ${context.toJson()}');
+    setState(() {
+      _state = AppState.FEATURES_READY;
+      _mobilityContext = context;
+    });
+  }
+
+  void streamInit() async {
+    // Subscribe if it hasn't been done already
     if (dtoSubscription != null) {
       dtoSubscription.cancel();
     }
@@ -80,6 +91,8 @@ class _MyHomePageState extends State<MyHomePage> {
         LocationSample(GeoLocation(e.latitude, e.longitude), DateTime.now()));
 
     mobilityFactory.startListening(locationSampleStream);
+    mobilitySubscription =
+        mobilityFactory.contextStream.listen(onMobilityContext);
   }
 
   void onData(LocationDto dto) {
@@ -189,34 +202,6 @@ class _MyHomePageState extends State<MyHomePage> {
       return contentNoFeatures;
   }
 
-  void _updateFeatures() async {
-    if (_state == AppState.CALCULATING_FEATURES) {
-      print('Already calculating features!');
-      return;
-    }
-
-    setState(() {
-      _state = AppState.CALCULATING_FEATURES;
-    });
-
-    print('Calculating features...');
-
-    DateTime start = DateTime.now();
-    MobilityContext mc = await mobilityFactory.computeFeatures();
-    DateTime end = DateTime.now();
-    Duration dur = Duration(
-        milliseconds:
-            end.millisecondsSinceEpoch - start.millisecondsSinceEpoch);
-    print('Computed features in $dur');
-    setState(() {
-      _mobilityContext = mc;
-      _state = AppState.FEATURES_READY;
-    });
-    for (var x in _mobilityContext.stops) print(x);
-    for (var x in _mobilityContext.moves) print(x);
-    for (var x in _mobilityContext.places) print(x);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -226,11 +211,6 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Column(children: content),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _updateFeatures,
-        tooltip: 'Calculate features',
-        child: Icon(Icons.refresh),
-      ), //  This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

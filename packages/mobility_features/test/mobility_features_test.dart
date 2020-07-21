@@ -385,15 +385,19 @@ void main() async {
       DateTime date = jan01;
 
       List<LocationSample> samples = [
-        // 5 hours spent at home
+        /// Home
         LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
         LocationSample(pos1, date.add(Duration(hours: 6, minutes: 0))),
 
+        /// Out
         LocationSample(pos2, date.add(Duration(hours: 8, minutes: 0))),
         LocationSample(pos2, date.add(Duration(hours: 12, minutes: 0))),
 
+        /// Home
         LocationSample(pos1, date.add(Duration(hours: 17, minutes: 0))),
         LocationSample(pos1, date.add(Duration(hours: 22, minutes: 0))),
+
+        /// Home, New day
         LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
       ];
 
