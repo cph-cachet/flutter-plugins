@@ -23,9 +23,7 @@ class MobilityContext {
       _distanceTravelled,
       _routineIndex;
   List<MobilityContext> contexts;
-
-//  factory MobilityContext.from
-
+  
   /// Private constructor, cannot be instantiated from outside
   MobilityContext._(this._stops, this._allPlaces, this._moves, this._date,
       {this.contexts}) {
@@ -80,7 +78,7 @@ class MobilityContext {
   Place get homePlace => _homePlace;
 
   /// Get the routine index for today
-  double get routineIndex => _routineIndex;
+//  double get routineIndex => _routineIndex;
 
   /// Number of Places today
   int get numberOfPlaces => _numberOfPlaces;
@@ -210,12 +208,11 @@ class MobilityContext {
 
   Map<String, dynamic> toJson() => {
         "date": date.toIso8601String(),
-        "timestamp": timestamp.toIso8601String(),
+        "computed_at": timestamp.toIso8601String(),
         "num_of_places": numberOfPlaces,
-        "entropy": entropy,
         "normalized_entropy": normalizedEntropy,
         "home_stay": homeStay,
         "distance_travelled": distanceTravelled,
-        "routine_index": routineIndex,
+        "location_variance" : locationVariance
       };
 }

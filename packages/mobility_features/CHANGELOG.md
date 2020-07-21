@@ -1,3 +1,6 @@
+## [2.0.1] - Stream-based API
+* Removed Routine Index temporarily
+
 ## [2.0.0] - Stream-based API
 * The API is now fully streaming-based.
 

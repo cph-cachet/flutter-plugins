@@ -119,12 +119,12 @@ void onMobilityContext(MobilityContext context) {
             "Moves", "${_mobilityContext.moves.length}", Icons.directions_run),
         entry("Significant Places", "${_mobilityContext.numberOfPlaces}",
             Icons.place),
-        entry(
-            "Routine Index",
-            _mobilityContext.routineIndex < 0
-                ? "?"
-                : "${(_mobilityContext.routineIndex * 100).toStringAsFixed(1)}%",
-            Icons.repeat),
+//        entry(
+//            "Routine Index",
+//            _mobilityContext.routineIndex < 0
+//                ? "?"
+//                : "${(_mobilityContext.routineIndex * 100).toStringAsFixed(1)}%",
+//            Icons.repeat),
         entry(
             "Home Stay",
             _mobilityContext.homeStay < 0

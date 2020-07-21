@@ -94,7 +94,6 @@ context.homeStay;
 context.entropy;
 context.normalizedEntropy;
 context.distanceTravelled;
-context.routineIndex;
 ```
 
 Note: it is not possible to instantiate a `MobilityContext` object directly. 
@@ -153,6 +152,3 @@ The normalized entropy with respect to time spent at places.
 
 **Distance Travelled**
 The total distance travelled today (in meters), i.e. not limited to walking or running.
-
-**Routine Index**
-The percentage of today that overlapped with the previous, maximally, 28 days.
