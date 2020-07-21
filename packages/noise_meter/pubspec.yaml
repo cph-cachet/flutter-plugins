@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audio_streamer: ^1.1.6
+  audio_streamer: ^1.2.0
 
 dev_dependencies:
   flutter_test:
