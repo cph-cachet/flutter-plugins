@@ -390,12 +390,11 @@ void main() async {
         LocationSample(pos1, date.add(Duration(hours: 6, minutes: 0))),
 
         LocationSample(pos2, date.add(Duration(hours: 8, minutes: 0))),
-        LocationSample(pos2, date.add(Duration(hours: 9, minutes: 0))),
+        LocationSample(pos2, date.add(Duration(hours: 12, minutes: 0))),
 
-        LocationSample(pos1, date.add(Duration(hours: 21, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 17, minutes: 0))),
         LocationSample(pos1, date.add(Duration(hours: 22, minutes: 0))),
-        LocationSample(pos1, date.add(Duration(hours: 22, minutes: 1))),
-        LocationSample(pos1, date.add(Duration(hours: 22, minutes: 2))),
+        LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
       ];
 
       /// Create stream controller to stream the individual samples
@@ -405,10 +404,9 @@ void main() async {
 
       /// Set up stream
       MobilityFactory mf = MobilityFactory.instance;
-      mf.date = date;
       await mf.startListening(controller.stream);
 
-      int expectedContexts = 2;
+      int expectedContexts = 3;
 
       /// Listen to the Context stream
       Stream<MobilityContext> contextStream = mf.contextStream;
@@ -418,7 +416,7 @@ void main() async {
       for (LocationSample s in samples) {
         controller.add(s);
       }
-
+      controller.close();
     });
 
     test('Stream Location DTOs one by one', () async {

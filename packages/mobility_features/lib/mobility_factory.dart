@@ -6,7 +6,6 @@ class MobilityFactory {
   double _stopRadius = 25;
   Duration _stopDuration = const Duration(minutes: 3);
   Duration _moveDuration = const Duration(seconds: 1);
-  DateTime _date = DateTime.now().midnight;
 
   StreamSubscription<LocationSample> _subscription;
   _MobilitySerializer<LocationSample> _serializerSamples;
@@ -18,6 +17,7 @@ class MobilityFactory {
   List<LocationSample> _cluster = [];
   List<LocationSample> _prevCluster = [];
   Stop _stopPrev;
+  LocationSample _samplePrev;
 
   /// Outgoing stream
   StreamController<MobilityContext> _streamController =
@@ -54,51 +54,53 @@ class MobilityFactory {
 
   /// Call-back method for handling incoming [LocationSample]s
   void _onData(LocationSample sample) async {
-    print(sample);
+    if (_samplePrev != null) {
+      /// Check if previous sample was on a different date, i.e. midnight shift
+      /// If so, compute features with the existing cluster
+      if (_samplePrev.datetime.midnight != sample.datetime.midnight) {
+        _createStop();
+      }
+    }
     if (_cluster.isNotEmpty) {
-      // Compute median location of the collected samples
+      /// Compute median location of the collected samples
       GeoLocation centroid = _computeCentroid(_cluster);
 
       /// If the new data point is far away from the centroid,
       /// convert the cluster to a stop.
-      double distFromMedian = Distance.fromGeospatial(centroid, sample);
-      if (distFromMedian > _stopRadius) {
-        _newStopFound(sample);
+      if (Distance.fromGeospatial(centroid, sample) > _stopRadius) {
+        _createStop();
       }
     }
     _cluster.add(sample);
+    _samplePrev = sample;
   }
 
-  void _newStopFound(LocationSample sample) {
-    Stop stopJustLeft = Stop._fromLocationSamples(_cluster);
-    _stops.add(stopJustLeft);
-
-    /// Filter out OLD filler stops
-    _stops = _stops.where((s) => !s.filler).toList();
-
-    /// Make a new filler stop, this will be filtered
-    /// out next time a stop is made
-    Stop stopFiller = Stop._fromLocationSamples([sample], filler: true);
-    _stops.add(stopFiller);
-
-    /// If a previous stop exists
-    if (_stopPrev != null) {
-      /// Compute the move between the two stops
-      Move m = _findMove(stopJustLeft, _stopPrev, _prevCluster + _cluster);
-      _moves.add(m);
-    }
+  void _createStop() {
+    Stop s = Stop._fromLocationSamples(_cluster);
+    _stops.add(s);
 
     /// Find places
     _places = _findPlaces(_stops);
 
-    /// Update previous stop and reset the cluster
-    _stopPrev = stopJustLeft;
-    _cluster = [];
+    /// If a previous stop exists
+    if (_stopPrev != null) {
+      /// Compute the move between the two stops using the path of samples
+      final path = _prevCluster + _cluster;
+      Move m = Move._fromPath(_stopPrev, s, path);
+      _moves.add(m);
+    }
 
-    MobilityContext context = MobilityContext._(_stops, _places, _moves, _date);
+    /// Extract date
+    DateTime date = _cluster.last.datetime.midnight;
+
+    /// Compute features
+    MobilityContext context = MobilityContext._(_stops, _places, _moves, date);
     _streamController.add(context);
 
-    print(_stops);
+    /// Update previous stop and reset the cluster
+    _stopPrev = s;
+    _prevCluster = _cluster;
+    _cluster = [];
   }
 
   /// Configure whether or not to use prior contexts
@@ -125,11 +127,6 @@ class MobilityFactory {
   /// Configure the move duration, used for filtering noisy moves.
   set moveDuration(Duration value) {
     _moveDuration = value;
-  }
-
-  /// Allows override of the current date
-  set date(DateTime value) {
-    _date = value;
   }
 
   Future<void> _initSerializers() async {
