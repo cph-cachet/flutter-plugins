@@ -1,1 +1,0 @@
-# MUBS Background Location Example
