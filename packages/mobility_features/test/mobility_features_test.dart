@@ -622,7 +622,7 @@ void main() async {
       }
 
       stops.shuffle();
-      final stopSet = MobilityFactory.timestampSet(stops);
+      final stopSet = MobilityFactory.uniqueElements(stops);
       expect(stopSet.length, 15);
       printList(stopSet);
     });

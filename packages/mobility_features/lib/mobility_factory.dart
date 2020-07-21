@@ -46,6 +46,32 @@ class MobilityFactory {
     _stops = await _serializerStops.load();
     _moves = await _serializerMoves.load();
     _cluster = await _serializerSamples.load();
+    _stops = uniqueElements(_stops);
+    _moves = uniqueElements(_moves);
+
+    _handleInit();
+
+  }
+
+  void _handleInit() {
+    if (_cluster.isNotEmpty) print('Loaded ${_cluster.length} location samples from disk');
+    if (_stops.isNotEmpty) print('Loaded ${_stops.length} stops from disk');
+    if (_moves.isNotEmpty) print('Loaded ${_moves.length} moves from disk');
+
+    if (_stops.isNotEmpty) {
+      /// Only keeps stops and moves from the last known date
+      DateTime date = _stops.last.datetime.midnight;
+      _stops = _getElementsForDate(_stops, date);
+      _moves = _getElementsForDate(_moves, date);
+      _places = _findPlaces(_stops);
+
+      for (var s in _stops) print(s);
+      for (var m in _moves) print(m);
+
+      /// Compute features
+      MobilityContext context = MobilityContext._(_stops, _places, _moves, date);
+      _streamController.add(context);
+    }
   }
 
   /// Cancel the [StreamSubscription]
@@ -94,6 +120,7 @@ class MobilityFactory {
     bool overflow = _buffer.length >= _saveEvery;
     if (overflow) {
       _serializerSamples.save(_buffer);
+      print('Stored buffer to disk');
       _buffer = [];
     }
   }
@@ -356,8 +383,8 @@ class MobilityFactory {
       moves += movesOnDate;
     }
 
-    List<Stop> uniqueStops = timestampSet(stops);
-    List<Move> uniqueMoves = timestampSet(moves);
+    List<Stop> uniqueStops = uniqueElements(stops);
+    List<Move> uniqueMoves = uniqueElements(moves);
 
     /// Find places for the period
     List<Place> places = _findPlaces(stops, placeRadius: _placeRadius);
@@ -400,7 +427,7 @@ class MobilityFactory {
     return filtered;
   }
 
-  static List<_Timestamped> timestampSet(List<_Timestamped> elements) {
+  static List<_Timestamped> uniqueElements(List<_Timestamped> elements) {
     List<int> seen = [];
 
     elements.sort((a, b) => a.datetime.compareTo(b.datetime));
