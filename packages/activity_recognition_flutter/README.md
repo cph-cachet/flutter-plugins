@@ -12,12 +12,17 @@ Check out the `example` directory for a sample app using activity recognition.
 
 ### Android Permissions
 
-Add permission to your Android Manifest:
+Add permission to your Android Manifest, for Android 10 (API 29 and later), use:
 ```xml
 <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 ```
 
-Add the plugin service inside the `<application>` tags:
+For Android 9 (API 28 and earlier), use:
+```xml
+<uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+```
+
+Next, add the plugin's service inside the `<application>` tags:
 ```xml
 <service android:name="dk.cachet.activity_recognition_flutter.activity.ActivityRecognizedService" />
 ```
