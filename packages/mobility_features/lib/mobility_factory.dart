@@ -2,7 +2,7 @@ part of mobility_features;
 
 class MobilityFactory {
   bool _usePriorContexts = false;
-  double _placeRadius = 50;
+  double _placeRadius = 20;
   double _stopRadius = 5;
   Duration _stopDuration = const Duration(minutes: 3);
   Duration _moveDuration = const Duration(seconds: 1);

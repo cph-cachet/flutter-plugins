@@ -20,9 +20,11 @@ import 'package:mobility_features/mobility_features.dart';
 MobilityFactory mobilityFactory = MobilityFactory.instance;
 ```
 
-Optionally, the following configurations can be made, which will influence the algorithms for producing features.
+Optionally, the following configurations can be made, which will influence the algorithms for producing features. 
 
-In the example below, the default values are shown:
+In general the stop radius should be kept low (5-20 meters) and the place radius somewhat higher (25-50 meters). 
+Computation of features is triggered when users move around and change their geo-position.
+Low parameter values will make the features more fine grained but will trigger computation more often.
 
 ```dart
 
@@ -31,7 +33,7 @@ MobilityFactory mobilityFactory = MobilityFactory.instance;
 MobilityContext _mobilityContext;
 
 void initState() {
-  ...
+    ...
     mobilityFactory.stopDuration = Duration(seconds: 30);
     mobilityFactory.placeRadius = 20;
     mobilityFactory.stopRadius = 5;
@@ -45,7 +47,7 @@ From here, you can to convert from whichever Data Transfer Object is used
 by the location plugin to a `LocationSample`. 
 
 Next, you need to subscribe to the MobilityFactory instance's `contextStream` to be be notified each time a new set of features has been computed. 
-This computation is triggered by the user moving around and changing their geo-position.
+
 
 Below is shown an example using the `mubs_background_location` plugin, where a `LocationDto` stream is converted into a `LocationSample` stream by using a map-function.
 
