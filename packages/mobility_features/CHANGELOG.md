@@ -1,3 +1,6 @@
+## [2.0.0] - Stream-based API
+* The API is now fully streaming-based.
+
 ## [1.3.4] - Flushing data
 * Fixed an error where location samples were being flushed when they shouldn't
 
