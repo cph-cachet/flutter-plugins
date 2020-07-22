@@ -245,21 +245,23 @@ class Move implements _Serializable, _Timestamped {
 
   Move._(this._stopFrom, this._stopTo, this._distance);
 
+  /// Create a Move with a path of samples between two stops
   factory Move._fromPath(Stop a, Stop b, List<LocationSample> path) {
-    double d = _computePathDistance(path);
+    double d = 0.0;
+    for (int i = 0; i < path.length - 1; i++) {
+      d += Distance.fromGeospatial(path[i], path[i + 1]);
+    }
+    return Move._(a, b, d);
+  }
+
+  /// Create a Move with a straight line between two stops
+  factory Move._fromStops(Stop a, Stop b) {
+    double d = Distance.fromGeospatial(a, b);
     return Move._(a, b, d);
   }
 
   /// The haversine distance through all the samples between the two stops
   double get distance => _distance;
-
-  static double _computePathDistance(List<LocationSample> path) {
-    double d = 0.0;
-    for (int i = 0; i < path.length - 1; i++) {
-      d += Distance.fromGeospatial(path[i], path[i + 1]);
-    }
-    return d;
-  }
 
   /// The duration of the move in milliseconds
   Duration get duration => Duration(

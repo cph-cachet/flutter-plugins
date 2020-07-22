@@ -1,11 +1,8 @@
 part of mobility_features;
 
 class MobilityFactory {
-  bool _usePriorContexts = false;
-  double _placeRadius = 20;
-  double _stopRadius = 5;
+  double _stopRadius = 5, _placeRadius = 50;
   Duration _stopDuration = const Duration(minutes: 3);
-  Duration _moveDuration = const Duration(seconds: 1);
 
   StreamSubscription<LocationSample> _subscription;
   _MobilitySerializer<LocationSample> _serializerSamples;
@@ -15,9 +12,12 @@ class MobilityFactory {
   List<Move> _moves = [];
   List<Place> _places = [];
   List<LocationSample> _cluster = [], _prevCluster = [], _buffer = [];
-  Stop _stopPrev;
-  LocationSample _samplePrev;
   int _saveEvery = 10;
+  bool _useInterpolation = true;
+
+  set useInterpolation(bool value) {
+    _useInterpolation = value;
+  }
 
   /// Outgoing stream
   StreamController<MobilityContext> _streamController =
@@ -68,10 +68,7 @@ class MobilityFactory {
       DateTime date = _stops.last.datetime.midnight;
       _stops = _getElementsForDate(_stops, date);
       _moves = _getElementsForDate(_moves, date);
-      _places = _findPlaces(_stops);
-
-      for (var s in _stops) print(s);
-      for (var m in _moves) print(m);
+      _places = _findPlaces(_stops, placeRadius: _placeRadius);
 
       /// Compute features
       MobilityContext context =
@@ -89,109 +86,111 @@ class MobilityFactory {
 
   /// Call-back method for handling incoming [LocationSample]s
   void _onData(LocationSample sample) {
-    /// Load stops and moves on disk, perhaps the app was just closed
-    if (_stopPrev == null) {
-      _initStops(sample);
-    }
-
-    /// Check if previous sample was on a different date, i.e. at midnight when
-    /// dates change, compute features with the existing cluster
-    if (_samplePrev != null) {
-      if (_samplePrev.datetime.midnight != sample.datetime.midnight) {
-        _serializerStops.flush();
-        _serializerMoves.flush();
-        _serializerSamples.flush();
-        _createStopAndResetCluster();
+    /// If not previous stops, make a placeholder stop
+    if (_stops.isEmpty) {
+      if (_stops.isEmpty) {
+        Stop s = Stop._fromLocationSamples([sample]);
+        _stops.add(s);
       }
     }
 
+    /// If previous samples exist, check if we should compute anything
     if (_cluster.isNotEmpty) {
-      /// Compute median location of the collected samples
-      GeoLocation centroid = _computeCentroid(_cluster);
-
-      /// If the new data point is far away from the centroid,
-      /// convert the cluster to a stop.
-      if (Distance.fromGeospatial(centroid, sample) > _stopRadius) {
+      /// If previous sample was on a different date
+      if (_cluster.last.datetime.midnight != sample.datetime.midnight) {
+        _serializerStops.flush();
+        _serializerMoves.flush();
         _createStopAndResetCluster();
+      }
+
+      /// If previous sample was today
+      else {
+        /// Compute median location of the collected samples
+        GeoLocation centroid = _computeCentroid(_cluster);
+
+        /// If the new data point is far away from cluster, make stop
+        if (Distance.fromGeospatial(centroid, sample) > _stopRadius) {
+          if (_useInterpolation) {
+            print('${_cluster.last}, $sample');
+            Duration delta = _delta(_cluster.last, sample);
+
+            /// If it has been more than 1 hour since the last sample,
+            /// create an interpolated sample
+            if (delta > Duration(hours: 1)) {
+              DateTime dt = sample.datetime.subtract(Duration(seconds: 1));
+              GeoLocation lastLoc = _cluster.last.geoLocation;
+              LocationSample interpolated = LocationSample(lastLoc, dt);
+              print('created point: $interpolated');
+              _cluster.add(interpolated);
+            }
+          }
+          _createStopAndResetCluster();
+        }
       }
     }
     _addToBuffer(sample);
     _cluster.add(sample);
-    _samplePrev = sample;
+  }
+
+  Duration _delta(LocationSample first, LocationSample last) {
+    int ms = last.datetime.millisecondsSinceEpoch -
+        first.datetime.millisecondsSinceEpoch;
+    return Duration(milliseconds: ms);
   }
 
   /// Save a sample to the buffer and store samples on disk if buffer overflows
   void _addToBuffer(LocationSample sample) {
     _buffer.add(sample);
-    bool overflow = _buffer.length >= _saveEvery;
-    if (overflow) {
+    if (_buffer.length >= _saveEvery) {
       _serializerSamples.save(_buffer);
       print('Stored buffer to disk');
       _buffer = [];
     }
   }
 
-  void _initStops(LocationSample sample) {
-    /// Check if any stops and moves have been stored today on disk.
-    /// If no stops are saved, make a stop with the current sample.
-    /// Otherwise use the last saved stop.
-    if (_stops.isEmpty) {
-      Stop s = Stop._fromLocationSamples([sample]);
-      _stops.add(s);
-      _stopPrev = s;
-    } else {
-      _stopPrev = _stops.last;
-    }
-  }
-
+  /// Converts the cluster into a stop, i.e. closing the cluster
   void _createStopAndResetCluster() {
     Stop s = Stop._fromLocationSamples(_cluster);
 
     /// If the stop is too short, it is discarded
+    /// Otherwise compute a context and send it via the stream
     if (s.duration >= _stopDuration) {
-      _computeContext(s);
+      _stops.add(s);
+
+      /// Find places
+      _places = _findPlaces(_stops);
+
+      Move m;
+      if (_stops.last.placeId == s.placeId) {
+        /// Compute the move between the two stops using the path of samples
+        final path = _prevCluster + _cluster;
+        m = Move._fromPath(_stops.last, s, path);
+      } else {
+        /// Compute the move between the two stops using a straight line
+        m = Move._fromStops(_stops.last, s);
+      }
+      _moves.add(m);
+
+      /// Extract date
+      DateTime date = _cluster.last.datetime.midnight;
+
+      /// Compute features
+      MobilityContext context =
+          MobilityContext._(_stops, _places, _moves, date);
+      _streamController.add(context);
+
+      /// Store to disk
+      _serializerStops.save([s]);
+      _serializerMoves.save([m]);
     }
 
     /// Reset the cluster
     _prevCluster = _cluster;
     _cluster = [];
-  }
 
-  void _computeContext(Stop s) {
-    _stops.add(s);
-
-    /// Find places
-    _places = _findPlaces(_stops);
-
-    /// Compute the move between the two stops using the path of samples
-    final path = _prevCluster + _cluster;
-    Move m = Move._fromPath(_stopPrev, s, path);
-    _moves.add(m);
-
-    /// Extract date
-    DateTime date = _cluster.last.datetime.midnight;
-
-    /// Compute features
-    MobilityContext context = MobilityContext._(_stops, _places, _moves, date);
-    _streamController.add(context);
-
-    /// TODO: Store to disk
-    _serializerStops.save([s]);
-    _serializerMoves.save([m]);
-
-    /// Update previous stop
-    _stopPrev = s;
-  }
-
-  /// Configure whether or not to use prior contexts
-  /// Prior contexts are necessary to compute the Routine Index feature
-  set usePriorContexts(bool value) {
-    _usePriorContexts = value;
-  }
-
-  /// Configure the Place-radius for the Place algorithm
-  set placeRadius(double value) {
-    _placeRadius = value;
+    /// Reset samples
+    _serializerSamples.flush();
+    _buffer = [];
   }
 
   /// Configure the Stop-duration for the Stop algorithm
@@ -204,9 +203,9 @@ class MobilityFactory {
     _stopRadius = value;
   }
 
-  /// Configure the move duration, used for filtering noisy moves.
-  set moveDuration(Duration value) {
-    _moveDuration = value;
+  /// Configure the Stop-radius for the Place algorithm
+  set placeRadius(value) {
+    _placeRadius = value;
   }
 
   Future<_MobilitySerializer<LocationSample>>

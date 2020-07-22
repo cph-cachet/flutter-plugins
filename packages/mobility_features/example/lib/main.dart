@@ -54,8 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     /// Set up Mobility Features
     mobilityFactory.stopDuration = Duration(seconds: 30);
-    mobilityFactory.placeRadius = 20;
-    mobilityFactory.stopRadius = 5;
+    mobilityFactory.placeRadius = 50.0;
+    mobilityFactory.stopRadius = 5.0;
 
     /// Setup Location Manager
     locationManager.interval = 1;
@@ -119,12 +119,6 @@ void onMobilityContext(MobilityContext context) {
             "Moves", "${_mobilityContext.moves.length}", Icons.directions_run),
         entry("Significant Places", "${_mobilityContext.numberOfPlaces}",
             Icons.place),
-//        entry(
-//            "Routine Index",
-//            _mobilityContext.routineIndex < 0
-//                ? "?"
-//                : "${(_mobilityContext.routineIndex * 100).toStringAsFixed(1)}%",
-//            Icons.repeat),
         entry(
             "Home Stay",
             _mobilityContext.homeStay < 0
@@ -152,7 +146,7 @@ void onMobilityContext(MobilityContext context) {
       Container(
           margin: EdgeInsets.all(25),
           child: Text(
-            'Click on the refresh button to generate features',
+            'Move around to start generating features',
             style: TextStyle(fontSize: 20),
           ))
     ];
