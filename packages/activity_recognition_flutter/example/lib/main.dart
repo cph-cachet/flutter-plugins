@@ -9,25 +9,31 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Stream<Activity> stream;
+  Activity latestActivity = Activity.empty();
+
+  @override
+  void initState() {
+    super.initState();
+    stream = ActivityRecognition.activityUpdates();
+    stream.listen(onData);
+  }
+
+  void onData(Activity activity) {
+    setState(() {
+      latestActivity = activity;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
         appBar: new AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Activity Recognition Example'),
         ),
         body: new Center(
-          child: StreamBuilder(
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                Activity act = snapshot.data;
-                return Text("Your phone is to ${act.confidence}% ${act.type}!");
-              }
-
-              return Text("No activity detected.");
-            },
-            stream: ActivityRecognition.activityUpdates(),
-          ),
+          child: Text(latestActivity.toString()),
         ),
       ),
     );

@@ -14,7 +14,7 @@ Check out the `example` directory for a sample app using activity recognition.
 
 Add permission to your Android Manifest, for Android 10 (API 29 and later), use:
 ```xml
-<uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION permission" />
 ```
 
 For Android 9 (API 28 and earlier), use:
@@ -37,29 +37,39 @@ To access motion and fitness data specifically, it must include `NSMotionUsageDe
 
 ```Dart
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
-...
-ActivityRecognition.activityUpdates()
+Stream<Activity> stream;
+
+@override
+void initState() {
+    super.initState();
+    
+    /// Start the stream updates
+    stream = ActivityRecognition.activityUpdates();
+    stream.listen(onData);
+}
+
+void onData(Activity activity) {
+    /// Do something with the activity
+    ActivityType type = activity.type;
+    int confidence = activity.confidence;
+}
 ```
 
 ## Data types
 ### iOS
-| Label      	| Description                                                     	|
-|------------	|-----------------------------------------------------------------	|
-| stationary 	| A Boolean indicating whether the device is stationary.          	|
-| walking    	| A Boolean indicating whether the device is on a walking person. 	|
-| running    	| A Boolean indicating whether the device is on a running person. 	|
-| automotive 	| A Boolean indicating whether the device is in an automobile.    	|
-| cycling    	| A Boolean indicating whether the device is in a bicycle.        	|
-| unknown    	| A Boolean indicating whether the type of motion is unknown.     	|
+* `Stationary`
+* `Walking`
+* `Running`
+* `Automotive`
+* `Cycling`
+* `Unknown`
 
 ### Android
-| Label      	| Description                                                 	|
-|------------	|-------------------------------------------------------------	|
-| IN_VEHICLE 	| The device is in a vehicle, such as a car.                  	|
-| ON_BICYCLE 	| The device is on a bicycle.                                 	|
-| ON_FOOT    	| The device is on a user who is walking or running.          	|
-| RUNNING    	| The device is on a user who is running.                     	|
-| STILL      	| The device is still (not moving).                           	|
-| TILTING    	| The device angle relative to gravity changed significantly. 	|
-| UNKNOWN    	| Unable to detect the current activity.                      	|
-| WALKING    	| The device is on a user who is walking.                     	|
+* `IN_VEHICLE`
+* `ON_BICYCLE`
+* `ON_FOOT`
+* `RUNNING`
+* `STILL`
+* `TILTING`
+* `UNKNOWN`
+* `WALKING`

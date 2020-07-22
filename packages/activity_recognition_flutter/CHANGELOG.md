@@ -1,3 +1,12 @@
+## 1.2.3
+* Added the ActivityType class
+* Updated example app
+* Updated docs
+
+## 1.2.2
+* Updated Android permissions in docs  
+* Removed table from README since it was broken on pub.dev
+
 ## 1.2.0
 * Changed package name to `dk.cachet.activity_recognition_flutter`
 
