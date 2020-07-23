@@ -200,7 +200,7 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
 
   @override
   String toString() {
-    return 'Stop at place $placeId,  (${_geoLocation.toString()}) [$arrival - $departure] ($duration) ';
+    return 'Stop at place $placeId, (${_geoLocation.toString()}) [$arrival - $departure] (Duration: $duration) ';
   }
 }
 
@@ -294,12 +294,7 @@ class Move implements _Serializable, _Timestamped {
 
   @override
   String toString() {
-    return '''Move:
-    FROM: $_stopFrom
-    TO:   $_stopTo
-    Duration: $duration
-    Distance: $distance
-    ''';
+    return 'Move (Place ${_stopFrom.placeId} [${_stopFrom.datetime}] -> Place ${_stopTo.placeId} [${_stopTo.datetime}]) ($duration) (${distance.toInt()} meters)';
   }
 }
 

@@ -316,5 +316,53 @@ void main() async {
       }
       controller.close();
     });
+
+    test('Merge stops', () async {
+      flushFiles();
+      DateTime date = jan01;
+
+      List<LocationSample> samples = [
+        /// Location 1 (Home)
+        LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 1, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 2, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 8, minutes: 0))),
+
+        /// Path to Location 1
+        LocationSample(GeoLocation(55.691806, 12.557528), date.add(Duration(hours: 8, minutes: 1))),
+        LocationSample(GeoLocation(55.691419, 12.556970), date.add(Duration(hours: 8, minutes: 2))),
+        LocationSample(GeoLocation(55.691081, 12.556455), date.add(Duration(hours: 8, minutes: 3))),
+        LocationSample(GeoLocation(55.690706, 12.555875), date.add(Duration(hours: 8, minutes: 4))),
+        LocationSample(GeoLocation(55.690434, 12.555457), date.add(Duration(hours: 8, minutes: 5))),
+        LocationSample(GeoLocation(55.690161, 12.555060), date.add(Duration(hours: 8, minutes: 6))),
+        LocationSample(GeoLocation(55.690542, 12.554481), date.add(Duration(hours: 8, minutes: 7))),
+        LocationSample(GeoLocation(55.690801, 12.550164), date.add(Duration(hours: 8, minutes: 8))),
+        LocationSample(GeoLocation(55.690825, 12.544910), date.add(Duration(hours: 8, minutes: 9))),
+        LocationSample(GeoLocation(55.689685, 12.543661), date.add(Duration(hours: 8, minutes: 15))),
+        LocationSample(GeoLocation(55.688083, 12.541852), date.add(Duration(hours: 8, minutes: 20))),
+        LocationSample(GeoLocation(55.686007, 12.539484), date.add(Duration(hours: 8, minutes: 29))),
+
+        /// Location 1
+        LocationSample(pos2, date.add(Duration(hours: 8, minutes: 30))),
+        LocationSample(pos2, date.add(Duration(hours: 10, minutes: 30))),
+        LocationSample(pos2, date.add(Duration(hours: 11, minutes: 30))),
+        LocationSample(pos2, date.add(Duration(hours: 12, minutes: 30))),
+
+        /// Gap in data (should get interpolated to Location 1)
+
+        /// Location 0 (Home)
+        LocationSample(pos1, date.add(Duration(hours: 16, seconds: 1))),
+        LocationSample(pos1, date.add(Duration(hours: 20, minutes: 0))),
+
+        /// Location 0 (Home), New day
+        LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
+      ];
+
+
+      /// Set up stream
+      MobilityFactory mf = MobilityFactory.instance;
+
+
+    });
   });
 }
