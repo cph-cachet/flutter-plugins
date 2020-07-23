@@ -7,7 +7,11 @@ This plugin allows for continuous step counting using the built-in pedometer sen
 The step count returned is the number of steps since the phone was last booted. 
 
 ## Permissions for Android
-No configuration needed.
+For Android 10 and above add the following permission to the Android manifest:
+
+```dart
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+```
 
 ## Permissions for iOS
 Users of this plug-in will have to manually open XCode and configure a few settings manually, mostly pertaining to privacy settings and permissions due to the application collecting the user's movement data.

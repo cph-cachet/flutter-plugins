@@ -1,3 +1,6 @@
+## 1.2.5
+* Android 10 and above requires the Activity Recognition permission, this has been added to the docs.
+
 ## 1.2.0
 * The plugin now returns the steps taken since last boot up.
 
