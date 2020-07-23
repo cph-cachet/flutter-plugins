@@ -1,8 +1,7 @@
 part of mobility_features;
 
 class MobilityFactory {
-  double _stopRadius = 5,
-      _placeRadius = 50;
+  double _stopRadius = 5, _placeRadius = 50;
   Duration _stopDuration = const Duration(minutes: 3);
 
   StreamSubscription<LocationSample> _subscription;
@@ -12,14 +11,12 @@ class MobilityFactory {
   List<Stop> _stops = [];
   List<Move> _moves = [];
   List<Place> _places = [];
-  List<LocationSample> _cluster = [],
-      _prevCluster = [],
-      _buffer = [];
+  List<LocationSample> _cluster = [], _prevCluster = [], _buffer = [];
   int _saveEvery = 10;
 
   /// Outgoing stream
   StreamController<MobilityContext> _streamController =
-  StreamController<MobilityContext>.broadcast();
+      StreamController<MobilityContext>.broadcast();
 
   Stream<MobilityContext> get contextStream => _streamController.stream;
 
@@ -60,11 +57,12 @@ class MobilityFactory {
       print('Loaded ${_cluster.length} location samples from disk');
     if (_stops.isNotEmpty) print('Loaded ${_stops.length} stops from disk');
     if (_moves.isNotEmpty) {
-      _moves = _moves.where((element) => element.duration > Duration(seconds: 10)).toList();
+      _moves = _moves
+          .where((element) => element.duration > Duration(seconds: 10))
+          .toList();
     }
 
-    for (var s in _stops)
-      print(s);
+    for (var s in _stops) print(s);
 
     if (_stops.isNotEmpty) {
       /// Only keeps stops and moves from the last known date
@@ -75,7 +73,7 @@ class MobilityFactory {
 
       /// Compute features
       MobilityContext context =
-      MobilityContext._(_stops, _places, _moves, date);
+          MobilityContext._(_stops, _places, _moves, date);
       _streamController.add(context);
     }
   }
@@ -100,34 +98,27 @@ class MobilityFactory {
   void _onData(LocationSample sample) {
     _adjustSaveRate();
 
-    /// If no previous stops, make the sample into a placeholder stop
-    if (_stops.isEmpty) {
-      Stop s = Stop._fromLocationSamples([sample]);
-      _stops.add(s);
-    }
-    else {
-      /// If previous samples exist, check if we should compute anything
-      if (_cluster.isNotEmpty) {
-        /// If previous sample was on a different date, reset everything
-        if (_cluster.last.datetime.midnight != sample.datetime.midnight) {
+    /// If previous samples exist, check if we should compute anything
+    if (_cluster.isNotEmpty) {
+      /// If previous sample was on a different date, reset everything
+      if (_cluster.last.datetime.midnight != sample.datetime.midnight) {
+        _createStopAndResetCluster();
+        _clearEverything();
+      }
+
+      /// If previous sample was today
+      else {
+        /// Compute median location of the collected samples
+        GeoLocation centroid = _computeCentroid(_cluster);
+
+        /// If the new data point is far away from cluster, make stop
+        if (Distance.fromGeospatial(centroid, sample) > _stopRadius) {
           _createStopAndResetCluster();
-          _clearEverything();
-        }
-
-        /// If previous sample was today
-        else {
-          /// Compute median location of the collected samples
-          GeoLocation centroid = _computeCentroid(_cluster);
-
-          /// If the new data point is far away from cluster, make stop
-          if (Distance.fromGeospatial(centroid, sample) > _stopRadius) {
-            _createStopAndResetCluster();
-          }
         }
       }
-      _addToBuffer(sample);
-      _cluster.add(sample);
     }
+    _addToBuffer(sample);
+    _cluster.add(sample);
   }
 
   void _clearEverything() {
@@ -161,12 +152,14 @@ class MobilityFactory {
   /// if they belong to the same place
   void mergeStops() {
     if (_stops.length < 2) return;
+
     Stop a = _stops[_stops.length - 2];
     Stop b = _stops[_stops.length - 1];
 
     if (a.placeId == b.placeId) {
       Duration d = _delta(a, b);
       if (d > Duration(minutes: 30)) {
+        print('Merging $a and $b');
         double lat = (a.geoLocation.latitude + b.geoLocation.latitude) / 2;
         double lon = (a.geoLocation.longitude + b.geoLocation.longitude) / 2;
         GeoLocation mean = GeoLocation(lat, lon);
@@ -187,7 +180,7 @@ class MobilityFactory {
     /// If the stop is too short, it is discarded
     /// Otherwise compute a context and send it via the stream
     if (s.duration >= _stopDuration) {
-      Stop stopPrev = _stops.last;
+      Stop stopPrev = _stops.isNotEmpty ? _stops.last : null;
 
       _stops.add(s);
 
@@ -197,18 +190,23 @@ class MobilityFactory {
       /// Merge stops and recompute places
       mergeStops();
 
-      Move m;
-      if (_stops.last.placeId == s.placeId) {
-        /// Compute the move between the two stops using the path of samples
-        final path = _prevCluster + _cluster;
-        m = Move._fromPath(stopPrev, s, path);
-      } else {
-        /// Compute the move between the two stops using a straight line
-        m = Move._fromStops(stopPrev, s);
-      }
-      if (m.duration > Duration(seconds: 10)) {
-        print('Found move');
-        _moves.add(m);
+      /// Store to disk
+      _serializerStops.save([s]);
+
+      if (stopPrev != null) {
+        Move m;
+        if (_stops.last.placeId == s.placeId) {
+          /// Compute the move between the two stops using the path of samples
+          final path = _prevCluster + _cluster;
+          m = Move._fromPath(stopPrev, s, path);
+        } else {
+          /// Compute the move between the two stops using a straight line
+          m = Move._fromStops(stopPrev, s);
+        }
+        if (m.duration > Duration(seconds: 10)) {
+          _moves.add(m);
+        }
+        _serializerMoves.save([m]);
       }
 
       /// Extract date
@@ -216,12 +214,8 @@ class MobilityFactory {
 
       /// Compute features
       MobilityContext context =
-      MobilityContext._(_stops, _places, _moves, date);
+          MobilityContext._(_stops, _places, _moves, date);
       _streamController.add(context);
-
-      /// Store to disk
-      _serializerStops.save([s]);
-      _serializerMoves.save([m]);
     }
 
     /// Reset samples etc
@@ -247,7 +241,7 @@ class MobilityFactory {
   }
 
   Future<_MobilitySerializer<LocationSample>>
-  get _locationSampleSerializer async {
+      get _locationSampleSerializer async {
     if (_serializerSamples == null) {
       _serializerSamples = _MobilitySerializer<LocationSample>();
     }
@@ -264,8 +258,8 @@ class MobilityFactory {
     return await serializer.load();
   }
 
-  static List<_Timestamped> _getElementsForDate(List<_Timestamped> elements,
-      DateTime date) {
+  static List<_Timestamped> _getElementsForDate(
+      List<_Timestamped> elements, DateTime date) {
     return elements.where((e) => e.datetime.midnight == date).toList();
   }
 
