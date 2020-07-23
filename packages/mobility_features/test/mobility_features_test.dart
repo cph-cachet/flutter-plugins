@@ -55,6 +55,7 @@ void main() async {
     test('Serialize and load three location samples', () async {
       MobilityFactory mf = MobilityFactory.instance;
 
+
       LocationSample x =
           LocationSample(GeoLocation(123.456, 123.456), DateTime(2020, 01, 01));
 
@@ -104,6 +105,7 @@ void main() async {
       /// Clean file every time test is run
       flushFiles();
       MobilityFactory mf = MobilityFactory.instance;
+
 
       List<LocationSample> samples = [
         // 5 hours spent at home
@@ -172,6 +174,7 @@ void main() async {
 
       MobilityFactory mf = MobilityFactory.instance;
 
+
       List<LocationSample> samples = [
         LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
         LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
@@ -193,8 +196,12 @@ void main() async {
     });
 
     test('Stream LocationSamples one by one', () async {
-      void onContext(MobilityContext mc) {
+      int expectedContexts = 3;
+
+      void onContext1(MobilityContext mc) {
+        print('Test #1');
         print(mc.toJson());
+        print(mc.stops.last);
       }
 
       flushFiles();
@@ -215,12 +222,82 @@ void main() async {
 
         /// Home, New day
         LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
+        LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 3))),
       ];
 
       /// Create stream controller to stream the individual samples
       /// to the MobilityFactory instance
       StreamController<LocationSample> controller =
-          StreamController.broadcast();
+      StreamController.broadcast();
+
+      /// Set up stream
+      MobilityFactory mf = MobilityFactory.instance;
+
+
+      await mf.startListening(controller.stream);
+
+      /// Listen to the Context stream
+      Stream<MobilityContext> contextStream = mf.contextStream;
+      contextStream.listen(expectAsync1(onContext1, count: expectedContexts));
+
+      // Stream all the samples one by one
+      for (LocationSample s in samples) {
+        controller.add(s);
+      }
+      controller.close();
+    });
+
+    test('Stream LocationSamples with interpolation', () async {
+      void onContext(MobilityContext mc) {
+        print('Test #2');
+        print(mc.toJson());
+
+      }
+
+      flushFiles();
+      DateTime date = jan01;
+
+      List<LocationSample> samples = [
+        /// Location 1 (Home)
+        LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 1, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 2, minutes: 0))),
+        LocationSample(pos1, date.add(Duration(hours: 8, minutes: 0))),
+
+        /// Path to Location 1
+        LocationSample(GeoLocation(55.691806, 12.557528), date.add(Duration(hours: 8, minutes: 1))),
+        LocationSample(GeoLocation(55.691419, 12.556970), date.add(Duration(hours: 8, minutes: 2))),
+        LocationSample(GeoLocation(55.691081, 12.556455), date.add(Duration(hours: 8, minutes: 3))),
+        LocationSample(GeoLocation(55.690706, 12.555875), date.add(Duration(hours: 8, minutes: 4))),
+        LocationSample(GeoLocation(55.690434, 12.555457), date.add(Duration(hours: 8, minutes: 5))),
+        LocationSample(GeoLocation(55.690161, 12.555060), date.add(Duration(hours: 8, minutes: 6))),
+        LocationSample(GeoLocation(55.690542, 12.554481), date.add(Duration(hours: 8, minutes: 7))),
+        LocationSample(GeoLocation(55.690801, 12.550164), date.add(Duration(hours: 8, minutes: 8))),
+        LocationSample(GeoLocation(55.690825, 12.544910), date.add(Duration(hours: 8, minutes: 9))),
+        LocationSample(GeoLocation(55.689685, 12.543661), date.add(Duration(hours: 8, minutes: 15))),
+        LocationSample(GeoLocation(55.688083, 12.541852), date.add(Duration(hours: 8, minutes: 20))),
+        LocationSample(GeoLocation(55.686007, 12.539484), date.add(Duration(hours: 8, minutes: 29))),
+
+        /// Location 1
+        LocationSample(pos2, date.add(Duration(hours: 8, minutes: 30))),
+        LocationSample(pos2, date.add(Duration(hours: 10, minutes: 30))),
+        LocationSample(pos2, date.add(Duration(hours: 11, minutes: 30))),
+        LocationSample(pos2, date.add(Duration(hours: 12, minutes: 30))),
+
+        /// Gap in data (should get interpolated to Location 1)
+
+        /// Location 0 (Home)
+        LocationSample(pos1, date.add(Duration(hours: 16, seconds: 1))),
+        LocationSample(pos1, date.add(Duration(hours: 20, minutes: 0))),
+
+        /// Location 0 (Home), New day
+        LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
+      ];
+
+      /// Create stream controller to stream the individual samples
+      /// to the MobilityFactory instance
+      StreamController<LocationSample> controller =
+      StreamController.broadcast();
 
       /// Set up stream
       MobilityFactory mf = MobilityFactory.instance;

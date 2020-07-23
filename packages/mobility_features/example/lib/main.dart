@@ -1,14 +1,54 @@
+library mobility_app;
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:mubs_background_location/mubs_background_location.dart';
 import 'package:mobility_features/mobility_features.dart';
 
+part 'stops_page.dart';
+
+part 'moves_page.dart';
+
+part 'places_page.dart';
+
 void main() => runApp(MyApp());
+
+Widget entry(String key, String value, Icon icon) {
+  return Container(
+      padding: const EdgeInsets.all(2),
+      margin: EdgeInsets.all(3),
+      child: ListTile(
+        leading: icon,
+        title: Text(key),
+        trailing: Text(value),
+      ));
+}
 
 String formatDate(DateTime date) {
   return '${date.year}/${date.month}/${date.day}';
 }
+
+String interval(DateTime a, DateTime b) {
+  String pad(int x) => '${x.toString().padLeft(2, '0')}';
+  return '${pad(a.hour)}:${pad(a.minute)}:${pad(a.second)} - ${pad(b.hour)}:${pad(b.minute)}:${pad(b.second)}';
+}
+
+String formatDuration(Duration duration) {
+  String twoDigits(int n) => n.toString().padLeft(2, "0");
+  String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+  String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+  return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+}
+
+final stopIcon = Icon(Icons.my_location);
+final moveIcon = Icon(Icons.directions_walk);
+final placeIcon = Icon(Icons.place);
+final featuresIcon = Icon(Icons.assessment);
+final homeStayIcon = Icon(Icons.home);
+final distanceTravelledIcon = Icon(Icons.card_travel);
+final entropyIcon = Icon(Icons.equalizer);
+final varianceIcon = Icon(Icons.swap_calls);
 
 enum AppState { NO_FEATURES, CALCULATING_FEATURES, FEATURES_READY }
 
@@ -40,6 +80,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   AppState _state = AppState.NO_FEATURES;
 
+  int _currentIndex = 0;
+
   /// Location Streaming
   LocationManager locationManager = LocationManager.instance;
   Stream<LocationDto> dtoStream;
@@ -54,8 +96,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     /// Set up Mobility Features
     mobilityFactory.stopDuration = Duration(seconds: 30);
-    mobilityFactory.placeRadius = 20;
-    mobilityFactory.stopRadius = 5;
+    mobilityFactory.placeRadius = 50.0;
+    mobilityFactory.stopRadius = 5.0;
 
     /// Setup Location Manager
     locationManager.interval = 1;
@@ -65,13 +107,13 @@ class _MyHomePageState extends State<MyHomePage> {
     streamInit();
   }
 
-void onMobilityContext(MobilityContext context) {
-  print('Context received: ${context.toJson()}');
-  setState(() {
-    _state = AppState.FEATURES_READY;
-    _mobilityContext = context;
-  });
-}
+  void onMobilityContext(MobilityContext context) {
+    print('Context received: ${context.toJson()}');
+    setState(() {
+      _state = AppState.FEATURES_READY;
+      _mobilityContext = context;
+    });
+  }
 
   void streamInit() async {
     /// Set up streams:
@@ -99,50 +141,31 @@ void onMobilityContext(MobilityContext context) {
     print(dtoToString(dto));
   }
 
-  Widget entry(String key, String value, IconData icon) {
-    return Container(
-        padding: const EdgeInsets.all(2),
-        margin: EdgeInsets.all(3),
-        child: ListTile(
-          leading: Icon(icon),
-          title: Text(key),
-          trailing: Text(value),
-        ));
-  }
-
   Widget get featuresOverview {
     return ListView(
       children: <Widget>[
-        entry("Stops", "${_mobilityContext.stops.length}",
-            Icons.airline_seat_recline_normal),
-        entry(
-            "Moves", "${_mobilityContext.moves.length}", Icons.directions_run),
+        entry("Stops", "${_mobilityContext.stops.length}", stopIcon),
+        entry("Moves", "${_mobilityContext.moves.length}", moveIcon),
         entry("Significant Places", "${_mobilityContext.numberOfPlaces}",
-            Icons.place),
-//        entry(
-//            "Routine Index",
-//            _mobilityContext.routineIndex < 0
-//                ? "?"
-//                : "${(_mobilityContext.routineIndex * 100).toStringAsFixed(1)}%",
-//            Icons.repeat),
+            placeIcon),
         entry(
             "Home Stay",
             _mobilityContext.homeStay < 0
                 ? "?"
                 : "${(_mobilityContext.homeStay * 100).toStringAsFixed(1)}%",
-            Icons.home),
+            homeStayIcon),
         entry(
             "Distance Travelled",
             "${(_mobilityContext.distanceTravelled / 1000).toStringAsFixed(2)} km",
-            Icons.directions_walk),
+            distanceTravelledIcon),
         entry(
             "Normalized Entropy",
             "${_mobilityContext.normalizedEntropy.toStringAsFixed(2)}",
-            Icons.equalizer),
+            entropyIcon),
         entry(
             "Location Variance",
             "${(111.133 * _mobilityContext.locationVariance).toStringAsFixed(5)} km",
-            Icons.crop_rotate),
+            varianceIcon),
       ],
     );
   }
@@ -152,7 +175,7 @@ void onMobilityContext(MobilityContext context) {
       Container(
           margin: EdgeInsets.all(25),
           child: Text(
-            'Click on the refresh button to generate features',
+            'Move around to start generating features',
             style: TextStyle(fontSize: 20),
           ))
     ];
@@ -176,41 +199,73 @@ void onMobilityContext(MobilityContext context) {
     ];
   }
 
-  List<Widget> get contentCalculatingFeatures {
-    return [
-      Container(
-          margin: EdgeInsets.all(25),
-          child: Column(children: [
-            Text(
-              'Calculating features...',
-              style: TextStyle(fontSize: 20),
-            ),
-            Container(
-                margin: EdgeInsets.only(top: 50),
-                child:
-                    Center(child: CircularProgressIndicator(strokeWidth: 10)))
-          ]))
-    ];
+  Widget get content {
+    List<Widget> children;
+    if (_state == AppState.FEATURES_READY)
+      children = contentFeaturesReady;
+    else
+      children = contentNoFeatures;
+    return Column(children: children);
   }
 
-  List<Widget> get content {
-    if (_state == AppState.FEATURES_READY)
-      return contentFeaturesReady;
-    else if (_state == AppState.CALCULATING_FEATURES)
-      return contentCalculatingFeatures;
-    else
-      return contentNoFeatures;
+  void onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  Widget _navBar() {
+    return BottomNavigationBar(
+      onTap: onTabTapped, // new
+      currentIndex: _currentIndex, // this will be set when a new tab is tapped
+      type: BottomNavigationBarType.fixed,
+      items: [
+        BottomNavigationBarItem(
+          icon: featuresIcon,
+          title: new Text('Features'),
+        ),
+        BottomNavigationBarItem(
+          icon: stopIcon,
+          title: new Text('Stops'),
+        ),
+        BottomNavigationBarItem(
+          icon: placeIcon,
+          title: new Text('Places'),
+        ),
+        BottomNavigationBarItem(icon: moveIcon, title: Text('Moves'))
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Stop> stops = [];
+    List<Move> moves = [];
+    List<Place> places = [];
+
+    if (_mobilityContext != null) {
+      for (var x in _mobilityContext.stops) print(x);
+      for (var x in _mobilityContext.moves) print(x);
+      stops = _mobilityContext.stops;
+      moves = _mobilityContext.moves;
+      places = _mobilityContext.places;
+    }
+
+    List<Widget> pages = [
+      content,
+      StopsPage(stops),
+      PlacesPage(places),
+      MovesPage(moves),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Column(children: content),
+      body: pages[_currentIndex],
+      bottomNavigationBar: _navBar(),
     );
   }
 }
