@@ -109,6 +109,12 @@ class LocationSample implements _Serializable, _Geospatial, _Timestamped {
     return LocationSample(pos, dt);
   }
 
+  LocationSample addNoise() {
+    double lat = this.geoLocation.latitude * 1.000001;
+    double lon = this.geoLocation.longitude * 1.000001;
+    return LocationSample(GeoLocation(lat, lon), this.datetime);
+  }
+
   @override
   String toString() {
     return '($latitude, $longitude) @ $_datetime';

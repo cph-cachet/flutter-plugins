@@ -13,6 +13,13 @@ class MobilityFactory {
   List<Place> _places = [];
   List<LocationSample> _cluster = [], _prevCluster = [], _buffer = [];
   int _saveEvery = 10;
+  bool debug = false;
+
+  void _print(dynamic x) {
+    if (debug) {
+      print(x);
+    }
+  }
 
   /// Outgoing stream
   StreamController<MobilityContext> _streamController =
@@ -54,15 +61,19 @@ class MobilityFactory {
     _moves = uniqueElements(_moves);
 
     if (_cluster.isNotEmpty)
-      print('Loaded ${_cluster.length} location samples from disk');
-    if (_stops.isNotEmpty) print('Loaded ${_stops.length} stops from disk');
+      _print('Loaded ${_cluster.length} location samples from disk');
+    if (_stops.isNotEmpty) {
+      _print('Loaded ${_stops.length} stops from disk');
+      _stops = _mergeAllStops(_stops);
+    }
     if (_moves.isNotEmpty) {
+      _print('Loaded ${_moves.length} moves from disk');
       _moves = _moves
           .where((element) => element.duration > Duration(seconds: 10))
           .toList();
     }
 
-    for (var s in _stops) print(s);
+    for (var s in _stops) _print(s);
 
     if (_stops.isNotEmpty) {
       /// Only keeps stops and moves from the last known date
@@ -122,7 +133,7 @@ class MobilityFactory {
   }
 
   void _clearEverything() {
-    print('cleared');
+    _print('cleared');
     _serializerStops.flush();
     _serializerMoves.flush();
     _stops = [];
@@ -132,45 +143,53 @@ class MobilityFactory {
     _buffer = [];
   }
 
-  Duration _delta(_Timestamped first, _Timestamped last) {
-    int ms = last.datetime.millisecondsSinceEpoch -
-        first.datetime.millisecondsSinceEpoch;
-    return Duration(milliseconds: ms);
-  }
-
   /// Save a sample to the buffer and store samples on disk if buffer overflows
   void _addToBuffer(LocationSample sample) {
     _buffer.add(sample);
     if (_buffer.length >= _saveEvery) {
       _serializerSamples.save(_buffer);
-      print('Stored buffer to disk');
+      _print('Stored buffer to disk');
       _buffer = [];
     }
   }
 
-  /// Merge last two stops, and recompute places
-  /// if they belong to the same place
-  void mergeStops() {
-    if (_stops.length < 2) return;
+  List<Stop> _mergeAllStops(List<Stop> stops) {
+    List<Stop> merged = [];
+    if (stops.length < 2) return stops;
 
-    Stop a = _stops[_stops.length - 2];
-    Stop b = _stops[_stops.length - 1];
+    /// Should be applied after places have been found
+    List<Stop> toMerge = [];
 
-    if (a.placeId == b.placeId) {
-      Duration d = _delta(a, b);
-      if (d > Duration(minutes: 30)) {
-        print('Merging $a and $b');
-        double lat = (a.geoLocation.latitude + b.geoLocation.latitude) / 2;
-        double lon = (a.geoLocation.longitude + b.geoLocation.longitude) / 2;
-        GeoLocation mean = GeoLocation(lat, lon);
-        Stop s = Stop._(mean, a.arrival, b.departure);
-        _stops.removeLast();
-        _stops.removeLast();
-        _stops.add(s);
+    void _merge() {
+      if (toMerge.isEmpty) return;
+      GeoLocation geoLocation = _computeCentroid(toMerge);
+      DateTime arr = toMerge.first.arrival;
+      DateTime dep = toMerge.last.departure;
+      Stop s = Stop._(geoLocation, arr, dep, placeId: toMerge.first.placeId);
+      merged.add(s);
+      _print('Merging output: ${merged.last}');
+      toMerge = [];
+    }
 
-        _places = _findPlaces(_stops);
+    for (Stop stop in stops) {
+      /// If no stops to merge, we cannot merge and we therefore add the current
+      /// stop and go to the next one
+      if (toMerge.isEmpty) {
+        toMerge.add(stop);
+      }
+
+      /// Otherwise check if we should add it or merge
+      else {
+        if (stop.placeId != toMerge.last.placeId) {
+          _merge();
+        }
+        toMerge.add(stop);
       }
     }
+
+    /// Merge remaining stops in the toMerge list
+    _merge();
+    return merged;
   }
 
   /// Converts the cluster into a stop, i.e. closing the cluster
@@ -179,7 +198,8 @@ class MobilityFactory {
 
     /// If the stop is too short, it is discarded
     /// Otherwise compute a context and send it via the stream
-    if (s.duration >= _stopDuration) {
+    if (s.duration > _stopDuration) {
+      _print('----> Stop found: $s');
       Stop stopPrev = _stops.isNotEmpty ? _stops.last : null;
 
       _stops.add(s);
@@ -188,10 +208,14 @@ class MobilityFactory {
       _places = _findPlaces(_stops);
 
       /// Merge stops and recompute places
-      mergeStops();
+      _stops = _mergeAllStops(_stops);
+      _places = _findPlaces(_stops);
 
       /// Store to disk
       _serializerStops.save([s]);
+
+      /// Extract date
+      DateTime date = _cluster.last.datetime.midnight;
 
       if (stopPrev != null) {
         Move m;
@@ -208,9 +232,6 @@ class MobilityFactory {
         }
         _serializerMoves.save([m]);
       }
-
-      /// Extract date
-      DateTime date = _cluster.last.datetime.midnight;
 
       /// Compute features
       MobilityContext context =
