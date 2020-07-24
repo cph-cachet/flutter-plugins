@@ -315,5 +315,56 @@ void main() async {
       }
       controller.close();
     });
+
+  test('Recursive Stop Merging', () async {
+
+    flushFiles();
+    DateTime date = jan01;
+
+    List<LocationSample> samples = [
+      /// Location 1 (Home)
+      LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
+      LocationSample(pos1, date.add(Duration(hours: 1, minutes: 0))),
+      LocationSample(pos1, date.add(Duration(hours: 2, minutes: 0))).addNoise(),
+      LocationSample(pos1, date.add(Duration(hours: 8, minutes: 0))).addNoise(),
+
+      /// Location 1
+      LocationSample(pos2, date.add(Duration(hours: 8, minutes: 30))),
+      LocationSample(pos2, date.add(Duration(hours: 9, minutes: 30))),
+      LocationSample(pos2, date.add(Duration(hours: 10, minutes: 30))).addNoise(),
+      LocationSample(pos2, date.add(Duration(hours: 11, minutes: 30))).addNoise(),
+      LocationSample(pos2, date.add(Duration(hours: 12, minutes: 30))),
+
+      /// Gap in data (should get interpolated to Location 1)
+
+      /// Location 0 (Home)
+      LocationSample(pos1, date.add(Duration(hours: 16, seconds: 1))),
+      LocationSample(pos1, date.add(Duration(hours: 20, minutes: 0))),
+
+      /// Location 0 (Home), New day
+      LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
+    ];
+
+    /// Create stream controller to stream the individual samples
+    /// to the MobilityFactory instance
+    StreamController<LocationSample> controller =
+    StreamController.broadcast();
+
+    /// Set up stream
+    MobilityFactory mf = MobilityFactory.instance;
+    await mf.startListening(controller.stream);
+
+    int expectedContexts = 5;
+
+    /// Listen to the Context stream
+    Stream<MobilityContext> contextStream = mf.contextStream;
+    contextStream.listen(expectAsync1((c) => printList(c.stops), count: expectedContexts));
+
+    // Stream all the samples one by one
+    for (LocationSample s in samples) {
+      controller.add(s);
+    }
+    controller.close();
   });
+});
 }
