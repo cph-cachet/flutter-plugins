@@ -220,12 +220,13 @@ class MobilityFactory {
       if (stopPrev != null) {
         Move m;
         if (_stops.last.placeId == s.placeId) {
+          /// Compute the move between the two stops using a straight line
+          /// This is to avoid noisy readings when inside a building
+          m = Move._fromStops(stopPrev, s);
+        } else {
           /// Compute the move between the two stops using the path of samples
           final path = _prevCluster + _cluster;
           m = Move._fromPath(stopPrev, s, path);
-        } else {
-          /// Compute the move between the two stops using a straight line
-          m = Move._fromStops(stopPrev, s);
         }
         if (m.duration > Duration(seconds: 10)) {
           _moves.add(m);

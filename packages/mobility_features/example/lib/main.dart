@@ -245,7 +245,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (_mobilityContext != null) {
       for (var x in _mobilityContext.stops) print(x);
-      for (var x in _mobilityContext.moves) print(x);
+      for (var x in _mobilityContext.moves) {
+        print(x);
+        print('${x.stopFrom} --> ${x.stopTo}');
+      }
       stops = _mobilityContext.stops;
       moves = _mobilityContext.moves;
       places = _mobilityContext.places;
