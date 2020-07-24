@@ -1,3 +1,8 @@
+## [2.0.2] - Stop merging
+* Implemented stop merging to prevent gaps in the data
+* This was especially a problem on iOS devices during the night, where location sampling is automatically limited by the OS
+* Gaps in the data during the night would cause the home stay feature to be very unreliable
+
 ## [2.0.1] - Stream-based API
 * Removed Routine Index temporarily
 
