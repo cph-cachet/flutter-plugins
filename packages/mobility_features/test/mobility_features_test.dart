@@ -331,7 +331,8 @@ void main() async {
 
       /// Listen to the Context stream
       Stream<MobilityContext> contextStream = mf.contextStream;
-      contextStream.listen(expectAsync1(onContext, count: expectedContexts));
+      contextStream
+          .listen(expectAsync1(onContext, count: expectedContexts));
 
       // Stream all the samples one by one
       for (LocationSample s in samples) {
