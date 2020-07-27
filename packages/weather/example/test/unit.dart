@@ -1,4 +1,4 @@
-import 'package:weather/weather_library.dart';
+import 'package:weather/weather.dart';
 import 'json_examples.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -38,6 +38,14 @@ void main() async {
 
     test('- Fetch forecast via city name', () async {
       print('Forecast by city name:');
+      List<Weather> forecast = await wf.fiveDayForecastByCityName(cityName);
+      for (var w in forecast) print(w);
+      print('-'*50);
+    });
+
+    test('- Fetch forecast via city name, Danish', () async {
+      print('Forecast by city name:');
+      wf = WeatherFactory(key, language: Language.DANISH);
       List<Weather> forecast = await wf.fiveDayForecastByCityName(cityName);
       for (var w in forecast) print(w);
       print('-'*50);

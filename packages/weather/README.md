@@ -25,6 +25,14 @@ import 'package:weather/weather.dart';
 WeatherFactory wf = new WeatherFactory("YOUR_API_KEY");
 ```
 
+Alternatively, you can also specify a language for the weather reports such as Danish
+
+```dart
+WeatherFactory wf = new WeatherFactory("YOUR_API_KEY", language: Language.DANISH);
+```
+
+For all the supported languages, see the Languages section.
+
 ### Current Weather
 For specific documentation on the current weather API, see the [OpenWeatherMap weather API docs](https://openweathermap.org/current).
 
@@ -121,3 +129,53 @@ dependencies {
 And finally, set the Android compile- and minimum SDK versions to `compileSdkVersion 28`, and `minSdkVersion 21` respectively, inside the `android/app/build.gradle` file.
 
 
+### Languages
+The following languages are supported
+
+* `AFRIKAANS`
+* `ALBANIAN`
+* `ARABIC`
+* `AZERBAIJANI`
+* `BULGARIAN`
+* `CATALAN`
+* `CZECH`
+* `DANISH`
+* `GERMAN`
+* `GREEK`
+* `ENGLISH`
+* `BASQUE`
+* `PERSIAN`
+* `FARSI`
+* `FINNISH`
+* `FRENCH`
+* `GALICIAN`
+* `HEBREW`
+* `HINDI`
+* `CROATIAN`
+* `HUNGARIAN`
+* `INDONESIAN`
+* `ITALIAN`
+* `JAPANESE`
+* `KOREAN`
+* `LATVIAN`
+* `LITHUANIAN`
+* `MACEDONIAN`
+* `NORWEGIAN`
+* `DUTCH`
+* `POLISH`
+* `PORTUGUESE`
+* `PORTUGUESE_BRAZIL`
+* `ROMANIAN`
+* `RUSSIAN`
+* `SWEDISH`
+* `SLOVAK`
+* `SLOVENIAN`
+* `SPANISH`
+* `SERBIAN`
+* `THAI`
+* `TURKISH`
+* `UKRAINIAN`
+* `VIETNAMESE`
+* `CHINESE_SIMPLIFIED`
+* `CHINESE_TRADITIONAL`
+* `ZULU`

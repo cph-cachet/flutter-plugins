@@ -3,11 +3,12 @@ part of weather_library;
 /// Plugin for fetching weather data in JSON.
 class WeatherFactory {
   String _apiKey;
+  Language language = Language.ENGLISH;
   static const String FIVE_DAY_FORECAST = 'forecast';
   static const String CURRENT_WEATHER = 'weather';
   static const int STATUS_OK = 200;
 
-  WeatherFactory(this._apiKey);
+  WeatherFactory(this._apiKey, {this.language});
 
   /// Fetch current weather based on geographical coordinates
   /// Result is JSON.
@@ -102,7 +103,8 @@ class WeatherFactory {
       url += 'lat=$lat&lon=$lon&';
     }
 
-    url += 'appid=$_apiKey';
+    url += 'appid=$_apiKey&';
+    url += 'lang=${_languageCode[language]}';
     return url;
   }
 }
