@@ -1,3 +1,10 @@
+## 1.1.0
+* Introduced UUID to the HealthDataPoint class
+* Re-did the example application
+
+## 1.0.6
+* Fixed a null-check warning in the obj-c code (issue #87)
+
 ## 1.0.5
 * Updated gradle-wrapper distribution url `gradle-5.4.1-all.zip` 
 * Updated docs

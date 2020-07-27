@@ -95,8 +95,69 @@ int dateFrom;
 int dateTo;
 String dataType;
 String platform;
+String uuid;
 ```
 A `HealthData healthData` object can be serialized to JSON with the `healthData.toJson()` method.
+
+
+### Full example
+```dart
+
+    List<HealthDataPoint> _healthDataList = [];
+    DateTime startDate = DateTime.utc(2001, 01, 01);
+    DateTime endDate = DateTime.now();
+    ...
+    
+    Future<void> fetchData() async {
+      if (await Health.requestAuthorization()) {
+        print('Authorized');
+  
+        bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
+        print("is WEIGHT data type available?: $weightAvailable");
+  
+        /// Specify the wished data types
+        List<HealthDataType> types = [
+          HealthDataType.WEIGHT,
+          HealthDataType.HEIGHT,
+          HealthDataType.STEPS,
+          HealthDataType.BODY_MASS_INDEX,
+          HealthDataType.WAIST_CIRCUMFERENCE,
+          HealthDataType.BODY_FAT_PERCENTAGE,
+          HealthDataType.ACTIVE_ENERGY_BURNED,
+          HealthDataType.BASAL_ENERGY_BURNED,
+          HealthDataType.HEART_RATE,
+          HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+          HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+          HealthDataType.RESTING_HEART_RATE,
+          HealthDataType.BLOOD_GLUCOSE,
+          HealthDataType.BLOOD_OXYGEN,
+        ];
+  
+        for (HealthDataType type in types) {
+          /// Calls must be wrapped in a try catch block
+          try {
+            /// Fetch new data
+            List<HealthDataPoint> healthData =
+                await Health.getHealthDataFromType(startDate, endDate, type);
+  
+            /// Save all the new data points
+            _healthDataList.addAll(healthData);
+  
+            /// Filter out duplicates based on their UUID
+            _healthDataList = Health.removeDuplicates(_healthDataList);
+          } catch (exception) {
+            print(exception.toString());
+          }
+        }
+  
+        /// Print the results
+        _healthDataList.forEach((x) => print("Data point: $x"));
+        
+      } else {
+        print('Not authorized');
+      }
+    }
+```
 
 
 ### Check authorization
@@ -105,12 +166,7 @@ The following example shows prompting the user for authorization to the API, whi
 Calls to fetch data from the API should be done within the inner if-clause.
 
 ```dart
-Future.delayed(Duration(seconds: 2), () async {
-    bool _isAuthorized = await Health.requestAuthorization();
-    if (_isAuthorized) {
-    /// Do something with the API here
-    }
-});
+if (await Health.requestAuthorization())
 ```
 ### Specify data type
 Data types indicate the type of data to fetch from the API and are available from the enum class `HealthDataType`. 
@@ -145,55 +201,18 @@ DateTime endDate = DateTime.now();
 Make the fetch call:
 
 ```dart
-List<HealthDataPoint> healthDataList = List<HealthDataPoint>();
-
-for (HealthDataType type in types) {
-    /// Calls to 'Health.getHealthDataFromType' must be wrapped in a try catch block.
-    try {
-        List<HealthDataPoint> healthData = await Health.getHealthDataFromType(startDate, endDate, type);
-        healthDataList.addAll(healthData);
-    } catch (exception) {
-        print(exception.toString());
-    }
-}
+/// Fetch new data
+List<HealthDataPoint> healthData =
+    await Health.getHealthDataFromType(startDate, endDate, type);
 ```
 
 This call must be inside a try catch block, since when some data type is not available, an exception will be thrown. 
 Also, make sure the access to the API has been authorized (see __Check authorization__).
 
+### Filtering out duplicates
+If the same data is requested multiple times it will result in duplicates. Luckily each data point has a UUID and is
+therefore unique. To filter out duplicates, use the `Health.removeDuplicates` method:
 
-### Full example
 ```dart
-void _getHealthDataPoints() async {
-
-    List<HealthDataType> types = [
-        HealthDataType.WEIGHT,
-        HealthDataType.HEIGHT,
-        HealthDataType.STEPS,
-    ];
-
-    DateTime startDate = DateTime.utc(2001, 01, 01);
-    DateTime endDate = DateTime.now();
-
-    List<HealthDataPoint> healthDataList = List<HealthDataPoint>();
-
-    Future.delayed(Duration(seconds: 2), () async {
-        bool isAuthorized = await Health.requestAuthorization();
-        if (isAuthorized) {
-            for (HealthDataType type in types) {
-                /// Calls to 'Health.getHealthDataFromType' must be wrapped in a try catch block.
-                try {
-                    List<HealthDataPoint> healthData = await Health.getHealthDataFromType(startDate, endDate, type);
-                    healthDataList.addAll(healthData);
-                } catch (exception) {
-                    print(exception.toString());
-                }
-            }
-        }
-        /// Do something with the health data list
-        for (var healthData in healthDataList) {
-            print(healthData);
-        }
-    });
-}
+_healthDataList = Health.removeDuplicates(_healthDataList);
 ```
