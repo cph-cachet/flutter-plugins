@@ -1,3 +1,6 @@
+## 1.2.1
+* Added language to the API
+
 ## 1.2.0
 * Renamed WeatherStation to WeatherFactory to reflect its purpose (it does not represent a physical weather station)
 * Refactored parsing of forecasts

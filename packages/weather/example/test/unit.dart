@@ -43,6 +43,14 @@ void main() async {
       print('-'*50);
     });
 
+    test('- Fetch forecast via city name, Danish', () async {
+      print('Forecast by city name:');
+      wf = WeatherFactory(key, language: Language.DANISH);
+      List<Weather> forecast = await wf.fiveDayForecastByCityName(cityName);
+      for (var w in forecast) print(w);
+      print('-'*50);
+    });
+
   });
 
 }
