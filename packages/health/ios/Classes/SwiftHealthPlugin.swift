@@ -83,7 +83,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
 
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        print("HELLO????")
         let arguments = call.arguments as? NSDictionary
         let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
         let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
