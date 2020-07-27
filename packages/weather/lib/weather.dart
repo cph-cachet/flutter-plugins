@@ -11,7 +11,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-part 'package:weather/src/weather.dart';
+part 'package:weather/src/weather_domain.dart';
 part 'package:weather/src/weather_factory.dart';
 part 'package:weather/src/exceptions.dart';
 part 'package:weather/src/weather_parsing.dart';

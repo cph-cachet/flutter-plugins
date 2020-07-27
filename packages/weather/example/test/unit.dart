@@ -1,4 +1,4 @@
-import 'package:weather/weather_library.dart';
+import 'package:weather/weather.dart';
 import 'json_examples.dart';
 import 'package:flutter_test/flutter_test.dart';
 

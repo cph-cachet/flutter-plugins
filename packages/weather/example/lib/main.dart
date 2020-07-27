@@ -6,7 +6,7 @@
  */
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:weather/weather_library.dart';
+import 'package:weather/weather.dart';
 
 enum AppState { NOT_DOWNLOADED, DOWNLOADING, FINISHED_DOWNLOADING }
 
