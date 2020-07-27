@@ -104,17 +104,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 return
             }
 
-            if (samples != nil){
-                result(samples.map { sample -> NSDictionary in
-                    let unit = self.unitLookUp(key: dataTypeKey)
-                    
-                    return [
-                        "value": sample.quantity.doubleValue(for: unit),
-                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                    ]
-                })
-            }
+            result(samples.map { sample -> NSDictionary in
+                let unit = self.unitLookUp(key: dataTypeKey)
+
+                return [
+                    "value": sample.quantity.doubleValue(for: unit),
+                    "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                    "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                ]
+            })
             return
         }
         HKHealthStore().execute(query)
