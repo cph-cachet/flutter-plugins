@@ -10,8 +10,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  var _healthKitOutput;
-  var _healthDataList = List<HealthDataPoint>();
+  List<HealthDataPoint> _healthDataList = List<HealthDataPoint>();
   bool _isAuthorized = false;
 
   @override
@@ -99,7 +98,7 @@ class _MyAppState extends State<MyApp> {
           ],
         ),
         body: _healthDataList.isEmpty
-            ? Text('$_healthKitOutput\n')
+            ? Text('No Data to show')
             : ListView.builder(
                 itemCount: _healthDataList.length,
                 itemBuilder: (_, index) => ListTile(
