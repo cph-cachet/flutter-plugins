@@ -9,106 +9,142 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
+enum AppState { DATA_NOT_FETCHED, FETCHING_DATA, DATA_READY, NO_DATA }
+
 class _MyAppState extends State<MyApp> {
-  List<HealthDataPoint> _healthDataList = List<HealthDataPoint>();
-  bool _isAuthorized = false;
+  List<HealthDataPoint> _healthDataList = [];
+  AppState _state = AppState.DATA_NOT_FETCHED;
+
+  DateTime startDate = DateTime.utc(2001, 01, 01);
+  DateTime endDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    DateTime startDate = DateTime.utc(2001, 01, 01);
-    DateTime endDate = DateTime.now();
-
-    Future.delayed(Duration(seconds: 2), () async {
-      _isAuthorized = await Health.requestAuthorization();
-
-      if (_isAuthorized) {
-        print('Authorized');
-
-        bool weightAvailable =
-            Health.isDataTypeAvailable(HealthDataType.WEIGHT);
-        print("is WEIGHT data type available?: $weightAvailable");
-
-        /// Specify the wished data types
-        List<HealthDataType> types = [
-          HealthDataType.WEIGHT,
-          HealthDataType.HEIGHT,
-          HealthDataType.STEPS,
-          HealthDataType.BODY_MASS_INDEX,
-          HealthDataType.WAIST_CIRCUMFERENCE,
-          HealthDataType.BODY_FAT_PERCENTAGE,
-          HealthDataType.ACTIVE_ENERGY_BURNED,
-          HealthDataType.BASAL_ENERGY_BURNED,
-          HealthDataType.HEART_RATE,
-          HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-          HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-          HealthDataType.RESTING_HEART_RATE,
-          HealthDataType.BLOOD_GLUCOSE,
-          HealthDataType.BLOOD_OXYGEN,
-        ];
-
-        for (HealthDataType type in types) {
-          /// Calls to 'Health.getHealthDataFromType'
-          /// must be wrapped in a try catch block.b
-          try {
-            List<HealthDataPoint> healthData =
-                await Health.getHealthDataFromType(startDate, endDate, type);
-            _healthDataList.addAll(healthData);
-          } catch (exception) {
-            print(exception.toString());
-          }
-        }
-
-        /// Print the results
-        for (var x in _healthDataList) {
-          print("Data point: $x");
-        }
-
-        /// Update the UI to display the results
-        setState(() {});
-      } else {
-        print('Not authorized');
-      }
+  Future<void> fetchData() async {
+    setState(() {
+      _state = AppState.FETCHING_DATA;
     });
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
+    if (await Health.requestAuthorization()) {
+      print('Authorized');
+
+      bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
+      print("is WEIGHT data type available?: $weightAvailable");
+
+      /// Specify the wished data types
+      List<HealthDataType> types = [
+        HealthDataType.WEIGHT,
+        HealthDataType.HEIGHT,
+        HealthDataType.STEPS,
+        HealthDataType.BODY_MASS_INDEX,
+        HealthDataType.WAIST_CIRCUMFERENCE,
+        HealthDataType.BODY_FAT_PERCENTAGE,
+        HealthDataType.ACTIVE_ENERGY_BURNED,
+        HealthDataType.BASAL_ENERGY_BURNED,
+        HealthDataType.HEART_RATE,
+        HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+        HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+        HealthDataType.RESTING_HEART_RATE,
+        HealthDataType.BLOOD_GLUCOSE,
+        HealthDataType.BLOOD_OXYGEN,
+      ];
+
+      for (HealthDataType type in types) {
+        /// Calls must be wrapped in a try catch block
+        try {
+          /// Fetch new data
+          List<HealthDataPoint> healthData =
+              await Health.getHealthDataFromType(startDate, endDate, type);
+
+          /// Save all the new data points
+          _healthDataList.addAll(healthData);
+
+          /// Filter out duplicates based on their UUID
+          _healthDataList = Health.removeDuplicates(_healthDataList);
+        } catch (exception) {
+          print(exception.toString());
+        }
+      }
+
+      /// Print the results
+      _healthDataList.forEach((x) => print("Data point: $x"));
+
+      /// Update the UI to display the results
+      setState(() {
+        _state =
+            _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+      });
+    } else {
+      print('Not authorized');
+    }
+  }
+
+  Widget _contentFetchingData() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Container(
+            padding: EdgeInsets.all(20),
+            child: CircularProgressIndicator(
+              strokeWidth: 10,
+            )),
+        Text('Fetching data...')
+      ],
+    );
+  }
+
+  Widget _contentDataReady() {
+    return ListView.builder(
+        itemCount: _healthDataList.length,
+        itemBuilder: (_, index) {
+          HealthDataPoint p = _healthDataList[index];
+          return ListTile(
+            title: Text("${p.dataType}: ${p.value}"),
+            trailing: Text('${p.unit}'),
+            subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+          );
+        });
+  }
+
+  Widget _contentNoData() {
+    return Text('No Data to show');
+  }
+
+  Widget _contentNotFetched() {
+    return Text('Press the download button to fetch data');
+  }
+
+  Widget _content() {
+    if (_state == AppState.DATA_READY)
+      return _contentDataReady();
+    else if (_state == AppState.NO_DATA)
+      return _contentNoData();
+    else if (_state == AppState.FETCHING_DATA) return _contentFetchingData();
+
+    return _contentNotFetched();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.sync),
-              onPressed: () {
-                initPlatformState();
-              },
-            )
-          ],
-        ),
-        body: _healthDataList.isEmpty
-            ? Text('No Data to show')
-            : ListView.builder(
-                itemCount: _healthDataList.length,
-                itemBuilder: (_, index) => ListTile(
-                      title: Text(
-                          "${_healthDataList[index].dataType.toString()}: ${_healthDataList[index].value.toString()}"),
-                      trailing: Text('${_healthDataList[index].unit}'),
-                      subtitle: Text(
-                          '${DateTime.fromMillisecondsSinceEpoch(_healthDataList[index].dateFrom)} - ${DateTime.fromMillisecondsSinceEpoch(_healthDataList[index].dateTo)}'),
-                    )),
-      ),
+          appBar: AppBar(
+            title: const Text('Plugin example app'),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.file_download),
+                onPressed: () {
+                  fetchData();
+                },
+              )
+            ],
+          ),
+          body: Center(
+            child: _content(),
+          )),
     );
   }
 }

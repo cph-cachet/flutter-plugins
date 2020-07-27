@@ -83,6 +83,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
 
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        print("HELLO????")
         let arguments = call.arguments as? NSDictionary
         let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
         let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
@@ -104,17 +105,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 return
             }
 
-            if (samples != nil){
-                result(samples.map { sample -> NSDictionary in
-                    let unit = self.unitLookUp(key: dataTypeKey)
-                    
-                    return [
-                        "value": sample.quantity.doubleValue(for: unit),
-                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                    ]
-                })
-            }
+            result(samples.map { sample -> NSDictionary in
+                let unit = self.unitLookUp(key: dataTypeKey)
+
+                return [
+                    "uuid": "\(sample.uuid)",
+                    "value": sample.quantity.doubleValue(for: unit),
+                    "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                    "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                ]
+            })
             return
         }
         HKHealthStore().execute(query)
