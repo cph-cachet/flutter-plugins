@@ -3,6 +3,8 @@ This library combines both GoogleFit and AppleHealthKit. It support most of the 
 
 Supports **iOS** and **Android X**
 
+NB: For Android, your app *needs* to have Google Fit installed and have access to the internet, otherwise this plugin will not work.
+
 ## Data Types
 | Data Type                    | Available on iOS | Available on Android | Comments             |
 |------------------------------|------------------|----------------------|----------------------|
