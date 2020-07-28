@@ -36,20 +36,20 @@ class _MyAppState extends State<MyApp> {
 
       /// Specify the wished data types
       List<HealthDataType> types = [
-        HealthDataType.WEIGHT,
-        HealthDataType.HEIGHT,
-        HealthDataType.STEPS,
-        HealthDataType.BODY_MASS_INDEX,
-        HealthDataType.WAIST_CIRCUMFERENCE,
-        HealthDataType.BODY_FAT_PERCENTAGE,
         HealthDataType.ACTIVE_ENERGY_BURNED,
         HealthDataType.BASAL_ENERGY_BURNED,
-        HealthDataType.HEART_RATE,
-        HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-        HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-        HealthDataType.RESTING_HEART_RATE,
         HealthDataType.BLOOD_GLUCOSE,
         HealthDataType.BLOOD_OXYGEN,
+        HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+        HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+        HealthDataType.BODY_FAT_PERCENTAGE,
+        HealthDataType.BODY_MASS_INDEX,
+        HealthDataType.HEART_RATE,
+        HealthDataType.HEIGHT,
+        HealthDataType.RESTING_HEART_RATE,
+        HealthDataType.STEPS,
+        HealthDataType.WAIST_CIRCUMFERENCE,
+        HealthDataType.WEIGHT
       ];
 
       for (HealthDataType type in types) {

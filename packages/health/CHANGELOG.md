@@ -1,3 +1,12 @@
+## 1.1.3
+* Updated table with units
+
+## 1.1.2
+* Now supports the data type `HEART_RATE_VARIABILITY_SDNN` on iOS
+
+## 1.1.1
+* Fixed issue #88 (https://github.com/cph-cachet/flutter-plugins/issues/88)
+
 ## 1.1.0
 * Introduced UUID to the HealthDataPoint class
 * Re-did the example application
