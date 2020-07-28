@@ -81,7 +81,6 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
   HealthDataType.ELECTRODERMAL_ACTIVITY: HealthDataUnit.SIEMENS,
   HealthDataType.HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
-  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
   HealthDataType.HEIGHT: HealthDataUnit.METERS,
   HealthDataType.RESTING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
   HealthDataType.STEPS: HealthDataUnit.COUNT,
@@ -92,5 +91,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   /// Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
-  HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT
+  HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
+  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
+
 };

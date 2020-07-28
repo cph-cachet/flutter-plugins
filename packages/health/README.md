@@ -6,29 +6,29 @@ Supports **iOS** and **Android X**
 NB: For Android, your app *needs* to have Google Fit installed and have access to the internet, otherwise this plugin will not work.
 
 ## Data Types
-| Data Type                   	| iOS Support 	| Android support 	| Comments             	|
-|-----------------------------	|-------------	|-----------------	|----------------------	|
-| ACTIVE_ENERGY_BURNED        	| yes         	| yes             	|                      	|
-| BASAL_ENERGY_BURNED         	| yes         	|                 	|                      	|
-| BLOOD_GLUCOSE               	| yes         	| yes             	|                      	|
-| BLOOD_OXYGEN                	| yes         	| yes             	|                      	|
-| BLOOD_PRESSURE_DIASTOLIC    	| yes         	| yes             	|                      	|
-| BLOOD_PRESSURE_SYSTOLIC     	| yes         	| yes             	|                      	|
-| BODY_FAT_PERCENTAGE         	| yes         	| yes             	|                      	|
-| BODY_MASS_INDEX             	| yes         	| yes             	|                      	|
-| BODY_TEMPERATURE            	| yes         	| yes             	|                      	|
-| HEART_RATE                  	| yes         	| yes             	|                      	|
-| HEART_RATE_VARIABILITY_SDNN 	| yes         	|                 	|                      	|
-| HEIGHT                      	| yes         	| yes             	|                      	|
-| RESTING_HEART_RATE          	| yes         	|                 	|                      	|
-| STEPS                       	| yes         	| yes             	|                      	|
-| WAIST_CIRCUMFERENCE         	| yes         	|                 	|                      	|
-| WALKING_HEART_RATE          	| yes         	|                 	|                      	|
-| WEIGHT                      	| yes         	| yes             	|                      	|
-| HIGH_HEART_RATE_EVENT       	| yes         	|                 	| Requires Apple Watch 	|
-| LOW_HEART_RATE_EVENT        	| yes         	|                 	| Requires Apple Watch 	|
-| IRREGULAR_HEART_RATE_EVENT  	| yes         	|                 	| Requires Apple Watch 	|
-| ELECTRODERMAL_ACTIVITY      	| yes         	|                 	| Requires Apple Watch 	|
+| Data Type                   | Unit                    | iOS Support | Android support | Comments             |
+|-----------------------------|-------------------------|-------------|-----------------|----------------------|
+| ACTIVE_ENERGY_BURNED        | CALORIES                | yes         | yes             |                      |
+| BASAL_ENERGY_BURNED         | CALORIES                | yes         |                 |                      |
+| BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes         | yes             |                      |
+| BLOOD_OXYGEN                | PERCENTAGE              | yes         | yes             |                      |
+| BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes         | yes             |                      |
+| BLOOD_PRESSURE_SYSTOLIC     | MILLIMETER_OF_MERCURY   | yes         | yes             |                      |
+| BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes         | yes             |                      |
+| BODY_MASS_INDEX             | NO_UNIT                 | yes         | yes             |                      |
+| BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes         | yes             |                      |
+| HEART_RATE                  | SIEMENS                 | yes         | yes             |                      |
+| HEIGHT                      | BEATS_PER_MINUTE        | yes         | yes             |                      |
+| RESTING_HEART_RATE          | METERS                  | yes         |                 |                      |
+| STEPS                       | BEATS_PER_MINUTE        | yes         | yes             |                      |
+| WAIST_CIRCUMFERENCE         | COUNT                   | yes         |                 |                      |
+| WALKING_HEART_RATE          | METERS                  | yes         |                 |                      |
+| WEIGHT                      | BEATS_PER_MINUTE        | yes         | yes             |                      |
+| HIGH_HEART_RATE_EVENT       | KILOGRAMS               | yes         |                 | Requires Apple Watch |
+| LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |                 | Requires Apple Watch |
+| IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes         |                 | Requires Apple Watch |
+| ELECTRODERMAL_ACTIVITY      | NO_UNIT                 | yes         |                 | Requires Apple Watch |
+| HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes         |                 | Requires Apple Watch |
 
 ## Setup
 ### Apple HealthKit (iOS)
