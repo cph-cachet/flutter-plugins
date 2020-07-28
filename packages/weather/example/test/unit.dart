@@ -17,30 +17,28 @@ void main() async {
       Weather w = await wf.currentWeatherByLocation(lat, lon);
       print('Weather by Location:');
       print(w);
-      print('-'*50);
+      print('-' * 50);
     });
-
 
     test('- Fetch weather via city name', () async {
       Weather w = await wf.currentWeatherByCityName(cityName);
       print('Weather by city name:');
       print(w);
-      print('-'*50);
+      print('-' * 50);
     });
 
     test('- Fetch forecast via lat and lon', () async {
       print('Forecast by city name:');
       List<Weather> forecast = await wf.fiveDayForecastByLocation(lat, lon);
       for (var w in forecast) print(w);
-      print('-'*50);
+      print('-' * 50);
     });
-
 
     test('- Fetch forecast via city name', () async {
       print('Forecast by city name:');
       List<Weather> forecast = await wf.fiveDayForecastByCityName(cityName);
       for (var w in forecast) print(w);
-      print('-'*50);
+      print('-' * 50);
     });
 
     test('- Fetch forecast via city name, Danish', () async {
@@ -48,9 +46,15 @@ void main() async {
       wf = WeatherFactory(key, language: Language.DANISH);
       List<Weather> forecast = await wf.fiveDayForecastByCityName(cityName);
       for (var w in forecast) print(w);
-      print('-'*50);
+      print('-' * 50);
     });
 
+    test('- Fetch current weather via location, Danish', () async {
+      print('Forecast by city name:');
+      wf = WeatherFactory(key, language: Language.DANISH);
+      Weather weather = await wf.currentWeatherByLocation(lat, lon);
+      print(weather);
+      print('-' * 50);
+    });
   });
-
 }
