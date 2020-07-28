@@ -39,6 +39,7 @@ class Weather {
       _pressure,
       _windSpeed,
       _windDegree,
+      _windGust,
       _humidity,
       _cloudiness,
       _rainLastHour,
@@ -80,6 +81,7 @@ class Weather {
 
     _windSpeed = _unpackDouble(wind, 'speed');
     _windDegree = _unpackDouble(wind, 'deg');
+    _windGust = _unpackDouble(wind, 'gust');
 
     _cloudiness = _unpackDouble(clouds, 'all');
 
@@ -100,6 +102,7 @@ class Weather {
     Weather: $_weatherMain, $_weatherDescription
     Temp: $_temperature, Temp (min): $_tempMin, Temp (max): $_tempMax,  Temp (feels like): $_tempFeelsLike
     Sunrise: $_sunrise, Sunset: $_sunset
+    Wind: speed $_windSpeed, degree: $_windDegree, gust $_windGust
     Weather Condition code: $_weatherConditionCode
     ''';
   }
@@ -124,6 +127,9 @@ class Weather {
 
   /// Wind speed in m/s
   double get windSpeed => _windSpeed;
+
+  /// Wind gust in m/s
+  double get windGust => _windGust;
 
   /// Max [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
   Temperature get tempMax => _tempMax;
@@ -164,16 +170,16 @@ class Weather {
   /// Country code, ex US or DK
   String get country => _country;
 
-  /// Rain fall last hour measured in volume
+  /// Rain fall last hour measured in mm
   double get rainLastHour => _rainLastHour;
 
-  /// Rain fall last 3 hours measured in volume
+  /// Rain fall last 3 hours measured in mm
   double get rainLast3Hours => _rainLast3Hours;
 
-  /// Rain fall last 3 hours measured in volume
+  /// Snow fall last 3 hours measured in mm
   double get snowLastHour => _snowLastHour;
 
-  /// Rain fall last 3 hours measured in volume
+  /// Snow fall last 3 hours measured in mm
   double get snowLast3Hours => _snowLast3Hours;
 }
 

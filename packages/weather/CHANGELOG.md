@@ -1,3 +1,6 @@
+## 1.2.2
+* Added wind gust
+
 ## 1.2.1
 * Added language to the API
 
