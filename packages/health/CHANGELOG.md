@@ -1,3 +1,6 @@
+## 1.1.2
+* Now supports the data type `HEART_RATE_VARIABILITY_SDNN` on iOS
+
 ## 1.1.1
 * Fixed issue #88 (https://github.com/cph-cachet/flutter-plugins/issues/88)
 

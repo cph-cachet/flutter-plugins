@@ -6,28 +6,29 @@ Supports **iOS** and **Android X**
 NB: For Android, your app *needs* to have Google Fit installed and have access to the internet, otherwise this plugin will not work.
 
 ## Data Types
-| Data Type                    | Available on iOS | Available on Android | Comments             |
-|------------------------------|------------------|----------------------|----------------------|
-| `BODY_FAT`                   | yes              | yes                  |                      |
-| `HEIGHT`                     | yes              | yes                  |                      |
-| `WEIGHT`                     | yes              | yes                  |                      |
-| `BODY_MASS_INDEX`            | yes              | yes                  |                      |
-| `WAIST_CIRCUMFERENCE`        | yes              |                      |                      |
-| `STEPS`                      | yes              | yes                  |                      |
-| `BASAL_ENERGY_BURNED`        | yes              |                      |                      |
-| `ACTIVE_ENERGY_BURNED`       | yes              | yes                  |                      |
-| `HEART_RATE`                 | yes              | yes                  |                      |
-| `BODY_TEMPERATURE`           | yes              | yes                  |                      |
-| `BLOOD_PRESSURE_SYSTOLIC`    | yes              | yes                  |                      |
-| `BLOOD_PRESSURE_DIASTOLIC`   | yes              | yes                  |                      |
-| `RESTING_HEART_RATE`         | yes              |                      |                      |
-| `WALKING_HEART_RATE`         | yes              |                      |                      |
-| `BLOOD_OXYGEN`               | yes              | yes                  |                      |
-| `BLOOD_GLUCOSE`              | yes              | yes                  |                      |
-| `ELECTRODERMAL_ACTIVITY`     | yes              |                      | Requires Apple Watch |
-| `HIGH_HEART_RATE_EVENT`      | yes              |                      | Requires Apple Watch |
-| `LOW_HEART_RATE_EVENT`       | yes              |                      | Requires Apple Watch |
-| `IRREGULAR_HEART_RATE_EVENT` | yes              |                      | Requires Apple Watch |
+| Data Type                   	| iOS Support 	| Android support 	| Comments             	|
+|-----------------------------	|-------------	|-----------------	|----------------------	|
+| ACTIVE_ENERGY_BURNED        	| yes         	| yes             	|                      	|
+| BASAL_ENERGY_BURNED         	| yes         	|                 	|                      	|
+| BLOOD_GLUCOSE               	| yes         	| yes             	|                      	|
+| BLOOD_OXYGEN                	| yes         	| yes             	|                      	|
+| BLOOD_PRESSURE_DIASTOLIC    	| yes         	| yes             	|                      	|
+| BLOOD_PRESSURE_SYSTOLIC     	| yes         	| yes             	|                      	|
+| BODY_FAT_PERCENTAGE         	| yes         	| yes             	|                      	|
+| BODY_MASS_INDEX             	| yes         	| yes             	|                      	|
+| BODY_TEMPERATURE            	| yes         	| yes             	|                      	|
+| HEART_RATE                  	| yes         	| yes             	|                      	|
+| HEART_RATE_VARIABILITY_SDNN 	| yes         	|                 	|                      	|
+| HEIGHT                      	| yes         	| yes             	|                      	|
+| RESTING_HEART_RATE          	| yes         	|                 	|                      	|
+| STEPS                       	| yes         	| yes             	|                      	|
+| WAIST_CIRCUMFERENCE         	| yes         	|                 	|                      	|
+| WALKING_HEART_RATE          	| yes         	|                 	|                      	|
+| WEIGHT                      	| yes         	| yes             	|                      	|
+| HIGH_HEART_RATE_EVENT       	| yes         	|                 	| Requires Apple Watch 	|
+| LOW_HEART_RATE_EVENT        	| yes         	|                 	| Requires Apple Watch 	|
+| IRREGULAR_HEART_RATE_EVENT  	| yes         	|                 	| Requires Apple Watch 	|
+| ELECTRODERMAL_ACTIVITY      	| yes         	|                 	| Requires Apple Watch 	|
 
 ## Setup
 ### Apple HealthKit (iOS)
@@ -193,6 +194,7 @@ bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
 Given the list of data types (`types`) as well as a `startData` and an `endDate`, we can now fetch all the data, for each data type with a call to the `Health.getHealthDataFromType` function.
 
 Set up dates:
+
 ```dart
 DateTime startDate = DateTime.utc(2001, 01, 01);
 DateTime endDate = DateTime.now();
