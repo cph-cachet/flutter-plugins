@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.1.1
 * Fixed issue #88 (https://github.com/cph-cachet/flutter-plugins/issues/88)
 
 ## 1.1.0
