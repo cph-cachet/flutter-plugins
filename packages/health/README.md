@@ -23,8 +23,8 @@ NB: For Android, your app *needs* to have Google Fit installed and have access t
 | STEPS                       | BEATS_PER_MINUTE        | yes         | yes             |                      |
 | WAIST_CIRCUMFERENCE         | COUNT                   | yes         |                 |                      |
 | WALKING_HEART_RATE          | METERS                  | yes         |                 |                      |
-| WEIGHT                      | BEATS_PER_MINUTE        | yes         | yes             |                      |
-| HIGH_HEART_RATE_EVENT       | KILOGRAMS               | yes         |                 | Requires Apple Watch |
+| WEIGHT                      | KILOGRAMS               | yes         | yes             |                      |
+| HIGH_HEART_RATE_EVENT       | BEATS_PER_MINUTE        | yes         |                 | Requires Apple Watch |
 | LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |                 | Requires Apple Watch |
 | IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes         |                 | Requires Apple Watch |
 | ELECTRODERMAL_ACTIVITY      | NO_UNIT                 | yes         |                 | Requires Apple Watch |
