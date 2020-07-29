@@ -99,12 +99,13 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
+        if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
                 Log.d("FLUTTER_HEALTH", "Access Granted!")
                 mResult?.success(true)
-            } else {
+            } else if (resultCode == Activity.RESULT_CANCELED) {
                 Log.d("FLUTTER_HEALTH", "Access Denied!")
+                mResult?.success(false);
             }
         }
         return false
