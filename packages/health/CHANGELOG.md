@@ -1,3 +1,10 @@
+## 1.1.5
+* Fixed an issue with google authorization
+* See https://github.com/cph-cachet/flutter-plugins/issues/133
+
+## 1.1.4
+* Corrected table of units
+
 ## 1.1.3
 * Updated table with units
 
