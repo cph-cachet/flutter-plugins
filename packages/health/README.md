@@ -17,17 +17,17 @@ NB: For Android, your app *needs* to have Google Fit installed and have access t
 | BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes         | yes             |                      |
 | BODY_MASS_INDEX             | NO_UNIT                 | yes         | yes             |                      |
 | BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes         | yes             |                      |
-| HEART_RATE                  | SIEMENS                 | yes         | yes             |                      |
-| HEIGHT                      | BEATS_PER_MINUTE        | yes         | yes             |                      |
-| RESTING_HEART_RATE          | METERS                  | yes         |                 |                      |
-| STEPS                       | BEATS_PER_MINUTE        | yes         | yes             |                      |
-| WAIST_CIRCUMFERENCE         | COUNT                   | yes         |                 |                      |
-| WALKING_HEART_RATE          | METERS                  | yes         |                 |                      |
-| WEIGHT                      | BEATS_PER_MINUTE        | yes         | yes             |                      |
-| HIGH_HEART_RATE_EVENT       | KILOGRAMS               | yes         |                 | Requires Apple Watch |
+| ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes         |                 |                      |
+| HEART_RATE                  | BEATS_PER_MINUTE        | yes         | yes             |                      |
+| HEIGHT                      | METERS                  | yes         | yes             |                      |
+| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes         |                 |                      |
+| STEPS                       | COUNT                   | yes         | yes             |                      |
+| WAIST_CIRCUMFERENCE         | METERS                  | yes         |                 |                      |
+| WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes         |                 |                      |
+| WEIGHT                      | KILOGRAMS               | yes         | yes             |                      |
+| HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes         |                 | Requires Apple Watch |
 | LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |                 | Requires Apple Watch |
 | IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes         |                 | Requires Apple Watch |
-| ELECTRODERMAL_ACTIVITY      | NO_UNIT                 | yes         |                 | Requires Apple Watch |
 | HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes         |                 | Requires Apple Watch |
 
 ## Setup
