@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'dart:io' show Platform;
 
 class Pedometer {
   static const EventChannel _stepDetectionChannel =
@@ -8,13 +9,31 @@ class Pedometer {
   static const EventChannel _stepCountChannel =
       const EventChannel('step_count');
 
+
+//  StreamController<StepDetectionEvent> detectionController;
+//  static const oneSec = const Duration(seconds:1);
+
+
   /// Returns one step at a time.
   /// Events come every time a step is detected.
-  static Future<Stream<StepDetectionEvent>> get stepDetectionStream async =>
-      _stepDetectionChannel
-          .receiveBroadcastStream()
-          .map((event) => StepDetectionEvent._(event))
-          .handleError(_onError);
+  static Future<Stream<StepDetectionEvent>> get stepDetectionStream async {
+
+    Stream<StepDetectionEvent> stream = _stepDetectionChannel
+        .receiveBroadcastStream()
+        .map((event) => StepDetectionEvent._(event))
+        .handleError(_onError);
+
+    return stream;
+
+//    if (Platform.isIOS) {
+//      return stream;
+//    }
+//
+//    detectionController.addStream(stream);
+//    new Timer.periodic(oneSec, (Timer t) => print('hi!'));
+
+  }
+
 
   /// Returns the steps taken since last system boot.
   /// Events may come with a delay.
@@ -55,6 +74,7 @@ class StepDetectionEvent {
   static const _WALKING = 'walking';
   static const _STOPPED = 'stopped';
   static const _UNKNOWN = 'unknown';
+
 
   static const Map<int, String> _STATUSES = {0: _STOPPED, 1: _WALKING};
 

@@ -4,9 +4,11 @@ import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Looper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
+import android.os.Handler
 
 class SensorStreamHandler() : EventChannel.StreamHandler {
 
@@ -15,12 +17,14 @@ class SensorStreamHandler() : EventChannel.StreamHandler {
     private var sensor: Sensor? = null
     private lateinit var context: Context
     private lateinit var sensorName: String
+    private lateinit var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding
 
     constructor(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding, sensorType: Int) : this() {
         this.context = flutterPluginBinding.applicationContext
         this.sensorName = if (sensorType == Sensor.TYPE_STEP_COUNTER) "StepCount" else "StepDetection"
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         sensor = sensorManager!!.getDefaultSensor(sensorType)
+        this.flutterPluginBinding = flutterPluginBinding
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
