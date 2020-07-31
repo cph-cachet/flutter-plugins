@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+
 import 'package:pedometer/pedometer.dart';
 
-void main() => runApp(new MyApp());
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  Pedometer _pedometer;
-  StreamSubscription<int> _subscription;
-  String _stepCountValue = '?';
+  Stream<StepCountEvent> _stepCountStream;
+  Stream<StepDetectionEvent> _stepDetectionStream;
+  StepDetectionEvent _detectedStep;
+  StepCountEvent _stepCount;
 
   @override
   void initState() {
@@ -20,59 +24,53 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
+  void onStepCount(StepCountEvent event) {
+    print(event);
+    setState(() {
+      _stepCount = event;
+    });
+  }
+
+  void onStepDetected(StepDetectionEvent event) {
+    print(event);
+    setState(() {
+      _detectedStep = event;
+    });
+  }
+
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    startListening();
+//    try {
+//      _stepCountStream = await Pedometer.stepCountStream;
+//      _stepCountStream.listen(onStepCount);
+//    } catch (error) {
+//      print(error);
+//    }
+
+    _stepDetectionStream = await Pedometer.stepDetectionStream;
+    _stepDetectionStream.listen(onStepDetected);
+
+    if (!mounted) return;
   }
-
-  void onData(int stepCountValue) {
-    print(stepCountValue);
-  }
-
-  void startListening() {
-    _pedometer = new Pedometer();
-    _subscription = _pedometer.pedometerStream.listen(_onData,
-        onError: _onError, onDone: _onDone, cancelOnError: true);
-  }
-
-  void stopListening() {
-    _subscription.cancel();
-  }
-
-  void _onData(int newValue) async {
-    print('New step count value: $newValue');
-    setState(() => _stepCountValue = "$newValue");
-  }
-
-  void _onDone() => print("Finished pedometer tracking");
-
-  void _onError(error) => print("Flutter Pedometer Error: $error");
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-          appBar: new AppBar(
-            title: const Text('Pedometer example app'),
-          ),
-          body: Center(
-              child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Pedometer example app'),
+        ),
+        body: Center(
+          child: Column(
             children: <Widget>[
-              new Icon(
-                Icons.directions_walk,
-                size: 90,
-              ),
-              new Text(
-                'Steps taken:',
-                style: TextStyle(fontSize: 30),
-              ),
-              new Text(
-                '$_stepCountValue',
-                style: TextStyle(fontSize: 100, color: Colors.blue),
-              )
+              Text(
+                  'Steps taken: ${_stepCount != null ? _stepCount.steps : '?'}'),
+              Text(
+                  'Step detected at ${_detectedStep != null ? _detectedStep.timeStamp : '?'}')
             ],
-          ))),
+          ),
+        ),
+      ),
     );
   }
 }
