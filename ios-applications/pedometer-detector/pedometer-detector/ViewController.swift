@@ -19,7 +19,10 @@ class StepDetector {
     private let available = CMPedometer.isStepCountingAvailable()
     
     func onListen() {
-        if (available && !running) {
+        if (!CMPedometer.isPedometerEventTrackingAvailable()) {
+            print("Step Detection is not available")
+        }
+        else if (!running) {
             running = true
             pedometer.startEventUpdates() {
                 pedometerData, error in
@@ -52,25 +55,27 @@ class StepCounter {
     private let available = CMPedometer.isStepCountingAvailable()
     
     func onListen() {
-        let systemUptime = ProcessInfo.processInfo.systemUptime;
-        let timeNow = Date().timeIntervalSince1970
-        let dateOfLastReboot = Date(timeIntervalSince1970: timeNow - systemUptime)
-        
-        if (available && !running) {
+        if (!CMPedometer.isStepCountingAvailable()) {
+            print("Step count is not available")
+        }
+        else if (!running) {
+            let systemUptime = ProcessInfo.processInfo.systemUptime;
+            let timeNow = Date().timeIntervalSince1970
+            let dateOfLastReboot = Date(timeIntervalSince1970: timeNow - systemUptime)
             running = true
             pedometer.startUpdates(from: dateOfLastReboot) {
                 pedometerData, error in
                 guard let pedometerData = pedometerData, error == nil else { return }
                 
                 DispatchQueue.main.async {
-                    self.handleEvent(stepCount: pedometerData.numberOfSteps.intValue)
+                    self.handleEvent(count: pedometerData.numberOfSteps.intValue)
                 }
             }
         }
     }
     
-    func handleEvent(stepCount: Int) {
-        print("Step Count: \(stepCount)")
+    func handleEvent(count: Int) {
+        print("Step Count: \(count)")
     }
     
     func onCancel() {

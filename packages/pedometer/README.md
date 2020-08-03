@@ -4,7 +4,7 @@
 
 This plugin allows for continuous step counting and pedestrian status using the built-in pedometer sensor API of iOS and Android devices.
 
-![](imgs/pedometer-app.png)
+![](imgs/screenshots.png)
 
 ## Permissions for Android
 For Android 10 and above add the following permission to the Android manifest:
@@ -33,31 +33,58 @@ On Android, any steps taken before installing the application will not be counte
 The Pedestrian status is either `walking` or `stopped`. In the case that of an error, 
 the status will be `unknown`.
 
+## Availability of Sensors
+Both Step Count and Pedestrian Status may not be available on some phones:
+
+* It was found that some Samsung phones did not support Step Count or Pedestrian Status
+* Older iPhones did not support Pedestrian Status in particular 
+
+There is nothing we can do to solve this problem, unfortunately.
+
+In the case that a sensor is not available, an error will be thrown. It is important that **you** handle this error **yourself**.
 ## Example Usage
 
+See the [example app](https://github.com/cph-cachet/flutter-plugins/blob/master/packages/pedometer/example/lib/main.dart) for a fully-fledged example.
+
+Below is shown a more generalized example. Remember to set the required permissions, as described above.
+
 ``` dart
-Stream<StepCount> _stepCountStream;
-Stream<PedestrianStatus> _stepDetectionStream;
+  Stream<StepCount> _stepCountStream;
+  Stream<PedestrianStatus> _pedestrianStatusStream;
 
-void someMethod() {
-    _stepDetectionStream = await Pedometer.pedestrianStatusStream;
-    _stepDetectionStream.listen(onPedestrianStatusChanged);
-    
-    _stepCountStream = await Pedometer.stepCountStream;
-    _stepCountStream.listen(onStepCount);
-}
-
-void onStepCount(StepCount event) {
+  void onStepCount(StepCount event) {
+    /// Handle step count changed
     int steps = event.steps;
-    int Datetime = event.timestamp;
-}
+    DateTime timeStamp = event.timeStamp;
+  }
 
-void onPedestrianStatusChanged(PedestrianStatus event) {
+  void onPedestrianStatusChanged(PedestrianStatus event) {
+    /// Handle status changed
     String status = event.status;
-    int Datetime = event.timestamp;
-}
+    DateTime timeStamp = event.timeStamp;
+  }
+
+  void onPedestrianStatusError(error) {
+    /// Handle the error
+  }
+
+  void onStepCountError(error) {
+    /// Handle the error
+  }
+
+  Future<void> initPlatformState() async {
+    /// Init streams
+    _pedestrianStatusStream = await Pedometer.pedestrianStatusStream;
+    _stepCountStream = await Pedometer.stepCountStream;
+
+    /// Listen to streams and handle errors
+    _stepCountStream.listen(onStepCount).onError(onStepCountError);
+        _pedestrianStatusStream
+        .listen(onPedestrianStatusChanged)
+        .onError(onPedestrianStatusError);
+    
+    ...
+  }
 ```
 
-
-See the [example app](https://github.com/cph-cachet/flutter-plugins/blob/master/packages/pedometer/example/lib/main.dart) for a full example.
 

@@ -19,8 +19,7 @@ class Pedometer {
   static Future<Stream<PedestrianStatus>> get pedestrianStatusStream async {
     Stream<PedestrianStatus> stream = _stepDetectionChannel
         .receiveBroadcastStream()
-        .map((event) => PedestrianStatus._(event))
-        .handleError(_onError);
+        .map((event) => PedestrianStatus._(event));
     if (Platform.isAndroid) return _androidStream(stream);
     return stream;
   }
