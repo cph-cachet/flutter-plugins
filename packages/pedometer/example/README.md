@@ -1,6 +1,6 @@
-# example
+# pedometer_example
 
-Pedometer Example App
+Demonstrates how to use the pedometer plugin.
 
 ## Getting Started
 

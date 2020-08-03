@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+
 import 'package:pedometer/pedometer.dart';
 
-void main() => runApp(new MyApp());
+String formatDate(DateTime d) {
+  return d.toString().substring(0, 19);
+}
+
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  Pedometer _pedometer;
-  StreamSubscription<int> _subscription;
-  String _stepCountValue = '?';
+  Stream<StepCount> _stepCountStream;
+  StepCount _stepCount;
+
+  Stream<PedestrianStatus> _stepDetectionStream;
+  PedestrianStatus _pedestrianStatus;
 
   @override
   void initState() {
@@ -20,59 +29,79 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
+  void onStepCount(StepCount event) {
+    event.steps;
+    event.timeStamp;
+    print(event);
+    setState(() {
+      _stepCount = event;
+    });
+  }
+
+  void onPedestrianStatusChanged(PedestrianStatus event) {
+    event.status;
+    event.timeStamp;
+    print(event);
+    setState(() {
+      _pedestrianStatus = event;
+    });
+  }
+
   Future<void> initPlatformState() async {
-    startListening();
+    _stepDetectionStream = await Pedometer.pedestrianStatusStream;
+    _stepDetectionStream.listen(onPedestrianStatusChanged);
+
+    _stepCountStream = await Pedometer.stepCountStream;
+    _stepCountStream.listen(onStepCount);
+
+    if (!mounted) return;
   }
-
-  void onData(int stepCountValue) {
-    print(stepCountValue);
-  }
-
-  void startListening() {
-    _pedometer = new Pedometer();
-    _subscription = _pedometer.pedometerStream.listen(_onData,
-        onError: _onError, onDone: _onDone, cancelOnError: true);
-  }
-
-  void stopListening() {
-    _subscription.cancel();
-  }
-
-  void _onData(int newValue) async {
-    print('New step count value: $newValue');
-    setState(() => _stepCountValue = "$newValue");
-  }
-
-  void _onDone() => print("Finished pedometer tracking");
-
-  void _onError(error) => print("Flutter Pedometer Error: $error");
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-          appBar: new AppBar(
-            title: const Text('Pedometer example app'),
-          ),
-          body: Center(
-              child: Column(
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Pedometer example app'),
+        ),
+        body: Center(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              new Icon(
-                Icons.directions_walk,
-                size: 90,
-              ),
-              new Text(
+              Text(
                 'Steps taken:',
                 style: TextStyle(fontSize: 30),
               ),
-              new Text(
-                '$_stepCountValue',
-                style: TextStyle(fontSize: 100, color: Colors.blue),
-              )
+
+              Text(
+                '${_stepCount != null ? _stepCount.steps : '?'}',
+                style: TextStyle(fontSize: 60),
+              ),
+              Divider(
+                height: 100,
+                thickness: 0,
+                color: Colors.white,
+              ),
+              Text(
+                'Pedestrian status:',
+                style: TextStyle(fontSize: 30),
+              ),
+              Icon(
+                _pedestrianStatus != null
+                    ? _pedestrianStatus.status == 'walking'
+                        ? Icons.directions_walk
+                        : Icons.accessibility_new
+                    : Icons.device_unknown,
+                size: 100,
+              ),
+              Text(
+                '(${_pedestrianStatus != null ? _pedestrianStatus.status : '?'})',
+                style: TextStyle(fontSize: 30),
+              ),
             ],
-          ))),
+          ),
+        ),
+      ),
     );
   }
 }

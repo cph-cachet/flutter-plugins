@@ -1,3 +1,9 @@
+## 2.0.0
+* Re-implemented the plugin for both Android and iOS
+* This should solve many build problems which persisted on Android
+* Added Pedestrian Status events and the ability to stream these
+* Added a class for the already-existing step count event
+
 ## 1.2.5
 * Android 10 and above requires the Activity Recognition permission, this has been added to the docs.
 
