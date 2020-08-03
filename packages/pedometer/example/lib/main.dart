@@ -30,6 +30,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void onStepCount(StepCount event) {
+    event.steps;
+    event.timeStamp;
     print(event);
     setState(() {
       _stepCount = event;
@@ -37,6 +39,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void onPedestrianStatusChanged(PedestrianStatus event) {
+    event.status;
+    event.timeStamp;
     print(event);
     setState(() {
       _pedestrianStatus = event;
