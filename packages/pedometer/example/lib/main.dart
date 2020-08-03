@@ -3,6 +3,10 @@ import 'dart:async';
 
 import 'package:pedometer/pedometer.dart';
 
+String formatDate(DateTime d) {
+  return d.toString().substring(0, 19);
+}
+
 void main() {
   runApp(MyApp());
 }
@@ -13,10 +17,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Stream<StepCountEvent> _stepCountStream;
-  Stream<StepDetectionEvent> _stepDetectionStream;
-  StepDetectionEvent _detectedStep;
-  StepCountEvent _stepCount;
+  Stream<StepCount> _stepCountStream;
+  StepCount _stepCount;
+
+  Stream<PedestrianStatus> _stepDetectionStream;
+  PedestrianStatus _pedestrianStatus;
 
   @override
   void initState() {
@@ -24,31 +29,26 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
-  void onStepCount(StepCountEvent event) {
+  void onStepCount(StepCount event) {
     print(event);
     setState(() {
       _stepCount = event;
     });
   }
 
-  void onStepDetected(StepDetectionEvent event) {
+  void onPedestrianStatusChanged(PedestrianStatus event) {
     print(event);
     setState(() {
-      _detectedStep = event;
+      _pedestrianStatus = event;
     });
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-//    try {
-//      _stepCountStream = await Pedometer.stepCountStream;
-//      _stepCountStream.listen(onStepCount);
-//    } catch (error) {
-//      print(error);
-//    }
+    _stepDetectionStream = await Pedometer.pedestrianStatusStream;
+    _stepDetectionStream.listen(onPedestrianStatusChanged);
 
-    _stepDetectionStream = await Pedometer.stepDetectionStream;
-    _stepDetectionStream.listen(onStepDetected);
+    _stepCountStream = await Pedometer.stepCountStream;
+    _stepCountStream.listen(onStepCount);
 
     if (!mounted) return;
   }
@@ -62,11 +62,38 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                  'Steps taken: ${_stepCount != null ? _stepCount.steps : '?'}'),
+                'Steps taken:',
+                style: TextStyle(fontSize: 30),
+              ),
+
               Text(
-                  'Step detected at ${_detectedStep != null ? _detectedStep.timeStamp : '?'}')
+                '${_stepCount != null ? _stepCount.steps : '?'}',
+                style: TextStyle(fontSize: 60),
+              ),
+              Divider(
+                height: 100,
+                thickness: 0,
+                color: Colors.white,
+              ),
+              Text(
+                'Pedestrian status:',
+                style: TextStyle(fontSize: 30),
+              ),
+              Icon(
+                _pedestrianStatus != null
+                    ? _pedestrianStatus.status == 'walking'
+                        ? Icons.directions_walk
+                        : Icons.accessibility_new
+                    : Icons.device_unknown,
+                size: 100,
+              ),
+              Text(
+                '(${_pedestrianStatus != null ? _pedestrianStatus.status : '?'})',
+                style: TextStyle(fontSize: 30),
+              ),
             ],
           ),
         ),

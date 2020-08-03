@@ -10,25 +10,27 @@ public class SwiftPedometerPlugin: NSObject, FlutterPlugin {
         let stepDetectionHandler = StepDetector()
         let stepDetectionChannel = FlutterEventChannel.init(name: "step_detection", binaryMessenger: registrar.messenger())
         stepDetectionChannel.setStreamHandler(stepDetectionHandler)
-        // let stepCountHandler = StepCountHandler()
-        // let stepCountChannel = FlutterEventChannel.init(name: "step_count", binaryMessenger: registrar.messenger())
-        // stepCountChannel.setStreamHandler(instance)
+
+        let stepCountHandler = StepCounter()
+        let stepCountChannel = FlutterEventChannel.init(name: "step_count", binaryMessenger: registrar.messenger())
+        stepCountChannel.setStreamHandler(stepCountHandler)
     }
 }
 
-class StepDetector: NSObject, FlutterStreamHandler {
+/// StepDetector, handles pedestrian status streaming
+public class StepDetector: NSObject, FlutterStreamHandler {
     private let pedometer = CMPedometer()
     private var running = false
     private let available = CMPedometer.isStepCountingAvailable()
     private var eventSink: FlutterEventSink?
 
-    private func sendEvent(stepType: Int) {
+    private func handleEvent(status: Int) {
         // If no eventSink to emit events to, do nothing (wait)
         if (eventSink == nil) {
             return
         }
-        // Emit step count event to Flutter
-        eventSink!(stepType)
+        // Emit pedestrian status event to Flutter
+        eventSink!(status)
     }
 
     public func onListen(withArguments arguments: Any?, eventSink: @escaping FlutterEventSink) -> FlutterError? {
@@ -39,21 +41,21 @@ class StepDetector: NSObject, FlutterStreamHandler {
                 pedometer.startEventUpdates() {
                     pedometerData, error in
                     guard let pedometerData = pedometerData, error == nil else { return }
-                    
+
                     DispatchQueue.main.async {
-                        print("From Swift: \(pedometerData.type.rawValue)")
-                        self.sendEvent(stepType: pedometerData.type.rawValue)
+                        print("From Swift - Pedestrian Status: \(pedometerData.type.rawValue)")
+                        self.handleEvent(status: pedometerData.type.rawValue)
                     }
                 }
             }
         }
         return nil
     }
-    
+
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         NotificationCenter.default.removeObserver(self)
         eventSink = nil
-        
+
         if (running) {
             pedometer.stopUpdates()
             running = false
@@ -62,29 +64,53 @@ class StepDetector: NSObject, FlutterStreamHandler {
     }
 }
 
-// class StepCounter: FlutterStreamHandler {
-//     private let pedometer = CMPedometer()
-//     private var running = false
-//     private let available = CMPedometer.isStepCountingAvailable()
-    
-//     func onListen() {
-//         if (available && !running) {
-//             running = true
-//             pedometer.startUpdates(from: Date()) {
-//                 pedometerData, error in
-//                 guard let pedometerData = pedometerData, error == nil else { return }
-                
-//                 DispatchQueue.main.async {
-//                     print(pedometerData)
-//                 }
-//             }
-//         }
-//     }
-    
-//     func onCancel() {
-//         if (running) {
-//             pedometer.stopUpdates()
-//             running = false
-//         }
-//     }
-// }
+/// StepCounter, handles step count streaming
+public class StepCounter: NSObject, FlutterStreamHandler {
+    private let pedometer = CMPedometer()
+    private var running = false
+    private let available = CMPedometer.isStepCountingAvailable()
+    private var eventSink: FlutterEventSink?
+
+    private func handleEvent(count: Int) {
+        // If no eventSink to emit events to, do nothing (wait)
+        if (eventSink == nil) {
+            return
+        }
+        // Emit step count event to Flutter
+        eventSink!(count)
+    }
+
+    public func onListen(withArguments arguments: Any?, eventSink: @escaping FlutterEventSink) -> FlutterError? {
+        self.eventSink = eventSink
+
+        let systemUptime = ProcessInfo.processInfo.systemUptime;
+        let timeNow = Date().timeIntervalSince1970
+        let dateOfLastReboot = Date(timeIntervalSince1970: timeNow - systemUptime)
+        if (available && !running) {
+            running = true
+            if #available(iOS 13, *) {
+                pedometer.startUpdates(from: dateOfLastReboot) {
+                    pedometerData, error in
+                    guard let pedometerData = pedometerData, error == nil else { return }
+
+                    DispatchQueue.main.async {
+                        print("From Swift - Step Count: \(pedometerData.numberOfSteps.intValue)")
+                        self.handleEvent(count: pedometerData.numberOfSteps.intValue)
+                    }
+                }
+            }
+        }
+        return nil
+    }
+
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        NotificationCenter.default.removeObserver(self)
+        eventSink = nil
+
+        if (running) {
+            pedometer.stopUpdates()
+            running = false
+        }
+        return nil
+    }
+}
