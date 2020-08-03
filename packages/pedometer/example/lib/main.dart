@@ -18,10 +18,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Stream<StepCount> _stepCountStream;
-  StepCount _stepCount;
-
-  Stream<PedestrianStatus> _stepDetectionStream;
-  PedestrianStatus _pedestrianStatus;
+  Stream<PedestrianStatus> _pedestrianStatusStream;
+  String _status = '?', _steps = '?';
 
   @override
   void initState() {
@@ -30,29 +28,42 @@ class _MyAppState extends State<MyApp> {
   }
 
   void onStepCount(StepCount event) {
-    event.steps;
-    event.timeStamp;
     print(event);
     setState(() {
-      _stepCount = event;
+      _steps = event.steps.toString();
     });
   }
 
   void onPedestrianStatusChanged(PedestrianStatus event) {
-    event.status;
-    event.timeStamp;
     print(event);
     setState(() {
-      _pedestrianStatus = event;
+      _status = event.status;
+    });
+  }
+
+  void onPedestrianStatusError(error) {
+    print('onPedestrianStatusError: $error');
+    setState(() {
+      _status = 'Pedestrian Status not available';
+    });
+    print(_status);
+  }
+
+  void onStepCountError(error) {
+    print('onStepCountError: $error');
+    setState(() {
+      _steps = 'Step Count not available';
     });
   }
 
   Future<void> initPlatformState() async {
-    _stepDetectionStream = await Pedometer.pedestrianStatusStream;
-    _stepDetectionStream.listen(onPedestrianStatusChanged);
+    _pedestrianStatusStream = await Pedometer.pedestrianStatusStream;
+    _pedestrianStatusStream
+        .listen(onPedestrianStatusChanged)
+        .onError(onPedestrianStatusError);
 
     _stepCountStream = await Pedometer.stepCountStream;
-    _stepCountStream.listen(onStepCount);
+    _stepCountStream.listen(onStepCount).onError(onStepCountError);
 
     if (!mounted) return;
   }
@@ -72,9 +83,8 @@ class _MyAppState extends State<MyApp> {
                 'Steps taken:',
                 style: TextStyle(fontSize: 30),
               ),
-
               Text(
-                '${_stepCount != null ? _stepCount.steps : '?'}',
+                _steps,
                 style: TextStyle(fontSize: 60),
               ),
               Divider(
@@ -87,17 +97,21 @@ class _MyAppState extends State<MyApp> {
                 style: TextStyle(fontSize: 30),
               ),
               Icon(
-                _pedestrianStatus != null
-                    ? _pedestrianStatus.status == 'walking'
-                        ? Icons.directions_walk
-                        : Icons.accessibility_new
-                    : Icons.device_unknown,
+                _status == 'walking'
+                    ? Icons.directions_walk
+                    : _status == 'stopped'
+                        ? Icons.accessibility_new
+                        : Icons.error,
                 size: 100,
               ),
-              Text(
-                '(${_pedestrianStatus != null ? _pedestrianStatus.status : '?'})',
-                style: TextStyle(fontSize: 30),
-              ),
+              Center(
+                child: Text(
+                  _status,
+                  style: _status == 'walking' || _status == 'stopped'
+                      ? TextStyle(fontSize: 30)
+                      : TextStyle(fontSize: 20, color: Colors.red),
+                ),
+              )
             ],
           ),
         ),

@@ -1,3 +1,6 @@
+## 2.0.1
+* Added error handling for when sensors are unavailable
+
 ## 2.0.0
 * Re-implemented the plugin for both Android and iOS
 * This should solve many build problems which persisted on Android
