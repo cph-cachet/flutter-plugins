@@ -4,7 +4,7 @@
 
 This plugin allows for continuous step counting and pedestrian status using the built-in pedometer sensor API of iOS and Android devices.
 
-![](imgs/screenshots.png)
+![](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/pedometer/imgs/screenshots.png)
 
 ## Permissions for Android
 For Android 10 and above add the following permission to the Android manifest:
