@@ -1,3 +1,6 @@
+## 2.0.1+1
+* Fixed image link
+
 ## 2.0.1
 * Added error handling for when sensors are unavailable
 
