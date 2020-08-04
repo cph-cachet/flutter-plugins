@@ -1,3 +1,7 @@
+## 2.0.1+2
+* Downgraded minSdkVersion to 18 on Android
+* It was set to 26 by mistake in a previous release
+
 ## 2.0.1+1
 * Fixed image link
 
