@@ -20,8 +20,7 @@ class MobilityContext {
       _entropy,
       _normalizedEntropy,
       _homeStay,
-      _distanceTravelled,
-      _routineIndex;
+      _distanceTravelled;
   List<MobilityContext> contexts;
   
   /// Private constructor, cannot be instantiated from outside
@@ -52,8 +51,6 @@ class MobilityContext {
     _normalizedEntropy = _calculateNormalizedEntropy();
 
     _distanceTravelled = _calculateDistanceTravelled();
-
-    _routineIndex = _calculateRoutineIndex();
   }
 
   // Get the date of the context

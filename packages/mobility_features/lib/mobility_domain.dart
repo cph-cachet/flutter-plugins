@@ -4,7 +4,6 @@ const int HOURS_IN_A_DAY = 24;
 const String _LATITUDE = 'latitude',
     _LONGITUDE = 'longitude',
     _DATETIME = 'datetime',
-    _CENTROID = 'centroid',
     _ARRIVAL = 'arrival',
     _DEPARTURE = 'departure',
     _PLACE_ID = 'place_id',

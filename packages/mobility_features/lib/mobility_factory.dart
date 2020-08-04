@@ -172,18 +172,23 @@ class MobilityFactory {
     }
 
     for (Stop stop in stops) {
-      /// If no stops to merge, we cannot merge and we therefore add the current
-      /// stop and go to the next one
-      if (toMerge.isEmpty) {
-        toMerge.add(stop);
-      }
-
-      /// Otherwise check if we should add it or merge
-      else {
-        if (stop.placeId != toMerge.last.placeId) {
-          _merge();
+      /// If stop is noisy, just add it to the merged list, dont do anything to it
+      if (stop.placeId == -1) {
+        merged.add(stop);
+      } else {
+        /// If no stops to merge, we cannot merge and we therefore add the current
+        /// stop and go to the next one
+        if (toMerge.isEmpty) {
+          toMerge.add(stop);
         }
-        toMerge.add(stop);
+
+        /// Otherwise check if we should add it or merge
+        else {
+          if (stop.placeId != toMerge.last.placeId) {
+            _merge();
+          }
+          toMerge.add(stop);
+        }
       }
     }
 
@@ -210,6 +215,8 @@ class MobilityFactory {
       /// Merge stops and recompute places
       _stops = _mergeAllStops(_stops);
       _places = _findPlaces(_stops);
+      _places =
+          _places.where((p) => p.duration > Duration(minutes: 3)).toList();
 
       /// Store to disk
       _serializerStops.save([s]);

@@ -4,26 +4,9 @@ import 'dart:async';
 import 'package:mobility_features/mobility_features.dart';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+import 'dart:convert';
 
 part 'test_utils.dart';
-
-const String datasetPath = 'lib/data/example-multi.json';
-const String testDataDir = 'test/testdata';
-
-Duration takeTime(DateTime start, DateTime end) {
-  int ms = end.millisecondsSinceEpoch - start.millisecondsSinceEpoch;
-  return Duration(milliseconds: ms);
-}
-
-void flushFiles() async {
-  File samples = new File('$testDataDir/location_samples.json');
-  File stops = new File('$testDataDir/stops.json');
-  File moves = new File('$testDataDir/moves.json');
-
-  await samples.writeAsString('');
-  await stops.writeAsString('');
-  await moves.writeAsString('');
-}
 
 void main() async {
   DateTime jan01 = DateTime(2020, 01, 01);
@@ -331,8 +314,7 @@ void main() async {
 
       /// Listen to the Context stream
       Stream<MobilityContext> contextStream = mf.contextStream;
-      contextStream
-          .listen(expectAsync1(onContext, count: expectedContexts));
+      contextStream.listen(expectAsync1(onContext, count: expectedContexts));
 
       // Stream all the samples one by one
       for (LocationSample s in samples) {
@@ -408,6 +390,42 @@ void main() async {
         controller.add(s);
       }
       controller.close();
+    });
+
+    test('Load Munich Dataset', () async {
+      flushFiles();
+
+      final samples = loadDataSet();
+      print(samples.length);
+
+      final dates = samples.map((e) => e.datetime.midnight).toSet().toList();
+      printList(dates);
+
+      final onLastDate =
+          samples.where((e) => e.datetime.midnight == dates[1]).toList();
+      print(onLastDate.length);
+
+      print(onLastDate.last);
+
+      StreamController<LocationSample> controller =
+          StreamController.broadcast();
+
+      MobilityFactory factory = MobilityFactory.instance;
+      factory.stopDuration = Duration(seconds:  20);
+      await factory.startListening(controller.stream);
+      Stream<MobilityContext> mobilityStream = factory.contextStream;
+
+      mobilityStream.listen(expectAsync1((event) {
+        print("Mobility Context Received: ${event.toJson()}");
+        printList(event.stops);
+        print('-'*50);
+        printList(event.places)
+        ;
+      }, count: 300));
+
+      onLastDate.forEach((e) {
+        controller.add(e);
+      });
     });
   });
 }

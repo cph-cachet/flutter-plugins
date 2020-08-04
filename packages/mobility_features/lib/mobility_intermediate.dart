@@ -64,12 +64,12 @@ List<Place> _findPlaces(List<Stop> stops, {double placeRadius = 50.0}) {
     /// For each index, get the corresponding stop
     List<Stop> stopsForPlace = indices.map((i) => (stops[i])).toList();
 
+
     /// Add place to the list
     Place p = Place._(label, stopsForPlace);
-    places.add(p);
-
-    /// Set placeId field for the stops belonging to this place
+    places.add(p);/// Set placeId field for the stops belonging to this place
     stopsForPlace.forEach((s) => s.placeId = p._id);
+
   }
   return places;
 }
