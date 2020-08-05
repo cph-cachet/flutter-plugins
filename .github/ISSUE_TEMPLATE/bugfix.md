@@ -1,16 +1,16 @@
 ---
 name: Issue report
-about: Create a report to help us improve any issue you may experience. Please fill
+about: Create a report to help us improve any bug you may experience. Please fill
   in the template as precise as possible to enable us to fix the issue. 
 title: '[Specify the plugin name and version here]'
-labels: ''
+labels: 'bugfix'
 assignees: ''
 
 ---
 
 **Remember to specify the plugin name in the title!**
 
-**NB: Issues pertaining to very old devices and OS version will likely not be fixed.**
+**NB: Bugs pertaining to very old devices and OS version will likely not be fixed.**
 
 ### Describe the bug
 A clear and concise description of what the bug is.
