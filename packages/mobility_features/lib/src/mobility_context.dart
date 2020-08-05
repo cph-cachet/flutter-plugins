@@ -167,10 +167,10 @@ class MobilityContext {
 
   /// Private normalized entropy calculation
   double _calculateNormalizedEntropy() {
-    if (numberOfSignificantPlaces == 1) {
+    if (places.length == 1) {
       return 0.0;
     }
-    return entropy / log(numberOfSignificantPlaces);
+    return entropy / log(places.length);
   }
 
   /// Private distance travelled calculation
