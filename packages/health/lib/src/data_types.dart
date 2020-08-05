@@ -96,8 +96,8 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.WALKING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
   HealthDataType.WEIGHT: HealthDataUnit.KILOGRAMS,
   HealthDataType.DISTANCE_WALKING_RUNNING: HealthDataUnit.METERS,
-  HealthDataType.FLIGHTS_CLIMBED: HealthDataUnit.NO_UNIT,
-  HealthDataType.MOVE_MINUTES: HealthDataUnit.MILLISECONDS,
+  HealthDataType.FLIGHTS_CLIMBED: HealthDataUnit.COUNT,
+  HealthDataType.MOVE_MINUTES: HealthDataUnit.MINUTES,
   HealthDataType.DISTANCE_DELTA: HealthDataUnit.METERS,
 
   /// Heart Rate events (specific to Apple Watch)

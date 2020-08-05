@@ -10,7 +10,7 @@ part 'package:health/src/units.dart';
 
 part 'package:health/src/data_types.dart';
 
-part 'package:health/src/aux.dart';
+part 'package:health/src/functions.dart';
 
 part 'package:health/src/health_data_point.dart';
 

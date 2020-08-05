@@ -26,8 +26,8 @@ NB: For Android, your app *needs* to have Google Fit installed and have access t
 | WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes         |                 |                      |
 | WEIGHT                      | KILOGRAMS               | yes         | yes             |                      |
 | DISTANCE_WALKING_RUNNING    | METERS                  | yes         |                 |                      |
-| FLIGHTS_CLIMBED             | NO_UNIT                 | yes         |                 |                      |
-| MOVE_MINUTES                | MILLISECONDS            |             | yes             |                      |
+| FLIGHTS_CLIMBED             | COUNT                   | yes         |                 |                      |
+| MOVE_MINUTES                | MINUTES                 |             | yes             |                      |
 | DISTANCE_DELTA              | METERS                  |             | yes             |                      |
 | HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes         |                 | Requires Apple Watch |
 | LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |                 | Requires Apple Watch |
