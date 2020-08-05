@@ -9,6 +9,7 @@ import 'dart:convert';
 part 'test_utils.dart';
 
 void main() async {
+  JsonEncoder jsonEncoder = JsonEncoder.withIndent('\t');
   DateTime jan01 = DateTime(2020, 01, 01);
 
   // Poppelgade 7, home
@@ -392,7 +393,7 @@ void main() async {
       controller.close();
     });
 
-    test('Load Munich Dataset', () async {
+    test('Run on Munich Dataset', () async {
       flushFiles();
 
       final samples = loadDataSet();
@@ -411,21 +412,30 @@ void main() async {
           StreamController.broadcast();
 
       MobilityFactory factory = MobilityFactory.instance;
-      factory.stopDuration = Duration(seconds:  20);
+
       await factory.startListening(controller.stream);
       Stream<MobilityContext> mobilityStream = factory.contextStream;
 
       mobilityStream.listen(expectAsync1((event) {
-        print("Mobility Context Received: ${event.toJson()}");
+
+        print('=' * 150);
+        print(
+            "Mobility Context Received: ${jsonEncoder.convert(event.toJson())}");
+        print('-' * 50);
+        print("STOPS");
         printList(event.stops);
-        print('-'*50);
-        printList(event.places)
-        ;
-      }, count: 300));
+        print("ALL PLACES");
+        printList(event.places);
+        print("SIGNIFICANT PLACES");
+        printList(event.significantPlaces);
+        print(
+            "TOTAL DURATION (STOPS): ${event.stops.map((p) => p.duration).reduce((a, b) => a + b)}");
+      }, count: 283));
 
       onLastDate.forEach((e) {
         controller.add(e);
       });
+      controller.close();
     });
   });
 }

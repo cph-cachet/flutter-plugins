@@ -100,7 +100,8 @@ class _MyHomePageState extends State<MyHomePage> {
     mobilityFactory.stopRadius = 5.0;
 
     /// Setup Location Manager
-    locationManager.distanceFilter = 5;
+    locationManager.distanceFilter = 0;
+    locationManager.interval = 1;
     locationManager.notificationTitle = 'Mobility Features';
     locationManager.notificationMsg = 'Your geo-location is being tracked';
     streamInit();
@@ -145,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
       children: <Widget>[
         entry("Stops", "${_mobilityContext.stops.length}", stopIcon),
         entry("Moves", "${_mobilityContext.moves.length}", moveIcon),
-        entry("Significant Places", "${_mobilityContext.numberOfPlaces}",
+        entry("Significant Places", "${_mobilityContext.numberOfSignificantPlaces}",
             placeIcon),
         entry(
             "Home Stay",
