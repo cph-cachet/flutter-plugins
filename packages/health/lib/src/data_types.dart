@@ -19,6 +19,10 @@ enum HealthDataType {
   WAIST_CIRCUMFERENCE,
   WALKING_HEART_RATE,
   WEIGHT,
+  DISTANCE_WALKING_RUNNING,
+  FLIGHTS_CLIMBED,
+  MOVE_MINUTES,
+  DISTANCE_DELTA,
 
 // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
@@ -50,6 +54,8 @@ const List<HealthDataType> _dataTypesIOS = [
   HealthDataType.WAIST_CIRCUMFERENCE,
   HealthDataType.WALKING_HEART_RATE,
   HealthDataType.WEIGHT,
+  HealthDataType.FLIGHTS_CLIMBED,
+  HealthDataType.DISTANCE_WALKING_RUNNING
 ];
 
 /// List of data types available on Android
@@ -65,7 +71,9 @@ const List<HealthDataType> _dataTypesAndroid = [
   HealthDataType.HEART_RATE,
   HealthDataType.HEIGHT,
   HealthDataType.STEPS,
-  HealthDataType.WEIGHT
+  HealthDataType.WEIGHT,
+  HealthDataType.MOVE_MINUTES,
+  HealthDataType.DISTANCE_DELTA,
 ];
 
 /// Map a [HealthDataType] to a [HealthDataUnit].
@@ -87,6 +95,10 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.WAIST_CIRCUMFERENCE: HealthDataUnit.METERS,
   HealthDataType.WALKING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
   HealthDataType.WEIGHT: HealthDataUnit.KILOGRAMS,
+  HealthDataType.DISTANCE_WALKING_RUNNING: HealthDataUnit.METERS,
+  HealthDataType.FLIGHTS_CLIMBED: HealthDataUnit.NO_UNIT,
+  HealthDataType.MOVE_MINUTES: HealthDataUnit.MILLISECONDS,
+  HealthDataType.DISTANCE_DELTA: HealthDataUnit.METERS,
 
   /// Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
