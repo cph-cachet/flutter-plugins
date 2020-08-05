@@ -1,5 +1,5 @@
 ---
-name: Issue report
+name: Bug fix
 about: Create a report to help us improve any bug you may experience. Please fill
   in the template as precise as possible to enable us to fix the issue. 
 title: '[Specify the plugin name and version here]'
