@@ -11,10 +11,10 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 
-part 'mobility_functions.dart';
-part 'mobility_domain.dart';
-part 'mobility_intermediate.dart';
-part 'mobility_context.dart';
-part 'mobility_serializer.dart';
-part 'mobility_factory.dart';
-part 'mobility_file_util.dart';
+part 'package:mobility_features/src/mobility_functions.dart';
+part 'package:mobility_features/src/mobility_domain.dart';
+part 'package:mobility_features/src/mobility_intermediate.dart';
+part 'package:mobility_features/src/mobility_context.dart';
+part 'package:mobility_features/src/mobility_serializer.dart';
+part 'package:mobility_features/src/mobility_factory.dart';
+part 'package:mobility_features/src/mobility_file_util.dart';
