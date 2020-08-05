@@ -1,7 +1,6 @@
 ---
-name: Issue report
-about: Create a report to help us improve any issue you may experience. Please fill
-  in the template as precise as possible to enable us to fix the issue. 
+name: Improvement
+about: Suggest improvements or changes to existing plugins
 title: '[Specify the plugin name and version here]'
 labels: 'improvement'
 assignees: ''
