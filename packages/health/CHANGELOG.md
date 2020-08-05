@@ -1,3 +1,10 @@
+## 1.1.6
+Added the following Health Types as per PR #147
+* DISTANCE_WALKING_RUNNING
+* FLIGHTS_CLIMBED         
+* MOVE_MINUTES            
+* DISTANCE_DELTA          
+
 ## 1.1.5
 * Fixed an issue with google authorization
 * See https://github.com/cph-cachet/flutter-plugins/issues/133

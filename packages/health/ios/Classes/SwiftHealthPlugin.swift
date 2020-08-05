@@ -3,7 +3,7 @@ import UIKit
 import HealthKit
 
 public class SwiftHealthPlugin: NSObject, FlutterPlugin {
-    
+
     let healthStore = HKHealthStore()
     var healthDataTypes = [HKSampleType]()
     var heartRateEventTypes = Set<HKSampleType>()
@@ -33,6 +33,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let WAIST_CIRCUMFERENCE = "WAIST_CIRCUMFERENCE"
     let WALKING_HEART_RATE = "WALKING_HEART_RATE"
     let WEIGHT = "WEIGHT"
+    let DISTANCE_WALKING_RUNNING = "DISTANCE_WALKING_RUNNING"
+    let FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_health", binaryMessenger: registrar.messenger())
@@ -43,7 +45,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         // Set up all data types
         initializeTypes()
-        
+
         /// Handle checkIfHealthDataAvailable
         if (call.method.elementsEqual("checkIfHealthDataAvailable")){
             checkIfHealthDataAvailable(call: call, result: result)
@@ -67,7 +69,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let arguments = call.arguments as? NSDictionary
         let dataTypeKeys = (arguments?["dataTypeKeys"] as? Array) ?? []
         var dataTypesToRequest = Set<HKSampleType>()
-        
+
         for key in dataTypeKeys {
             let keyString = "\(key)"
             dataTypesToRequest.insert(dataTypeLookUp(key: keyString))
@@ -153,6 +155,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[WAIST_CIRCUMFERENCE] = HKUnit.meter()
         unitDict[WALKING_HEART_RATE] = HKUnit.init(from: "count/min")
         unitDict[WEIGHT] = HKUnit.gramUnit(with: .kilo)
+        unitDict[DISTANCE_WALKING_RUNNING] = HKUnit.meter()
+        unitDict[FLIGHTS_CLIMBED] = HKUnit.count()
 
         // Set up iOS 11 specific types (ordinary health data types)
         if #available(iOS 11.0, *) { 
@@ -174,6 +178,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[WAIST_CIRCUMFERENCE] = HKSampleType.quantityType(forIdentifier: .waistCircumference)!
             dataTypesDict[WALKING_HEART_RATE] = HKSampleType.quantityType(forIdentifier: .walkingHeartRateAverage)!
             dataTypesDict[WEIGHT] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
+            dataTypesDict[DISTANCE_WALKING_RUNNING] = HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)!
+            dataTypesDict[FLIGHTS_CLIMBED] = HKSampleType.quantityType(forIdentifier: .flightsClimbed)!
 
             healthDataTypes = Array(dataTypesDict.values)
         }
@@ -193,7 +199,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         // Concatenate heart events and health data types (both may be empty)
         allDataTypes = Set(heartRateEventTypes + healthDataTypes)
     }
-    
 }
 
 

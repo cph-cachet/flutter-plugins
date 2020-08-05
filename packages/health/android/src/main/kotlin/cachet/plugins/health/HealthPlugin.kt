@@ -48,6 +48,8 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
     private var HIGH_HEART_RATE_EVENT = "HIGH_HEART_RATE_EVENT"
     private var LOW_HEART_RATE_EVENT = "LOW_HEART_RATE_EVENT"
     private var IRREGULAR_HEART_RATE_EVENT = "IRREGULAR_HEART_RATE_EVENT"
+    private var MOVE_MINUTES = "MOVE_MINUTES"
+    private var DISTANCE_DELTA = "DISTANCE_DELTA"
 
 
     companion object {
@@ -73,6 +75,8 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
             .addDataType(getDataType(BLOOD_PRESSURE_SYSTOLIC), FitnessOptions.ACCESS_READ)
             .addDataType(getDataType(BLOOD_OXYGEN), FitnessOptions.ACCESS_READ)
             .addDataType(getDataType(BLOOD_GLUCOSE), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(MOVE_MINUTES), FitnessOptions.ACCESS_READ)
+            .addDataType(getDataType(DISTANCE_DELTA), FitnessOptions.ACCESS_READ)
             .build()
 
 
@@ -126,6 +130,8 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
             BLOOD_PRESSURE_DIASTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
             BLOOD_OXYGEN -> HealthDataTypes.TYPE_OXYGEN_SATURATION
             BLOOD_GLUCOSE -> HealthDataTypes.TYPE_BLOOD_GLUCOSE
+            MOVE_MINUTES -> DataType.TYPE_MOVE_MINUTES
+            DISTANCE_DELTA -> DataType.TYPE_DISTANCE_DELTA
             else -> DataType.TYPE_STEP_COUNT_DELTA
         }
     }
@@ -143,6 +149,8 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
             BLOOD_PRESSURE_DIASTOLIC -> HealthFields.FIELD_BLOOD_PRESSURE_DIASTOLIC
             BLOOD_OXYGEN -> HealthFields.FIELD_OXYGEN_SATURATION
             BLOOD_GLUCOSE -> HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
+            MOVE_MINUTES -> Field.FIELD_DURATION
+            DISTANCE_DELTA -> Field.FIELD_DISTANCE
             else -> Field.FIELD_PERCENTAGE
         }
     }
