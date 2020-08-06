@@ -1,7 +1,7 @@
 ---
 name: Bug fix
-about: Create a report to help us improve any bug you may experience. Please fill
-  in the template as precise as possible to enable us to fix the issue. 
+about: Create a report to help us improve any bug you may experience. 
+Bugs pertaining to old devices/OS versions will likely not be fixed. For iOS only the latest OS is supported. For Android, see [the OS versions for which Google support security fixes](https://en.wikipedia.org/wiki/Android_version_history)
 title: '[Specify the plugin name and version here]'
 labels: 'bugfix'
 assignees: ''
@@ -9,8 +9,6 @@ assignees: ''
 ---
 
 **Remember to specify the plugin name in the title!**
-
-**NB: Bugs pertaining to very old devices and OS version will likely not be fixed.**
 
 ### Describe the bug
 A clear and concise description of what the bug is.
