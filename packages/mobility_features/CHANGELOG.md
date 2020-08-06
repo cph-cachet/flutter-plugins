@@ -1,6 +1,11 @@
+## [2.0.4] - Move Consolidation
+* Moves are now recomputed each time a stop is computed
+* This means that the number of moves is always one less that the number of stops
+
 ## [2.0.3] - Move Calculation
 * Fixed a bug when creating moves between two stops belonging to the same place
 * To avoid inaccuracy distance as a resulting of noisy readings when inside buildings, this path should be computed as a straight line, rather than from a list of points
+
 
 ## [2.0.2] - Stop merging
 * Implemented stop merging to prevent gaps in the data
