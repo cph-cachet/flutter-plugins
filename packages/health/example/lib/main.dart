@@ -28,29 +28,29 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.FETCHING_DATA;
     });
 
-    if (await Health.requestAuthorization()) {
+    /// Specify the wished data types
+    List<HealthDataType> types = [
+      HealthDataType.ACTIVE_ENERGY_BURNED,
+      HealthDataType.BASAL_ENERGY_BURNED,
+      HealthDataType.BLOOD_GLUCOSE,
+      HealthDataType.BLOOD_OXYGEN,
+      HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+      HealthDataType.BODY_FAT_PERCENTAGE,
+      HealthDataType.BODY_MASS_INDEX,
+      HealthDataType.HEART_RATE,
+      HealthDataType.HEIGHT,
+      HealthDataType.RESTING_HEART_RATE,
+      HealthDataType.STEPS,
+      HealthDataType.WAIST_CIRCUMFERENCE,
+      HealthDataType.WEIGHT
+    ];
+
+    if (await Health.requestAuthorization(types)) {
       print('Authorized');
 
       bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
       print("is WEIGHT data type available?: $weightAvailable");
-
-      /// Specify the wished data types
-      List<HealthDataType> types = [
-        HealthDataType.ACTIVE_ENERGY_BURNED,
-        HealthDataType.BASAL_ENERGY_BURNED,
-        HealthDataType.BLOOD_GLUCOSE,
-        HealthDataType.BLOOD_OXYGEN,
-        HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-        HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-        HealthDataType.BODY_FAT_PERCENTAGE,
-        HealthDataType.BODY_MASS_INDEX,
-        HealthDataType.HEART_RATE,
-        HealthDataType.HEIGHT,
-        HealthDataType.RESTING_HEART_RATE,
-        HealthDataType.STEPS,
-        HealthDataType.WAIST_CIRCUMFERENCE,
-        HealthDataType.WEIGHT
-      ];
 
       for (HealthDataType type in types) {
         /// Calls must be wrapped in a try catch block
