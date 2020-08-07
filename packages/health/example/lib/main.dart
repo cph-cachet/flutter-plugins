@@ -15,9 +15,6 @@ class _MyAppState extends State<MyApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
 
-  DateTime startDate = DateTime.utc(2001, 01, 01);
-  DateTime endDate = DateTime.now();
-
   @override
   void initState() {
     super.initState();
@@ -28,17 +25,20 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.FETCHING_DATA;
     });
 
-    /// Specify the wished data types
+    DateTime startDate = DateTime.utc(2001, 01, 01);
+    DateTime endDate = DateTime.now();
+
+    HealthFactory health = HealthFactory();
+
+    /// Define the types to get.
     List<HealthDataType> types = [
       HealthDataType.BODY_MASS_INDEX,
       HealthDataType.STEPS,
       HealthDataType.WEIGHT,
     ];
 
-    HealthFactory health = HealthFactory(types);
-    final typesToGet = types + [HealthDataType.MOVE_MINUTES];
-
-    for (HealthDataType type in typesToGet) {
+    /// Get all available data for each declared type
+    for (HealthDataType type in types) {
       /// Calls must be wrapped in a try catch block
       try {
         /// Fetch new data
@@ -57,7 +57,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     /// Print the results
-    typesToGet.forEach((x) => print("Data point: $x"));
+    _healthDataList.forEach((x) => print("Data point: $x"));
 
     /// Update the UI to display the results
     setState(() {

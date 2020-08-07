@@ -3,20 +3,14 @@ part of health;
 /// Main class for the Plugin
 class HealthFactory {
   static const MethodChannel _channel = const MethodChannel('flutter_health');
-
-  List<HealthDataType> _types;
-  bool _permissionGranted = false;
   String _deviceId;
 
-  HealthFactory(this._types) {
-    /// If BMI is requested, then also ask for weight and height
-    if (_types.contains(HealthDataType.BODY_MASS_INDEX)) {
-      _types.add(HealthDataType.WEIGHT);
-      _types.add(HealthDataType.HEIGHT);
-    }
+  Map<HealthDataType, bool> _permissions;
 
-    /// Remove duplicate entries afterwards
-    _types = _types.toSet().toList();
+  HealthFactory() {
+    _permissions = Map.fromIterable(HealthDataType.values,
+        key: (v) => v, value: (v) => false);
+    print(_permissions);
   }
 
   static PlatformType _platformType =
@@ -29,11 +23,20 @@ class HealthFactory {
           : _dataTypeKeysIOS.contains(dataType);
 
   /// Request access to GoogleFit/Apple HealthKit
-  Future<bool> _requestAuthorization(List<HealthDataType> healthTypes) async {
-    List<String> types = healthTypes.map((t) => _enumToString(t)).toList();
+  Future<bool> _requestAuthorization(HealthDataType type) async {
+    //List<String> types = healthTypes.map((t) => _enumToString(t)).toList();
 
+    List<HealthDataType> types = [type];
+
+    /// If BMI is requested, then also ask for weight and height
+    if (type == HealthDataType.BODY_MASS_INDEX) {
+      types.add(HealthDataType.WEIGHT);
+      types.add(HealthDataType.HEIGHT);
+    }
+
+    List<String> keys = types.map((e) => _enumToString(e)).toList();
     final bool isAuthorized =
-        await _channel.invokeMethod('requestAuthorization', {'types': types});
+        await _channel.invokeMethod('requestAuthorization', {'types': keys});
     return isAuthorized;
   }
 
@@ -83,20 +86,16 @@ class HealthFactory {
     }
 
     /// If permission not yet granted, ask for it
-    if (!_permissionGranted) {
-      bool granted = await _requestAuthorization(_types);
+    if (!_permissions[dataType]) {
+      bool granted = await _requestAuthorization(dataType);
       if (!granted) {
         String api = _platformType == PlatformType.ANDROID
             ? "Google Fit"
             : "Apple Health";
         throw _HealthException(dataType, "Permission was not granted for $api");
+      } else {
+        _permissions[dataType] = true;
       }
-    }
-
-    /// Check if the type was declared when constructing the Health instance
-    if (!_types.contains(dataType)) {
-      throw _HealthException(dataType,
-          "The type has not been declared upon constructing the Health instace");
     }
 
     /// If BodyMassIndex is requested on Android, calculate this manually in Dart

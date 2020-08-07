@@ -94,130 +94,69 @@ Below is a snippet from the `example app` showing the plugin in use.
 ### Health data
 A `HealthData` object contains the following fields:
 ```dart
-num value;
-String unit;
-int dateFrom;
-int dateTo;
-String dataType;
-String platform;
-String uuid;
+num _value;
+HealthDataType _type;
+HealthDataUnit _unit;
+DateTime _dateFrom;
+DateTime _dateTo;
+PlatformType _platform;
+String _uuid, _deviceId;
 ```
 A `HealthData healthData` object can be serialized to JSON with the `healthData.toJson()` method.
 
+### Fetch health data
 
+To fetch data, specify a date interval and the desired health data type:
+
+```dart
+ DateTime startDate = DateTime.utc(2001, 01, 01);
+DateTime endDate = DateTime.now();
+HealthDataType type = HealthDataType.BODY_MASS_INDEX;
+List<HealthDataPoint> healthData =
+            await health.getHealthDataFromType(startDate, endDate, type);
+```
+
+This call must be inside a try catch block; when a data type is not available, an exception will be thrown.
 ### Full example
 ```dart
-
-    List<HealthDataPoint> _healthDataList = [];
-    DateTime startDate = DateTime.utc(2001, 01, 01);
-    DateTime endDate = DateTime.now();
-    ...
-    
-    Future<void> fetchData() async {
-      if (await Health.requestAuthorization()) {
-        print('Authorized');
-  
-        bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
-        print("is WEIGHT data type available?: $weightAvailable");
-  
-        /// Specify the wished data types
-        List<HealthDataType> types = [
-          HealthDataType.WEIGHT,
-          HealthDataType.HEIGHT,
-          HealthDataType.STEPS,
-          HealthDataType.BODY_MASS_INDEX,
-          HealthDataType.WAIST_CIRCUMFERENCE,
-          HealthDataType.BODY_FAT_PERCENTAGE,
-          HealthDataType.ACTIVE_ENERGY_BURNED,
-          HealthDataType.BASAL_ENERGY_BURNED,
-          HealthDataType.HEART_RATE,
-          HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-          HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-          HealthDataType.RESTING_HEART_RATE,
-          HealthDataType.BLOOD_GLUCOSE,
-          HealthDataType.BLOOD_OXYGEN,
-        ];
-  
-        for (HealthDataType type in types) {
-          /// Calls must be wrapped in a try catch block
-          try {
-            /// Fetch new data
-            List<HealthDataPoint> healthData =
-                await Health.getHealthDataFromType(startDate, endDate, type);
-  
-            /// Save all the new data points
-            _healthDataList.addAll(healthData);
-  
-            /// Filter out duplicates based on their UUID
-            _healthDataList = Health.removeDuplicates(_healthDataList);
-          } catch (exception) {
-            print(exception.toString());
-          }
-        }
-  
-        /// Print the results
-        _healthDataList.forEach((x) => print("Data point: $x"));
-        
-      } else {
-        print('Not authorized');
-      }
-    }
-```
-
-
-### Check authorization
-The following example shows prompting the user for authorization to the API, which is necessary in order to fetch any data. 
-
-Calls to fetch data from the API should be done within the inner if-clause.
-
-```dart
-if (await Health.requestAuthorization())
-```
-### Specify data type
-Data types indicate the type of data to fetch from the API and are available from the enum class `HealthDataType`. 
-
-Below is an example of a few data types:
-
-```dart
-List<HealthDataType> types = [
-        HealthDataType.WEIGHT,
-        HealthDataType.HEIGHT,
-        HealthDataType.STEPS,
-    ];
-```
-For an overview of all data types see the table in __Data Types__ section above.
-
-### Check if data type available
-Not all data types are available on both platforms. In order to check whether or not a data type is available for the current platform, 
-
-```dart
-bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
-```
-
-### Fetch data for a given type
-Given the list of data types (`types`) as well as a `startData` and an `endDate`, we can now fetch all the data, for each data type with a call to the `Health.getHealthDataFromType` function.
-
-Set up dates:
-
-```dart
+List<HealthDataPoint> _healthDataList = [];
 DateTime startDate = DateTime.utc(2001, 01, 01);
 DateTime endDate = DateTime.now();
+
+HealthFactory health = HealthFactory();
+
+/// Define the types to get.
+List<HealthDataType> types = [
+  HealthDataType.BODY_MASS_INDEX,
+  HealthDataType.STEPS,
+  HealthDataType.WEIGHT,
+];
+
+/// Get all available data for each declared type
+for (HealthDataType type in types) {
+  /// Calls must be wrapped in a try catch block
+  try {
+    /// Fetch new data
+    List<HealthDataPoint> healthData =
+        await health.getHealthDataFromType(startDate, endDate, type);
+
+    /// Save all the new data points
+    _healthDataList.addAll(healthData);
+
+    /// Filter out duplicates based on their UUID
+    _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
+  } catch (exception) {
+    print("An exception occured");
+    print(exception.toString());
+  }
+}
 ```
 
-Make the fetch call:
-
-```dart
-/// Fetch new data
-List<HealthDataPoint> healthData =
-    await Health.getHealthDataFromType(startDate, endDate, type);
-```
-
-This call must be inside a try catch block, since when some data type is not available, an exception will be thrown. 
-Also, make sure the access to the API has been authorized (see __Check authorization__).
 
 ### Filtering out duplicates
-If the same data is requested multiple times it will result in duplicates. Luckily each data point has a UUID and is
-therefore unique. To filter out duplicates, use the `Health.removeDuplicates` method:
+If the same data is requested multiple times and saved in the same array (as in the example above) duplicates will occur. 
+
+Luckily, each data point has a UUID and duplicates can be removed by using the `Health.removeDuplicates` method:
 
 ```dart
 _healthDataList = Health.removeDuplicates(_healthDataList);
