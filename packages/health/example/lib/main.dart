@@ -30,56 +30,39 @@ class _MyAppState extends State<MyApp> {
 
     /// Specify the wished data types
     List<HealthDataType> types = [
-      HealthDataType.ACTIVE_ENERGY_BURNED,
-      HealthDataType.BASAL_ENERGY_BURNED,
-      HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.BLOOD_OXYGEN,
-      HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-      HealthDataType.BODY_FAT_PERCENTAGE,
       HealthDataType.BODY_MASS_INDEX,
-      HealthDataType.HEART_RATE,
-      HealthDataType.HEIGHT,
-      HealthDataType.RESTING_HEART_RATE,
       HealthDataType.STEPS,
-      HealthDataType.WAIST_CIRCUMFERENCE,
-      HealthDataType.WEIGHT
+      HealthDataType.WEIGHT,
     ];
 
-    if (await Health.requestAuthorization(types)) {
-      print('Authorized');
+    HealthFactory health = HealthFactory(types);
+    final typesToGet = types + [HealthDataType.MOVE_MINUTES];
 
-      bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
-      print("is WEIGHT data type available?: $weightAvailable");
+    for (HealthDataType type in typesToGet) {
+      /// Calls must be wrapped in a try catch block
+      try {
+        /// Fetch new data
+        List<HealthDataPoint> healthData =
+            await health.getHealthDataFromType(startDate, endDate, type);
 
-      for (HealthDataType type in types) {
-        /// Calls must be wrapped in a try catch block
-        try {
-          /// Fetch new data
-          List<HealthDataPoint> healthData =
-              await Health.getHealthDataFromType(startDate, endDate, type);
+        /// Save all the new data points
+        _healthDataList.addAll(healthData);
 
-          /// Save all the new data points
-          _healthDataList.addAll(healthData);
-
-          /// Filter out duplicates based on their UUID
-          _healthDataList = Health.removeDuplicates(_healthDataList);
-        } catch (exception) {
-          print(exception.toString());
-        }
+        /// Filter out duplicates based on their UUID
+        _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
+      } catch (exception) {
+        print("An exception occured");
+        print(exception.toString());
       }
-
-      /// Print the results
-      _healthDataList.forEach((x) => print("Data point: $x"));
-
-      /// Update the UI to display the results
-      setState(() {
-        _state =
-            _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
-      });
-    } else {
-      print('Not authorized');
     }
+
+    /// Print the results
+    typesToGet.forEach((x) => print("Data point: $x"));
+
+    /// Update the UI to display the results
+    setState(() {
+      _state = _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+    });
   }
 
   Widget _contentFetchingData() {
@@ -102,8 +85,8 @@ class _MyAppState extends State<MyApp> {
         itemBuilder: (_, index) {
           HealthDataPoint p = _healthDataList[index];
           return ListTile(
-            title: Text("${p.dataType}: ${p.value}"),
-            trailing: Text('${p.unit}'),
+            title: Text("${p.typeString}: ${p.value}"),
+            trailing: Text('${p.unitString}'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
           );
         });

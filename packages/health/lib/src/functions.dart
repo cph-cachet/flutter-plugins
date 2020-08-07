@@ -3,19 +3,19 @@ part of health;
 /// Custom Exception for the plugin,
 /// thrown whenever a Health Data Type is requested,
 /// when not available on the current platform
-class _HealthDataNotAvailableException implements Exception {
+class _HealthException implements Exception {
   HealthDataType _dataType;
-  _PlatformType _platformType;
+  String _cause;
 
-  _HealthDataNotAvailableException(this._dataType, this._platformType);
+  _HealthException(this._dataType, this._cause);
 
   String toString() {
-    return "Method ${_dataType.toString()} not implemented for platform ${_platformType.toString()}";
+    return "An exception happend when requesting type ${_dataType.toString()}. Cause: $_cause";
   }
 }
 
 /// Extracts the string value from an enum
 String _enumToString(enumItem) => enumItem.toString().split('.')[1];
 
-enum _PlatformType { IOS, ANDROID }
+enum PlatformType { IOS, ANDROID }
 

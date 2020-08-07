@@ -3,39 +3,28 @@ part of health;
 /// A [HealthDataPoint] object corresponds to a data point captures from GoogleFit or Apple HealthKit
 class HealthDataPoint {
   num _value;
-  String _unit;
-  int _dateFrom;
-  int _dateTo;
-  String _dataType;
-  String _platform;
-  String _uuid;
+  HealthDataType _type;
+  HealthDataUnit _unit;
+  DateTime _dateFrom;
+  DateTime _dateTo;
+  PlatformType _platform;
+  String _uuid, _deviceId;
 
-  HealthDataPoint._(this._value, this._unit, this._dateFrom, this._dateTo,
-      this._dataType, this._platform);
+  HealthDataPoint._(this._value, this._type, this._unit, this._dateFrom, this._dateTo,
+      this._platform, this._deviceId) {
+    this._uuid = _makeUUID();
+  }
 
-  HealthDataPoint._fromJson(Map<String, dynamic> json) {
-    try {
-      _value = json['value'];
-      _unit = json['unit'];
-      _dateFrom = json['date_from'];
-      _dateTo = json['date_to'];
-      _dataType = json['data_type'];
-      _platform = json['platform_type'];
-
-      /// If on Android, generate UUID from device ID concatenated with
-      /// the data point as a string
-      if (Platform.isAndroid) {
-        String s = json['device_id'] + json.toString();
-        String id = Uuid().v5(Uuid.NAMESPACE_URL, s);
-        _uuid = id;
-      }
-      /// If on iOS, the UUID is already provided by the HealthKit API
-      else {
-        _uuid = json['uuid'];
-      }
-    } catch (error) {
-      print(error);
-    }
+  String _makeUUID() {
+    Map<String, dynamic> x = {};
+    x['value'] = this.value;
+    x['unit'] = this.unit;
+    x['date_from'] = this.dateFrom;
+    x['date_to'] = this.dateTo;
+    x['data_type'] = this.type;
+    x['platform_type'] = this.platform;
+    x['device_id'] = this._deviceId;
+    return Uuid().v5(Uuid.NAMESPACE_URL, x.toString());
   }
 
   Map<String, dynamic> toJson() {
@@ -44,7 +33,7 @@ class HealthDataPoint {
     data['unit'] = this.unit;
     data['date_from'] = this.dateFrom;
     data['date_to'] = this.dateTo;
-    data['data_type'] = this.dataType;
+    data['data_type'] = this.type;
     data['platform_type'] = this.platform;
     data['uuid'] = this.uuid;
     return data;
@@ -56,23 +45,24 @@ class HealthDataPoint {
       'date_from: $dateFrom, '
       'dateFrom: $dateFrom, '
       'dateTo: $dateTo, '
-      'dataType: $dataType, '
+      'dataType: $type, '
       'uuid: $uuid, '
       'platform: $platform';
 
   num get value => _value;
 
-  String get unit => _unit;
+  DateTime get dateFrom => _dateFrom;
 
-  DateTime get dateFrom => DateTime.fromMillisecondsSinceEpoch(_dateFrom);
+  DateTime get dateTo => _dateTo;
 
-  DateTime get dateTo => DateTime.fromMillisecondsSinceEpoch(_dateTo);
+  HealthDataType get type => _type;
 
-  String get dataType => _dataType;
+  HealthDataUnit get unit => _unit;
 
-  String get platform => _platform;
+  PlatformType get platform => _platform;
+
+  String get typeString => _enumToString(_type);
+  String get unitString => _enumToString(_unit);
 
   String get uuid => _uuid;
-
-
 }

@@ -32,7 +32,7 @@ enum HealthDataType {
 }
 
 /// List of data types available on iOS
-const List<HealthDataType> _dataTypesIOS = [
+const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
@@ -59,7 +59,7 @@ const List<HealthDataType> _dataTypesIOS = [
 ];
 
 /// List of data types available on Android
-const List<HealthDataType> _dataTypesAndroid = [
+const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
   HealthDataType.BLOOD_OXYGEN,
@@ -82,8 +82,10 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.CALORIES,
   HealthDataType.BLOOD_GLUCOSE: HealthDataUnit.MILLIGRAM_PER_DECILITER,
   HealthDataType.BLOOD_OXYGEN: HealthDataUnit.PERCENTAGE,
-  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
-  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
+  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit
+      .MILLIMETER_OF_MERCURY,
+  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit
+      .MILLIMETER_OF_MERCURY,
   HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENTAGE,
   HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
@@ -104,6 +106,6 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
-  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
-
+  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit
+      .MILLISECONDS,
 };

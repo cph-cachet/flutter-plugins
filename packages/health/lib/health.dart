@@ -14,4 +14,4 @@ part 'package:health/src/functions.dart';
 
 part 'package:health/src/health_data_point.dart';
 
-part 'package:health/src/domain.dart';
+part 'package:health/src/health_factory.dart';
