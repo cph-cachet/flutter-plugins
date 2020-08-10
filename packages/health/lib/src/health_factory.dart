@@ -10,7 +10,6 @@ class HealthFactory {
   HealthFactory() {
     _permissions = Map.fromIterable(HealthDataType.values,
         key: (v) => v, value: (v) => false);
-    print(_permissions);
   }
 
   static PlatformType _platformType =
@@ -136,16 +135,19 @@ class HealthFactory {
   }
 
   static List<HealthDataPoint> removeDuplicates(List<HealthDataPoint> points) {
-    Set<String> seen = Set();
-    List<HealthDataPoint> set = [];
+    List<HealthDataPoint> unique = [];
 
-    /// Avoid duplicates
     for (HealthDataPoint p in points) {
-      if (!seen.contains(p.uuid)) {
-        seen.add(p.uuid);
-        set.add(p);
+      bool seenBefore = false;
+      for (HealthDataPoint s in unique) {
+        if (s == p) {
+          seenBefore = true;
+        }
+      }
+      if (!seenBefore) {
+        unique.add(p);
       }
     }
-    return set;
+    return unique;
   }
 }

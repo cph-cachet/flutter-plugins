@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
 import 'package:device_id/device_id.dart';
-import 'package:uuid/uuid.dart';
 
 part 'package:health/src/units.dart';
 

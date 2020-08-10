@@ -25,8 +25,10 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.FETCHING_DATA;
     });
 
-    DateTime startDate = DateTime.utc(2001, 01, 01);
+    /// Get everything from midnight until now
     DateTime endDate = DateTime.now();
+    DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day);
+
 
     HealthFactory health = HealthFactory();
 
@@ -48,7 +50,7 @@ class _MyAppState extends State<MyApp> {
         /// Save all the new data points
         _healthDataList.addAll(healthData);
 
-        /// Filter out duplicates based on their UUID
+        /// Filter out duplicates
         _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
       } catch (exception) {
         print("An exception occured");

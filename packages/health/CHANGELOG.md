@@ -1,3 +1,6 @@
+## 2.0.1
+* Removed UUID and instead introduced a comparison operator
+
 ## 2.0.0
 * Changed the API substantially to allow for granular Data Type permissions
 

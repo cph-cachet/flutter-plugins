@@ -8,24 +8,10 @@ class HealthDataPoint {
   DateTime _dateFrom;
   DateTime _dateTo;
   PlatformType _platform;
-  String _uuid, _deviceId;
+  String _deviceId;
 
-  HealthDataPoint._(this._value, this._type, this._unit, this._dateFrom, this._dateTo,
-      this._platform, this._deviceId) {
-    this._uuid = _makeUUID();
-  }
-
-  String _makeUUID() {
-    Map<String, dynamic> x = {};
-    x['value'] = this.value;
-    x['unit'] = this.unit;
-    x['date_from'] = this.dateFrom;
-    x['date_to'] = this.dateTo;
-    x['data_type'] = this.type;
-    x['platform_type'] = this.platform;
-    x['device_id'] = this._deviceId;
-    return Uuid().v5(Uuid.NAMESPACE_URL, x.toString());
-  }
+  HealthDataPoint._(this._value, this._type, this._unit, this._dateFrom,
+      this._dateTo, this._platform, this._deviceId);
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -35,7 +21,6 @@ class HealthDataPoint {
     data['date_to'] = this.dateTo;
     data['data_type'] = this.type;
     data['platform_type'] = this.platform;
-    data['uuid'] = this.uuid;
     return data;
   }
 
@@ -45,8 +30,7 @@ class HealthDataPoint {
       'date_from: $dateFrom, '
       'dateFrom: $dateFrom, '
       'dateTo: $dateTo, '
-      'dataType: $type, '
-      'uuid: $uuid, '
+      'dataType: $type,'
       'platform: $platform';
 
   num get value => _value;
@@ -62,7 +46,27 @@ class HealthDataPoint {
   PlatformType get platform => _platform;
 
   String get typeString => _enumToString(_type);
+
   String get unitString => _enumToString(_unit);
 
-  String get uuid => _uuid;
+  String get deviceId => _deviceId;
+
+  /// Equals (==) operator overload
+  bool operator ==(Object o) {
+    return o is HealthDataPoint &&
+        this.value == o.value &&
+        this.unit == o.unit &&
+        this.dateFrom == o.dateFrom &&
+        this.dateTo == o.dateTo &&
+        this.type == o.type &&
+        this.platform == o.platform &&
+        this.deviceId == o.deviceId;
+  }
+
+  /// Override required due to overriding (==) operator
+  @override
+  // TODO: implement hashCode
+  int get hashCode => toJson().hashCode;
+
+
 }

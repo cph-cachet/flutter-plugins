@@ -143,7 +143,7 @@ for (HealthDataType type in types) {
     /// Save all the new data points
     _healthDataList.addAll(healthData);
 
-    /// Filter out duplicates based on their UUID
+    /// Filter out duplicates
     _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
   } catch (exception) {
     print("An exception occured");
@@ -156,8 +156,17 @@ for (HealthDataType type in types) {
 ### Filtering out duplicates
 If the same data is requested multiple times and saved in the same array (as in the example above) duplicates will occur. 
 
-Luckily, each data point has a UUID and duplicates can be removed by using the `Health.removeDuplicates` method:
+A single data point can be compared to each other with the == operator, i.e.
+
+````dart
+HealthDataPoint p1 = ...;
+HealthDataPoint p2 = ...;
+bool same = p1 == p2;
+````
+
+If you have a list of data points, duplicates can be removed with:
 
 ```dart
-_healthDataList = Health.removeDuplicates(_healthDataList);
+List<HealthDataPoint> points = ...;
+points = Health.removeDuplicates(points);
 ```
