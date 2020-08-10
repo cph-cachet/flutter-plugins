@@ -1,3 +1,9 @@
+## 2.0.1
+* Removed UUID and instead introduced a comparison operator
+
+## 2.0.0
+* Changed the API substantially to allow for granular Data Type permissions
+
 ## 1.1.6
 Added the following Health Types as per PR #147
 * DISTANCE_WALKING_RUNNING

@@ -15,9 +15,6 @@ class _MyAppState extends State<MyApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
 
-  DateTime startDate = DateTime.utc(2001, 01, 01);
-  DateTime endDate = DateTime.now();
-
   @override
   void initState() {
     super.initState();
@@ -28,58 +25,46 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.FETCHING_DATA;
     });
 
-    if (await Health.requestAuthorization()) {
-      print('Authorized');
+    /// Get everything from midnight until now
+    DateTime endDate = DateTime.now();
+    DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day);
 
-      bool weightAvailable = Health.isDataTypeAvailable(HealthDataType.WEIGHT);
-      print("is WEIGHT data type available?: $weightAvailable");
 
-      /// Specify the wished data types
-      List<HealthDataType> types = [
-        HealthDataType.ACTIVE_ENERGY_BURNED,
-        HealthDataType.BASAL_ENERGY_BURNED,
-        HealthDataType.BLOOD_GLUCOSE,
-        HealthDataType.BLOOD_OXYGEN,
-        HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-        HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-        HealthDataType.BODY_FAT_PERCENTAGE,
-        HealthDataType.BODY_MASS_INDEX,
-        HealthDataType.HEART_RATE,
-        HealthDataType.HEIGHT,
-        HealthDataType.RESTING_HEART_RATE,
-        HealthDataType.STEPS,
-        HealthDataType.WAIST_CIRCUMFERENCE,
-        HealthDataType.WEIGHT
-      ];
+    HealthFactory health = HealthFactory();
 
-      for (HealthDataType type in types) {
-        /// Calls must be wrapped in a try catch block
-        try {
-          /// Fetch new data
-          List<HealthDataPoint> healthData =
-              await Health.getHealthDataFromType(startDate, endDate, type);
+    /// Define the types to get.
+    List<HealthDataType> types = [
+      HealthDataType.BODY_MASS_INDEX,
+      HealthDataType.STEPS,
+      HealthDataType.WEIGHT,
+    ];
 
-          /// Save all the new data points
-          _healthDataList.addAll(healthData);
+    /// Get all available data for each declared type
+    for (HealthDataType type in types) {
+      /// Calls must be wrapped in a try catch block
+      try {
+        /// Fetch new data
+        List<HealthDataPoint> healthData =
+            await health.getHealthDataFromType(startDate, endDate, type);
 
-          /// Filter out duplicates based on their UUID
-          _healthDataList = Health.removeDuplicates(_healthDataList);
-        } catch (exception) {
-          print(exception.toString());
-        }
+        /// Save all the new data points
+        _healthDataList.addAll(healthData);
+
+        /// Filter out duplicates
+        _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
+      } catch (exception) {
+        print("An exception occured");
+        print(exception.toString());
       }
-
-      /// Print the results
-      _healthDataList.forEach((x) => print("Data point: $x"));
-
-      /// Update the UI to display the results
-      setState(() {
-        _state =
-            _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
-      });
-    } else {
-      print('Not authorized');
     }
+
+    /// Print the results
+    _healthDataList.forEach((x) => print("Data point: $x"));
+
+    /// Update the UI to display the results
+    setState(() {
+      _state = _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+    });
   }
 
   Widget _contentFetchingData() {
@@ -102,8 +87,8 @@ class _MyAppState extends State<MyApp> {
         itemBuilder: (_, index) {
           HealthDataPoint p = _healthDataList[index];
           return ListTile(
-            title: Text("${p.dataType}: ${p.value}"),
-            trailing: Text('${p.unit}'),
+            title: Text("${p.typeString}: ${p.value}"),
+            trailing: Text('${p.unitString}'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
           );
         });

@@ -14,5 +14,7 @@ enum HealthDataUnit {
   MINUTES,
   NO_UNIT,
   PERCENTAGE,
-  SIEMENS
+  SIEMENS,
+  UNKNOWN_UNIT
 }
+

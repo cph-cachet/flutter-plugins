@@ -18,7 +18,6 @@ import android.util.Log
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import android.os.Looper
 import com.google.android.gms.fitness.data.*
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
@@ -31,23 +30,14 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
     private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
     private var HEIGHT = "HEIGHT"
     private var WEIGHT = "WEIGHT"
-    private var BODY_MASS_INDEX = "BODY_MASS_INDEX"
-    private var WAIST_CIRCUMFERENCE = "WAIST_CIRCUMFERENCE"
     private var STEPS = "STEPS"
-    private var BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
     private var ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
     private var HEART_RATE = "HEART_RATE"
     private var BODY_TEMPERATURE = "BODY_TEMPERATURE"
     private var BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
     private var BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
-    private var RESTING_HEART_RATE = "RESTING_HEART_RATE"
-    private var WALKING_HEART_RATE = "WALKING_HEART_RATE"
     private var BLOOD_OXYGEN = "BLOOD_OXYGEN"
     private var BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
-    private var ELECTRODERMAL_ACTIVITY = "ELECTRODERMAL_ACTIVITY"
-    private var HIGH_HEART_RATE_EVENT = "HIGH_HEART_RATE_EVENT"
-    private var LOW_HEART_RATE_EVENT = "LOW_HEART_RATE_EVENT"
-    private var IRREGULAR_HEART_RATE_EVENT = "IRREGULAR_HEART_RATE_EVENT"
     private var MOVE_MINUTES = "MOVE_MINUTES"
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
 
@@ -65,25 +55,20 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
 
     /// DataTypes to register
     private val fitnessOptions = FitnessOptions.builder()
-            .addDataType(getDataType(BODY_FAT_PERCENTAGE), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(HEIGHT), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(WEIGHT), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(STEPS), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(ACTIVE_ENERGY_BURNED), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(HEART_RATE), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(BODY_TEMPERATURE), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(BLOOD_PRESSURE_SYSTOLIC), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(BLOOD_OXYGEN), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(BLOOD_GLUCOSE), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(MOVE_MINUTES), FitnessOptions.ACCESS_READ)
-            .addDataType(getDataType(DISTANCE_DELTA), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(BODY_FAT_PERCENTAGE), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(HEIGHT), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(WEIGHT), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(STEPS), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(ACTIVE_ENERGY_BURNED), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(HEART_RATE), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(BODY_TEMPERATURE), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(BLOOD_PRESSURE_SYSTOLIC), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(BLOOD_OXYGEN), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(BLOOD_GLUCOSE), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(MOVE_MINUTES), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(DISTANCE_DELTA), FitnessOptions.ACCESS_READ)
             .build()
 
-
-    fun MainThreadResult(result: Result) {
-        this.result = result
-        handler = Handler(Looper.getMainLooper())
-    }
 
     override fun success(p0: Any?) {
         handler?.post(
@@ -117,7 +102,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
 
     private var mResult: Result? = null
 
-    private fun getDataType(type: String): DataType {
+    private fun keyToHealthDataType(type: String): DataType {
         return when (type) {
             BODY_FAT_PERCENTAGE -> DataType.TYPE_BODY_FAT_PERCENTAGE
             HEIGHT -> DataType.TYPE_HEIGHT
@@ -175,12 +160,11 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
     /// Called when the "getHealthDataByType" is invoked from Flutter
     private fun getData(call: MethodCall, result: Result) {
         val type = call.argument<String>("dataTypeKey")!!
-//        val uuid = call.argument<String>("uuid")!!
         val startTime = call.argument<Long>("startDate")!!
         val endTime = call.argument<Long>("endDate")!!
 
         // Look up data type and unit for the type key
-        val dataType = getDataType(type)
+        val dataType = keyToHealthDataType(type)
         val unit = getUnit(type)
 
         println(type)
@@ -212,21 +196,33 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         }
     }
 
+    fun callToHealthTypes(call: MethodCall): FitnessOptions {
+        val typesBuilder = FitnessOptions.builder()
+        val args = call.arguments as HashMap<*, *>
+        for (key in args) {
+            val dataType = keyToHealthDataType(key.toString())
+            typesBuilder.addDataType(dataType)
+        }
+        return typesBuilder.build()
+    }
 
     /// Called when the "requestAuthorization" is invoked from Flutter 
     private fun requestAuthorization(call: MethodCall, result: Result) {
+        val optionsToRegister = callToHealthTypes(call)
         mResult = result
+
+        /// Not granted? Ask for permission
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             GoogleSignIn.requestPermissions(
                     activity,
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(activity),
-                    fitnessOptions)
-        } else {
-            mResult?.success(true)
-            Log.d("FLUTTER_HEALTH", "Access already granted before!")
+                    optionsToRegister)
         }
-
+        /// Permission already granted
+        else {
+            mResult?.success(true)
+        }
     }
 
     /// Handle calls from the MethodChannel

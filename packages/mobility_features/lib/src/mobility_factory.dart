@@ -11,7 +11,7 @@ class MobilityFactory {
   List<Stop> _stops = [];
   List<Move> _moves = [];
   List<Place> _places = [];
-  List<LocationSample> _cluster = [], _prevCluster = [], _buffer = [];
+  List<LocationSample> _cluster = [], _buffer = [], _samples = [];
   int _saveEvery = 10;
   bool debug = false;
 
@@ -103,6 +103,7 @@ class MobilityFactory {
 
   /// Call-back method for handling incoming [LocationSample]s
   void _onData(LocationSample sample) {
+    _samples.add(sample);
     _adjustSaveRate();
 
     /// If previous samples exist, check if we should compute anything
@@ -176,7 +177,7 @@ class MobilityFactory {
       DateTime date = _cluster.last.datetime.midnight;
 
       if (stopPrev != null) {
-        _moves = _findMoves(_stops);
+        _moves = _findMoves(_stops, _samples);
         _serializerMoves.flush();
         _serializerMoves.save(_moves);
       }
@@ -188,7 +189,6 @@ class MobilityFactory {
     }
 
     /// Reset samples etc
-    _prevCluster = _cluster;
     _cluster = [];
     _serializerSamples.flush();
     _buffer = [];

@@ -46,8 +46,9 @@ List<Place> _findPlaces(List<Stop> stops, {double placeRadius = 50.0}) {
       epsilon: placeRadius, minPoints: 1, distanceMeasure: Distance.fromList);
 
   /// Extract gps coordinates from stops
-  List<List<double>> stopCoordinates =
-      stops.map((s) => ([s.geoLocation.latitude, s.geoLocation.longitude])).toList();
+  List<List<double>> stopCoordinates = stops
+      .map((s) => ([s.geoLocation.latitude, s.geoLocation.longitude]))
+      .toList();
 
   /// Run DBSCAN on stops
   dbscan.run(stopCoordinates);
@@ -64,23 +65,28 @@ List<Place> _findPlaces(List<Stop> stops, {double placeRadius = 50.0}) {
     /// For each index, get the corresponding stop
     List<Stop> stopsForPlace = indices.map((i) => (stops[i])).toList();
 
-
     /// Add place to the list
     Place p = Place._(label, stopsForPlace);
-    places.add(p);/// Set placeId field for the stops belonging to this place
-    stopsForPlace.forEach((s) => s.placeId = p._id);
+    places.add(p);
 
+    /// Set placeId field for the stops belonging to this place
+    stopsForPlace.forEach((s) => s.placeId = p._id);
   }
   return places;
 }
 
-List<Move> _findMoves(List<Stop> stops) {
+List<Move> _findMoves(List<Stop> stops, List<LocationSample> samples) {
   Stop previous;
   List<Move> moves = [];
 
   for (Stop current in stops) {
     if (previous != null) {
-      Move m = Move._fromStops(previous, current);
+      final path = samples
+          .where((s) =>
+              previous.datetime.leq(s.datetime) &&
+              previous.datetime.geq(s.datetime))
+          .toList();
+      Move m = Move._fromPath(previous, current, path);
       moves.add(m);
     }
     previous = current;
@@ -88,45 +94,12 @@ List<Move> _findMoves(List<Stop> stops) {
   return moves;
 }
 
-//List<Move> _findMoves(List<LocationSample> data, List<Stop> stops,
-//    {Duration moveDuration = const Duration(minutes: 3)}) {
-//  if (stops.isEmpty) return [];
-//  List<Move> moves = [];
-//
-//  /// Insert two placeholder stops, as the first and last sample gathered
-//  Stop first = Stop._fromLocationSamples([data.first]);
-//  List<Stop> allStops = [first] + stops;
-//
-//  if (data.first != data.last) {
-//    Stop last = Stop._fromLocationSamples([data.last]);
-//    allStops.add(last);
-//  }
-//
-//  /// Create moves from stops
-//  for (int i = 0; i < allStops.length - 1; i++) {
-//    Stop cur = allStops[i];
-//    Stop next = allStops[i + 1];
-//
-//    /// Extract all samples (including the 'loose' samples) between the two stops
-//    List<LocationSample> samplesInBetween = data
-//        .where((d) =>
-//            cur.departure.leq(d.datetime) && d.datetime.leq(next.arrival))
-//        .toList();
-//
-//    moves.add(Move._fromPath(cur, next, samplesInBetween));
-//  }
-//
-//  /// Filter out moves based on the minimum duration
-//  return moves.where((m) => m.duration >= moveDuration).toList();
-//}
-
-
 GeoLocation _computeCentroid(List<_Geospatial> data) {
   double lat =
-      Stats.fromData(data.map((d) => (d.geoLocation.latitude)).toList())
-          .median as double;
+      Stats.fromData(data.map((d) => (d.geoLocation.latitude)).toList()).median
+          as double;
   double lon =
-      Stats.fromData(data.map((d) => (d.geoLocation.longitude)).toList())
-          .median as double;
+      Stats.fromData(data.map((d) => (d.geoLocation.longitude)).toList()).median
+          as double;
   return GeoLocation(lat, lon);
 }
