@@ -117,8 +117,6 @@ class HealthFactory {
     List<HealthDataPoint> healthData = new List();
     HealthDataUnit unit = _dataTypeToUnit[dataType];
 
-    /// Used for generating a UUID
-
     try {
       List fetchedDataPoints = await _channel.invokeMethod('getData', args);
       healthData = fetchedDataPoints.map((e) {
@@ -129,7 +127,8 @@ class HealthFactory {
             value, dataType, unit, from, to, _platformType, _deviceId);
       }).toList();
     } catch (error) {
-      print(error);
+      print("Health Plugin Error:\n");
+      print("\t$error");
     }
     return healthData;
   }

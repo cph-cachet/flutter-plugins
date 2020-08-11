@@ -116,7 +116,14 @@ List<HealthDataPoint> healthData =
             await health.getHealthDataFromType(startDate, endDate, type);
 ```
 
-This call must be inside a try catch block; when a data type is not available, an exception will be thrown.
+NB for iOS: The device must be unlocked before Health data can be requested, otherwise an error will be thrown:
+
+```
+flutter: Health Plugin Error:
+flutter: 	PlatformException(FlutterHealth, Results are null, Optional(Error Domain=com.apple.healthkit Code=6 "Protected health data is inaccessible" UserInfo={NSLocalizedDescription=Protected health data is inaccessible}))
+```
+
+
 ### Full example
 ```dart
 List<HealthDataPoint> _healthDataList = [];
@@ -134,21 +141,15 @@ List<HealthDataType> types = [
 
 /// Get all available data for each declared type
 for (HealthDataType type in types) {
-  /// Calls must be wrapped in a try catch block
-  try {
-    /// Fetch new data
-    List<HealthDataPoint> healthData =
-        await health.getHealthDataFromType(startDate, endDate, type);
-
-    /// Save all the new data points
-    _healthDataList.addAll(healthData);
-
-    /// Filter out duplicates
-    _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
-  } catch (exception) {
-    print("An exception occured");
-    print(exception.toString());
-  }
+  /// Fetch new data
+  List<HealthDataPoint> healthData =
+      await health.getHealthDataFromType(startDate, endDate, type);
+  
+  /// Save all the new data points
+  _healthDataList.addAll(healthData);
+  
+  /// Filter out duplicates
+  _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
 }
 ```
 
