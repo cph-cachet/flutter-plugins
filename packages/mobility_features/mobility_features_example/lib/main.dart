@@ -31,7 +31,8 @@ String formatDate(DateTime date) {
 
 String interval(DateTime a, DateTime b) {
   String pad(int x) => '${x.toString().padLeft(2, '0')}';
-  return '${pad(a.hour)}:${pad(a.minute)}:${pad(a.second)} - ${pad(b.hour)}:${pad(b.minute)}:${pad(b.second)}';
+  return '${pad(a.hour)}:${pad(a.minute)}:${pad(a.second)} - ${pad(
+      b.hour)}:${pad(b.minute)}:${pad(b.second)}';
 }
 
 String formatDuration(Duration duration) {
@@ -67,7 +68,8 @@ class MyApp extends StatelessWidget {
 }
 
 String dtoToString(LocationDto dto) =>
-    '${dto.latitude}, ${dto.longitude} @ ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
+    '${dto.latitude}, ${dto.longitude} @ ${DateTime.fromMillisecondsSinceEpoch(
+        dto.time ~/ 1)}';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -107,6 +109,10 @@ class _MyHomePageState extends State<MyHomePage> {
     streamInit();
   }
 
+  void onCount(int count) {
+    print(count);
+  }
+
   void onMobilityContext(MobilityContext context) {
     print('Context received: ${context.toJson()}');
     setState(() {
@@ -135,6 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
     mobilityFactory.startListening(locationSampleStream);
     mobilitySubscription =
         mobilityFactory.contextStream.listen(onMobilityContext);
+    mobilityFactory.countStream.listen(onCount);
   }
 
   void onData(LocationDto dto) {
@@ -146,7 +153,8 @@ class _MyHomePageState extends State<MyHomePage> {
       children: <Widget>[
         entry("Stops", "${_mobilityContext.stops.length}", stopIcon),
         entry("Moves", "${_mobilityContext.moves.length}", moveIcon),
-        entry("Significant Places", "${_mobilityContext.numberOfSignificantPlaces}",
+        entry("Significant Places",
+            "${_mobilityContext.numberOfSignificantPlaces}",
             placeIcon),
         entry(
             "Home Stay",
@@ -156,7 +164,8 @@ class _MyHomePageState extends State<MyHomePage> {
             homeStayIcon),
         entry(
             "Distance Travelled",
-            "${(_mobilityContext.distanceTravelled / 1000).toStringAsFixed(2)} km",
+            "${(_mobilityContext.distanceTravelled / 1000).toStringAsFixed(
+                2)} km",
             distanceTravelledIcon),
         entry(
             "Normalized Entropy",
@@ -164,7 +173,8 @@ class _MyHomePageState extends State<MyHomePage> {
             entropyIcon),
         entry(
             "Location Variance",
-            "${(111.133 * _mobilityContext.locationVariance).toStringAsFixed(5)} km",
+            "${(111.133 * _mobilityContext.locationVariance).toStringAsFixed(
+                5)} km",
             varianceIcon),
       ],
     );
@@ -191,11 +201,11 @@ class _MyHomePageState extends State<MyHomePage> {
               style: TextStyle(fontSize: 20),
             ),
             Text(
-              '${formatDate(_mobilityContext.date)}',
+              '${formatDate(_mobilityContext.dateMidnight)}',
               style: TextStyle(fontSize: 20, color: Colors.blue),
             ),
           ])),
-      Expanded(child: featuresOverview)
+      Expanded(child: featuresOverview),
     ];
   }
 
@@ -244,7 +254,8 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Place> places = [];
 
     if (_mobilityContext != null) {
-      for (var x in _mobilityContext.stops) print(x);
+      for (var x in _mobilityContext.stops)
+        print(x);
       for (var x in _mobilityContext.moves) {
         print(x);
         print('${x.stopFrom} --> ${x.stopTo}');
@@ -263,7 +274,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.teal,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),

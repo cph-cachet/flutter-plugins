@@ -1,3 +1,6 @@
+## 2.0.1+1
+* Removed the need for try-catch on the programmer's end
+
 ## 2.0.1
 * Removed UUID and instead introduced a comparison operator
 
