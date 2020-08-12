@@ -104,16 +104,27 @@ String _uuid, _deviceId;
 ```
 A `HealthData healthData` object can be serialized to JSON with the `healthData.toJson()` method.
 
+
+### Fetch health data for a single data type
+
 ### Fetch health data
 
-To fetch data, specify a date interval and the desired health data type:
+To fetch data, specify a date-interval and the desired health data types:
 
 ```dart
- DateTime startDate = DateTime.utc(2001, 01, 01);
+
+List<HealthDataType> types = [
+  HealthDataType.BODY_MASS_INDEX,
+  HealthDataType.STEPS,
+  HealthDataType.WEIGHT,
+  HealthDataType.ACTIVE_ENERGY_BURNED
+];
+
+DateTime startDate = DateTime.utc(2001, 01, 01);
 DateTime endDate = DateTime.now();
-HealthDataType type = HealthDataType.BODY_MASS_INDEX;
+
 List<HealthDataPoint> healthData =
-            await health.getHealthDataFromType(startDate, endDate, type);
+            await health.getHealthDataFromType(startDate, endDate, types);
 ```
 
 NB for iOS: The device must be unlocked before Health data can be requested, otherwise an error will be thrown:
@@ -139,18 +150,15 @@ List<HealthDataType> types = [
   HealthDataType.WEIGHT,
 ];
 
-/// Get all available data for each declared type
-for (HealthDataType type in types) {
-  /// Fetch new data
-  List<HealthDataPoint> healthData =
-      await health.getHealthDataFromType(startDate, endDate, type);
-  
-  /// Save all the new data points
-  _healthDataList.addAll(healthData);
-  
-  /// Filter out duplicates
-  _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
-}
+/// Fetch new data
+List<HealthDataPoint> healthData =
+    await health.getHealthDataFromTypes(startDate, endDate, types);
+
+/// Save all the new data points
+_healthDataList.addAll(healthData);
+
+/// Filter out duplicates
+_healthDataList = HealthFactory.removeDuplicates(_healthDataList);
 ```
 
 

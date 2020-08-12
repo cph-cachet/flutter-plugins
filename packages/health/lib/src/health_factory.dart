@@ -5,13 +5,6 @@ class HealthFactory {
   static const MethodChannel _channel = const MethodChannel('flutter_health');
   String _deviceId;
 
-  Map<HealthDataType, bool> _permissions;
-
-  HealthFactory() {
-    _permissions = Map.fromIterable(HealthDataType.values,
-        key: (v) => v, value: (v) => false);
-  }
-
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
@@ -22,15 +15,12 @@ class HealthFactory {
           : _dataTypeKeysIOS.contains(dataType);
 
   /// Request access to GoogleFit/Apple HealthKit
-  Future<bool> _requestAuthorization(HealthDataType type) async {
-    //List<String> types = healthTypes.map((t) => _enumToString(t)).toList();
-
-    List<HealthDataType> types = [type];
-
+  Future<bool> _requestAuthorization(List<HealthDataType> types) async {
     /// If BMI is requested, then also ask for weight and height
-    if (type == HealthDataType.BODY_MASS_INDEX) {
+    if (types.contains(HealthDataType.BODY_MASS_INDEX)) {
       types.add(HealthDataType.WEIGHT);
       types.add(HealthDataType.HEIGHT);
+      types = types.toSet().toList();
     }
 
     List<String> keys = types.map((e) => _enumToString(e)).toList();
@@ -43,9 +33,9 @@ class HealthFactory {
   Future<List<HealthDataPoint>> _computeAndroidBMI(
       DateTime startDate, DateTime endDate) async {
     List<HealthDataPoint> heights =
-        await getHealthDataFromType(startDate, endDate, HealthDataType.HEIGHT);
+        await _getSingleDataPoint(startDate, endDate, HealthDataType.HEIGHT);
     List<HealthDataPoint> weights =
-        await getHealthDataFromType(startDate, endDate, HealthDataType.WEIGHT);
+        await _getSingleDataPoint(startDate, endDate, HealthDataType.WEIGHT);
 
     double h = heights.last.value.toDouble();
 
@@ -70,8 +60,30 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
+  Future<List<HealthDataPoint>> getHealthDataFromTypes(
+      DateTime startDate, DateTime endDate, List<HealthDataType> types) async {
+    List<HealthDataPoint> dataPoints = [];
+    bool granted = await _requestAuthorization(types);
+    for (HealthDataType type in types) {
+      bool p = await _requestAuthorization([type]);
+      print('$type, $p');
+    }
+
+    if (!granted) {
+      String api =
+          _platformType == PlatformType.ANDROID ? "Google Fit" : "Apple Health";
+      throw _HealthException(types, "Permission was not granted for $api");
+    }
+    for (HealthDataType type in types) {
+      List<HealthDataPoint> result =
+          await _getSingleDataPoint(startDate, endDate, type);
+      dataPoints.addAll(result);
+    }
+    return removeDuplicates(dataPoints);
+  }
+
   // Main function for fetching health data
-  Future<List<HealthDataPoint>> getHealthDataFromType(
+  Future<List<HealthDataPoint>> _getSingleDataPoint(
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     /// Ask for device ID only once
     if (_deviceId == null) {
@@ -84,28 +96,15 @@ class HealthFactory {
           dataType, "Not available on platform $_platformType");
     }
 
-    /// If permission not yet granted, ask for it
-    if (!_permissions[dataType]) {
-      bool granted = await _requestAuthorization(dataType);
-      if (!granted) {
-        String api = _platformType == PlatformType.ANDROID
-            ? "Google Fit"
-            : "Apple Health";
-        throw _HealthException(dataType, "Permission was not granted for $api");
-      } else {
-        _permissions[dataType] = true;
-      }
-    }
-
     /// If BodyMassIndex is requested on Android, calculate this manually in Dart
     if (dataType == HealthDataType.BODY_MASS_INDEX &&
         _platformType == PlatformType.ANDROID) {
       return _computeAndroidBMI(startDate, endDate);
     }
-    return _getData(startDate, endDate, dataType);
+    return await _dataQuery(startDate, endDate, dataType);
   }
 
-  Future<List<HealthDataPoint>> _getData(
+  Future<List<HealthDataPoint>> _dataQuery(
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     // Set parameters for method channel request
     Map<String, dynamic> args = {

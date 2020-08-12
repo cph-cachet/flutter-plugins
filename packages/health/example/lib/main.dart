@@ -18,10 +18,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
-    Timer.periodic(Duration(seconds: 2), (timer) {
-      fetchData();
-    });
   }
 
   Future<void> fetchData() async {
@@ -31,7 +27,7 @@ class _MyAppState extends State<MyApp> {
 
     /// Get everything from midnight until now
     DateTime endDate = DateTime.now();
-    DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day);
+    DateTime startDate = DateTime(2020, 01, 01);
 
     HealthFactory health = HealthFactory();
 
@@ -40,21 +36,18 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.BODY_MASS_INDEX,
       HealthDataType.STEPS,
       HealthDataType.WEIGHT,
+      HealthDataType.ACTIVE_ENERGY_BURNED
     ];
 
-    /// Get all available data for each declared type
-    for (HealthDataType type in types) {
-      /// Calls must be wrapped in a try catch block
-      /// Fetch new data
-      List<HealthDataPoint> healthData =
-          await health.getHealthDataFromType(startDate, endDate, type);
+    /// Fetch new data
+    List<HealthDataPoint> healthData =
+        await health.getHealthDataFromTypes(startDate, endDate, types);
 
-      /// Save all the new data points
-      _healthDataList.addAll(healthData);
+    /// Save all the new data points
+    _healthDataList.addAll(healthData);
 
-      /// Filter out duplicates
-      _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
-    }
+    /// Filter out duplicates
+    _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
 
     /// Print the results
     _healthDataList.forEach((x) => print("Data point: $x"));
