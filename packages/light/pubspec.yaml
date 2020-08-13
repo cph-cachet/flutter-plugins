@@ -1,8 +1,7 @@
 name: light
 description: Plugin for the light sensor (Android only)
-version: 0.0.1
-author:
-homepage:
+version: 1.0.0
+homepage: https://github.com/cph-cachet/flutter-plugins/tree/master
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
