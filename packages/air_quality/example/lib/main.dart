@@ -57,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     /// Via Geo Location (Berlin)
     AirQualityData feedFromGeoLocation =
-    await _airQuality.feedFromGeoLocation('52.6794', '12.5346');
+    await _airQuality.feedFromGeoLocation(52.6794, 12.5346);
 
 
     /// Via IP (depends on service provider)
