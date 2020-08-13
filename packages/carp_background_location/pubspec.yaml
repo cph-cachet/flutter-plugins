@@ -1,6 +1,6 @@
 name: carp_background_location
 description: A background location plugin for android and ios
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/cph-cachet/flutter-plugins
 
 environment:

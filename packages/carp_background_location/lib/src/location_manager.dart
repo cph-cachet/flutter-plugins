@@ -20,6 +20,7 @@ class LocationManager {
     }
     return _dtoStream;
   }
+
   Future<bool> get isRunning async =>
       await BackgroundLocator.isRegisterLocationUpdate();
 
@@ -51,6 +52,17 @@ class LocationManager {
     } else {
       _startLocator();
     }
+  }
+
+  Future<LocationDto> getCurrentLocation() async {
+    LocationDto dto;
+    if (!await BackgroundLocator.isRegisterLocationUpdate()) {
+      await start();
+      dto = await dtoStream.first;
+      stop();
+      return dto;
+    }
+    return await dtoStream.first;
   }
 
   Future<void> stop() async {
