@@ -11,9 +11,14 @@ class MyApp extends StatefulWidget {
 
 enum LocationStatus { UNKNOWN, RUNNING, STOPPED }
 
-String dtoToString(LocationDto dto) => 'Location ${dto.latitude}, ${dto.longitude} at ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
+String dtoToString(LocationDto dto) =>
+    'Location ${dto.latitude}, ${dto.longitude} at ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
 
-Widget dtoWidget(LocationDto dto) => Column(
+Widget dtoWidget(LocationDto dto) {
+  if (dto == null)
+    return Text("No location yet");
+  else
+    return Column(
       children: <Widget>[
         Text(
           '${dto.latitude}, ${dto.longitude}',
@@ -24,6 +29,7 @@ Widget dtoWidget(LocationDto dto) => Column(
         Text('${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}')
       ],
     );
+}
 
 class _MyAppState extends State<MyApp> {
   String logStr = '';
@@ -44,6 +50,11 @@ class _MyAppState extends State<MyApp> {
     locationManager.notificationMsg = 'CARP is tracking your location';
     dtoStream = locationManager.dtoStream;
     dtoSubscription = dtoStream.listen(onData);
+  }
+
+  void onGetCurrentLocation() async {
+    LocationDto dto = await locationManager.getCurrentLocation();
+    print('Current location: $dto');
   }
 
   void onData(LocationDto dto) {
@@ -115,6 +126,13 @@ class _MyAppState extends State<MyApp> {
         textAlign: TextAlign.center);
   }
 
+  Widget getButton() {
+    return RaisedButton(
+      child: Text("Get Current Location"),
+      onPressed: onGetCurrentLocation,
+    );
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -140,6 +158,7 @@ class _MyAppState extends State<MyApp> {
                 status(),
                 Divider(),
                 dtoWidget(lastLocation),
+                getButton()
               ],
             ),
           ),
