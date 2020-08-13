@@ -1,43 +1,14 @@
 # light
 
-A light sensor plugin for Flutter, reads the light intensity registered by the light sensor (in [Lux]), and reports this number back via a stream.
-The API for getting the light exposure is **only available on Android devices**, and the plugin will therefore not work for iOS devices.
+Plugin for the light sensor (Android only)
 
-## Install
-Add ```light``` as a dependency in  `pubspec.yaml`.
-For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
+## Getting Started
 
-## Usage
-All incoming data points are streamed with a `StreamSubscription` which is set up by calling the `listen()` method on the `light.lightSensorStream` stream object.
+This project is a starting point for a Flutter
+[plug-in package](https://flutter.dev/developing-packages/),
+a specialized package that includes platform-specific implementation code for
+Android and/or iOS.
 
-Given a method `_onData(int lux)` the subscription can be set up as follows:
-```dart
-Light _light;
-StreamSubscription _subscription;
-...
-void onData(int luxValue) async {
-    print("Lux value from Light Sensor: $luxValue");
-}
-
-void startListening() {
-    _light = new Light();
-    try {
-      _subscription = _light.lightSensorStream.listen(onData);
-    }
-    on LightException catch (exception) {
-      print(exception);
-    }
-}
-```
-
-The stream can also be cancelled again by calling the `cancel()` method:
-
-```dart
-  void stopListening() {
-    _subscription.cancel();
-  }
-```
-
-
-
-
+For help getting started with Flutter, view our 
+[online documentation](https://flutter.dev/docs), which offers tutorials, 
+samples, guidance on mobile development, and a full API reference.

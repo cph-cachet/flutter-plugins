@@ -18,7 +18,7 @@ class LightException implements Exception {
 
 class Light {
   static const EventChannel _eventChannel =
-      const EventChannel("light.eventChannel");
+  const EventChannel("light.eventChannel");
 
   Stream<int> _lightSensorStream;
 
