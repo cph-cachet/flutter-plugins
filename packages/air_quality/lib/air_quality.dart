@@ -108,7 +108,7 @@ class AirQuality {
       await _airQualityFromUrl('@$stationId');
 
   /// Returns an [AirQualityData] object given a latitude and longitude.
-  Future<AirQualityData> feedFromGeoLocation(String lat, String lon) async =>
+  Future<AirQualityData> feedFromGeoLocation(double lat, double lon) async =>
       await _airQualityFromUrl('geo:$lat;$lon');
 
   /// Returns an [AirQualityData] object given using the IP address.

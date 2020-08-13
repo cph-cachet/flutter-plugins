@@ -1,3 +1,6 @@
+## 1.2.1
+* Changed latitude and longitude to be of type double rather than String
+
 ## 1.2.0
 * Fixed parsing errors which occurred when the AQI values were non-numerical
 * Added an example application

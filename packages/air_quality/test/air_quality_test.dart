@@ -20,7 +20,7 @@ void main() {
     });
 
     test('- via geo-location (Berlin)', () async {
-      AirQualityData feedFromGeoLocation = await airQuality.feedFromGeoLocation('52.6794', '12.5346');
+      AirQualityData feedFromGeoLocation = await airQuality.feedFromGeoLocation(52.6794, 12.5346);
       print(feedFromGeoLocation);
     });
 
