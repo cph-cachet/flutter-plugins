@@ -1,6 +1,6 @@
 import Flutter
 import UIKit
-    
+
 public class SwiftLightPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "light", binaryMessenger: registrar.messenger())
