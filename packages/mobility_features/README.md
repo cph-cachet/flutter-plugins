@@ -1,15 +1,13 @@
 # Mobility Features
 Author: Thomas Nilsson (tnni@dtu.dk)
 
-## Usage
-
-### Initial setup
+## Setup
 
 Add the package to your `pubspec.yaml` file and import the package
 
 No permissions are required to use the package, however, a location plugin should be used to stream data. 
 
-We recommend the plugin `https://pub.dev/packages/mubs_background_location` which works on both Android and iOS as of July 2020.
+We recommend our own plugin `https://pub.dev/packages/carp_background_location` which works on both Android and iOS as of August 2020.
 
 ```dart
 import 'package:mobility_features/mobility_features.dart';
@@ -48,7 +46,6 @@ by the location plugin to a `LocationSample`.
 
 Next, you need to subscribe to the MobilityFactory instance's `contextStream` to be be notified each time a new set of features has been computed. 
 
-
 Below is shown an example using the `mubs_background_location` plugin, where a `LocationDto` stream is converted into a `LocationSample` stream by using a map-function.
 
 ```dart
@@ -85,10 +82,12 @@ void onMobilityContext(MobilityContext context) {
 
 All features are implemented as getters for a `MobilityContext` object.
 ```dart
+/// Location features
 context.places;
 context.stops;
 context.moves;
 
+/// Derived features
 context.numberOfPlaces;
 context.homeStay;
 context.entropy;
@@ -96,19 +95,24 @@ context.normalizedEntropy;
 context.distanceTravelled;
 ```
 
-Note: it is not possible to instantiate a `MobilityContext` object directly. 
+### Example
+The example application included in the package shows the feature values, including separate pages for stops, moves and places.
 
-### Feature-specific instructions
+![](images/features.jpeg)
+![](images/stops.jpeg)
+![](images/places.jpeg)
+![](images/moves.jpeg)
+
+
+### Feature errors
 When a feature cannot be evaluated, it will result in a value of -1.0.
 
-The Home Stay feature requires at least *some* data to be collected between 00:00 and 06:00, otherwise the feature cannot be evaluated. 
+Examples:
+* The Home Stay feature requires at least *some* data to be collected between 00:00 and 06:00, otherwise the feature cannot be evaluated. 
 
-The Routine Index feature requires at least two days of sufficient data to be computed.
-
-The Entropy and Normalized Entropy features require at least 2 places 
+* The Entropy and Normalized Entropy features require at least 2 places 
 to be evaluated. If only a single place was found, 
-the feature can technically still be evaluated and 
-will result in an Entropy of 0, as per the definition of Entropy. 
+this will result in an Entropy of 0.
 
 ## Theorical Background
 For mental health research, location data, together with a time component, 
@@ -126,10 +130,10 @@ and transforms the very intrusive GPS data to abstract features, which avoids un
 The mobility features which will be used are derived from GPS location data are:
 
 **Stop**
-A collection of GPS points which together represent a visit at a known \texit{Place} (see below) for an extended period of time. A \textit{Stop} is defined by a location that represents the centroid of a collection of data points, from which a \textit{Stop} is created. In addition a \textit{Stop} also has an \textit{arrival}- and a \textit{departure} time-stamp, representing when the user arrived at the place and when the user left the place. From the arrival- and departure timestamps of the \textit{Stop} the duration can be computed.
+A collection of GPS points which together represent a visit at a known `Place` (see below) for an extended period of time. A `Stop` is defined by a location that represents the centroid of a collection of data points, from which a  is created. In addition a `Stop` also has an `arrival` and a `departure` time-stamp, representing when the user arrived at the place and when the user left the place. From the arrival- and departure timestamps of the **Stop** the duration can be computed.
 
 **Place**
-A group of stops that were clustered by the DBSCAN algorithm \cite{density-based-1996}. From the cluster of stops, the centroid of the stops can be found, i.e. the center location. In addition, it can be computed how long a user has visited a given place by summing over the duration of all the stops at that place.
+A group of stops that were clustered by the DBSCAN algorithm. From the cluster of stops, the centroid of the stops can be found, i.e. the center location. In addition, it can be computed how long a user has visited a given place by summing over the duration of all the stops at that place.
 
 **Move**
 The travel between two Stops, which the user will pass though a path of GPS points. The distance of a Move can be computed as the sum of using the haversine distance of this path. Given the distance travelled as well as departure and arrival timestamp from the Stops, the average speed at which the user traveled can be derived. 
