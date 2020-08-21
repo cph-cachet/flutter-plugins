@@ -1,3 +1,6 @@
+## [2.0.5] - Documentation
+* Added images and changed documentation somewhat
+
 ## [2.0.4] - Move Consolidation
 * Moves are now recomputed each time a stop is computed
 * This means that the number of moves is always one less that the number of stops
