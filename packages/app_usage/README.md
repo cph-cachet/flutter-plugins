@@ -9,6 +9,12 @@ For help on adding as a dependency, view the [documentation](https://flutter.io/
 ## Android
 *NB: Requires API level 21 as a minimum!*
 
+I.e. you need to set the min SDK version inside the `android/app/build.gradle`:
+
+```xml
+minSdkVersion 21
+```
+
 You need to add the following package to the manifest namespace in `AndroidManifest.xml`:
 ```xml
 xmlns:tools="http://schemas.android.com/tools"
