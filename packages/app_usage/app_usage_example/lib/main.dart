@@ -25,26 +25,21 @@ class _MyAppState extends State<MyApp> {
   }
 
   void getUsageStats() async {
-    print('xx');
     try {
       DateTime endDate = new DateTime.now();
       DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
-      Map<String, double> usage = await appUsage.fetchUsage(startDate, endDate);
-      usage.removeWhere((key,val) => val == 0);
+      final usage = await appUsage.fetchUsage(startDate, endDate);
       setState(() => apps = makeString(usage));
-      print(usage);
     }
     on AppUsageException catch (exception) {
       print(exception);
     }
   }
 
-  String makeString(Map<String, double> usage) {
+  String makeString(List<AppInfo> usage) {
     String result = '';
-    usage.forEach((k,v) {
-      String appName = k.split('.').last;
-      String timeInMins = (v / 60).toStringAsFixed(2);
-      result += '$appName : $timeInMins minutes\n';
+    usage.forEach((element) {
+      result += element.packageName + ' -> ' + element.usage.toString() + '\n';
     });
     return result;
   }
