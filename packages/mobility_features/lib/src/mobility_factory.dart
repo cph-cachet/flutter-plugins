@@ -4,6 +4,7 @@ class MobilityFactory {
   double _stopRadius = 5, _placeRadius = 50;
   Duration _stopDuration = const Duration(seconds: 20);
 
+
   StreamSubscription<LocationSample> _subscription;
   _MobilitySerializer<LocationSample> _serializerSamples;
   _MobilitySerializer<Stop> _serializerStops;

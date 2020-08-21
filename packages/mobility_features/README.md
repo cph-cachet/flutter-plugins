@@ -13,19 +13,30 @@ We recommend our own plugin `https://pub.dev/packages/carp_background_location` 
 import 'package:mobility_features/mobility_features.dart';
 ```
 
-### Step 1: Init the MobilityFactory instance
+### Step 1: Choose parameters
 ```dart
 MobilityFactory mobilityFactory = MobilityFactory.instance;
+mobilityFactory.stopDuration = Duration(seconds: 20);
+mobilityFactory.placeRadius = 50.0;
+mobilityFactory.stopRadius = 5.0;
 ```
 
-Optionally, the following configurations can be made, which will influence the algorithms for producing features. 
+Optionally, the following configurations can be made, which will influence the algorithms for producing features:
 
-In general the stop radius should be kept low (5-20 meters) and the place radius somewhat higher (25-50 meters). 
-Computation of features is triggered when users move around and change their geo-position.
-Low parameter values will make the features more fine grained but will trigger computation more often.
+* The stop radius should be kept low (5-20 meters)
+* The place radius somewhat higher (25-50 meters).
+* The stop duration can also be set to any desired duration, for most cases it should be kept lower than 3 minutes.
+
+Features computation is triggered when the user moves around and change their geo-position by a certain distance (stop distance). 
+If the stop was long enough (stop duration) the stop will be saved. Places are computed by grouping stops based on distance between them (place radius)
+
+Common for these parameters is that their value depend on what you are trying to capture: 
+Low parameter values will make the features more fine-grained but will trigger computation more often and will likely also lead to noisy features.
+
+For example, given a low stop duration, stopping for a red light in traffic will count as a stop. 
+Such granularity will be irrelevant for many use cases, but may be useful if questions such as 'do they take the same route to work every day?' are to be answered. 
 
 ```dart
-
 StreamSubscription<MobilityContext> mobilitySubscription;
 MobilityFactory mobilityFactory = MobilityFactory.instance;
 MobilityContext _mobilityContext;
@@ -88,7 +99,7 @@ context.stops;
 context.moves;
 
 /// Derived features
-context.numberOfPlaces;
+context.numberOfSignificantPlaces;
 context.homeStay;
 context.entropy;
 context.normalizedEntropy;
@@ -98,10 +109,10 @@ context.distanceTravelled;
 ### Example
 The example application included in the package shows the feature values, including separate pages for stops, moves and places.
 
-![](images/features.jpeg)
-![](images/stops.jpeg)
-![](images/places.jpeg)
-![](images/moves.jpeg)
+![](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/features.jpeg)
+![](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/stops.jpeg)
+![](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/places.jpeg)
+![](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/moves.jpeg)
 
 
 ### Feature errors
@@ -119,12 +130,6 @@ For mental health research, location data, together with a time component,
 both collected from the user’s smartphone, can be reduced to certain behavioral 
 features pertaining to the user’s mobility. 
 These features can be used to diagnose patients suffering from mental disorders such as depression. 
-
-Previously, mobility recognition has been done in an off-device fashion where features are extracted 
-after a study was completed. We propose performing mobility feature extracting in real-time on the device 
-itself, as new data comes in a continuous fashion. This trades compute power, i.e. 
-phone battery for bandwidth and storage since the reduced features take up much less space than the raw GPS data, 
-and transforms the very intrusive GPS data to abstract features, which avoids unnecessary logging of sensitive data.
 
 ### Location Features
 The mobility features which will be used are derived from GPS location data are:
