@@ -1,3 +1,6 @@
+## 1.0.1
+* Made the project anew since the old project had an error somwhere.
+
 ## 1.0.0
 * Updated to the new Android API
 * Changed Android source code to Kotlin rather than Java
@@ -8,4 +11,3 @@
 
 ## 0.0.1
 * Initial release
-

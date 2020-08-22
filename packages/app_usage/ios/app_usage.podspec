@@ -5,9 +5,9 @@
 Pod::Spec.new do |s|
   s.name             = 'app_usage'
   s.version          = '0.0.1'
-  s.summary          = 'App usage plugin, only works for Android'
+  s.summary          = 'App usage plugin for Android only'
   s.description      = <<-DESC
-App usage plugin, only works for Android
+App usage plugin for Android only
                        DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
