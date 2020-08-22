@@ -9,6 +9,12 @@ For help on adding as a dependency, view the [documentation](https://flutter.io/
 ## Android
 *NB: Requires API level 21 as a minimum!*
 
+I.e. you need to set the min SDK version inside the `android/app/build.gradle`:
+
+```xml
+minSdkVersion 21
+```
+
 You need to add the following package to the manifest namespace in `AndroidManifest.xml`:
 ```xml
 xmlns:tools="http://schemas.android.com/tools"
@@ -35,32 +41,41 @@ Below is an example of how the start of your manifest should look in the end
 
 ## Usage
 ```dart
-void getUsageStats() async {
-    // Initialization
-    AppUsage appUsage = new AppUsage();
+  void getUsageStats() async {
     try {
-      // Define a time interval
+      DateTime startDate = DateTime(2018, 01, 01);
       DateTime endDate = new DateTime.now();
-      DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
-      
-      // Fetch the usage stats
-      Map<String, double> usage = await appUsage.fetchUsage(startDate, endDate);
-      
-      // (Optional) Remove entries for apps with 0 usage time
-      usage.removeWhere((key,val) => val == 0);
-    }
-    on AppUsageException catch (exception) {
+      List<AppUsageInfo> infos = await AppUsage.getAppUsage(startDate, endDate);
+      setState(() {
+        _infos = infos;
+      });
+    } on AppUsageException catch (exception) {
       print(exception);
     }
-}
+  }
 ```
-## Example
 
+Each `AppUsageInfo` object has the following public fields:
+
+```dart
+  /// The name of the application
+  String get appName;
+
+  /// The name of the application package
+  String get packageName;
+
+  /// The amount of time the application has been used
+  /// in the specified interval
+  Duration get usage;
+
+  /// The start of the interval
+  DateTime get startDate;
+
+  /// The end of the interval
+  DateTime get endDate;
+```
+
+
+## Example screenshot
 The first screen will ask for permission to view usage stats. Tap on your application.
-![Screen 1](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/app_usage/images/screen1.png)
-
-Tap on the 'Permit usage access' switch.
-![Screen 2](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/app_usage/images/screen2.png)
-
-Your application is now running, if the manifest has been corectly set up you should be presented with the following screen after tapping the refresh button.
-![Screen 3](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/app_usage/images/screen3.png)
+![Screenshot](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/app_usage/images/app_usage_screenshot.png)

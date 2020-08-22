@@ -1,15 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cachet.plugins.appusageexample"
+    package="dk.cachet.app_usage_example"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
-    <!-- The INTERNET permission is required for development. Specifically,
-         flutter needs it to communicate with the running application
-         to allow setting breakpoints, to provide hot reload, etc.
-    -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
@@ -41,4 +37,8 @@
             </intent-filter>
         </activity>
     </application>
+
+    <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
 </manifest>

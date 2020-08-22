@@ -1,4 +1,5 @@
-package cachet.plugins.appusage;
+package dk.cachet.app_usage;
+
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;

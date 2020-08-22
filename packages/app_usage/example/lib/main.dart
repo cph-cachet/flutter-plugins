@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:app_usage/app_usage.dart';
 
 void main() => runApp(MyApp());
@@ -10,43 +9,25 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  AppUsage appUsage = new AppUsage();
-  String apps = 'Unknown';
-
+  List<AppUsageInfo> _infos = [];
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
   }
 
   void getUsageStats() async {
     try {
+      DateTime startDate = DateTime(2018, 01, 01);
       DateTime endDate = new DateTime.now();
-      DateTime startDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0, 0);
-      Map<String, double> usage = await appUsage.fetchUsage(startDate, endDate);
-      usage.removeWhere((key,val) => val == 0);
-      setState(() => apps = makeString(usage));
-    }
-    on AppUsageException catch (exception) {
+      List<AppUsageInfo> infos = await AppUsage.getAppUsage(startDate, endDate);
+      setState(() {
+        _infos = infos;
+      });
+    } on AppUsageException catch (exception) {
       print(exception);
     }
   }
-
-  String makeString(Map<String, double> usage) {
-    String result = '';
-    usage.forEach((k,v) {
-      String appName = k.split('.').last;
-      String timeInMins = (v / 60).toStringAsFixed(2);
-      result += '$appName : $timeInMins minutes\n';
-    });
-    return result;
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -54,18 +35,17 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         appBar: AppBar(
           title: const Text('App Usage Example'),
+          backgroundColor: Colors.green,
         ),
-        body: Text(
-          apps,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 20.0, // insert your font size here
-          ),
-        ),
+        body: ListView.builder(
+            itemCount: _infos.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                  title: Text(_infos[index].appName),
+                  trailing: Text(_infos[index].usage.toString()));
+            }),
         floatingActionButton: FloatingActionButton(
-            onPressed: getUsageStats,
-            child: Icon(Icons.cached)
-        ),
+            onPressed: getUsageStats, child: Icon(Icons.file_download)),
       ),
     );
   }
