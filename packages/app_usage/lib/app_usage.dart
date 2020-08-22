@@ -16,22 +16,24 @@ class AppUsageException implements Exception {
   }
 }
 
-class AppInfo {
+class AppUsageInfo {
   String _packageName, _appName;
   Duration _usage;
   DateTime _startDate, _endDate;
 
-  AppInfo._(
+  AppUsageInfo(
       String name, double usageInSeconds, this._startDate, this._endDate) {
-    _appName = name.split('.')[1];
-    _packageName = name.split('.').last;
+    print(name);
+    List<String> tokens =  name.split('.');
+    _packageName = tokens.length > 2 ? tokens[1] : tokens.first;
+    _appName = tokens.last;
     _usage = Duration(seconds: usageInSeconds.toInt());
   }
 
   /// The name of the application
   String get appName => _appName;
 
-  /// The name of the application
+  /// The name of the application package
   String get packageName => _packageName;
 
   /// The amount of time the application has been used
@@ -43,13 +45,18 @@ class AppInfo {
 
   /// The end of the interval
   DateTime get endDate => _endDate;
+
+  @override
+  String toString() {
+    return 'App Usage: $packageName - $appName, duration: $usage [$startDate, $endDate]';
+  }
 }
 
 class AppUsage {
   static const MethodChannel _methodChannel =
-      const MethodChannel("app_usage.methodChannel");
+      const MethodChannel("app_usage");
 
-  Future<List<AppInfo>> fetchUsage(
+  static Future<List<AppUsageInfo>> getAppUsage(
       DateTime startDate, DateTime endDate) async {
     if (Platform.isAndroid) {
       /// Convert dates to ms since epoch
@@ -65,7 +72,7 @@ class AppUsage {
 
       /// Convert each entry in the map to an Application object
       return _map.keys
-          .map((k) => AppInfo._(k, _map[k], startDate, endDate))
+          .map((k) => AppUsageInfo(k, _map[k], startDate, endDate))
           .where((a) => a.usage > Duration(seconds: 0))
           .toList();
     }
