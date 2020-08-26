@@ -56,13 +56,13 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future<void> initPlatformState() async {
-    _pedestrianStatusStream = await Pedometer.pedestrianStatusStream;
+  void initPlatformState() {
+    _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
     _pedestrianStatusStream
         .listen(onPedestrianStatusChanged)
         .onError(onPedestrianStatusError);
 
-    _stepCountStream = await Pedometer.stepCountStream;
+    _stepCountStream = Pedometer.stepCountStream;
     _stepCountStream.listen(onStepCount).onError(onStepCountError);
 
     if (!mounted) return;
