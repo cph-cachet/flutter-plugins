@@ -16,7 +16,7 @@ class Pedometer {
 
   /// Returns one step at a time.
   /// Events come every time a step is detected.
-  static Future<Stream<PedestrianStatus>> get pedestrianStatusStream async {
+  static Stream<PedestrianStatus> get pedestrianStatusStream {
     Stream<PedestrianStatus> stream = _stepDetectionChannel
         .receiveBroadcastStream()
         .map((event) => PedestrianStatus._(event));
@@ -62,7 +62,7 @@ class Pedometer {
 
   /// Returns the steps taken since last system boot.
   /// Events may come with a delay.
-  static Future<Stream<StepCount>> get stepCountStream async =>
+  static Stream<StepCount> get stepCountStream =>
       _stepCountChannel
           .receiveBroadcastStream()
           .map((event) => StepCount._(event))

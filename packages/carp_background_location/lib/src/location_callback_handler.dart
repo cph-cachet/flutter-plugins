@@ -19,6 +19,5 @@ class LocationCallbackHandler {
     await myLocationCallbackRepository.callback(locationDto);
   }
 
-  static Future<void> notificationCallback() async {
-  }
+  static Future<void> notificationCallback() async {}
 }
