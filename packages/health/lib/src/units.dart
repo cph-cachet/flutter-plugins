@@ -15,6 +15,7 @@ enum HealthDataUnit {
   NO_UNIT,
   PERCENTAGE,
   SIEMENS,
-  UNKNOWN_UNIT
+  UNKNOWN_UNIT,
+  LITER,
 }
 

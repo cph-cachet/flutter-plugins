@@ -23,6 +23,9 @@ enum HealthDataType {
   FLIGHTS_CLIMBED,
   MOVE_MINUTES,
   DISTANCE_DELTA,
+  MINDFULNESS,
+  SLEEP_ANALYSIS,
+  WATER,
 
 // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
@@ -55,7 +58,10 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.WALKING_HEART_RATE,
   HealthDataType.WEIGHT,
   HealthDataType.FLIGHTS_CLIMBED,
-  HealthDataType.DISTANCE_WALKING_RUNNING
+  HealthDataType.DISTANCE_WALKING_RUNNING,
+  HealthDataType.MINDFULNESS,
+  HealthDataType.SLEEP_ANALYSIS,
+  HealthDataType.WATER,
 ];
 
 /// List of data types available on Android
@@ -74,6 +80,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.WEIGHT,
   HealthDataType.MOVE_MINUTES,
   HealthDataType.DISTANCE_DELTA,
+  HealthDataType.WATER,
 ];
 
 /// Map a [HealthDataType] to a [HealthDataUnit].
@@ -82,10 +89,8 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.CALORIES,
   HealthDataType.BLOOD_GLUCOSE: HealthDataUnit.MILLIGRAM_PER_DECILITER,
   HealthDataType.BLOOD_OXYGEN: HealthDataUnit.PERCENTAGE,
-  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit
-      .MILLIMETER_OF_MERCURY,
-  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit
-      .MILLIMETER_OF_MERCURY,
+  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
+  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
   HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENTAGE,
   HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
@@ -102,10 +107,12 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.MOVE_MINUTES: HealthDataUnit.MINUTES,
   HealthDataType.DISTANCE_DELTA: HealthDataUnit.METERS,
 
+  HealthDataType.WATER: HealthDataUnit.LITER,
+  HealthDataType.SLEEP_ANALYSIS: HealthDataUnit.NO_UNIT,
+
   /// Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
-  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit
-      .MILLISECONDS,
+  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
 };

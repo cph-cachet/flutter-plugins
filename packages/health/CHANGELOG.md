@@ -1,6 +1,9 @@
 ## 2.0.2
 * Updated the API to take a list of types rather than a single type, when requesting health data.
 
+## 2.0.2
+* Updated the API to take a list of types rather than a single type, when requesting health data.
+
 
 ## 2.0.1+1
 * Removed the need for try-catch on the programmer's end

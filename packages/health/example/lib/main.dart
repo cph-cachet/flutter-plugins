@@ -34,9 +34,11 @@ class _MyAppState extends State<MyApp> {
     /// Define the types to get.
     List<HealthDataType> types = [
       HealthDataType.BODY_MASS_INDEX,
-      HealthDataType.STEPS,
       HealthDataType.WEIGHT,
-      HealthDataType.ACTIVE_ENERGY_BURNED
+      HealthDataType.ACTIVE_ENERGY_BURNED,
+      HealthDataType.WATER,
+      HealthDataType.SLEEP_ANALYSIS,
+      HealthDataType.MINDFULNESS,
     ];
 
     /// Fetch new data
