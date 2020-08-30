@@ -24,7 +24,7 @@ enum HealthDataType {
   MOVE_MINUTES,
   DISTANCE_DELTA,
 
-// Heart Rate events (specific to Apple Watch)
+  // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
   LOW_HEART_RATE_EVENT,
   IRREGULAR_HEART_RATE_EVENT,
@@ -82,10 +82,8 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.CALORIES,
   HealthDataType.BLOOD_GLUCOSE: HealthDataUnit.MILLIGRAM_PER_DECILITER,
   HealthDataType.BLOOD_OXYGEN: HealthDataUnit.PERCENTAGE,
-  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit
-      .MILLIMETER_OF_MERCURY,
-  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit
-      .MILLIMETER_OF_MERCURY,
+  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
+  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
   HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENTAGE,
   HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
@@ -102,10 +100,9 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.MOVE_MINUTES: HealthDataUnit.MINUTES,
   HealthDataType.DISTANCE_DELTA: HealthDataUnit.METERS,
 
-  /// Heart Rate events (specific to Apple Watch)
+  // Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
-  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit
-      .MILLISECONDS,
+  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
 };
