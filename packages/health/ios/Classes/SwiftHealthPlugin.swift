@@ -67,6 +67,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("getData")){
             getData(call: call, result: result)
         }
+
+        /// Handle writeData
+        else if (call.method.elementsEqual("writeData")){
+            writeData(call: call, result: result)
+        }
     }
 
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -85,13 +90,40 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
 
         if #available(iOS 11.0, *) {
-            healthStore.requestAuthorization(toShare: nil, read: typesToRequest) { (success, error) in
+            healthStore.requestAuthorization(toShare: typesToRequest, read: typesToRequest) { (success, error) in
                 result(success)
             }
         }
         else {
             result(false)// Handle the error here.
         }
+    }
+
+    func writeData(call: FlutterMethodCall, result: @escaping FlutterResult){
+        guard let arguments = call.arguments as? NSDictionary,
+            let value = (arguments["value"] as? Double),
+            let type = (arguments["type"] as? String),
+            let startDate = (arguments["time"] as? NSNumber)
+            else {
+                print("GUARD FAILED")
+                return
+            }
+        
+        let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
+        
+        print("Successfully called writeData with value of \(value) and type of \(type)")
+        
+        let quantity = HKQuantity(unit: unitLookUp(key: type), doubleValue: value)
+        
+        let sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateFrom)
+        
+        HKHealthStore().save(sample, withCompletion: { (success, error) in
+          if let error = error {
+            print("Error Saving \(type) Sample: \(error.localizedDescription)")
+          } else {
+            print("Successfully saved \(type) Sample")
+          }
+        })
     }
 
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {

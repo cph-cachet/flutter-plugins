@@ -91,10 +91,33 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
-  /// Get an list of [HealthDataPoint] from an list of [HealthDataType].
+  Future<void> writeHealthData(
+      double value, HealthDataType type, DateTime time) async {
+    if (_platformType == PlatformType.ANDROID) {
+      print('Writing is not supported on Android');
+      return;
+    }
+    print("AWAITING PERMISSION");
+    bool granted = await requestAuthorization([type]);
+    print("PERMISSION: " + granted.toString());
+    if (granted) {
+      Map<String, dynamic> args = {
+        'value': value,
+        'type': _enumToString(type),
+        'time': time.millisecondsSinceEpoch
+      };
+      _channel.invokeMethod('writeData', args);
+    }
+  }
+
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
       DateTime startDate, DateTime endDate, List<HealthDataType> types) async {
-    final dataPoints = <HealthDataPoint>[];
+    List<HealthDataPoint> dataPoints = [];
+    bool granted = await requestAuthorization(types);
+    for (HealthDataType type in types) {
+      bool p = await requestAuthorization([type]);
+      print('$type, $p');
+    }
 
     for (var type in types) {
       final result = await _prepareQuery(startDate, endDate, type);
