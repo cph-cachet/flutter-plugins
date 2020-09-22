@@ -21,6 +21,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
     let BODY_MASS_INDEX = "BODY_MASS_INDEX"
     let BODY_TEMPERATURE = "BODY_TEMPERATURE"
+    let DIETARY_CARBS_CONSUMED = "DIETARY_CARBS_CONSUMED"
+    let DIETARY_ENERGY_CONSUMED = "DIETARY_ENERGY_CONSUMED"
+    let DIETARY_FATS_CONSUMED = "DIETARY_FATS_CONSUMED"
+    let DIETARY_PROTEIN_CONSUMED = "DIETARY_PROTEIN_CONSUMED"
     let ELECTRODERMAL_ACTIVITY = "ELECTRODERMAL_ACTIVITY"
     let HEART_RATE = "HEART_RATE"
     let HEART_RATE_VARIABILITY_SDNN = "HEART_RATE_VARIABILITY_SDNN"
@@ -98,7 +102,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             result(false)// Handle the error here.
         }
     }
-
+    
     func writeData(call: FlutterMethodCall, result: @escaping FlutterResult){
         guard let arguments = call.arguments as? NSDictionary,
             let value = (arguments["value"] as? Double),
@@ -131,6 +135,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
         let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
         let endDate = (arguments?["endDate"] as? NSNumber) ?? 0
+        let limit = (arguments?["limit"] as? Int) ?? HKObjectQueryNoLimit
 
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
@@ -138,9 +143,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         let dataType = dataTypeLookUp(key: dataTypeKey)
         let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
-        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: true)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
 
-        let query = HKSampleQuery(sampleType: dataType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) {
+        let query = HKSampleQuery(sampleType: dataType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) {
             x, samplesOrNil, error in
 
             switch samplesOrNil {
@@ -222,16 +227,20 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[BLOOD_PRESSURE_SYSTOLIC] = HKUnit.millimeterOfMercury()
         unitDict[BODY_FAT_PERCENTAGE] = HKUnit.percent()
         unitDict[BODY_MASS_INDEX] = HKUnit.init(from: "")
-        unitDict[BODY_TEMPERATURE] = HKUnit.degreeCelsius()
+        unitDict[BODY_TEMPERATURE] = HKUnit.degreeFahrenheit()
+        unitDict[DIETARY_CARBS_CONSUMED] = HKUnit.gram()
+        unitDict[DIETARY_ENERGY_CONSUMED] = HKUnit.kilocalorie()
+        unitDict[DIETARY_FATS_CONSUMED] = HKUnit.gram()
+        unitDict[DIETARY_PROTEIN_CONSUMED] = HKUnit.gram()
         unitDict[ELECTRODERMAL_ACTIVITY] = HKUnit.siemen()
         unitDict[HEART_RATE] = HKUnit.init(from: "count/min")
         unitDict[HEART_RATE_VARIABILITY_SDNN] = HKUnit.secondUnit(with: .milli)
-        unitDict[HEIGHT] = HKUnit.meter()
+        unitDict[HEIGHT] = HKUnit.inch()
         unitDict[RESTING_HEART_RATE] = HKUnit.init(from: "count/min")
         unitDict[STEPS] = HKUnit.count()
         unitDict[WAIST_CIRCUMFERENCE] = HKUnit.meter()
         unitDict[WALKING_HEART_RATE] = HKUnit.init(from: "count/min")
-        unitDict[WEIGHT] = HKUnit.gramUnit(with: .kilo)
+        unitDict[WEIGHT] = HKUnit.pound()
         unitDict[DISTANCE_WALKING_RUNNING] = HKUnit.meter()
         unitDict[FLIGHTS_CLIMBED] = HKUnit.count()
         unitDict[WATER] = HKUnit.liter()
@@ -253,6 +262,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[BODY_FAT_PERCENTAGE] = HKSampleType.quantityType(forIdentifier: .bodyFatPercentage)!
             dataTypesDict[BODY_MASS_INDEX] = HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!
             dataTypesDict[BODY_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .bodyTemperature)!
+            dataTypesDict[DIETARY_CARBS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!
+            dataTypesDict[DIETARY_ENERGY_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryEnergyConsumed)!
+            dataTypesDict[DIETARY_FATS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryFatTotal)!
+            dataTypesDict[DIETARY_PROTEIN_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryProtein)!
             dataTypesDict[ELECTRODERMAL_ACTIVITY] = HKSampleType.quantityType(forIdentifier: .electrodermalActivity)!
             dataTypesDict[HEART_RATE] = HKSampleType.quantityType(forIdentifier: .heartRate)!
             dataTypesDict[HEART_RATE_VARIABILITY_SDNN] = HKSampleType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!
