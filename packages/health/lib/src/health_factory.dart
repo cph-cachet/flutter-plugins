@@ -4,9 +4,10 @@ part of health;
 class HealthFactory {
   static const MethodChannel _channel = const MethodChannel('flutter_health');
   String _deviceId;
+  DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
 
   static PlatformType _platformType =
-  Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
   /// Check if a given data type is available on the platform
   bool _isDataTypeAvailable(HealthDataType dataType) =>
@@ -25,7 +26,7 @@ class HealthFactory {
 
     List<String> keys = types.map((e) => _enumToString(e)).toList();
     final bool isAuthorized =
-    await _channel.invokeMethod('requestAuthorization', {'types': keys});
+        await _channel.invokeMethod('requestAuthorization', {'types': keys});
     return isAuthorized;
   }
 
@@ -33,9 +34,9 @@ class HealthFactory {
   Future<List<HealthDataPoint>> _computeAndroidBMI(
       DateTime startDate, DateTime endDate) async {
     List<HealthDataPoint> heights =
-    await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
+        await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
     List<HealthDataPoint> weights =
-    await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
+        await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
 
     double h = heights.last.value.toDouble();
 
@@ -72,12 +73,12 @@ class HealthFactory {
 
     if (!granted) {
       String api =
-      _platformType == PlatformType.ANDROID ? "Google Fit" : "Apple Health";
+          _platformType == PlatformType.ANDROID ? "Google Fit" : "Apple Health";
       throw _HealthException(types, "Permission was not granted for $api");
     }
     for (HealthDataType type in types) {
       List<HealthDataPoint> result =
-      await _prepareQuery(startDate, endDate, type);
+          await _prepareQuery(startDate, endDate, type);
       dataPoints.addAll(result);
     }
     return removeDuplicates(dataPoints);
@@ -88,7 +89,9 @@ class HealthFactory {
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     /// Ask for device ID only once
     if (_deviceId == null) {
-      _deviceId = await DeviceId.getID;
+      _deviceId = _platformType == PlatformType.ANDROID
+          ? (await _deviceInfo.androidInfo).androidId
+          : (await _deviceInfo.iosInfo).identifierForVendor;
     }
 
     /// If not implemented on platform, throw an exception
