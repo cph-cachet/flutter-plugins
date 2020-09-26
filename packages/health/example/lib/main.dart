@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
 
     /// Fetch new data
     List<HealthDataPoint> healthData =
-    await health.getHealthDataFromTypes(startDate, endDate, types);
+        await health.getHealthDataFromTypes(startDate, endDate, types);
 
     /// Save all the new data points
     _healthDataList.addAll(healthData);

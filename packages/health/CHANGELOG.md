@@ -1,3 +1,6 @@
+## 2.0.5
+* Now uses 'device_info' rather than 'device_id' for getting device information
+
 ## 2.0.4+1
 * Static analysis, formatting etc.
 
