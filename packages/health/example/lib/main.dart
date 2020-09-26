@@ -34,14 +34,20 @@ class _MyAppState extends State<MyApp> {
     /// Define the types to get.
     List<HealthDataType> types = [
       HealthDataType.BODY_MASS_INDEX,
-      HealthDataType.STEPS,
       HealthDataType.WEIGHT,
-      HealthDataType.ACTIVE_ENERGY_BURNED
+      HealthDataType.ACTIVE_ENERGY_BURNED,
+      HealthDataType.WATER,
+      HealthDataType.SLEEP_IN_BED,
+      HealthDataType.MINDFULNESS,
     ];
+
+    /// You can request types pre-emptively, if you want to
+    /// which will make sure access is granted before the data is requested
+//    bool granted = await health.requestAuthorization(types);
 
     /// Fetch new data
     List<HealthDataPoint> healthData =
-        await health.getHealthDataFromTypes(startDate, endDate, types);
+    await health.getHealthDataFromTypes(startDate, endDate, types);
 
     /// Save all the new data points
     _healthDataList.addAll(healthData);

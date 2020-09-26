@@ -1,3 +1,12 @@
+## 2.0.4+1
+* Static analysis, formatting etc.
+
+## 2.0.4
+* Added Sleep data, Water, and Mindfulness.
+
+## 2.0.3
+* The method `requestAuthorization` is now public again.
+
 ## 2.0.2
 * Updated the API to take a list of types rather than a single type, when requesting health data.
 
