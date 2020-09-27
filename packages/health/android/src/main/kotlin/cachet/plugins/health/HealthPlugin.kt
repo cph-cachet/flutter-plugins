@@ -171,28 +171,33 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
 
         /// Start a new thread for doing a GoogleFit data lookup
         thread {
-            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
+            try {
 
-            val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
-                    .readData(DataReadRequest.Builder()
-                            .read(dataType)
-                            .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                            .build())
+                val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
 
-            /// Fetch all data points for the specified DataType
-            val dataPoints = Tasks.await<DataReadResponse>(response).getDataSet(dataType)
+                val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
+                        .readData(DataReadRequest.Builder()
+                                .read(dataType)
+                                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                                .build())
 
-            /// For each data point, extract the contents and send them to Flutter, along with date and unit.
-            val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
-                return@mapIndexed hashMapOf(
-                        "value" to getHealthDataValue(dataPoint, unit),
-                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                        "unit" to unit.toString()
-                )
+                /// Fetch all data points for the specified DataType
+                val dataPoints = Tasks.await<DataReadResponse>(response).getDataSet(dataType)
 
+                /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+                val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
+                    return@mapIndexed hashMapOf(
+                            "value" to getHealthDataValue(dataPoint, unit),
+                            "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                            "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                            "unit" to unit.toString()
+                    )
+
+                }
+                activity.runOnUiThread { result.success(healthData) }
+            } catch (e3: Exception) {
+                activity.runOnUiThread { result.success(null) }
             }
-            activity.runOnUiThread { result.success(healthData) }
         }
     }
 
