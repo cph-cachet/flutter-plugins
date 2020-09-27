@@ -95,7 +95,7 @@ class WeatherFactory {
   }
 
   String _buildUrl(String tag, String cityName, double lat, double lon) {
-    String url = 'http://api.openweathermap.org/data/2.5/' + '$tag?';
+    String url = 'https://api.openweathermap.org/data/2.5/' + '$tag?';
 
     if (cityName != null) {
       url += 'q=$cityName&';
