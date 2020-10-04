@@ -201,7 +201,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         }
     }
 
-    fun callToHealthTypes(call: MethodCall): FitnessOptions {
+    private fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
         val args = call.arguments as HashMap<*, *>
         val types = args["types"] as ArrayList<*>
