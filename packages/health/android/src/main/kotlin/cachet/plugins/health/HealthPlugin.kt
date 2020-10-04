@@ -203,14 +203,11 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
 
     fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
-        val args = (call.arguments as HashMap<*, *>)
+        val args = call.arguments as HashMap<*, *>
         val types = args["types"] as ArrayList<*>
-        for (typeKey in types){
-            if(typeKey !is String){
-                continue
-            }
-            val dataType = keyToHealthDataType(typeKey)
-            typesBuilder.addDataType(dataType)
+        for (typeKey in types) {
+            if (typeKey !is String) continue
+            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
         }
         return typesBuilder.build()
     }
