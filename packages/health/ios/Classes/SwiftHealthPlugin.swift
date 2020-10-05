@@ -26,6 +26,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let DIETARY_FATS_CONSUMED = "DIETARY_FATS_CONSUMED"
     let DIETARY_PROTEIN_CONSUMED = "DIETARY_PROTEIN_CONSUMED"
     let ELECTRODERMAL_ACTIVITY = "ELECTRODERMAL_ACTIVITY"
+    let FORCED_EXPIRATORY_VOLUME = "FORCED_EXPIRATORY_VOLUME"
     let HEART_RATE = "HEART_RATE"
     let HEART_RATE_VARIABILITY_SDNN = "HEART_RATE_VARIABILITY_SDNN"
     let HEIGHT = "HEIGHT"
@@ -233,6 +234,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[DIETARY_FATS_CONSUMED] = HKUnit.gram()
         unitDict[DIETARY_PROTEIN_CONSUMED] = HKUnit.gram()
         unitDict[ELECTRODERMAL_ACTIVITY] = HKUnit.siemen()
+        unitDict[FORCED_EXPIRATORY_VOLUME] = HKUnit.liter()
         unitDict[HEART_RATE] = HKUnit.init(from: "count/min")
         unitDict[HEART_RATE_VARIABILITY_SDNN] = HKUnit.secondUnit(with: .milli)
         unitDict[HEIGHT] = HKUnit.inch()
@@ -267,6 +269,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[DIETARY_FATS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryFatTotal)!
             dataTypesDict[DIETARY_PROTEIN_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryProtein)!
             dataTypesDict[ELECTRODERMAL_ACTIVITY] = HKSampleType.quantityType(forIdentifier: .electrodermalActivity)!
+            dataTypesDict[FORCED_EXPIRATORY_VOLUME] = HKSampleType.quantityType(forIdentifier: .forcedExpiratoryVolume1)!
             dataTypesDict[HEART_RATE] = HKSampleType.quantityType(forIdentifier: .heartRate)!
             dataTypesDict[HEART_RATE_VARIABILITY_SDNN] = HKSampleType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!
             dataTypesDict[HEIGHT] = HKSampleType.quantityType(forIdentifier: .height)!
