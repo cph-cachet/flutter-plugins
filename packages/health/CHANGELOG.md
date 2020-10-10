@@ -1,5 +1,9 @@
+## 2.0.7
+* Fixed a Google sign-in issue, and a type issue on Android (https://github.com/cph-cachet/flutter-plugins/issues/201)
+
 ## 2.0.6
 * Fixed a Google sign-in issue. (https://github.com/cph-cachet/flutter-plugins/issues/172)
+
 
 ## 2.0.5
 * Now uses 'device_info' rather than 'device_id' for getting device information
