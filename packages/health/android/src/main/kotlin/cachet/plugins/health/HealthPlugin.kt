@@ -172,7 +172,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         /// Start a new thread for doing a GoogleFit data lookup
         thread {
             try {
-
+                val fitnessOptions = FitnessOptions.builder().addDataType(dataType).build()
                 val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
 
                 val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
