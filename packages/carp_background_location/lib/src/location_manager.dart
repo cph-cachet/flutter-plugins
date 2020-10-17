@@ -150,14 +150,15 @@ class LocationManager {
     _notificationMsg = value;
   }
 
+  /// Set the update interval in seconds.
+  ///   /// Android only.
+  set interval(int value) {
+    _interval = value;
+  }
+
   /// Set the update distance, i.e. the distance the user needs to move
   /// before an update is fired.
   set distanceFilter(double value) {
     _distanceFilter = value;
-  }
-
-  /// Set the update interval in seconds.
-  set interval(int value) {
-    _interval = value;
   }
 }

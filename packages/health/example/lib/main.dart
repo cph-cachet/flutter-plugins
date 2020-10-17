@@ -37,9 +37,17 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.WEIGHT,
       HealthDataType.ACTIVE_ENERGY_BURNED,
       HealthDataType.WATER,
+<<<<<<< HEAD
       HealthDataType.SLEEP_ANALYSIS,
+=======
+      HealthDataType.SLEEP_IN_BED,
+>>>>>>> master
       HealthDataType.MINDFULNESS,
     ];
+
+    /// You can request types pre-emptively, if you want to
+    /// which will make sure access is granted before the data is requested
+//    bool granted = await health.requestAuthorization(types);
 
     /// Fetch new data
     List<HealthDataPoint> healthData =

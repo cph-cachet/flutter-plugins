@@ -18,4 +18,3 @@ enum HealthDataUnit {
   UNKNOWN_UNIT,
   LITER,
 }
-

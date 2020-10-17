@@ -37,7 +37,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
     let WATER = "WATER"
     let MINDFULNESS = "MINDFULNESS"
-    let SLEEP_ANALYSIS = "SLEEP_ANALYSIS"
+    let SLEEP_IN_BED = "SLEEP_IN_BED"
+    let SLEEP_ASLEEP = "SLEEP_ASLEEP"
+    let SLEEP_AWAKE = "SLEEP_AWAKE"
+
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_health", binaryMessenger: registrar.messenger())
@@ -176,7 +179,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[FLIGHTS_CLIMBED] = HKUnit.count()
         unitDict[WATER] = HKUnit.liter()
         unitDict[MINDFULNESS] = HKUnit.init(from: "")
-        unitDict[SLEEP_ANALYSIS] = HKUnit.init(from: "")
+        unitDict[SLEEP_IN_BED] = HKUnit.init(from: "")
+        unitDict[SLEEP_ASLEEP] = HKUnit.init(from: "")
+        unitDict[SLEEP_AWAKE] = HKUnit.init(from: "")
 
         // Set up iOS 11 specific types (ordinary health data types)
         if #available(iOS 11.0, *) { 
@@ -202,7 +207,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[FLIGHTS_CLIMBED] = HKSampleType.quantityType(forIdentifier: .flightsClimbed)!
             dataTypesDict[WATER] = HKSampleType.quantityType(forIdentifier: .dietaryWater)!
             dataTypesDict[MINDFULNESS] = HKSampleType.categoryType(forIdentifier: .mindfulSession)!
-            dataTypesDict[SLEEP_ANALYSIS] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_IN_BED] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_ASLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_AWAKE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
 
             healthDataTypes = Array(dataTypesDict.values)
         }

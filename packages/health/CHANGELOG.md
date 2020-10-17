@@ -1,3 +1,22 @@
+## 2.0.7
+* Fixed a Google sign-in issue, and a type issue on Android (https://github.com/cph-cachet/flutter-plugins/issues/201)
+
+## 2.0.6
+* Fixed a Google sign-in issue. (https://github.com/cph-cachet/flutter-plugins/issues/172)
+
+
+## 2.0.5
+* Now uses 'device_info' rather than 'device_id' for getting device information
+
+## 2.0.4+1
+* Static analysis, formatting etc.
+
+## 2.0.4
+* Added Sleep data, Water, and Mindfulness.
+
+## 2.0.3
+* The method `requestAuthorization` is now public again.
+
 ## 2.0.2
 * Updated the API to take a list of types rather than a single type, when requesting health data.
 

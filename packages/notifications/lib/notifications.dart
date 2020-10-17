@@ -24,11 +24,11 @@ class NotificationEvent {
   NotificationEvent({this.packageName, this.packageMessage, this.timeStamp});
 
   factory NotificationEvent.fromMap(Map<dynamic, dynamic> map) {
-      DateTime time = DateTime.now();
-      String name = map['packageName'];
-      String message = map['packageMessage'];
+    DateTime time = DateTime.now();
+    String name = map['packageName'];
+    String message = map['packageMessage'];
 
-      return NotificationEvent(packageName: name, packageMessage: message, timeStamp: time);
+    return NotificationEvent(packageName: name, packageMessage: message, timeStamp: time);
   }
 
   @override
@@ -43,7 +43,7 @@ NotificationEvent _notificationEvent(dynamic data) {
 
 class Notifications {
   static const EventChannel _notificationEventChannel =
-      EventChannel('notifications.eventChannel');
+  EventChannel('notifications.eventChannel');
 
   Stream<NotificationEvent> _notificationStream;
 
