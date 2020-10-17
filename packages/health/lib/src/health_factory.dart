@@ -35,6 +35,11 @@ class HealthFactory {
       DateTime startDate, DateTime endDate) async {
     List<HealthDataPoint> heights =
         await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
+
+    if (heights.isEmpty) {
+      return [];
+    }
+
     List<HealthDataPoint> weights =
         await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
 
