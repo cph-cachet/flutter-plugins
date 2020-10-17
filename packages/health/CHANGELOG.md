@@ -1,3 +1,6 @@
+## 2.0.8
+* Fixed a merge issue which had deleted the data types added in 2.0.4.
+
 ## 2.0.7
 * Fixed a Google sign-in issue, and a type issue on Android (https://github.com/cph-cachet/flutter-plugins/issues/201)
 
