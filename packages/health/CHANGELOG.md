@@ -1,3 +1,6 @@
+## 2.0.8
+* Fixed a merge issue which had deleted the data types added in 2.0.4.
+
 ## 2.0.7
 * Fixed a Google sign-in issue, and a type issue on Android (https://github.com/cph-cachet/flutter-plugins/issues/201)
 
@@ -16,6 +19,9 @@
 
 ## 2.0.3
 * The method `requestAuthorization` is now public again.
+
+## 2.0.2
+* Updated the API to take a list of types rather than a single type, when requesting health data.
 
 ## 2.0.2
 * Updated the API to take a list of types rather than a single type, when requesting health data.

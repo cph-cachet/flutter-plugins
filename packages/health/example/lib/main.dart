@@ -37,6 +37,8 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.WEIGHT,
       HealthDataType.ACTIVE_ENERGY_BURNED,
       HealthDataType.WATER,
+      HealthDataType.SLEEP_ASLEEP,
+      HealthDataType.SLEEP_AWAKE,
       HealthDataType.SLEEP_IN_BED,
       HealthDataType.MINDFULNESS,
     ];

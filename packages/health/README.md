@@ -6,33 +6,38 @@ Supports **iOS** and **Android X**
 NB: For Android, your app *needs* to have Google Fit installed and have access to the internet, otherwise this plugin will not work.
 
 ## Data Types
-| Data Type                   | Unit                    | iOS Support | Android support | Comments             |
-|-----------------------------|-------------------------|-------------|-----------------|----------------------|
-| ACTIVE_ENERGY_BURNED        | CALORIES                | yes         | yes             |                      |
-| BASAL_ENERGY_BURNED         | CALORIES                | yes         |                 |                      |
-| BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes         | yes             |                      |
-| BLOOD_OXYGEN                | PERCENTAGE              | yes         | yes             |                      |
-| BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes         | yes             |                      |
-| BLOOD_PRESSURE_SYSTOLIC     | MILLIMETER_OF_MERCURY   | yes         | yes             |                      |
-| BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes         | yes             |                      |
-| BODY_MASS_INDEX             | NO_UNIT                 | yes         | yes             |                      |
-| BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes         | yes             |                      |
-| ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes         |                 |                      |
-| HEART_RATE                  | BEATS_PER_MINUTE        | yes         | yes             |                      |
-| HEIGHT                      | METERS                  | yes         | yes             |                      |
-| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes         |                 |                      |
-| STEPS                       | COUNT                   | yes         | yes             |                      |
-| WAIST_CIRCUMFERENCE         | METERS                  | yes         |                 |                      |
-| WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes         |                 |                      |
-| WEIGHT                      | KILOGRAMS               | yes         | yes             |                      |
-| DISTANCE_WALKING_RUNNING    | METERS                  | yes         |                 |                      |
-| FLIGHTS_CLIMBED             | COUNT                   | yes         |                 |                      |
-| MOVE_MINUTES                | MINUTES                 |             | yes             |                      |
-| DISTANCE_DELTA              | METERS                  |             | yes             |                      |
-| HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes         |                 | Requires Apple Watch |
-| LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |                 | Requires Apple Watch |
-| IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes         |                 | Requires Apple Watch |
-| HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes         |                 | Requires Apple Watch |
+| Data   Type                 | Unit                    | iOS Support | Android support | Comments                                                    |
+|-----------------------------|-------------------------|-------------|-----------------|-------------------------------------------------------------|
+| ACTIVE_ENERGY_BURNED        | CALORIES                | yes         | yes             |                                                             |
+| BASAL_ENERGY_BURNED         | CALORIES                | yes         |                 |                                                             |
+| BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes         | yes             |                                                             |
+| BLOOD_OXYGEN                | PERCENTAGE              | yes         | yes             |                                                             |
+| BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes         | yes             |                                                             |
+| BLOOD_PRESSURE_SYSTOLIC     | MILLIMETER_OF_MERCURY   | yes         | yes             |                                                             |
+| BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes         | yes             |                                                             |
+| BODY_MASS_INDEX             | NO_UNIT                 | yes         | yes             |                                                             |
+| BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes         | yes             |                                                             |
+| ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes         |                 |                                                             |
+| HEART_RATE                  | BEATS_PER_MINUTE        | yes         | yes             |                                                             |
+| HEIGHT                      | METERS                  | yes         | yes             |                                                             |
+| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes         |                 |                                                             |
+| STEPS                       | COUNT                   | yes         | yes             |                                                             |
+| WAIST_CIRCUMFERENCE         | METERS                  | yes         |                 |                                                             |
+| WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes         |                 |                                                             |
+| WEIGHT                      | KILOGRAMS               | yes         | yes             |                                                             |
+| DISTANCE_WALKING_RUNNING    | METERS                  | yes         |                 |                                                             |
+| FLIGHTS_CLIMBED             | COUNT                   | yes         |                 |                                                             |
+| MOVE_MINUTES                | MINUTES                 |             | yes             |                                                             |
+| DISTANCE_DELTA              | METERS                  | yes         |                 |                                                             |
+| MINDFULNESS                 | MINUTES                 | yes         |                 |                                                             |
+| SLEEP_IN_BED                | MINUTES                 | yes         |                 |                                                             |
+| SLEEP_ASLEEP                | MINUTES                 | yes         |                 |                                                             |
+| SLEEP_AWAKE                 | MINUTES                 | yes         |                 |                                                             |
+| WATER                       | LITER                   | yes         | yes             | On Android water requires a 3rd party app to be registered. |
+| HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes         |                 | Requires Apple Watch                                        |
+| LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |                 | Requires Apple Watch                                        |
+| IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes         |                 | Requires Apple Watch                                        |
+| HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes         |                 | Requires Apple Watch                                        |
 
 ## Setup
 ### Apple HealthKit (iOS)

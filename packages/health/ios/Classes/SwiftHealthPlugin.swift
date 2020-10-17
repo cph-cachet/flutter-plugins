@@ -35,6 +35,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let WEIGHT = "WEIGHT"
     let DISTANCE_WALKING_RUNNING = "DISTANCE_WALKING_RUNNING"
     let FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
+    let WATER = "WATER"
+    let MINDFULNESS = "MINDFULNESS"
+    let SLEEP_IN_BED = "SLEEP_IN_BED"
+    let SLEEP_ASLEEP = "SLEEP_ASLEEP"
+    let SLEEP_AWAKE = "SLEEP_AWAKE"
+
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_health", binaryMessenger: registrar.messenger())
@@ -104,10 +110,23 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             x, samplesOrNil, error in
 
             guard let samples = samplesOrNil as? [HKQuantitySample] else {
-                result(FlutterError(code: "FlutterHealth", message: "Results are null", details: "\(error)"))
+                guard let samplesCategory = samplesOrNil as? [HKCategorySample] else {
+                    result(FlutterError(code: "FlutterHealth", message: "Results are null", details: "\(error)"))
+                    return
+                }
+                print(samplesCategory)
+                result(samplesCategory.map { sample -> NSDictionary in
+                    let unit = self.unitLookUp(key: dataTypeKey)
+
+                    return [
+                        "uuid": "\(sample.uuid)",
+                        "value": sample.value,
+                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                    ]
+                })
                 return
             }
-
             result(samples.map { sample -> NSDictionary in
                 let unit = self.unitLookUp(key: dataTypeKey)
 
@@ -158,6 +177,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[WEIGHT] = HKUnit.gramUnit(with: .kilo)
         unitDict[DISTANCE_WALKING_RUNNING] = HKUnit.meter()
         unitDict[FLIGHTS_CLIMBED] = HKUnit.count()
+        unitDict[WATER] = HKUnit.liter()
+        unitDict[MINDFULNESS] = HKUnit.init(from: "")
+        unitDict[SLEEP_IN_BED] = HKUnit.init(from: "")
+        unitDict[SLEEP_ASLEEP] = HKUnit.init(from: "")
+        unitDict[SLEEP_AWAKE] = HKUnit.init(from: "")
 
         // Set up iOS 11 specific types (ordinary health data types)
         if #available(iOS 11.0, *) { 
@@ -181,6 +205,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[WEIGHT] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
             dataTypesDict[DISTANCE_WALKING_RUNNING] = HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)!
             dataTypesDict[FLIGHTS_CLIMBED] = HKSampleType.quantityType(forIdentifier: .flightsClimbed)!
+            dataTypesDict[WATER] = HKSampleType.quantityType(forIdentifier: .dietaryWater)!
+            dataTypesDict[MINDFULNESS] = HKSampleType.categoryType(forIdentifier: .mindfulSession)!
+            dataTypesDict[SLEEP_IN_BED] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_ASLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_AWAKE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
 
             healthDataTypes = Array(dataTypesDict.values)
         }
