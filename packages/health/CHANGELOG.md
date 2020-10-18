@@ -1,3 +1,6 @@
+## 2.0.9
+* Now handles the case when asking for BMI on Android when no height data has been collected.
+
 ## 2.0.8
 * Fixed a merge issue which had deleted the data types added in 2.0.4.
 
