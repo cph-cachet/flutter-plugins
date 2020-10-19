@@ -59,3 +59,4 @@ packages/health/example/.flutter-plugins-dependencies
 packages/health/example/.flutter-plugins-dependencies
 packages/screen_state/example/.flutter-plugins-dependencies
 *.sh
+packages/carp_background_location/example/.flutter-plugins-dependencies
