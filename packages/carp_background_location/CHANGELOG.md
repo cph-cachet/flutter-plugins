@@ -1,3 +1,8 @@
+## 1.0.2
+* upgrade to `background_locator` v. 0.2.1
+* support for setting `accuracy`
+* misc docs update
+
 ## 1.0.1+4
 * Formatting
 

@@ -1,5 +1,11 @@
 part of carp_background_location;
 
+/// Provide access to location data while the app is in the background.
+///
+/// Use as a singleton:
+///
+///  `LocationManager locationManager = LocationManager.instance;`
+///
 class LocationManager {
   ReceivePort _port = ReceivePort();
   Stream<LocationDto> _dtoStream;
@@ -9,6 +15,7 @@ class LocationManager {
 
   int _interval = 1;
   double _distanceFilter = 0;
+  LocationAccuracy _accuracy = LocationAccuracy.NAVIGATION;
 
   /// Getting the stream that provides location data updates
   Stream<LocationDto> get dtoStream {
@@ -24,38 +31,28 @@ class LocationManager {
 
   /// Get the status of the location manager.
   /// Will return true if a location service is currently running.
-  Future<bool> get isRunning async =>
-      await BackgroundLocator.isRegisterLocationUpdate();
+  Future<bool> get isRunning async => await BackgroundLocator.isRegisterLocationUpdate();
 
-  /// Private static instance of the [LocationManager] singleton
   static final LocationManager _instance = LocationManager._();
 
   /// Get the singleton [LocationManager] instance
   static LocationManager get instance => _instance;
 
-  /// Singleton constructor, i.e. private
   LocationManager._() {
-    /// Check if the port is already used
-    if (IsolateNameServer.lookupPortByName(
-            LocationServiceRepository.isolateName) !=
-        null) {
-      IsolateNameServer.removePortNameMapping(
-          LocationServiceRepository.isolateName);
+    // Check if the port is already used
+    if (IsolateNameServer.lookupPortByName(LocationServiceRepository.isolateName) != null) {
+      IsolateNameServer.removePortNameMapping(LocationServiceRepository.isolateName);
     }
 
-    /// Register the service to the port name
-    IsolateNameServer.registerPortWithName(
-        _port.sendPort, LocationServiceRepository.isolateName);
+    // Register the service to the port name
+    IsolateNameServer.registerPortWithName(_port.sendPort, LocationServiceRepository.isolateName);
   }
 
-  /// Get a single location update by listening
-  /// to the stream until an update is given,
-  /// upon which the data point is returned to the caller.
+  /// Get the current location.
   Future<LocationDto> getCurrentLocation() async {
-    LocationDto dto;
     if (!await BackgroundLocator.isRegisterLocationUpdate()) {
       await start();
-      dto = await dtoStream.first;
+      LocationDto dto = await dtoStream.first;
       stop();
       return dto;
     }
@@ -65,9 +62,7 @@ class LocationManager {
   /// Start the location service.
   /// Will have no effect if it is already running.
   Future<void> start({bool askForPermission: true}) async {
-    print('Initializing...');
     await BackgroundLocator.initialize();
-    print('Initialization done');
 
     if (askForPermission) {
       if (await _checkLocationPermission()) {
@@ -88,7 +83,7 @@ class LocationManager {
   /// Location permissions are necessary for getting location updates.
   Future<bool> checkIfPermissionGranted() async {
     final access = await LocationPermissions().checkPermissionStatus();
-    return access == PermissionStatus.granted;
+    return (access == PermissionStatus.granted);
   }
 
   /// Checks the status of the location permission.
@@ -127,38 +122,39 @@ class LocationManager {
       LocationCallbackHandler.callback,
       initCallback: LocationCallbackHandler.initCallback,
       disposeCallback: LocationCallbackHandler.disposeCallback,
-      androidNotificationCallback: LocationCallbackHandler.notificationCallback,
-      settings: LocationSettings(
-          notificationChannelName: _channelName,
-          notificationTitle: _notificationTitle,
-          notificationMsg: _notificationMsg,
-          autoStop: false,
+      autoStop: false,
+      androidSettings: AndroidSettings(
+          accuracy: _accuracy,
+          interval: _interval,
           distanceFilter: _distanceFilter,
-          interval: _interval),
+          androidNotificationSettings: AndroidNotificationSettings(
+            notificationChannelName: _channelName,
+            notificationTitle: _notificationTitle,
+            notificationMsg: _notificationMsg,
+          )),
+      iosSettings: IOSSettings(
+        accuracy: _accuracy,
+        distanceFilter: _distanceFilter,
+      ),
     );
   }
 
   /// Set the title of the notification for the background service.
   /// Android only.
-  set notificationTitle(value) {
-    _notificationTitle = value;
-  }
+  set notificationTitle(value) => _notificationTitle = value;
 
-  /// Set the title of the notification for the background service.
+  /// Set the message of the notification for the background service.
   /// Android only.
-  set notificationMsg(value) {
-    _notificationMsg = value;
-  }
+  set notificationMsg(value) => _notificationMsg = value;
 
   /// Set the update interval in seconds.
-  ///   /// Android only.
-  set interval(int value) {
-    _interval = value;
-  }
+  /// Android only.
+  set interval(int value) => _interval = value;
 
   /// Set the update distance, i.e. the distance the user needs to move
   /// before an update is fired.
-  set distanceFilter(double value) {
-    _distanceFilter = value;
-  }
+  set distanceFilter(double value) => _distanceFilter = value;
+
+  /// Set the update accuracy. See [LocationAccuracy] for options.
+  set accuracy(LocationAccuracy value) => _accuracy = value;
 }
