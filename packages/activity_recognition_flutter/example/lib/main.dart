@@ -1,5 +1,6 @@
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(new MyApp());
 
@@ -9,14 +10,21 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Stream<Activity> stream;
+  Stream<Activity> activityStream;
   Activity latestActivity = Activity.empty();
 
   @override
   void initState() {
     super.initState();
-    stream = ActivityRecognition.activityUpdates();
-    stream.listen(onData);
+    _init();
+
+  }
+
+  void _init() async {
+    if (await Permission.activityRecognition.request().isGranted) {
+      activityStream = ActivityRecognition.activityUpdates();
+      activityStream.listen(onData);
+    }
   }
 
   void onData(Activity activity) {

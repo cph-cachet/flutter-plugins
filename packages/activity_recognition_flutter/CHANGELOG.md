@@ -1,3 +1,6 @@
+## 1.2.4
+* Updated example wrt. permission for Android API 29 and later
+
 ## 1.2.3
 * Added the ActivityType class
 * Updated example app
