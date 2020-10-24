@@ -1,12 +1,12 @@
 name: activity_recognition_flutter
-description: Activity recognition plugin for Android and iOS using the native APIs with updated Kotlin version to 1.2.51, forked from https://github.com/Morosko/flutter_activity_recognition. ActivityRecognitionClient on Android, CoreMotion on iOS.
-version: 1.2.2
-author: CACHET Team <cph.cachet@gmail.com>
+description: Activity recognition plugin for Android and iOS.
+version: 1.2.4
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages
 
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
+  flutter: ">=1.12.0 <2.0.0"
 
 dependencies:
   flutter:
@@ -16,15 +16,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter.
 flutter:
-  # This section identifies this Flutter project as a plugin project.
-  # The androidPackage and pluginClass identifiers should not ordinarily
-  # be modified. They are used by the tooling to maintain consistency when
-  # adding or updating assets for this project.
   plugin:
-    androidPackage: dk.cachet.activity_recognition_flutter
-    pluginClass: ActivityRecognitionFlutterPlugin
+    platforms:
+      android:
+        package: dk.cachet.activity_recognition_flutter
+        pluginClass: ActivityRecognitionFlutterPlugin
+      ios:
+        pluginClass: ActivityRecognitionFlutterPlugin
+
+

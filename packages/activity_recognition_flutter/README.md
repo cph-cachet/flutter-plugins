@@ -34,22 +34,30 @@ for the types of data it needs. Failure to include these keys will cause the app
 To access motion and fitness data specifically, it must include `NSMotionUsageDescription`.
 
 ### Flutter Usage
+To use this plugin, you need to also use the permission handler plugin (https://pub.dev/packages/permission_handler)
 
 ```Dart
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
-Stream<Activity> stream;
+import 'package:permission_handler/permission_handler.dart';
+
+Stream<Activity> activityStream;
 
 @override
 void initState() {
     super.initState();
-    
-    /// Start the stream updates
-    stream = ActivityRecognition.activityUpdates();
-    stream.listen(onData);
+    _init();
+}
+
+void _init() async {
+    /// Ask for permission
+    if (await Permission.activityRecognition.request().isGranted) {
+      activityStream = ActivityRecognition.activityUpdates();
+      activityStream.listen(onData);
+    }
 }
 
 void onData(Activity activity) {
-    /// Do something with the activity
+    /// Do something with the received activity
     ActivityType type = activity.type;
     int confidence = activity.confidence;
 }

@@ -19,6 +19,7 @@ dev_dependencies:
 
   activity_recognition_flutter:
     path: ../
+  permission_handler: 5.0.1+1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
