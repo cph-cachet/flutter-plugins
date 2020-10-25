@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:audio_streamer/audio_streamer.dart';
 import 'dart:math';
 
+import 'package:flutter/services.dart';
+
 void main() {
   runApp(new MyApp());
 }
@@ -28,12 +30,20 @@ class _MyAppState extends State<MyApp> {
     print('Max amp: ${buffer.reduce(max)}');
     print('Min amp: ${buffer.reduce(min)}');
     print('$secondsRecorded seconds recorded.');
-    print('-'*50);
+    print('-' * 50);
+  }
+
+  void handleError(PlatformException error) {
+    setState(() {
+      _isRecording = false;
+    });
+    print(error.message);
+    print(error.details);
   }
 
   void start() async {
     try {
-      _streamer.start(onAudio);
+      _streamer.start(onAudio, handleError);
       setState(() {
         _isRecording = true;
       });
