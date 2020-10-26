@@ -119,7 +119,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget lastLoc() {
-    return Text(lastLocation != null ? dtoToString(lastLocation) : 'Unknown last location',
+    return Text(
+        lastLocation != null
+            ? dtoToString(lastLocation)
+            : 'Unknown last location',
         textAlign: TextAlign.center);
   }
 
