@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +16,8 @@ class AudioStreamer {
 
   int get sampleRate => 44100;
 
-  static const EventChannel _noiseEventChannel = EventChannel(EVENT_CHANNEL_NAME);
+  static const EventChannel _noiseEventChannel =
+      EventChannel(EVENT_CHANNEL_NAME);
 
   Stream<List<double>> _stream;
   StreamSubscription<List<dynamic>> _subscription;
@@ -24,10 +26,14 @@ class AudioStreamer {
     if (debug) print(t);
   }
 
-  Stream<List<double>> get audioStream {
+  Stream<List<double>> _makeAudioStream(Function handleErrorFunction) {
     if (_stream == null) {
       _stream = _noiseEventChannel
           .receiveBroadcastStream()
+          .handleError((error) {
+            _isRecording = false;
+            handleErrorFunction(error);
+          })
           .map((buffer) => buffer as List<dynamic>)
           .map((list) => list.map((e) => double.parse('$e')).toList());
     }
@@ -35,12 +41,14 @@ class AudioStreamer {
   }
 
   /// Verify that it was granted
-  static Future<bool> checkPermission() async => Permission.microphone.request().isGranted;
+  static Future<bool> checkPermission() async =>
+      Permission.microphone.request().isGranted;
 
   /// Request the microphone permission
-  static Future<void> requestPermission() async => Permission.microphone.request();
+  static Future<void> requestPermission() async =>
+      Permission.microphone.request();
 
-  Future<bool> start(Function onData) async {
+  Future<bool> start(Function onData, Function handleError) async {
     _print('AudioStreamer: startRecorder()');
 
     if (_isRecording) {
@@ -53,7 +61,8 @@ class AudioStreamer {
         _print('AudioStreamer: Permission granted? $granted');
         try {
           _isRecording = true;
-          _subscription = audioStream.listen(onData);
+          final stream = _makeAudioStream(handleError);
+          _subscription = stream.listen(onData);
         } catch (err) {
           _print('AudioStreamer: startRecorder() error: $err');
         }
@@ -63,7 +72,7 @@ class AudioStreamer {
       /// ask for it, and then try recording again.
       else {
         await AudioStreamer.requestPermission();
-        start(onData);
+        start(onData, handleError);
       }
     }
     return _isRecording;

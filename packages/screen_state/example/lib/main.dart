@@ -10,10 +10,20 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => new _MyAppState();
 }
 
+class ScreenStateEventEntry {
+  ScreenStateEvent event;
+  DateTime time;
+
+  ScreenStateEventEntry(this.event) {
+    time = DateTime.now();
+  }
+}
+
 class _MyAppState extends State<MyApp> {
   Screen _screen = Screen();
   StreamSubscription<ScreenStateEvent> _subscription;
   bool started = false;
+  List<ScreenStateEventEntry> _log = [];
 
   void initState() {
     super.initState();
@@ -26,6 +36,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void onData(ScreenStateEvent event) {
+    setState(() {
+      _log.add(ScreenStateEventEntry(event));
+    });
     print(event);
   }
 
@@ -50,7 +63,16 @@ class _MyAppState extends State<MyApp> {
         appBar: new AppBar(
           title: const Text('Screen State Example app'),
         ),
-        body: new Center(child: const Text('Turn screen on/off to see events.')),
+        body: new Center(child: new ListView.builder
+              (
+                itemCount: _log.length,
+                reverse: true,
+                itemBuilder: (BuildContext context, int idx) {
+                  final entry = _log[idx];
+                  return ListTile(leading: Text(entry.time.toString().substring(0,19)), trailing: Text(entry.event.toString().split('.').last));
+                }
+            )
+        ),
         floatingActionButton: new FloatingActionButton(
           onPressed: started ? stopListening : startListening,
           tooltip: 'Start/Stop sensing',
