@@ -12,6 +12,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Notifications _notifications;
   StreamSubscription<NotificationEvent> _subscription;
+  List<NotificationEvent> _log = [];
+  bool started = false;
 
   @override
   void initState() {
@@ -25,6 +27,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void onData(NotificationEvent event) {
+    setState(() {
+      _log.add(event);
+    });
     print(event.toString());
   }
 
@@ -32,6 +37,7 @@ class _MyAppState extends State<MyApp> {
     _notifications = new Notifications();
     try {
       _subscription = _notifications.notificationStream.listen(onData);
+      setState(() => started = true);
     } on NotificationException catch (exception) {
       print(exception);
     }
@@ -39,14 +45,32 @@ class _MyAppState extends State<MyApp> {
 
   void stopListening() {
     _subscription.cancel();
+    setState(() => started = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
+    return new MaterialApp(
+      home: new Scaffold(
+        appBar: new AppBar(
+          title: const Text('Screen State Example app'),
+        ),
+        body: new Center(
+            child: new ListView.builder(
+                itemCount: _log.length,
+                reverse: true,
+                itemBuilder: (BuildContext context, int idx) {
+                  final entry = _log[idx];
+                  return ListTile(
+                      leading:
+                      Text(entry.timeStamp.toString().substring(0, 19)),
+                      trailing:
+                      Text(entry.packageName.toString().split('.').last));
+                })),
+        floatingActionButton: new FloatingActionButton(
+          onPressed: started ? stopListening : startListening,
+          tooltip: 'Start/Stop sensing',
+          child: started ? Icon(Icons.stop) : Icon(Icons.play_arrow),
         ),
       ),
     );
