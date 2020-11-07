@@ -32,6 +32,7 @@ class Temperature {
 class Weather {
   String _country, _areaName, _weatherMain, _weatherDescription, _weatherIcon;
   Temperature _temperature, _tempMin, _tempMax, _tempFeelsLike;
+  Map<String, dynamic> _weatherData;
 
   DateTime _date, _sunrise, _sunset;
   double _latitude,
@@ -66,6 +67,7 @@ class Weather {
     _sunrise = _unpackDate(sys, 'sunrise');
     _sunset = _unpackDate(sys, 'sunset');
 
+    _weatherData = weatherData;
     _weatherMain = _unpackString(weather, 'main');
     _weatherDescription = _unpackString(weather, 'description');
     _weatherIcon = _unpackString(weather, 'icon');
@@ -93,6 +95,10 @@ class Weather {
 
     _areaName = _unpackString(weatherData, 'name');
     _date = _unpackDate(weatherData, 'dt');
+  }
+
+  Map<String, dynamic> toJson() {
+    return _weatherData;
   }
 
   String toString() {
