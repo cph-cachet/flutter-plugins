@@ -50,15 +50,15 @@ class Weather {
 
   int _weatherConditionCode;
 
-  Weather(Map<String, dynamic> weatherData) {
-    Map<String, dynamic> main = weatherData['main'];
-    Map<String, dynamic> coord = weatherData['coord'];
-    Map<String, dynamic> sys = weatherData['sys'];
-    Map<String, dynamic> wind = weatherData['wind'];
-    Map<String, dynamic> clouds = weatherData['clouds'];
-    Map<String, dynamic> rain = weatherData['rain'];
-    Map<String, dynamic> snow = weatherData['snow'];
-    Map<String, dynamic> weather = weatherData['weather'][0];
+  Weather(Map<String, dynamic> jsonData) {
+    Map<String, dynamic> main = jsonData['main'];
+    Map<String, dynamic> coord = jsonData['coord'];
+    Map<String, dynamic> sys = jsonData['sys'];
+    Map<String, dynamic> wind = jsonData['wind'];
+    Map<String, dynamic> clouds = jsonData['clouds'];
+    Map<String, dynamic> rain = jsonData['rain'];
+    Map<String, dynamic> snow = jsonData['snow'];
+    Map<String, dynamic> weather = jsonData['weather'][0];
 
     _latitude = _unpackDouble(coord, 'lat');
     _longitude = _unpackDouble(coord, 'lon');
@@ -67,7 +67,7 @@ class Weather {
     _sunrise = _unpackDate(sys, 'sunrise');
     _sunset = _unpackDate(sys, 'sunset');
 
-    _weatherData = weatherData;
+    _weatherData = jsonData;
     _weatherMain = _unpackString(weather, 'main');
     _weatherDescription = _unpackString(weather, 'description');
     _weatherIcon = _unpackString(weather, 'icon');
@@ -93,14 +93,14 @@ class Weather {
     _snowLastHour = _unpackDouble(snow, '1h');
     _snowLast3Hours = _unpackDouble(snow, '3h');
 
-    _areaName = _unpackString(weatherData, 'name');
-    _date = _unpackDate(weatherData, 'dt');
+    _areaName = _unpackString(jsonData, 'name');
+    _date = _unpackDate(jsonData, 'dt');
   }
 
-  Map<String, dynamic> toJson() {
-    return _weatherData;
-  }
+  /// The original JSON data from the API
+  Map<String, dynamic> toJson() => _weatherData;
 
+  /// The weather data formatted as a string with newlines
   String toString() {
     return '''
     Place Name: $_areaName [$_country] ($latitude, $longitude)
@@ -202,8 +202,8 @@ List<Weather> _parseForecast(Map<String, dynamic> jsonForecast) {
   return forecastList.map((w) {
     // Put the general fields inside inside every weather object
     w['name'] = name;
-    w['sys'] = {'country' : country};
-    w['coord'] = {'lat' : lat, 'lon' : lon};
+    w['sys'] = {'country': country};
+    w['coord'] = {'lat': lat, 'lon': lon};
     return Weather(w);
   }).toList();
 }
