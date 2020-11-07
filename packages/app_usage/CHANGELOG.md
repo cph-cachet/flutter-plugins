@@ -1,5 +1,8 @@
+## 1.0.2
+* Fixed an Android issue where the permission activity could not be spawned.
+
 ## 1.0.1
-* Made the project anew since the old project had an error somwhere.
+* Made the project anew since the old project had an error somewhere.
 
 ## 1.0.0
 * Updated to the new Android API

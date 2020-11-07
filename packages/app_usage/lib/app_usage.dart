@@ -53,7 +53,7 @@ class AppUsageInfo {
 
 class AppUsage {
   static const MethodChannel _methodChannel =
-  const MethodChannel("app_usage");
+  const MethodChannel("app_usage.methodChannel");
 
   static Future<List<AppUsageInfo>> getAppUsage(
       DateTime startDate, DateTime endDate) async {
