@@ -5,8 +5,11 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-part 'package:activity_recognition_flutter/channel/activity_channel.dart';
-part 'package:activity_recognition_flutter/data/activity.dart';
+import 'package:foreground_service/foreground_service.dart';
+
+part 'package:activity_recognition_flutter/src/ar_channel.dart';
+part 'package:activity_recognition_flutter/src/ar_domain.dart';
+part 'package:activity_recognition_flutter/src/ar_foreground.dart';
 
 class ActivityRecognition {
   /// Requests continuous [Activity] updates.

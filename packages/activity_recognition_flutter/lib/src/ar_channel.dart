@@ -13,6 +13,7 @@ class _ActivityChannel {
   Stream<Activity> get activityUpdates => _activityStreamController.stream;
 
   _ActivityChannel() {
+    _ARForegroundService.start();
     _activityStreamController.onListen = startActivityUpdates();
   }
 

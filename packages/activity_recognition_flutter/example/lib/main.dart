@@ -22,7 +22,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _init() async {
-    maybeStartFGS();
     if (await Permission.activityRecognition.request().isGranted) {
       activityStream = ActivityRecognition.activityUpdates();
       activityStream.listen(onData);
@@ -34,48 +33,6 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       latestActivity = activity;
     });
-  }
-
-  //use an async method so we can await
-  void maybeStartFGS() async {
-    ///if the app was killed+relaunched, this function will be executed again
-    ///but if the foreground service stayed alive,
-    ///this does not need to be re-done
-    if (!(await ForegroundService.foregroundServiceIsStarted())) {
-      await ForegroundService.setServiceIntervalSeconds(5);
-
-      //necessity of editMode is dubious (see function comments)
-      await ForegroundService.notification.startEditMode();
-
-      await ForegroundService.notification
-          .setTitle("Example Title: ${DateTime.now()}");
-      await ForegroundService.notification
-          .setText("Example Text: ${DateTime.now()}");
-
-      await ForegroundService.notification.finishEditMode();
-
-      await ForegroundService.startForegroundService(foregroundServiceFunction);
-      await ForegroundService.getWakeLock();
-    }
-
-    ///this exists solely in the main app/isolate,
-    ///so needs to be redone after every app kill+relaunch
-    await ForegroundService.setupIsolateCommunication((data) {
-      debugPrint("main received: $data");
-    });
-  }
-
-  void foregroundServiceFunction() {
-    debugPrint("The current time is: ${DateTime.now()}");
-    ForegroundService.notification.setText("The time was: ${DateTime.now()}");
-
-    if (!ForegroundService.isIsolateCommunicationSetup) {
-      ForegroundService.setupIsolateCommunication((data) {
-        debugPrint("bg isolate received: $data");
-      });
-    }
-
-    ForegroundService.sendToPort("message from bg isolate");
   }
 
   @override

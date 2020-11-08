@@ -1,0 +1,26 @@
+name: foreground_service
+description:
+    Flutter plugin for running dart stuff via an Android foreground service.
+    Only barely tested on Android O, and ever so slightly on M.
+    iOS support not planned.
+
+version: 2.0.1+1
+homepage: https://github.com/michael-cheung-thebus/foreground_service
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: org.thebus.foreground_service
+        pluginClass: ForegroundServicePlugin
