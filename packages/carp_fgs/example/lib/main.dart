@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:foreground_service/foreground_service.dart';
+import 'package:flutter_foreground_service/foreground_service.dart';
 
 void main() {
   runApp(MyApp());
-
   maybeStartFGS();
 }
 

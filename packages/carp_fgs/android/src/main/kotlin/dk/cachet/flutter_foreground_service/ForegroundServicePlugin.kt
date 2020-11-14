@@ -1,4 +1,4 @@
-package org.thebus.foreground_service
+package dk.cachet.flutter_foreground_service
 
 import android.app.*
 import android.content.Context
@@ -23,7 +23,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.ref.SoftReference
 
-class ForegroundServicePlugin: FlutterPlugin, MethodCallHandler, IntentService("org.thebus.ForegroundServicePlugin") {
+class ForegroundServicePlugin: FlutterPlugin, MethodCallHandler, IntentService("dk.cachet.ForegroundServicePlugin") {
 
   companion object {
 
@@ -87,13 +87,13 @@ class ForegroundServicePlugin: FlutterPlugin, MethodCallHandler, IntentService("
 
         myApplicationContextRef = SoftReference(applicationContext)
 
-        mainChannel = MethodChannel(fromDartMessenger, "org.thebus.foreground_service/main", JSONMethodCodec.INSTANCE)
+        mainChannel = MethodChannel(fromDartMessenger, "dk.cachet.flutter_foreground_service/main", JSONMethodCodec.INSTANCE)
         mainChannel!!.setMethodCallHandler(fgsPluginInstance)
 
         callbackChannel =
-                MethodChannel(flutterEngine.dartExecutor, "org.thebus.foreground_service/callback", JSONMethodCodec.INSTANCE)
+                MethodChannel(flutterEngine.dartExecutor, "dk.cachet.flutter_foreground_service/callback", JSONMethodCodec.INSTANCE)
 
-        fromBackgroundIsolateChannel = MethodChannel(flutterEngine.dartExecutor, "org.thebus.foreground_service/fromBackgroundIsolate", JSONMethodCodec.INSTANCE)
+        fromBackgroundIsolateChannel = MethodChannel(flutterEngine.dartExecutor, "dk.cachet.flutter_foreground_service/fromBackgroundIsolate", JSONMethodCodec.INSTANCE)
         fromBackgroundIsolateChannel!!.setMethodCallHandler(fgsPluginInstance)
       }
     }
@@ -512,13 +512,13 @@ class ForegroundServicePlugin: FlutterPlugin, MethodCallHandler, IntentService("
     //it feels like trying to work around that situation strays into malware territory though
     //so just leave it like this
     //TODO: is there a better way?
-    private val channelHighImportanceId = "org.thebus.foregroundserviceplugin.notification.priorityhigh"
+    private val channelHighImportanceId = "dk.cachet.foregroundserviceplugin.notification.priorityhigh"
     private var channelHighImportanceName = "High Priority Notifications"
 
-    private val channelDefaultImportanceId = "org.thebus.foregroundserviceplugin.notification.prioritydefault"
+    private val channelDefaultImportanceId = "dk.cachet.foregroundserviceplugin.notification.prioritydefault"
     private var channelDefaultImportanceName = "Default Priority Notifications"
 
-    private val channelLowImportanceId = "org.thebus.foregroundserviceplugin.notification.prioritylow"
+    private val channelLowImportanceId = "dk.cachet.foregroundserviceplugin.notification.prioritylow"
     private var channelLowImportanceName = "Low Priority Notifications"
 
     private fun getChannelIdForImportance(importanceEnum: AndroidNotifiationPriority): String =(
@@ -562,10 +562,6 @@ class ForegroundServicePlugin: FlutterPlugin, MethodCallHandler, IntentService("
     private fun maybeUpdateNotification(){
       if(!editModeEnabled) {
         currentNotificationInternal = builder.build()
-
-//        if(serviceIsForegrounded) {
-//          notificationManager.notify(this.notificationId, currentNotification)
-//        }
       }
     }
 

@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application>
-        <service android:name=".ForegroundServicePlugin" android:exported="false"
+        <service android:name=".FlutterForegroundServicePlugin" android:exported="false"
             android:foregroundServiceType="connectedDevice|dataSync|location|mediaPlayback|mediaProjection|phoneCall"/>
     </application>
 </manifest>

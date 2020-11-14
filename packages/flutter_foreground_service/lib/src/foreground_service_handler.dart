@@ -1,14 +1,8 @@
-import 'dart:async';
-import 'dart:isolate';
-import 'dart:ui';
+part of flutter_foreground_service;
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
-
-class ForegroundService {
+class ForegroundServiceHandler {
   static const MethodChannel _mainChannel = const MethodChannel(
-      "org.thebus.foreground_service/main", JSONMethodCodec());
+      "dk.cachet.flutter_foreground_service/main", JSONMethodCodec());
 
   static MethodChannel _fromBackgroundIsolateChannel;
   static Future<bool> get isBackgroundIsolate async =>
@@ -70,9 +64,9 @@ class ForegroundService {
   static ReceivePort _receivePort;
 
   static const String _MAIN_ISOLATE_PORT_NAME =
-      "org.thebus.foreground_service/MAIN_ISOLATE_PORT";
+      "dk.cachet.flutter_foreground_service/MAIN_ISOLATE_PORT";
   static const String _BACKGROUND_ISOLATE_PORT_NAME =
-      "org.thebus.foreground_service/BACKGROUND_ISOLATE_PORT";
+      "dk.cachet.flutter_foreground_service/BACKGROUND_ISOLATE_PORT";
 
   static void Function(dynamic message) _receiveHandler;
 
@@ -117,9 +111,9 @@ class ForegroundService {
       await _invokeMainChannel(
           "startForegroundService", <dynamic>[setupHandle, shouldHoldWakeLock]);
 
-      if (serviceFunction != null) {
-        setServiceFunction(serviceFunction);
-      }
+//      if (serviceFunction != null) {
+//        setServiceFunction(serviceFunction);
+//      }
     } else {
       throw _WrongIsolateException(await isBackgroundIsolate);
     }
@@ -140,11 +134,16 @@ class ForegroundService {
 
   ///set the function being executed periodically by the service
   static Future<void> setServiceFunction(Function serviceFunction) async {
-    final serviceFunctionHandle =
-        PluginUtilities.getCallbackHandle(serviceFunction).toRawHandle();
+    try {
+      final serviceFunctionHandle =
+      PluginUtilities.getCallbackHandle(serviceFunction).toRawHandle();
 
-    await _invokeMainChannel(
-        "setServiceFunctionHandle", <dynamic>[serviceFunctionHandle]);
+      await _invokeMainChannel(
+          "setServiceFunctionHandle", <dynamic>[serviceFunctionHandle]);
+    }
+    catch (error) {
+      debugPrint(error.toString());
+    }
   }
 
   ///get the execution period for the service function (get/setServiceFunction);
@@ -300,10 +299,10 @@ enum AndroidNotificationPriority { LOW, DEFAULT, HIGH }
 //for the background isolate that will be used to execute dart handles
 void _setupForegroundServiceCallbackChannel() async {
   const MethodChannel _callbackChannel = MethodChannel(
-      "org.thebus.foreground_service/callback", JSONMethodCodec());
+      "dk.cachet.flutter_foreground_service/callback", JSONMethodCodec());
 
-  ForegroundService._fromBackgroundIsolateChannel = MethodChannel(
-      "org.thebus.foreground_service/fromBackgroundIsolate", JSONMethodCodec());
+  ForegroundServiceHandler._fromBackgroundIsolateChannel = MethodChannel(
+      "dk.cachet.flutter_foreground_service/fromBackgroundIsolate", JSONMethodCodec());
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -312,11 +311,11 @@ void _setupForegroundServiceCallbackChannel() async {
     final CallbackHandle handle = CallbackHandle.fromRawHandle(args[0]);
 
     await PluginUtilities.getCallbackFromHandle(handle)();
-    await ForegroundService._invokeMainChannel(
+    await ForegroundServiceHandler._invokeMainChannel(
         "backgroundIsolateCallbackComplete");
   });
 
-  await ForegroundService._invokeMainChannel("backgroundIsolateSetupComplete");
+  await ForegroundServiceHandler._invokeMainChannel("backgroundIsolateSetupComplete");
 }
 
 class _SendToPortException implements Exception {

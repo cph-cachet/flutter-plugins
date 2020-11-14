@@ -1,4 +1,4 @@
-package org.thebus.foreground_service
+package dk.cachet.flutter_foreground_service
 
 import android.os.Build
 
