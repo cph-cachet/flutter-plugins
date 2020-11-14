@@ -563,9 +563,9 @@ class ForegroundServicePlugin: FlutterPlugin, MethodCallHandler, IntentService("
       if(!editModeEnabled) {
         currentNotificationInternal = builder.build()
 
-        if(serviceIsForegrounded) {
-          notificationManager.notify(this.notificationId, currentNotification)
-        }
+//        if(serviceIsForegrounded) {
+//          notificationManager.notify(this.notificationId, currentNotification)
+//        }
       }
     }
 

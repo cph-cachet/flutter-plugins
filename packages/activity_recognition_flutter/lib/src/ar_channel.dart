@@ -6,14 +6,19 @@
 part of activity_recognition;
 
 class _ActivityChannel {
-  StreamController<Activity> _activityStreamController =
-      StreamController<Activity>();
+  StreamController<ActivityEvent> _activityStreamController =
+      StreamController<ActivityEvent>();
   StreamSubscription _activityUpdateStreamSubscription;
 
-  Stream<Activity> get activityUpdates => _activityStreamController.stream;
+  Stream<ActivityEvent> get activityUpdates => _activityStreamController.stream;
 
-  _ActivityChannel() {
-    _ARForegroundService.start();
+  bool _runForegroundService;
+
+  _ActivityChannel(this._runForegroundService) {
+    if (_runForegroundService && Platform.isAndroid) {
+      _ARForegroundService.start();
+    }
+
     _activityStreamController.onListen = startActivityUpdates();
   }
 
@@ -37,7 +42,7 @@ class _ActivityChannel {
   _onActivityUpdateReceived(dynamic activity) {
     debugPrint("onActivityUpdateReceived");
     assert(activity is String);
-    var parsedActivity = Activity.fromJson(json.decode(activity));
+    var parsedActivity = ActivityEvent.fromJson(json.decode(activity));
     _activityStreamController.add(parsedActivity);
   }
 
