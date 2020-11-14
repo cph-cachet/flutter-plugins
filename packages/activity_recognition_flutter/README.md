@@ -52,35 +52,23 @@ void initState() {
 }
 
 void _init() async {
-    /// Ask for permission
     if (await Permission.activityRecognition.request().isGranted) {
-      activityStream = ActivityRecognition.activityUpdates();
+      activityStream = ActivityRecognition.activityStream(runForegroundService: true);
       activityStream.listen(onData);
     }
 }
 
-void onData(Activity activity) {
-    /// Do something with the received activity
-    ActivityType type = activity.type;
-    int confidence = activity.confidence;
-}
+void onData(ActivityEvent activityEvent) => print(activityEvent.toString());
 ```
 
 ## Data types
-### iOS
-* `Stationary`
-* `Walking`
-* `Running`
-* `Automotive`
-* `Cycling`
-* `Unknown`
+* IN_VEHICLE
+* ON_BICYCLE
+* ON_FOOT
+* RUNNING
+* STILL
+* TILTING
+* UNKNOWN
+* WALKING
+* INVALID (used for parsing errors)
 
-### Android
-* `IN_VEHICLE`
-* `ON_BICYCLE`
-* `ON_FOOT`
-* `RUNNING`
-* `STILL`
-* `TILTING`
-* `UNKNOWN`
-* `WALKING`

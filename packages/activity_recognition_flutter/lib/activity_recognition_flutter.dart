@@ -5,14 +5,12 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:foreground_service/foreground_service.dart';
+import 'package:flutter_foreground_service/flutter_foreground_service.dart';
 import 'dart:io' show Platform;
 
 part 'package:activity_recognition_flutter/src/ar_channel.dart';
 
 part 'package:activity_recognition_flutter/src/ar_domain.dart';
-
-part 'package:activity_recognition_flutter/src/ar_foreground.dart';
 
 class ActivityRecognition {
   static _ActivityChannel _channel;

@@ -23,7 +23,7 @@ class _MyAppState extends State<MyApp> {
 
   void _init() async {
     if (await Permission.activityRecognition.request().isGranted) {
-      activityStream = ActivityRecognition.activityStream(runForegroundService: false);
+      activityStream = ActivityRecognition.activityStream(runForegroundService: true);
       activityStream.listen(onData);
     }
   }
