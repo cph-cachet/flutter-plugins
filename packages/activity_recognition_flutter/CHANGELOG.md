@@ -1,3 +1,7 @@
+## 2.0.0
+* Activity recognition now works in the background on Android by means of a foreground service
+* Updated domain model
+
 ## 1.2.4
 * Updated example wrt. permission for Android API 29 and later
 

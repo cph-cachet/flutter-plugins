@@ -32,15 +32,18 @@ Map<String, ActivityType> _activityMap = {
   'walking': ActivityType.WALKING,
 };
 
-class Activity {
-  ActivityType type;
-  int confidence;
+class ActivityEvent {
+  ActivityType _type;
+  int _confidence;
+  DateTime _timeStamp;
 
-  Activity(this.type, this.confidence);
+  ActivityEvent(this._type, this._confidence) {
+    this._timeStamp = DateTime.now();
+  }
 
-  factory Activity.empty() => Activity(ActivityType.UNKNOWN, 100);
+  factory ActivityEvent.empty() => ActivityEvent(ActivityType.UNKNOWN, 100);
 
-  factory Activity.fromJson(Map<String, dynamic> jsonData) {
+  factory ActivityEvent.fromJson(Map<String, dynamic> jsonData) {
     /// Set activity to Invalid by default
     ActivityType activityType = ActivityType.INVALID;
 
@@ -54,7 +57,7 @@ class Activity {
 
     /// Parse the confidence
     int confidence = jsonData['confidence'];
-    return Activity(activityType, confidence);
+    return ActivityEvent(activityType, confidence);
   }
 
   @override
@@ -62,4 +65,10 @@ class Activity {
     String typeString = type.toString().split('.').last;
     return 'Activity: $typeString, (Confidence: $confidence)';
   }
+
+  ActivityType get type => _type;
+
+  DateTime get timeStamp => _timeStamp;
+
+  int get confidence => _confidence;
 }

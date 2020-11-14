@@ -10,25 +10,29 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Stream<Activity> activityStream;
-  Activity latestActivity = Activity.empty();
+  Stream<ActivityEvent> activityStream;
+  ActivityEvent latestActivity = ActivityEvent.empty();
+  List<ActivityEvent> _events = [];
 
   @override
   void initState() {
     super.initState();
     _init();
+
   }
 
   void _init() async {
     if (await Permission.activityRecognition.request().isGranted) {
-      activityStream = ActivityRecognition.activityUpdates();
+      activityStream = ActivityRecognition.activityStream(runForegroundService: true);
       activityStream.listen(onData);
     }
   }
 
-  void onData(Activity activity) {
+  void onData(ActivityEvent activityEvent) {
+    print(activityEvent.toString());
     setState(() {
-      latestActivity = activity;
+      _events.add(activityEvent);
+      latestActivity = activityEvent;
     });
   }
 
@@ -37,12 +41,22 @@ class _MyAppState extends State<MyApp> {
     return new MaterialApp(
       home: new Scaffold(
         appBar: new AppBar(
-          title: const Text('Activity Recognition Example'),
+          title: const Text('Screen State Example app'),
         ),
         body: new Center(
-          child: Text(latestActivity.toString()),
-        ),
+            child: new ListView.builder(
+                itemCount: _events.length,
+                reverse: true,
+                itemBuilder: (BuildContext context, int idx) {
+                  final entry = _events[idx];
+                  return ListTile(
+                      leading:
+                      Text(entry.timeStamp.toString().substring(0, 19)),
+                      trailing:
+                      Text(entry.type.toString().split('.').last));
+                })),
       ),
     );
   }
 }
+

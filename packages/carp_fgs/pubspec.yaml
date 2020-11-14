@@ -1,0 +1,22 @@
+name: flutter_foreground_service
+description: Foreground service for the Android platform
+version: 0.1.0
+homepage: https://github.com/cph-cachet/flutter-plugins
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: dk.cachet.flutter_foreground_service
+        pluginClass: ForegroundServicePlugin
