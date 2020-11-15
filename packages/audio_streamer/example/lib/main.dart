@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
   void onAudio(List<double> buffer) {
     _audio.addAll(buffer);
     double secondsRecorded =
-        _audio.length.toDouble() / _streamer.sampleRate.toDouble();
+        _audio.length.toDouble() / AudioStreamer.sampleRate.toDouble();
     print('Max amp: ${buffer.reduce(max)}');
     print('Min amp: ${buffer.reduce(min)}');
     print('$secondsRecorded seconds recorded.');
