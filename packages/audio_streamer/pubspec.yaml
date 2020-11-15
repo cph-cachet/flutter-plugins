@@ -6,6 +6,7 @@ homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
+  flutter: ">=1.12.0 <2.0.0"
 
 dependencies:
   permission_handler: ^5.0.0
@@ -21,7 +22,7 @@ flutter:
   plugin:
     platforms:
       android:
-        androidPackage: plugins.cachet.audio_streamer
+        package: plugins.cachet.audio_streamer
         pluginClass: AudioStreamerPlugin
       ios:
         pluginClass: SwiftAudioStreamerPlugin
