@@ -17,12 +17,10 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     // Set flutter communication channel for emitting updates
     let eventChannel = FlutterEventChannel.init(name: "audio_streamer.eventChannel", binaryMessenger: registrar.messenger())
     eventChannel.setStreamHandler(instance)
-    print("Called -> register")
     instance.setupNotifications()
   }
 
   private func setupNotifications() {
-    print("Called -> setupNotifications")
     // Get the default notification center instance.
     NotificationCenter.default.addObserver(self,
                   selector: #selector(handleInterruption(notification:)),
@@ -31,19 +29,18 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
   }
 
   @objc func handleInterruption(notification: Notification) {
-    print("Called -> handleInterruption")
       // To be implemented.
     eventSink!(FlutterError(code: "100", message: "Recording was interrupted", details: "Another process interrupted recording."))
   }
 
     // Handle stream emitting (Swift => Flutter)
     private func emitValues(values: [Float]) {
-        // If no eventSink to emit events to, do nothing (wait)
-        if (eventSink == nil) {
-            return
-        }
-        // Emit values count event to Flutter
-        eventSink!(values)
+      // If no eventSink to emit events to, do nothing (wait)
+      if (eventSink == nil) {
+          return
+      }
+      // Emit values count event to Flutter
+      eventSink!(values)
     }
 
     // Event Channel: On Stream Listen
@@ -56,7 +53,6 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 
     // Event Channel: On Stream Cancelled
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
-      print("onCancel")
         NotificationCenter.default.removeObserver(self)
         eventSink = nil
         engine.stop()
