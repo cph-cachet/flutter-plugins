@@ -23,18 +23,18 @@ Keep these three variables accessible:
 ```dart
 bool _isRecording = false;
 StreamSubscription<NoiseReading> _noiseSubscription;
-NoiseMeter _noiseMeter = _noiseMeter = new NoiseMeter();
+NoiseMeter _noiseMeter = new NoiseMeter(onError);
 ```
 
 ### Start listening
 The easiest thing to do is to create a new instance of the NoiseMeter every time a new recording is started.
 ```dart
 void start() async {
-try {
-  _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
-} on NoiseMeterException catch (exception) {
-  print(exception);
-}
+    try {
+      _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
+    } on NoiseMeterException catch (exception) {
+      print(exception);
+    }
 }
 ```
 
@@ -53,6 +53,16 @@ void onData(NoiseReading noiseReading) {
   print(noiseReading.toString());
 }
 ```
+
+### On errors
+Platform errors may occur when recording is interupted. You must decide what happens if such an error occurs.
+
+````dart
+void onError(PlatformException e) {
+    print(e.toString());
+    _isRecording = false;
+}
+````
 
 ### Stop listening
 To stop listening, the `.cancel()` method is called on the subscription object.
