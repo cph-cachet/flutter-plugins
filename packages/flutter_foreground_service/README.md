@@ -1,7 +1,13 @@
 # flutter_foreground_service 
 
 # Setup
+
 ## Step 1
+This plugin expects your application icon to be saved as `ic_launcher.png` which is the default name.
+
+If you use the package `flutter_launcher_icons` to generate a new launcher icon, make sure to name the icon `ic_launcher.png`.
+
+## Step 2
 Add the plugin to your pubspec.yaml file:
 
 ````yaml
@@ -13,7 +19,7 @@ dependencies:
 
 Replace the `LATEST_VERSION_HERE` the latest version number as stated on this page.
 
-## Step 2
+## Step 3
 Import the package into your project
 
 ```dart
