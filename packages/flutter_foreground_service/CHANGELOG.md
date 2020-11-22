@@ -1,3 +1,8 @@
+## 0.1.1
+* Fixed expected launcher icon path 
+    * Previously `drawable` was the expected folder
+    * Now the `mipmap` folder is expected
+
 ## 0.1.0+1
 * Updated documentation
 

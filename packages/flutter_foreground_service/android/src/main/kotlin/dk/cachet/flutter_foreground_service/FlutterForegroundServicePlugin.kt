@@ -574,7 +574,7 @@ class FlutterForegroundServicePlugin: FlutterPlugin, MethodCallHandler, IntentSe
     private fun getHardcodedIconResourceId(): Int =
       myAppContext().resources.getIdentifier(
               hardcodedIconName,
-              "drawable",
+              "mipmap",
               myAppContext().packageName
       )
 

@@ -1,6 +1,6 @@
 name: flutter_foreground_service
 description: Foreground service for the Android platform
-version: 0.1.0+2
+version: 0.1.1
 homepage: https://github.com/cph-cachet/flutter-plugins
 
 environment:
