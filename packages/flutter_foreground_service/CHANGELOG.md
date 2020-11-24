@@ -1,7 +1,10 @@
+## 0.2.0
+* No longer produces an exception when invoked on iOS.
+    
 ## 0.1.1
 * Fixed expected launcher icon path 
-    * Previously `drawable` was the expected folder
-    * Now the `mipmap` folder is expected
+* Previously `drawable` was the expected folder
+* Now the `mipmap` folder is expected
 
 ## 0.1.0+1
 * Updated documentation
