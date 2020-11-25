@@ -1,3 +1,6 @@
+## 2.0.1
+* upgrade to `flutter_foreground_service` v. 0.2.0 ([Issue #238](https://github.com/cph-cachet/flutter-plugins/issues/238))
+
 ## 2.0.0
 * Activity recognition now works in the background on Android by means of a foreground service
 * Updated domain model
