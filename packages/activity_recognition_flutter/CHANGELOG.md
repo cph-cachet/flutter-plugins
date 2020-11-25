@@ -1,3 +1,7 @@
+## 2.0.2
+* upgrade to `flutter_foreground_service` v. 0.2.1 ([Issue #238](https://github.com/cph-cachet/flutter-plugins/issues/238))
+* updated wrong title in example app
+
 ## 2.0.1
 * upgrade to `flutter_foreground_service` v. 0.2.0 ([Issue #238](https://github.com/cph-cachet/flutter-plugins/issues/238))
 
