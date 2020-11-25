@@ -1,3 +1,6 @@
+## 0.2.1
+* Rebuild project from scratch due to iOS issues with old generated code.
+
 ## 0.2.0
 * No longer produces an exception when invoked on iOS.
     
