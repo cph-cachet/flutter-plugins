@@ -24,6 +24,7 @@ public class AppUsagePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
     private val methodChannelName = "app_usage.methodChannel"
+    private lateinit var activity: Activity
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, methodChannelName)
@@ -43,6 +44,9 @@ public class AppUsagePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     fun getUsage(@NonNull call: MethodCall, @NonNull result: Result) {
+        // Firstly, permission must be given by the user must be set correctly by the user
+        handlePermissions()
+
         // Parse parameters, i.e. start- and end-date
         val start: Long? = call.argument("start")
         val end: Long? = call.argument("end")
@@ -59,11 +63,11 @@ public class AppUsagePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         channel.setMethodCallHandler(null)
     }
 
-    fun handlePermissions(activity: Activity) {
+    fun handlePermissions() {
         /// If permissions have not yet been given, show the permission screen
         if (Stats.permissionRequired(context)) {
             val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-            activity.startActivity(intent)
+            this.activity.startActivity(intent)
         }
     }
 
@@ -71,11 +75,11 @@ public class AppUsagePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        handlePermissions(binding.activity)
+        this.activity = binding.activity
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        handlePermissions(binding.activity)
+        this.activity = binding.activity
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
