@@ -1,3 +1,6 @@
+## 1.1.0
+* Changed the behaviour of the plugin to delay asking for permission when app usage is requested, rather than when the app is started. 
+
 ## 1.0.2
 * Fixed an Android issue where the permission activity could not be spawned.
 
