@@ -18,12 +18,12 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _init();
-
   }
 
   void _init() async {
     if (await Permission.activityRecognition.request().isGranted) {
-      activityStream = ActivityRecognition.activityStream(runForegroundService: true);
+      activityStream =
+          ActivityRecognition.activityStream(runForegroundService: true);
       activityStream.listen(onData);
     }
   }
@@ -51,12 +51,10 @@ class _MyAppState extends State<MyApp> {
                   final entry = _events[idx];
                   return ListTile(
                       leading:
-                      Text(entry.timeStamp.toString().substring(0, 19)),
-                      trailing:
-                      Text(entry.type.toString().split('.').last));
+                          Text(entry.timeStamp.toString().substring(0, 19)),
+                      trailing: Text(entry.type.toString().split('.').last));
                 })),
       ),
     );
   }
 }
-
