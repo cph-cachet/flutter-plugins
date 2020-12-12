@@ -9,7 +9,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-enum AppState { DATA_NOT_FETCHED, FETCHING_DATA, DATA_READY, NO_DATA }
+enum AppState { DATA_NOT_FETCHED, FETCHING_DATA, DATA_READY, NO_DATA, AUTH_NOT_GRANTED }
 
 class _MyAppState extends State<MyApp> {
   List<HealthDataPoint> _healthDataList = [];
@@ -21,10 +21,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> fetchData() async {
-    setState(() {
-      _state = AppState.FETCHING_DATA;
-    });
-
     /// Get everything from midnight until now
     DateTime endDate = DateTime.now();
     DateTime startDate = DateTime(2020, 01, 01);
@@ -37,33 +33,44 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.WEIGHT,
       HealthDataType.ACTIVE_ENERGY_BURNED,
       HealthDataType.WATER,
-      HealthDataType.SLEEP_ASLEEP,
-      HealthDataType.SLEEP_AWAKE,
-      HealthDataType.SLEEP_IN_BED,
-      HealthDataType.MINDFULNESS,
+      HealthDataType.HEIGHT,
+      HealthDataType.STEPS,
     ];
+
+    setState(() {
+      _state = AppState.FETCHING_DATA;
+    });
 
     /// You can request types pre-emptively, if you want to
     /// which will make sure access is granted before the data is requested
-//    bool granted = await health.requestAuthorization(types);
+    bool granted = await health.requestAuthorization(types);
+    if (granted) {
+      try {
+        /// Fetch new data
+        List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(startDate, endDate, types);
 
-    /// Fetch new data
-    List<HealthDataPoint> healthData =
-        await health.getHealthDataFromTypes(startDate, endDate, types);
+        /// Save all the new data points
+        _healthDataList.addAll(healthData);
+      } catch (e) {
+        print("Caught exception in getHealthDataFromTypes: $e");
+      }
 
-    /// Save all the new data points
-    _healthDataList.addAll(healthData);
+      /// Filter out duplicates
+      _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
 
-    /// Filter out duplicates
-    _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
+      /// Print the results
+      _healthDataList.forEach((x) => print("Data point: $x"));
 
-    /// Print the results
-    _healthDataList.forEach((x) => print("Data point: $x"));
-
-    /// Update the UI to display the results
-    setState(() {
-      _state = _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
-    });
+      /// Update the UI to display the results
+      setState(() {
+        _state = _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+      });
+    } else {
+      print("Authorization not granted");
+      setState(() {
+        _state = AppState.DATA_NOT_FETCHED;
+      });
+    }
   }
 
   Widget _contentFetchingData() {
@@ -101,12 +108,20 @@ class _MyAppState extends State<MyApp> {
     return Text('Press the download button to fetch data');
   }
 
+  Widget _authorizationNotGranted() {
+    return Text('''Authorization not given.
+        For Android please check your OAUTH2 client ID is correct in Google Developer Console.
+         For iOS check your permissions in Apple Health.''');
+  }
+
   Widget _content() {
     if (_state == AppState.DATA_READY)
       return _contentDataReady();
     else if (_state == AppState.NO_DATA)
       return _contentNoData();
-    else if (_state == AppState.FETCHING_DATA) return _contentFetchingData();
+    else if (_state == AppState.FETCHING_DATA)
+      return _contentFetchingData();
+    else if (_state == AppState.AUTH_NOT_GRANTED) return _authorizationNotGranted();
 
     return _contentNotFetched();
   }
