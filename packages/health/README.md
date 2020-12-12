@@ -1,13 +1,15 @@
 # Health
+
 This library combines both GoogleFit and AppleHealthKit. It support most of the values provided.
 
 Supports **iOS** and **Android X**
 
-NB: For Android, your app *needs* to have Google Fit installed and have access to the internet, otherwise this plugin will not work.
+NB: For Android, your app _needs_ to have Google Fit installed and have access to the internet, otherwise this plugin will not work.
 
 ## Data Types
-| Data   Type                 | Unit                    | iOS Support | Android support | Comments                                                    |
-|-----------------------------|-------------------------|-------------|-----------------|-------------------------------------------------------------|
+
+| Data Type                   | Unit                    | iOS Support | Android support | Comments                                                    |
+| --------------------------- | ----------------------- | ----------- | --------------- | ----------------------------------------------------------- |
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes         | yes             |                                                             |
 | BASAL_ENERGY_BURNED         | CALORIES                | yes         |                 |                                                             |
 | BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes         | yes             |                                                             |
@@ -40,8 +42,11 @@ NB: For Android, your app *needs* to have Google Fit installed and have access t
 | HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes         |                 | Requires Apple Watch                                        |
 
 ## Setup
+
 ### Apple HealthKit (iOS)
-Step 1: Append the Info.plist with the following 2 entries 
+
+Step 1: Append the Info.plist with the following 2 entries
+
 ```xml
 <key>NSHealthShareUsageDescription</key>
 <string>We will sync your data with the Apple Health app to give you better insights</string>
@@ -52,17 +57,19 @@ Step 1: Append the Info.plist with the following 2 entries
 Step 2: Enable "HealthKit" inside the "Capabilities" tab.
 
 ### Google Fit (Android)
+
 Follow the guide at https://developers.google.com/fit/android/get-api-key
 
 Below is an example of following the guide:
 
 Change directory to your key-store directory (MacOS):
-```cd ~/.android/```
+`cd ~/.android/`
 
 Get your keystore SHA1 fingerprint:
-```keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android```
+`keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
 
 Example output:
+
 ```
 Alias name: androiddebugkey
 Creation date: Jan 01, 2013
@@ -85,6 +92,7 @@ Follow the instructions at https://console.developers.google.com/flows/enableapi
 The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`
 
 ### Android X
+
 Replace the content of the `android/gradle.properties` file with the following lines:
 
 ```bash
@@ -94,10 +102,13 @@ android.useAndroidX=true
 ```
 
 ## Usage
+
 Below is a snippet from the `example app` showing the plugin in use.
 
 ### Health data
+
 A `HealthData` object contains the following fields:
+
 ```dart
 num _value;
 HealthDataType _type;
@@ -107,30 +118,12 @@ DateTime _dateTo;
 PlatformType _platform;
 String _uuid, _deviceId;
 ```
+
 A `HealthData healthData` object can be serialized to JSON with the `healthData.toJson()` method.
-
-
-### Fetch health data for a single data type
 
 ### Fetch health data
 
-To fetch data, specify a date-interval and the desired health data types:
-
-```dart
-
-List<HealthDataType> types = [
-  HealthDataType.BODY_MASS_INDEX,
-  HealthDataType.STEPS,
-  HealthDataType.WEIGHT,
-  HealthDataType.ACTIVE_ENERGY_BURNED
-];
-
-DateTime startDate = DateTime.utc(2001, 01, 01);
-DateTime endDate = DateTime.now();
-
-List<HealthDataPoint> healthData =
-            await health.getHealthDataFromType(startDate, endDate, types);
-```
+See the example here on pub.dev, for a showcasing of how it's done.
 
 NB for iOS: The device must be unlocked before Health data can be requested, otherwise an error will be thrown:
 
@@ -139,44 +132,17 @@ flutter: Health Plugin Error:
 flutter: 	PlatformException(FlutterHealth, Results are null, Optional(Error Domain=com.apple.healthkit Code=6 "Protected health data is inaccessible" UserInfo={NSLocalizedDescription=Protected health data is inaccessible}))
 ```
 
-
-### Full example
-```dart
-List<HealthDataPoint> _healthDataList = [];
-DateTime startDate = DateTime.utc(2001, 01, 01);
-DateTime endDate = DateTime.now();
-
-HealthFactory health = HealthFactory();
-
-/// Define the types to get.
-List<HealthDataType> types = [
-  HealthDataType.BODY_MASS_INDEX,
-  HealthDataType.STEPS,
-  HealthDataType.WEIGHT,
-];
-
-/// Fetch new data
-List<HealthDataPoint> healthData =
-    await health.getHealthDataFromTypes(startDate, endDate, types);
-
-/// Save all the new data points
-_healthDataList.addAll(healthData);
-
-/// Filter out duplicates
-_healthDataList = HealthFactory.removeDuplicates(_healthDataList);
-```
-
-
 ### Filtering out duplicates
-If the same data is requested multiple times and saved in the same array (as in the example above) duplicates will occur. 
+
+If the same data is requested multiple times and saved in the same array duplicates will occur.
 
 A single data point can be compared to each other with the == operator, i.e.
 
-````dart
+```dart
 HealthDataPoint p1 = ...;
 HealthDataPoint p2 = ...;
 bool same = p1 == p2;
-````
+```
 
 If you have a list of data points, duplicates can be removed with:
 

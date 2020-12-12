@@ -70,17 +70,7 @@ class HealthFactory {
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
       DateTime startDate, DateTime endDate, List<HealthDataType> types) async {
     List<HealthDataPoint> dataPoints = [];
-    bool granted = await requestAuthorization(types);
-    for (HealthDataType type in types) {
-      bool p = await requestAuthorization([type]);
-      print('$type, $p');
-    }
 
-    if (!granted) {
-      String api =
-          _platformType == PlatformType.ANDROID ? "Google Fit" : "Apple Health";
-      throw _HealthException(types, "Permission was not granted for $api");
-    }
     for (HealthDataType type in types) {
       List<HealthDataPoint> result =
           await _prepareQuery(startDate, endDate, type);

@@ -1,3 +1,9 @@
+## 3.0.0
+* Changed the flow for requesting access and reading data
+    * Access must be requested manually before reading
+    * This simplifies the data flow and makes it easier to reason about when debugging
+* Data read access is no longer checked for each individual type, but rather on the set of types specified.
+
 ## 2.0.9
 * Now handles the case when asking for BMI on Android when no height data has been collected.
 
