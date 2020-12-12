@@ -9,7 +9,13 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-enum AppState { DATA_NOT_FETCHED, FETCHING_DATA, DATA_READY, NO_DATA, AUTH_NOT_GRANTED }
+enum AppState {
+  DATA_NOT_FETCHED,
+  FETCHING_DATA,
+  DATA_READY,
+  NO_DATA,
+  AUTH_NOT_GRANTED
+}
 
 class _MyAppState extends State<MyApp> {
   List<HealthDataPoint> _healthDataList = [];
@@ -37,17 +43,16 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.STEPS,
     ];
 
-    setState(() {
-      _state = AppState.FETCHING_DATA;
-    });
+    setState(() => _state = AppState.FETCHING_DATA);
 
-    /// You can request types pre-emptively, if you want to
-    /// which will make sure access is granted before the data is requested
-    bool granted = await health.requestAuthorization(types);
-    if (granted) {
+    /// You MUST request access to the data types before reading them
+    bool accessWasGranted = await health.requestAuthorization(types);
+
+    if (accessWasGranted) {
       try {
         /// Fetch new data
-        List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(startDate, endDate, types);
+        List<HealthDataPoint> healthData =
+            await health.getHealthDataFromTypes(startDate, endDate, types);
 
         /// Save all the new data points
         _healthDataList.addAll(healthData);
@@ -63,13 +68,12 @@ class _MyAppState extends State<MyApp> {
 
       /// Update the UI to display the results
       setState(() {
-        _state = _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+        _state =
+            _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
       });
     } else {
       print("Authorization not granted");
-      setState(() {
-        _state = AppState.DATA_NOT_FETCHED;
-      });
+      setState(() => _state = AppState.DATA_NOT_FETCHED);
     }
   }
 
@@ -121,7 +125,8 @@ class _MyAppState extends State<MyApp> {
       return _contentNoData();
     else if (_state == AppState.FETCHING_DATA)
       return _contentFetchingData();
-    else if (_state == AppState.AUTH_NOT_GRANTED) return _authorizationNotGranted();
+    else if (_state == AppState.AUTH_NOT_GRANTED)
+      return _authorizationNotGranted();
 
     return _contentNotFetched();
   }

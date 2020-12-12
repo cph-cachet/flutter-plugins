@@ -6,12 +6,14 @@ class HealthFactory {
   String _deviceId;
   DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
 
-  static PlatformType _platformType = Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+  static PlatformType _platformType =
+      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
   /// Check if a given data type is available on the platform
-  bool _isDataTypeAvailable(HealthDataType dataType) => _platformType == PlatformType.ANDROID
-      ? _dataTypeKeysAndroid.contains(dataType)
-      : _dataTypeKeysIOS.contains(dataType);
+  bool _isDataTypeAvailable(HealthDataType dataType) =>
+      _platformType == PlatformType.ANDROID
+          ? _dataTypeKeysAndroid.contains(dataType)
+          : _dataTypeKeysIOS.contains(dataType);
 
   /// Request access to GoogleFit/Apple HealthKit
   Future<bool> requestAuthorization(List<HealthDataType> types) async {
@@ -23,19 +25,23 @@ class HealthFactory {
     }
 
     List<String> keys = types.map((e) => _enumToString(e)).toList();
-    final bool isAuthorized = await _channel.invokeMethod('requestAuthorization', {'types': keys});
+    final bool isAuthorized =
+        await _channel.invokeMethod('requestAuthorization', {'types': keys});
     return isAuthorized;
   }
 
   /// Calculate the BMI using the last observed height and weight values.
-  Future<List<HealthDataPoint>> _computeAndroidBMI(DateTime startDate, DateTime endDate) async {
-    List<HealthDataPoint> heights = await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
+  Future<List<HealthDataPoint>> _computeAndroidBMI(
+      DateTime startDate, DateTime endDate) async {
+    List<HealthDataPoint> heights =
+        await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
 
     if (heights.isEmpty) {
       return [];
     }
 
-    List<HealthDataPoint> weights = await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
+    List<HealthDataPoint> weights =
+        await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
 
     double h = heights.last.value.toDouble();
 
@@ -46,8 +52,14 @@ class HealthFactory {
     for (int i = 0; i < weights.length; i++) {
       double bmiValue = weights[i].value.toDouble() / (h * h);
       print('BMI: $bmiValue');
-      HealthDataPoint x = HealthDataPoint._(bmiValue, HealthDataType.BODY_MASS_INDEX, unit,
-          weights[i].dateFrom, weights[i].dateTo, _platformType, _deviceId);
+      HealthDataPoint x = HealthDataPoint._(
+          bmiValue,
+          HealthDataType.BODY_MASS_INDEX,
+          unit,
+          weights[i].dateFrom,
+          weights[i].dateTo,
+          _platformType,
+          _deviceId);
 
       bmiHealthPoints.add(x);
     }
@@ -60,7 +72,8 @@ class HealthFactory {
     List<HealthDataPoint> dataPoints = [];
 
     for (HealthDataType type in types) {
-      List<HealthDataPoint> result = await _prepareQuery(startDate, endDate, type);
+      List<HealthDataPoint> result =
+          await _prepareQuery(startDate, endDate, type);
       dataPoints.addAll(result);
     }
     return removeDuplicates(dataPoints);
@@ -78,11 +91,13 @@ class HealthFactory {
 
     /// If not implemented on platform, throw an exception
     if (!_isDataTypeAvailable(dataType)) {
-      throw _HealthException(dataType, "Not available on platform $_platformType");
+      throw _HealthException(
+          dataType, "Not available on platform $_platformType");
     }
 
     /// If BodyMassIndex is requested on Android, calculate this manually in Dart
-    if (dataType == HealthDataType.BODY_MASS_INDEX && _platformType == PlatformType.ANDROID) {
+    if (dataType == HealthDataType.BODY_MASS_INDEX &&
+        _platformType == PlatformType.ANDROID) {
       return _computeAndroidBMI(startDate, endDate);
     }
     return await _dataQuery(startDate, endDate, dataType);
@@ -107,7 +122,8 @@ class HealthFactory {
         num value = e["value"];
         DateTime from = DateTime.fromMillisecondsSinceEpoch(e["date_from"]);
         DateTime to = DateTime.fromMillisecondsSinceEpoch(e["date_to"]);
-        return HealthDataPoint._(value, dataType, unit, from, to, _platformType, _deviceId);
+        return HealthDataPoint._(
+            value, dataType, unit, from, to, _platformType, _deviceId);
       }).toList();
     } catch (error) {
       print("Health Plugin Error:\n");

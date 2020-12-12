@@ -167,8 +167,6 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         val dataType = keyToHealthDataType(type)
         val unit = getUnit(type)
 
-        println(type)
-
         /// Start a new thread for doing a GoogleFit data lookup
         thread {
             try {
