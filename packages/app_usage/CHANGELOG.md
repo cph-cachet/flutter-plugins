@@ -1,3 +1,6 @@
+## 1.1.1
+* Updated example and README slightly to reflect the precision of the plugin.
+
 ## 1.1.0
 * Changed the behaviour of the plugin to delay asking for permission when app usage is requested, rather than when the app is started. 
 

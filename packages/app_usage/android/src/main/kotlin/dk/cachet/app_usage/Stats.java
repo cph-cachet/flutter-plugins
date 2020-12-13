@@ -19,14 +19,15 @@ public class Stats {
      * by fetching usage statistics since the beginning of time
      */
     @SuppressWarnings("ResourceType")
-    public static boolean permissionRequired(Context context) {
+    public static boolean checkIfStatsAreAvailable(Context context) {
         UsageStatsManager usm = (UsageStatsManager) context.getSystemService("usagestats");
-        Calendar calendar = Calendar.getInstance();
-        long endTime = calendar.getTimeInMillis();
-        long startTime = 0;
-        List<UsageStats> stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
-        // If list is empty then permission ios required
-        return stats.isEmpty();
+        long now  = Calendar.getInstance().getTimeInMillis();
+
+        // Check if any usage stats are available from the beginning of time until now
+        List<UsageStats> stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, now);
+
+        // Return whether or not stats are available
+        return stats.size() > 0;
     }
 
     /** Produces a map for each installed app package name,
