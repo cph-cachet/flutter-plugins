@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -13,7 +12,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry
 
 /** AppUsagePlugin */
 public class AppUsagePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -64,8 +62,8 @@ public class AppUsagePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     fun handlePermissions() {
-        /// If permissions have not yet been given, show the permission screen
-        if (Stats.permissionRequired(context)) {
+        /// If stats are not available, show the permission screen to give access to them
+        if (!Stats.checkIfStatsAreAvailable(context)) {
             val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
             this.activity.startActivity(intent)
         }
