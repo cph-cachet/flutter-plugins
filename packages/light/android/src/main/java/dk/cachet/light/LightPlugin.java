@@ -48,7 +48,7 @@ public class LightPlugin implements FlutterPlugin, EventChannel.StreamHandler {
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events) {
         /// Set up the event sensor for the light sensor
-        SensorEventListener sensorEventListener = createSensorEventListener(events);
+        sensorEventListener = createSensorEventListener(events);
         sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
