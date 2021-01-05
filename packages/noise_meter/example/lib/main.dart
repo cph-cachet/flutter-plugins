@@ -23,9 +23,10 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _noiseMeter = new NoiseMeter(onError);
   }
- @override
+
+  @override
   void dispose() {
-    _noiseSubscription.cancel();
+    _noiseSubscription?.cancel();
     super.dispose();
   }
 
