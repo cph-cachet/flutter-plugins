@@ -19,8 +19,10 @@ class HealthFactory {
   Future<bool> requestAuthorization(List<HealthDataType> types) async {
     /// If BMI is requested, then also ask for weight and height
     if (types.contains(HealthDataType.BODY_MASS_INDEX)) {
-      types.add(HealthDataType.WEIGHT);
-      types.add(HealthDataType.HEIGHT);
+      if(!types.contains(HealthDataType.WEIGHT))
+        types.add(HealthDataType.WEIGHT);
+      if(!types.contains(HealthDataType.HEIGHT))
+        types.add(HealthDataType.HEIGHT);
       types = types.toSet().toList();
     }
 
