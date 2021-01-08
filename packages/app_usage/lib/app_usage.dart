@@ -23,6 +23,7 @@ class AppUsageInfo {
 
   AppUsageInfo(
       String name, double usageInSeconds, this._startDate, this._endDate) {
+    List<String> tokens =  name.split('.');
     _packageName = name
     _appName = tokens.last;
     _usage = Duration(seconds: usageInSeconds.toInt());
