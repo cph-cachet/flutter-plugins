@@ -23,7 +23,6 @@ class HealthFactory {
         types.add(HealthDataType.WEIGHT);
       if(!types.contains(HealthDataType.HEIGHT))
         types.add(HealthDataType.HEIGHT);
-      types = types.toSet().toList();
     }
 
     List<String> keys = types.map((e) => _enumToString(e)).toList();
