@@ -1,3 +1,6 @@
+## 3.0.1+1
+* Bugfix regarding BMI from https://github.com/cph-cachet/flutter-plugins/pull/258
+
 ## 3.0.0
 * Changed the flow for requesting access and reading data
     * Access must be requested manually before reading
