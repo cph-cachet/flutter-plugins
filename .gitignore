@@ -75,3 +75,5 @@ packages/activity_recognition_flutter/example/ios/Flutter/.last_build_id
 packages/light/example/.flutter-plugins-dependencies
 packages/light/example/ios/Flutter/flutter_export_environment.sh
 *.sh
+packages/esense_flutter/example/.flutter-plugins-dependencies
+packages/esense_flutter/example/ios/Flutter/flutter_export_environment.sh
