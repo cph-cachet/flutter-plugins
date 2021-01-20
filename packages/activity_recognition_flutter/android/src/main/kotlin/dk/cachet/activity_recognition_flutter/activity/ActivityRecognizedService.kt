@@ -19,7 +19,7 @@ class ActivityRecognizedService(name: String = "ActivityRecognizedService") : In
 
     val TAG = "ActivityRecognizedServi"
 
-    override fun onHandleIntent(intent: Intent) {
+    override fun onHandleIntent(intent: Intent?) {
         Log.d(TAG, "received activity update!")
         val result = ActivityRecognitionResult.extractResult(intent)
 
