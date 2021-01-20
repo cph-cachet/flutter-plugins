@@ -111,7 +111,7 @@ class ActivityClient(private val activity: Activity) :
         if (key == Constants.KEY_DETECTED_ACTIVITIES) {
             val result = sharedPreferences
                     .getString(Constants.KEY_DETECTED_ACTIVITIES, "")
-            activityUpdatesCallback?.invoke(result)
+            activityUpdatesCallback?.invoke("$result")
         }
     }
 }
