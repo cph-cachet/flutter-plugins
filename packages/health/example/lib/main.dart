@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> fetchData() async {
     /// Get everything from midnight until now
     DateTime endDate = DateTime.now();
-    DateTime startDate = DateTime(2020, 01, 01);
+    DateTime startDate = DateTime(2021, 01, 20);
 
     HealthFactory health = HealthFactory();
 
@@ -41,6 +41,7 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.WATER,
       HealthDataType.HEIGHT,
       HealthDataType.STEPS,
+      HealthDataType.SLEEP_ASLEEP,
     ];
 
     setState(() => _state = AppState.FETCHING_DATA);

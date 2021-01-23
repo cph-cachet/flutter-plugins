@@ -84,6 +84,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.WEIGHT,
   HealthDataType.MOVE_MINUTES,
   HealthDataType.DISTANCE_DELTA,
+  HealthDataType.SLEEP_ASLEEP,
   HealthDataType.WATER,
 ];
 

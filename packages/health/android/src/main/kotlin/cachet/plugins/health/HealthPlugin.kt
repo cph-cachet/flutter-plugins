@@ -6,19 +6,22 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
+import com.google.android.gms.fitness.data.*
+import com.google.android.gms.fitness.request.SessionReadRequest
+import com.google.android.gms.fitness.result.SessionReadResponse
 import com.google.android.gms.tasks.Tasks
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import android.content.Intent
 import android.os.Handler
 import android.util.Log
-import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import com.google.android.gms.fitness.data.*
+import java.text.DateFormat
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 
@@ -40,7 +43,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
     private var BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
     private var MOVE_MINUTES = "MOVE_MINUTES"
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
-
+    private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
 
     companion object {
         @JvmStatic
@@ -67,6 +70,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
             .addDataType(keyToHealthDataType(BLOOD_GLUCOSE), FitnessOptions.ACCESS_READ)
             .addDataType(keyToHealthDataType(MOVE_MINUTES), FitnessOptions.ACCESS_READ)
             .addDataType(keyToHealthDataType(DISTANCE_DELTA), FitnessOptions.ACCESS_READ)
+            .addDataType(keyToHealthDataType(SLEEP_ASLEEP), FitnessOptions.ACCESS_READ)
             .build()
 
 
@@ -117,6 +121,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
             BLOOD_GLUCOSE -> HealthDataTypes.TYPE_BLOOD_GLUCOSE
             MOVE_MINUTES -> DataType.TYPE_MOVE_MINUTES
             DISTANCE_DELTA -> DataType.TYPE_DISTANCE_DELTA
+            SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
             else -> DataType.TYPE_STEP_COUNT_DELTA
         }
     }
@@ -136,6 +141,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
             BLOOD_GLUCOSE -> HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
             MOVE_MINUTES -> Field.FIELD_DURATION
             DISTANCE_DELTA -> Field.FIELD_DISTANCE
+            SLEEP_ASLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             else -> Field.FIELD_PERCENTAGE
         }
     }
@@ -167,34 +173,94 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         val dataType = keyToHealthDataType(type)
         val unit = getUnit(type)
 
-        /// Start a new thread for doing a GoogleFit data lookup
-        thread {
-            try {
-                val fitnessOptions = FitnessOptions.builder().addDataType(dataType).build()
-                val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
+        if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
+            /// Start a new thread for doing a GoogleFit data lookup - using a Sessions Client
+            thread {
+                try {
 
-                val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
-                        .readData(DataReadRequest.Builder()
-                                .read(dataType)
-                                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                                .build())
+                    val fitnessOptions = FitnessOptions.builder().addDataType(dataType).build()
+                    val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
 
-                /// Fetch all data points for the specified DataType
-                val dataPoints = Tasks.await<DataReadResponse>(response).getDataSet(dataType)
+                    val request = SessionReadRequest.Builder()
+                            .read(DataType.TYPE_SLEEP_SEGMENT)
+                            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                            // By default, only activity sessions are included, so it is necessary to explicitly
+                            // request sleep sessions. This will cause activity sessions to be *excluded*.
+                            .includeSleepSessions()
+                            .readSessionsFromAllApps()
+                            .build()
 
-                /// For each data point, extract the contents and send them to Flutter, along with date and unit.
-                val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
-                    return@mapIndexed hashMapOf(
-                            "value" to getHealthDataValue(dataPoint, unit),
-                            "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                            "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                            "unit" to unit.toString()
-                    )
+                    val response =  Fitness.getSessionsClient(activity.applicationContext, googleSignInAccount)
+                            .readSession(request)
 
+                    // Get a list of the sessions that match the criteria to check the result.
+                    val sessions: List<Session> = Tasks.await<SessionReadResponse>(response).getSessions()
+
+                    val healthData : MutableList<HashMap<String,Any>> = mutableListOf()
+
+                    for (session in sessions) {
+                        response.result?.getDataSet(session)?.let {
+                            for (dataSet in it) {
+                                for (dataPoint in dataSet.dataPoints) {
+                                    val sleepStageOrdinal = dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt()
+                                    //val sleepStage = SLEEP_STAGES[sleepStageOrdinal]
+
+                                    // Currently filtering only on the SLEEP stage
+                                    if (sleepStageOrdinal == SleepStages.SLEEP) {
+                                        val startDateTime = dataPoint.getStartTime(TimeUnit.MILLISECONDS)
+                                        val endDateTime = dataPoint.getEndTime(TimeUnit.MILLISECONDS)
+                                        val durationMillis = endDateTime - startDateTime
+
+                                        healthData.add(hashMapOf(
+                                                "value" to durationMillis,
+                                                "date_from" to startDateTime,
+                                                "date_to" to endDateTime,
+                                                "unit" to unit.toString()
+                                        ))
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    activity.runOnUiThread { result.success(healthData) }
+                } catch (e3: Exception) {
+                    activity.runOnUiThread { result.success(null) }
                 }
-                activity.runOnUiThread { result.success(healthData) }
-            } catch (e3: Exception) {
-                activity.runOnUiThread { result.success(null) }
+            }
+
+
+        }
+        else {
+            /// Start a new thread for doing a GoogleFit data lookup - using a Fitness History Client
+            thread {
+                try {
+                    val fitnessOptions = FitnessOptions.builder().addDataType(dataType).build()
+                    val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
+                    val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
+                            .readData(DataReadRequest.Builder()
+                                    .read(dataType)
+                                    .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                                    .build())
+
+                    /// Fetch all data points for the specified DataType
+                    val dataPoints = Tasks.await<DataReadResponse>(response).getDataSet(dataType)
+
+                    /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+                    val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
+                        return@mapIndexed hashMapOf(
+                                "value" to getHealthDataValue(dataPoint, unit),
+                                "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                "unit" to unit.toString()
+                        )
+
+                    }
+                    activity.runOnUiThread { result.success(healthData) }
+                } catch (e3: Exception) {
+                    activity.runOnUiThread { result.success(null) }
+                }
             }
         }
     }
