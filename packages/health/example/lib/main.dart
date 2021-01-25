@@ -28,25 +28,26 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> fetchData() async {
     /// Get everything from midnight until now
-    DateTime endDate = DateTime.now();
-    DateTime startDate = DateTime(2020, 01, 01);
+    DateTime startDate = DateTime(2020, 11,   07, 0,  0,  0);
+    DateTime endDate = DateTime(2020,   11,   07, 23, 59, 59);
 
     HealthFactory health = HealthFactory();
 
     /// Define the types to get.
     List<HealthDataType> types = [
-      HealthDataType.BODY_MASS_INDEX,
-      HealthDataType.WEIGHT,
-      HealthDataType.ACTIVE_ENERGY_BURNED,
-      HealthDataType.WATER,
-      HealthDataType.HEIGHT,
       HealthDataType.STEPS,
+      HealthDataType.WEIGHT,
+      HealthDataType.HEIGHT,
+      HealthDataType.BLOOD_GLUCOSE,
+      HealthDataType.DISTANCE_WALKING_RUNNING,
     ];
 
     setState(() => _state = AppState.FETCHING_DATA);
 
     /// You MUST request access to the data types before reading them
     bool accessWasGranted = await health.requestAuthorization(types);
+
+    int steps = 0;
 
     if (accessWasGranted) {
       try {
@@ -64,7 +65,12 @@ class _MyAppState extends State<MyApp> {
       _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
 
       /// Print the results
-      _healthDataList.forEach((x) => print("Data point: $x"));
+      _healthDataList.forEach((x) {
+        print("Data point: $x");
+        steps += (x.value as int);
+      });
+
+      print("Steps: $steps");
 
       /// Update the UI to display the results
       setState(() {

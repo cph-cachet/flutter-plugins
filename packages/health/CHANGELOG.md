@@ -1,3 +1,6 @@
+## 3.0.2
+* Upgrade to `device_info` version 1.0.0
+
 ## 3.0.1+1
 * Bugfix regarding BMI from https://github.com/cph-cachet/flutter-plugins/pull/258
 
