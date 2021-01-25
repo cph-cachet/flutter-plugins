@@ -1,59 +1,57 @@
-import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'dart:async';
 
-void main() => runApp(new MyApp());
+import 'package:flutter/services.dart';
+import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  Stream<ActivityEvent> activityStream;
-  ActivityEvent latestActivity = ActivityEvent.empty();
-  List<ActivityEvent> _events = [];
+  String _platformVersion = 'Unknown';
 
   @override
   void initState() {
     super.initState();
-    _init();
+    initPlatformState();
   }
 
-  void _init() async {
-    if (await Permission.activityRecognition.request().isGranted) {
-      activityStream =
-          ActivityRecognition.activityStream(runForegroundService: true);
-      activityStream.listen(onData);
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initPlatformState() async {
+    String platformVersion;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      platformVersion = await ActivityRecognitionFlutter.platformVersion;
+    } on PlatformException {
+      platformVersion = 'Failed to get platform version.';
     }
-  }
 
-  void onData(ActivityEvent activityEvent) {
-    print(activityEvent.toString());
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
     setState(() {
-      _events.add(activityEvent);
-      latestActivity = activityEvent;
+      _platformVersion = platformVersion;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: const Text('Activity Recognition Demo'),
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Plugin example app'),
         ),
-        body: new Center(
-            child: new ListView.builder(
-                itemCount: _events.length,
-                reverse: true,
-                itemBuilder: (BuildContext context, int idx) {
-                  final entry = _events[idx];
-                  return ListTile(
-                      leading:
-                          Text(entry.timeStamp.toString().substring(0, 19)),
-                      trailing: Text(entry.type.toString().split('.').last));
-                })),
+        body: Center(
+          child: Text('Running on: $_platformVersion\n'),
+        ),
       ),
     );
   }

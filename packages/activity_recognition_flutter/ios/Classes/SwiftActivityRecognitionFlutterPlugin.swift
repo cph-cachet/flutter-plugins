@@ -1,21 +1,14 @@
 import Flutter
 import UIKit
 
-@available(iOS 9.0, *)
 public class SwiftActivityRecognitionFlutterPlugin: NSObject, FlutterPlugin {
-    internal let registrar: FlutterPluginRegistrar
-    private let activityClient = ActivityClient()
-    private let activityChannel: ActivityChannel
-    
-    init(registrar: FlutterPluginRegistrar) {
-        self.registrar = registrar
-        self.activityChannel = ActivityChannel(activityClient: activityClient)
-        super.init()
-        
-        activityChannel.register(on: self)
-    }
-    
-    public static func register(with registrar: FlutterPluginRegistrar) {
-        _ = SwiftActivityRecognitionFlutterPlugin(registrar: registrar)
-    }
+  public static func register(with registrar: FlutterPluginRegistrar) {
+    let channel = FlutterMethodChannel(name: "activity_recognition_flutter", binaryMessenger: registrar.messenger())
+    let instance = SwiftActivityRecognitionFlutterPlugin()
+    registrar.addMethodCallDelegate(instance, channel: channel)
+  }
+
+  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    result("iOS " + UIDevice.current.systemVersion)
+  }
 }
