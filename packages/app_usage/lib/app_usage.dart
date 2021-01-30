@@ -23,7 +23,7 @@ class AppUsageInfo {
 
   AppUsageInfo(
       String name, double usageInSeconds, this._startDate, this._endDate) {
-    List<String> tokens =  name.split('.');
+    List<String> tokens = name.split('.');
     _packageName = name;
     _appName = tokens.last;
     _usage = Duration(seconds: usageInSeconds.toInt());
@@ -53,7 +53,7 @@ class AppUsageInfo {
 
 class AppUsage {
   static const MethodChannel _methodChannel =
-  const MethodChannel("app_usage.methodChannel");
+      const MethodChannel("app_usage.methodChannel");
 
   static Future<List<AppUsageInfo>> getAppUsage(
       DateTime startDate, DateTime endDate) async {
