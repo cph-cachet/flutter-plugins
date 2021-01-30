@@ -1,3 +1,6 @@
+## 1.2.0
+* Fixed the parsing of package names and app names.
+
 ## 1.1.1
 * Updated example and README slightly to reflect the precision of the plugin.
 
