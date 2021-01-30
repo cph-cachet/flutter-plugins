@@ -43,7 +43,6 @@ class HealthDataPoint {
   String toString() => '${this.runtimeType} - '
       'value: $value, '
       'unit: $unit, '
-      'date_from: $dateFrom, '
       'dateFrom: $dateFrom, '
       'dateTo: $dateTo, '
       'dataType: $type,'

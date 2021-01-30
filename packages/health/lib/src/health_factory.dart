@@ -55,7 +55,6 @@ class HealthFactory {
     List<HealthDataPoint> bmiHealthPoints = [];
     for (int i = 0; i < weights.length; i++) {
       double bmiValue = weights[i].value.toDouble() / (h * h);
-      print('BMI: $bmiValue');
       HealthDataPoint x = HealthDataPoint._(
           bmiValue,
           HealthDataType.BODY_MASS_INDEX,
