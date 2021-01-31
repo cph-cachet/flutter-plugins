@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.gms.location.ActivityRecognition;
@@ -28,7 +29,7 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     private Activity androidActivity;
     private Context androidContext;
     public static final String DETECTED_ACTIVITY = "detected_activity";
-    public static final String ACTIVITY_RECOGNITION_KEY = "activity_recognition";
+    public static final String ACTIVITY_RECOGNITION = "activity_recognition";
 
     private final String TAG = "activity_recognition";
 
@@ -68,12 +69,14 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-        channel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "activity_recognition");
+        channel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), ACTIVITY_RECOGNITION);
+        channel.setStreamHandler(this);
     }
 
 
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events) {
+        eventSink = events;
         startActivityTracking();
     }
 
@@ -94,6 +97,10 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
         androidActivity = binding.getActivity();
         androidContext = binding.getActivity().getApplicationContext();
+
+        SharedPreferences prefs = androidContext.getSharedPreferences(ACTIVITY_RECOGNITION, Context.MODE_PRIVATE);
+        prefs.registerOnSharedPreferenceChangeListener(this);
+        Log.d(TAG, "onAttachedToActivity");
     }
 
     @Override
@@ -120,9 +127,11 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        String result = sharedPreferences
+                .getString(DETECTED_ACTIVITY, "error");
+        Log.d("onSharedPreferenceChang", result);
         if (key.equals(DETECTED_ACTIVITY)) {
-            String result = sharedPreferences
-                    .getString(DETECTED_ACTIVITY, "error");
+            Log.d(TAG, "Detected activity: " + result);
             eventSink.success(result);
         }
     }

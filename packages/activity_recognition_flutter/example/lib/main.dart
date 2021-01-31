@@ -1,57 +1,60 @@
-import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(new MyApp());
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  _MyAppState createState() => new _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+  Stream<ActivityEvent> activityStream;
+  ActivityEvent latestActivity = ActivityEvent.empty();
+  List<ActivityEvent> _events = [];
+  ActivityRecognition activityRecognition = ActivityRecognition.instance;
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    _init();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      platformVersion = await ActivityRecognitionFlutter.platformVersion;
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+  void _init() async {
+    if (await Permission.activityRecognition.request().isGranted) {
+      activityStream =
+          activityRecognition.startStream(runForegroundService: true);
+      activityStream.listen(onData);
     }
+  }
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
+  void onData(ActivityEvent activityEvent) {
+    print(activityEvent.toString());
     setState(() {
-      _platformVersion = platformVersion;
+      _events.add(activityEvent);
+      latestActivity = activityEvent;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
+    return new MaterialApp(
+      home: new Scaffold(
+        appBar: new AppBar(
+          title: const Text('Activity Recognition Demo'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
-        ),
+        body: new Center(
+            child: new ListView.builder(
+                itemCount: _events.length,
+                reverse: true,
+                itemBuilder: (BuildContext context, int idx) {
+                  final entry = _events[idx];
+                  return ListTile(
+                      leading:
+                          Text(entry.timeStamp.toString().substring(0, 19)),
+                      trailing: Text(entry.type.toString().split('.').last));
+                })),
       ),
     );
   }

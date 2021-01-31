@@ -9,10 +9,8 @@ import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
 import io.flutter.plugin.common.EventChannel;
-import io.flutter.plugin.common.MethodChannel.Result;
 
 import java.util.List;
-import java.util.function.Function;
 
 import androidx.annotation.Nullable;
 
@@ -45,10 +43,14 @@ public class ActivityRecognizedService extends IntentService {
         String type = getActivityString(mostLikely.getType());
         int confidence = mostLikely.getConfidence();
 
-        String data = "{type: " + type + ", confidence: " + confidence + "}";
+        String data = type + "," + confidence;
 
+        Log.d("onHandleIntent", data);
+
+        /// Same preferences as in ActivityRecognitionFlutterPlugin.java
         SharedPreferences preferences =
-                getApplicationContext().getSharedPreferences(ActivityRecognitionFlutterPlugin.ACTIVITY_RECOGNITION_KEY, MODE_PRIVATE);
+                getApplicationContext().getSharedPreferences(
+                        ActivityRecognitionFlutterPlugin.ACTIVITY_RECOGNITION, MODE_PRIVATE);
 
         preferences.edit().clear()
                 .putString(
