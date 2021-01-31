@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -13,8 +14,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.HashMap;
+
 import androidx.annotation.NonNull;
 
+import androidx.annotation.RequiresApi;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -74,10 +78,36 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events) {
+        HashMap<String, Object> args = (HashMap<String, Object>) arguments;
+        Log.d(TAG, "args: " + args);
+        boolean fg = (boolean) args.get("foreground");
+        startForegroundService();
+        Log.d(TAG, "foreground: " + fg);
+
+
         eventSink = events;
         startActivityTracking();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    void startForegroundService() {
+        Intent intent = new Intent(androidActivity, ForegroundService.class);
+
+        // Tell the service we want to start it
+        intent.setAction("start");
+
+        // Pass the notification title/text/icon to the service
+        intent.putExtra("title", "MonsensoMonitor")
+                .putExtra("text", "Monsenso Foreground Service")
+                .putExtra("icon", R.drawable.common_full_open_on_phone)
+                .putExtra("importance", 3)
+                .putExtra("id", 10);
+
+        // Start the service
+        androidContext.startForegroundService(intent);
     }
 
     @Override
