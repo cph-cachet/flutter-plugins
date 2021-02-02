@@ -2,6 +2,10 @@ package cachet.plugins.health
 
 import android.app.Activity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.request.DataReadRequest
@@ -21,6 +25,7 @@ import kotlin.concurrent.thread
 import com.google.android.gms.fitness.data.*
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
+const val GOOGLE_SIGN_IN_REQUEST_CODE = 2222
 
 class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodCallHandler, ActivityResultListener, Result {
 
@@ -53,6 +58,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
     }
 
 
+    /*
     /// DataTypes to register
     private val fitnessOptions = FitnessOptions.builder()
             .addDataType(keyToHealthDataType(BODY_FAT_PERCENTAGE), FitnessOptions.ACCESS_READ)
@@ -68,7 +74,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
             .addDataType(keyToHealthDataType(MOVE_MINUTES), FitnessOptions.ACCESS_READ)
             .addDataType(keyToHealthDataType(DISTANCE_DELTA), FitnessOptions.ACCESS_READ)
             .build()
-
+    */
 
     override fun success(p0: Any?) {
         handler?.post(
@@ -88,19 +94,34 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                Log.d("FLUTTER_HEALTH", "Access Granted!")
-                mResult?.success(true)
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                Log.d("FLUTTER_HEALTH", "Access Denied!")
-                mResult?.success(false);
+        try {
+            if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
+                if (resultCode == Activity.RESULT_OK) {
+                    Log.d("FLUTTER_HEALTH", "Access Granted!")
+                    mResult?.success(mGoogleSignInAccount?.email)
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                    Log.d("FLUTTER_HEALTH", "Access Denied!")
+                    mResult?.success(null)
+                }
+            } else if (requestCode == GOOGLE_SIGN_IN_REQUEST_CODE) {
+                try {
+                    _requestAuthorization(mCall!!, mResult!!, GoogleSignIn.getSignedInAccountFromIntent(data).result!!);
+                } catch (e: Exception) {
+                    Log.e("FLUTTER_HEALTH::ERROR", e.toString())
+                    mResult?.success(null)
+                }
             }
+        } finally {
+            mCall = null
+            mResult = null
+            mGoogleSignInAccount = null
         }
         return false
     }
 
+    private var mCall: MethodCall? = null
     private var mResult: Result? = null
+    private var mGoogleSignInAccount: GoogleSignInAccount? = null
 
     private fun keyToHealthDataType(type: String): DataType {
         return when (type) {
@@ -157,23 +178,78 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         }
     }
 
+    private fun _createGoogleSignInOption(
+        signInOptions: GoogleSignInOptionsExtension? = null,
+        accountName: String? = null
+    ) = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).apply {
+        requestEmail()
+        signInOptions?.let { addExtension(it) }
+        accountName?.takeIf { it.isNotEmpty() }?.let { setAccountName(it) }
+    }.build()
+
+    private fun _getGoogleSignInClient(
+        signInOptions: GoogleSignInOptionsExtension? = null,
+        accountName: String? = null,
+        handler: (googleSignInClient: GoogleSignInClient) -> Unit
+    ) {
+        var googleSignInClient = GoogleSignIn.getClient(
+                activity, _createGoogleSignInOption(signInOptions, accountName)
+        )
+        if (accountName.isNullOrEmpty()) {
+            googleSignInClient.signOut().addOnCompleteListener {
+                activity.runOnUiThread { handler(googleSignInClient) }
+            }
+        } else activity.runOnUiThread { handler(googleSignInClient) }
+    }
+
+    private fun _getGoogleSignInAccount(
+        accountName: String? = null,
+        signInOptions: GoogleSignInOptionsExtension? = null,
+        handler: (googleSignInAccount: GoogleSignInAccount?) -> Unit
+    ) {
+        _getGoogleSignInClient(signInOptions, accountName) {
+            it.silentSignIn().addOnCompleteListener {
+                handler(try {
+                    it.result?.takeUnless { it.email.isNullOrEmpty() }
+                } catch (e: Exception) {
+                    Log.e("FLUTTER_HEALTH::ERROR", e.toString())
+                    null
+                })
+            }
+        }
+    }
+
     /// Called when the "getHealthDataByType" is invoked from Flutter
     private fun getData(call: MethodCall, result: Result) {
         val type = call.argument<String>("dataTypeKey")!!
-        val startTime = call.argument<Long>("startDate")!!
-        val endTime = call.argument<Long>("endDate")!!
 
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
         val unit = getUnit(type)
 
+        val optionsToGet = FitnessOptions.builder().addDataType(dataType, FitnessOptions.ACCESS_READ).build()
+
+        call.argument<String?>("accountName")?.let {
+            _getGoogleSignInAccount(it, optionsToGet) {
+                if (it != null) {
+                    _getData(call, result, dataType, unit, it)
+                } else {
+                    result.success(null)
+                }
+            }
+            return
+        }
+        _getData(call, result, dataType, unit, GoogleSignIn.getAccountForExtension(activity, optionsToGet));
+    }
+
+    private fun _getData(call: MethodCall, result: Result, dataType: DataType, unit: Field, googleSignInAccount: GoogleSignInAccount) {
+        val startTime = call.argument<Long>("startDate")!!
+        val endTime = call.argument<Long>("endDate")!!
+
         /// Start a new thread for doing a GoogleFit data lookup
         thread {
             try {
-                val fitnessOptions = FitnessOptions.builder().addDataType(dataType).build()
-                val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
-
-                val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
+                val response = Fitness.getHistoryClient(activity, googleSignInAccount)
                         .readData(DataReadRequest.Builder()
                                 .read(dataType)
                                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
@@ -210,24 +286,62 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         return typesBuilder.build()
     }
 
-    /// Called when the "requestAuthorization" is invoked from Flutter 
+    /// Called when the "requestAuthorization" is invoked from Flutter
     private fun requestAuthorization(call: MethodCall, result: Result) {
         val optionsToRegister = callToHealthTypes(call)
-        mResult = result
 
-        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)
+        val accountName = call.argument<String?>("accountName")
+
+        val googleSignInAccount = if (accountName != null) {
+            if (accountName == "") null
+            else {
+                _getGoogleSignInAccount(accountName) {
+                    if (it != null) {
+                        _requestAuthorization(call, result, it)
+                    } else {
+                        _signIn(call, result, optionsToRegister)
+                    }
+                }
+                return
+            }
+        } else GoogleSignIn.getLastSignedInAccount(activity)
+
+        if ((googleSignInAccount == null) || googleSignInAccount.email.isNullOrEmpty()) {
+            _signIn(call, result, optionsToRegister)
+        } else {
+            _requestAuthorization(call, result, googleSignInAccount)
+        }
+    }
+
+    private fun _signIn(call: MethodCall, result: Result, optionsToRegister: GoogleSignInOptionsExtension) {
+        mCall = call
+        mResult = result
+        _getGoogleSignInClient(optionsToRegister) {
+            activity.startActivityForResult(
+                    it.signInIntent, GOOGLE_SIGN_IN_REQUEST_CODE
+            )
+        }
+    }
+
+    private fun _requestAuthorization(call: MethodCall, result: Result, googleSignInAccount: GoogleSignInAccount) {
+        val optionsToRegister = callToHealthTypes(call)
+
+        val isGranted = GoogleSignIn.hasPermissions(googleSignInAccount, optionsToRegister)
 
         /// Not granted? Ask for permission
         if (!isGranted) {
+            mCall = call
+            mResult = result
+            mGoogleSignInAccount = googleSignInAccount
             GoogleSignIn.requestPermissions(
                     activity,
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(activity),
+                    googleSignInAccount,
                     optionsToRegister)
         }
         /// Permission already granted
         else {
-            mResult?.success(true)
+            result?.success(googleSignInAccount.email)
         }
     }
 

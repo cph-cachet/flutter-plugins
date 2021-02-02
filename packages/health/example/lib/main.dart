@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:health/health.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(MyApp());
 
@@ -17,6 +18,8 @@ enum AppState {
   AUTH_NOT_GRANTED
 }
 
+const _accountNamePreference = 'accountName';
+
 class _MyAppState extends State<MyApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
@@ -26,10 +29,10 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  Future<void> fetchData() async {
-    /// Get everything from midnight until now
-    DateTime startDate = DateTime(2020, 11,   07, 0,  0,  0);
-    DateTime endDate = DateTime(2020,   11,   07, 23, 59, 59);
+  Future<void> fetchData([bool mayUseLastAccount = true]) async {
+    /// Get everything last 7 days
+    DateTime endDate = DateTime.now();
+    DateTime startDate = endDate.add(Duration(days: -7));
 
     HealthFactory health = HealthFactory();
 
@@ -39,23 +42,34 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.WEIGHT,
       HealthDataType.HEIGHT,
       HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.DISTANCE_WALKING_RUNNING,
+      // DISTANCE_WALKING_RUNNING is not available on Android
+      // HealthDataType.DISTANCE_WALKING_RUNNING,
     ];
 
     setState(() => _state = AppState.FETCHING_DATA);
 
+    var prefs = await SharedPreferences.getInstance();
+    var accountName;
+    if (mayUseLastAccount) {
+      accountName = prefs.getString(_accountNamePreference);
+    }
+
     /// You MUST request access to the data types before reading them
-    bool accessWasGranted = await health.requestAuthorization(types);
+    accountName =
+      await health.requestAuthorizationWithAccount(types, accountName);
 
     int steps = 0;
 
-    if (accessWasGranted) {
+    if (accountName != null) {
+      prefs.setString(_accountNamePreference, accountName);
+
       try {
         /// Fetch new data
         List<HealthDataPoint> healthData =
-            await health.getHealthDataFromTypes(startDate, endDate, types);
+          await health.getHealthDataFromTypes(startDate, endDate, types, accountName);
 
         /// Save all the new data points
+        _healthDataList.clear();
         _healthDataList.addAll(healthData);
       } catch (e) {
         print("Caught exception in getHealthDataFromTypes: $e");
@@ -67,7 +81,7 @@ class _MyAppState extends State<MyApp> {
       /// Print the results
       _healthDataList.forEach((x) {
         print("Data point: $x");
-        steps += (x.value as int);
+        steps += (x.value.toInt());
       });
 
       print("Steps: $steps");
@@ -144,10 +158,15 @@ class _MyAppState extends State<MyApp> {
           appBar: AppBar(
             title: const Text('Plugin example app'),
             actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.file_download),
-                onPressed: () {
-                  fetchData();
+              GestureDetector(
+                child: IconButton(
+                  icon: Icon(Icons.file_download),
+                  onPressed: () {
+                    fetchData();
+                  },
+                ),
+                onLongPress: () {
+                  fetchData(false);
                 },
               )
             ],

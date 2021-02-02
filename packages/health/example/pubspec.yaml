@@ -20,6 +20,8 @@ dev_dependencies:
   health:
     path: ../
 
+  shared_preferences: ^0.5.12+4
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

@@ -15,8 +15,26 @@ class HealthFactory {
           ? _dataTypeKeysAndroid.contains(dataType)
           : _dataTypeKeysIOS.contains(dataType);
 
-  /// Request access to GoogleFit/Apple HealthKit
-  Future<bool> requestAuthorization(List<HealthDataType> types) async {
+  /// Request access to GoogleFit/Apple HealthKit.
+  Future<bool> requestAuthorization(List<HealthDataType> types) async =>
+    (await _requestAuthorization(types)) != null;
+
+  /// Request access to GoogleFit/Apple HealthKit.
+  ///
+  /// (Android only) If [accountName] is not empty, use it to authorize,
+  /// else show account selection dialog. And Returns authorized account name.
+  ///
+  /// On iOS, [accountName] is simply ignored
+  /// and returns `""`(succeed) or `null`(failed).
+  Future<String> requestAuthorizationWithAccount(
+    List<HealthDataType> types, [
+      String accountName,
+  ]) => _requestAuthorization(types, accountName ?? "");
+
+  Future<String> _requestAuthorization(
+    List<HealthDataType> types, [
+      String accountName,
+  ]) async {
     /// If BMI is requested, then also ask for weight and height
     if (types.contains(HealthDataType.BODY_MASS_INDEX)) {
       if (!types.contains(HealthDataType.WEIGHT)) {
@@ -29,23 +47,23 @@ class HealthFactory {
     }
 
     List<String> keys = types.map((e) => _enumToString(e)).toList();
-    final bool isAuthorized =
-        await _channel.invokeMethod('requestAuthorization', {'types': keys});
-    return isAuthorized;
+    return _channel.invokeMethod(
+      'requestAuthorization', {'types': keys, 'accountName': accountName},
+    );
   }
 
   /// Calculate the BMI using the last observed height and weight values.
   Future<List<HealthDataPoint>> _computeAndroidBMI(
-      DateTime startDate, DateTime endDate) async {
+      DateTime startDate, DateTime endDate, String accountName) async {
     List<HealthDataPoint> heights =
-        await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
+        await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT, accountName);
 
     if (heights.isEmpty) {
       return [];
     }
 
     List<HealthDataPoint> weights =
-        await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
+        await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT, accountName);
 
     double h = heights.last.value.toDouble();
 
@@ -69,14 +87,19 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
-  /// Get an array of [HealthDataPoint] from an array of [HealthDataType]
+  /// Get an array of [HealthDataPoint] from an array of [HealthDataType].
+  ///
+  /// (Android only) If [accountName] is not empty, use it to get data,
+  /// else use default account.
+  ///
+  /// On iOS, [accountName] is simply ignored.
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
-      DateTime startDate, DateTime endDate, List<HealthDataType> types) async {
+      DateTime startDate, DateTime endDate, List<HealthDataType> types, [String accountName]) async {
     List<HealthDataPoint> dataPoints = [];
 
     for (HealthDataType type in types) {
       List<HealthDataPoint> result =
-          await _prepareQuery(startDate, endDate, type);
+          await _prepareQuery(startDate, endDate, type, accountName);
       dataPoints.addAll(result);
     }
     return removeDuplicates(dataPoints);
@@ -84,7 +107,7 @@ class HealthFactory {
 
   /// Prepares a query, i.e. checks if the types are available, etc.
   Future<List<HealthDataPoint>> _prepareQuery(
-      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+      DateTime startDate, DateTime endDate, HealthDataType dataType, String accountName) async {
     /// Ask for device ID only once
     if (_deviceId == null) {
       _deviceId = _platformType == PlatformType.ANDROID
@@ -101,19 +124,20 @@ class HealthFactory {
     /// If BodyMassIndex is requested on Android, calculate this manually in Dart
     if (dataType == HealthDataType.BODY_MASS_INDEX &&
         _platformType == PlatformType.ANDROID) {
-      return _computeAndroidBMI(startDate, endDate);
+      return _computeAndroidBMI(startDate, endDate, accountName);
     }
-    return await _dataQuery(startDate, endDate, dataType);
+    return await _dataQuery(startDate, endDate, dataType, accountName);
   }
 
   /// The main function for fetching health data
   Future<List<HealthDataPoint>> _dataQuery(
-      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+      DateTime startDate, DateTime endDate, HealthDataType dataType, String accountName) async {
     // Set parameters for method channel request
     Map<String, dynamic> args = {
       'dataTypeKey': _enumToString(dataType),
       'startDate': startDate.millisecondsSinceEpoch,
-      'endDate': endDate.millisecondsSinceEpoch
+      'endDate': endDate.millisecondsSinceEpoch,
+      'accountName': accountName
     };
 
     List<HealthDataPoint> healthData = new List();
@@ -133,6 +157,9 @@ class HealthFactory {
     } catch (error) {
       print("Health Plugin Error:\n");
       print("\t$error");
+
+      // Exception should be reported to caller.
+      rethrow;
     }
     return healthData;
   }
