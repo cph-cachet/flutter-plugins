@@ -157,6 +157,7 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         }
     }
 
+
     /// Called when the "getHealthDataByType" is invoked from Flutter
     private fun getData(call: MethodCall, result: Result) {
         val type = call.argument<String>("dataTypeKey")!!
@@ -188,7 +189,9 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
                             "value" to getHealthDataValue(dataPoint, unit),
                             "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                             "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                            "unit" to unit.toString()
+                            "unit" to unit.toString(),
+                            "source_name" to dataPoint.getOriginalDataSource().getAppPackageName(),
+                            "source_id" to dataPoint.getOriginalDataSource().getStreamIdentifier()
                     )
 
                 }
