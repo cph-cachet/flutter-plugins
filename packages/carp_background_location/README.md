@@ -1,4 +1,4 @@
-# carp_background_location
+# CARP Background Location Plugin
 
 A background location plugin for Android and iOS which works even when the app is in the background.
 
@@ -55,6 +55,7 @@ Afterwards, include the following entries within the application tag, as follows
 ```
 
 ## iOS setup
+
 Add the following entries to your Info.plist file
 
 ```xml
@@ -99,6 +100,7 @@ func registerPlugins(registry: FlutterPluginRegistry) -> () {
 ```
 
 ## Usage
+
 ```dart
   LocationManager locationManager = LocationManager.instance;
   Stream<LocationDto> dtoStream;
@@ -138,3 +140,17 @@ func registerPlugins(registry: FlutterPluginRegistry) -> () {
 ```
 
 See the example app on Github for a complete example of usage.
+
+## Features and bugs
+
+Please file feature requests and bug reports at the [issue tracker][tracker].
+
+[tracker]: https://github.com/cph-cachet/flutter-plugins/issues
+
+## License
+
+This software is copyright (c) [Copenhagen Center for Health Technology (CACHET)](https://www.cachet.dk/) 
+at the [Technical University of Denmark (DTU)](https://www.dtu.dk).
+This software is available 'as-is' under a [MIT license](https://github.com/cph-cachet/flutter-plugins/blob/master/packages/carp_background_location/LICENSE).
+
+

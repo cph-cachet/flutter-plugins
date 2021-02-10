@@ -27,7 +27,7 @@ dependencies {
 } 
 ```
 
-And finally, set the Android compile- and minimum SDK versions to `compileSdkVersion 28`, 
+And finally, set the Android compile and minimum SDK versions to `compileSdkVersion 28`, 
 and `minSdkVersion 23` respectively, inside the `android/app/build.gradle` file.
 
 ## Android Permissions

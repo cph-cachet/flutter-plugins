@@ -167,41 +167,45 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         val dataType = keyToHealthDataType(type)
         val unit = getUnit(type)
 
-        println(type)
-
         /// Start a new thread for doing a GoogleFit data lookup
         thread {
-            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
+            try {
+                val fitnessOptions = FitnessOptions.builder().addDataType(dataType).build()
+                val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
 
-            val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
-                    .readData(DataReadRequest.Builder()
-                            .read(dataType)
-                            .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                            .build())
+                val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
+                        .readData(DataReadRequest.Builder()
+                                .read(dataType)
+                                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                                .build())
 
-            /// Fetch all data points for the specified DataType
-            val dataPoints = Tasks.await<DataReadResponse>(response).getDataSet(dataType)
+                /// Fetch all data points for the specified DataType
+                val dataPoints = Tasks.await<DataReadResponse>(response).getDataSet(dataType)
 
-            /// For each data point, extract the contents and send them to Flutter, along with date and unit.
-            val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
-                return@mapIndexed hashMapOf(
-                        "value" to getHealthDataValue(dataPoint, unit),
-                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                        "unit" to unit.toString()
-                )
+                /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+                val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
+                    return@mapIndexed hashMapOf(
+                            "value" to getHealthDataValue(dataPoint, unit),
+                            "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                            "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                            "unit" to unit.toString()
+                    )
 
+                }
+                activity.runOnUiThread { result.success(healthData) }
+            } catch (e3: Exception) {
+                activity.runOnUiThread { result.success(null) }
             }
-            activity.runOnUiThread { result.success(healthData) }
         }
     }
 
-    fun callToHealthTypes(call: MethodCall): FitnessOptions {
+    private fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
         val args = call.arguments as HashMap<*, *>
-        for (key in args) {
-            val dataType = keyToHealthDataType(key.toString())
-            typesBuilder.addDataType(dataType)
+        val types = args["types"] as ArrayList<*>
+        for (typeKey in types) {
+            if (typeKey !is String) continue
+            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
         }
         return typesBuilder.build()
     }
@@ -211,8 +215,10 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         val optionsToRegister = callToHealthTypes(call)
         mResult = result
 
+        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)
+
         /// Not granted? Ask for permission
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
+        if (!isGranted) {
             GoogleSignIn.requestPermissions(
                     activity,
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,

@@ -1,3 +1,9 @@
+## 1.2.4
+* Added a toJSON method to the Weather class
+
+## 1.2.3
+* Now uses HTTPS rather than HTTP for making API calls
+
 ## 1.2.2
 * Added wind gust
 

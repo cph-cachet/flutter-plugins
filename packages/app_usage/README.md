@@ -2,6 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/app_usage.svg)](https://pub.dartlang.org/packages/app_usage)
 
+Application usage stats for Android only. Note that the stats are only precise down to a daily basis. This is a limitation from Google's implementation, unfortunately.
 ## Install
 Add ```app_usage``` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).

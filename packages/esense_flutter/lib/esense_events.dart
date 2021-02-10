@@ -49,9 +49,10 @@ class SensorEvent {
 
   /// Sequential number of sensor packet
   ///
-  /// The eSense device don't have a clock, so this index reflect the order of reading.
-  /// The index is reset to zero when listening is started. Hence, the index is __only__
-  /// unique within each listening session.
+  /// The eSense device don't have a clock, so this index reflect the order of
+  /// reading.
+  /// The index is reset to zero when listening is started. Hence, the index
+  /// is __only__ unique within each listening session.
   int packetIndex;
 
   /// 3-elements array with X, Y and Z axis for accelerometer
@@ -69,7 +70,8 @@ class SensorEvent {
     List<int> accl = [map['accel.x'], map['accel.y'], map['accel.z']];
     List<int> gyro = [map['gyro.x'], map['gyro.y'], map['gyro.z']];
 
-    return SensorEvent(timestamp: time, packetIndex: index, accel: accl, gyro: gyro);
+    return SensorEvent(
+        timestamp: time, packetIndex: index, accel: accl, gyro: gyro);
   }
 
   String toString() =>
@@ -136,7 +138,8 @@ class AccelerometerOffsetRead extends ESenseEvent {
       'offsetZ: $offsetZ';
 }
 
-/// Called when the information on advertisement and connection interval has been received.
+/// Called when the information on advertisement and connection interval has
+/// been received.
 class AdvertisementAndConnectionIntervalRead extends ESenseEvent {
   /// minimum advertisement interval in milliseconds
   int minAdvertisementInterval;
@@ -150,10 +153,14 @@ class AdvertisementAndConnectionIntervalRead extends ESenseEvent {
   /// maximum connection interval in milliseconds
   int maxConnectionInterval;
 
-  AdvertisementAndConnectionIntervalRead(this.minAdvertisementInterval, this.maxAdvertisementInterval,
-      this.minConnectionInterval, this.maxConnectionInterval)
+  AdvertisementAndConnectionIntervalRead(
+      this.minAdvertisementInterval,
+      this.maxAdvertisementInterval,
+      this.minConnectionInterval,
+      this.maxConnectionInterval)
       : super();
-  factory AdvertisementAndConnectionIntervalRead.fromMap(Map<dynamic, dynamic> map) =>
+  factory AdvertisementAndConnectionIntervalRead.fromMap(
+          Map<dynamic, dynamic> map) =>
       AdvertisementAndConnectionIntervalRead(
         map['minAdvertisementInterval'],
         map['maxAdvertisementInterval'],
@@ -179,7 +186,8 @@ class BatteryRead extends ESenseEvent {
 
   BatteryRead(this.voltage) : super();
   //factory BatteryRead.fromMap(Map<dynamic, dynamic> map) => BatteryRead(int.tryParse(map['voltage']));
-  factory BatteryRead.fromMap(Map<dynamic, dynamic> map) => BatteryRead(map['voltage']);
+  factory BatteryRead.fromMap(Map<dynamic, dynamic> map) =>
+      BatteryRead(map['voltage']);
 
   String toString() => 'BatteryRead - voltage: $voltage';
 }
@@ -190,7 +198,8 @@ class ButtonEventChanged extends ESenseEvent {
   bool pressed;
 
   ButtonEventChanged(this.pressed) : super();
-  factory ButtonEventChanged.fromMap(Map<dynamic, dynamic> map) => ButtonEventChanged(map['pressed']);
+  factory ButtonEventChanged.fromMap(Map<dynamic, dynamic> map) =>
+      ButtonEventChanged(map['pressed']);
 
   String toString() => 'ButtonEventChanged - pressed: $pressed';
 }
@@ -201,19 +210,22 @@ class DeviceNameRead extends ESenseEvent {
   String deviceName;
 
   DeviceNameRead(this.deviceName) : super();
-  factory DeviceNameRead.fromMap(Map<dynamic, dynamic> map) => DeviceNameRead(map['deviceName']);
+  factory DeviceNameRead.fromMap(Map<dynamic, dynamic> map) =>
+      DeviceNameRead(map['deviceName']);
 
   String toString() => 'DeviceNameRead - name: $deviceName';
 }
 
 /// Called when the information on sensor configuration has been received
 ///
-/// Currently __not__ implemented in this Flutter Plugin, i.e. the [ESenseConfig] class is empty.
+/// Currently __not__ implemented in this Flutter Plugin, i.e. the [ESenseConfig]
+/// class is empty.
 class SensorConfigRead extends ESenseEvent {
   ESenseConfig config;
 
   SensorConfigRead() : super();
-  factory SensorConfigRead.fromMap(Map<dynamic, dynamic> map) => SensorConfigRead()..config = ESenseConfig();
+  factory SensorConfigRead.fromMap(Map<dynamic, dynamic> map) =>
+      SensorConfigRead()..config = ESenseConfig();
 
   String toString() => 'SensorConfigRead - config: $config';
 }

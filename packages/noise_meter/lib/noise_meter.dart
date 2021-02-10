@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:math';
 import 'package:audio_streamer/audio_streamer.dart';
+import 'package:flutter/services.dart';
 
 /// A [NoiseReading] holds a decibel value for a particular noise level reading.
 class NoiseReading {
@@ -42,17 +43,23 @@ class NoiseReading {
 /// the native environment.
 class NoiseMeter {
   AudioStreamer _streamer = AudioStreamer();
-  bool _isRecording = false;
-  List<double> _audio = [];
+  Function _onError;
+  Stream<NoiseReading> _stream;
+
+  NoiseMeter(this._onError);
 
   /// The rate at which the audio is sampled
-  int get sampleRate => _streamer.sampleRate;
+  static int get sampleRate => AudioStreamer.sampleRate;
 
   StreamController<NoiseReading> _controller;
 
   Stream<NoiseReading> get noiseStream {
-    _controller = StreamController<NoiseReading>.broadcast(onListen: _start, onCancel: _stop);
-    return _controller.stream;
+    if (_stream == null) {
+      _controller = StreamController<NoiseReading>.broadcast(
+          onListen: _start, onCancel: _stop);
+      _stream = _controller.stream.handleError(_onError);
+    }
+    return _stream;
   }
 
   /// Whenever an array of PCM data comes in,
@@ -62,13 +69,17 @@ class NoiseMeter {
     _controller.add(NoiseReading(buffer));
   }
 
+  void _onInternalError(PlatformException e) {
+    _stream = null;
+    _controller.addError(e);
+  }
+
   /// Start noise monitoring.
   /// This will trigger a permission request
   /// if it hasn't yet been granted
   void _start() async {
     try {
-      _streamer.start(_onAudio);
-      _isRecording = true;
+      _streamer.start(_onAudio, _onInternalError);
     } catch (error) {
       print(error);
     }
@@ -76,6 +87,6 @@ class NoiseMeter {
 
   /// Stop noise monitoring
   void _stop() async {
-    _isRecording = await _streamer.stop();
+    await _streamer.stop();
   }
 }

@@ -24,7 +24,6 @@ class LocationServiceRepository {
   Future<void> callback(LocationDto locationDto) async {
     final SendPort send = IsolateNameServer.lookupPortByName(isolateName);
     send?.send(locationDto);
-//    _count++;
   }
 
   static double dp(double val, int places) {

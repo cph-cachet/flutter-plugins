@@ -1,3 +1,43 @@
+## 3.0.2
+* Upgrade to `device_info` version 1.0.0
+
+## 3.0.1+1
+* Bugfix regarding BMI from https://github.com/cph-cachet/flutter-plugins/pull/258
+
+## 3.0.0
+* Changed the flow for requesting access and reading data
+    * Access must be requested manually before reading
+    * This simplifies the data flow and makes it easier to reason about when debugging
+* Data read access is no longer checked for each individual type, but rather on the set of types specified.
+
+## 2.0.9
+* Now handles the case when asking for BMI on Android when no height data has been collected.
+
+## 2.0.8
+* Fixed a merge issue which had deleted the data types added in 2.0.4.
+
+## 2.0.7
+* Fixed a Google sign-in issue, and a type issue on Android (https://github.com/cph-cachet/flutter-plugins/issues/201)
+
+## 2.0.6
+* Fixed a Google sign-in issue. (https://github.com/cph-cachet/flutter-plugins/issues/172)
+
+
+## 2.0.5
+* Now uses 'device_info' rather than 'device_id' for getting device information
+
+## 2.0.4+1
+* Static analysis, formatting etc.
+
+## 2.0.4
+* Added Sleep data, Water, and Mindfulness.
+
+## 2.0.3
+* The method `requestAuthorization` is now public again.
+
+## 2.0.2
+* Updated the API to take a list of types rather than a single type, when requesting health data.
+
 ## 2.0.2
 * Updated the API to take a list of types rather than a single type, when requesting health data.
 

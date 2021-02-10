@@ -1,3 +1,9 @@
+## 0.3.0
+* singleton changed to recommended dart style using `ESenseManager()`.
+* fixed bug in reconnection.
+* updated the Android app to [post 1.12 Android project](https://github.com/flutter/flutter/wiki/Upgrading-pre-1.12-Android-projects).
+* small improvement to the demo app (now supports connection via a button).
+
 ## 0.2.1
 * updated Swift implementation to version 5
 

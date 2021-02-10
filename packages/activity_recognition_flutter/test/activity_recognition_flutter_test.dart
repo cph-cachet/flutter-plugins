@@ -14,7 +14,7 @@ void main() {
     ];
 
     for (String d in data) {
-      Activity a = Activity.fromJson({'type': d, 'confidence': 100});
+      ActivityEvent a = ActivityEvent.fromJson({'type': d, 'confidence': 100});
       print(a);
     }
   });

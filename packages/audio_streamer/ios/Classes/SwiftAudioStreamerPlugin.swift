@@ -12,20 +12,35 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
   // Register plugin
   public static func register(with registrar: FlutterPluginRegistrar) {
     let instance = SwiftAudioStreamerPlugin()
+    
 
     // Set flutter communication channel for emitting updates
     let eventChannel = FlutterEventChannel.init(name: "audio_streamer.eventChannel", binaryMessenger: registrar.messenger())
     eventChannel.setStreamHandler(instance)
+    instance.setupNotifications()
+  }
+
+  private func setupNotifications() {
+    // Get the default notification center instance.
+    NotificationCenter.default.addObserver(self,
+                  selector: #selector(handleInterruption(notification:)),
+                  name: AVAudioSession.interruptionNotification,
+                  object: nil)
+  }
+
+  @objc func handleInterruption(notification: Notification) {
+      // To be implemented.
+    eventSink!(FlutterError(code: "100", message: "Recording was interrupted", details: "Another process interrupted recording."))
   }
 
     // Handle stream emitting (Swift => Flutter)
     private func emitValues(values: [Float]) {
-        // If no eventSink to emit events to, do nothing (wait)
-        if (eventSink == nil) {
-            return
-        }
-        // Emit values count event to Flutter
-        eventSink!(values)
+      // If no eventSink to emit events to, do nothing (wait)
+      if (eventSink == nil) {
+          return
+      }
+      // Emit values count event to Flutter
+      eventSink!(values)
     }
 
     // Event Channel: On Stream Listen
@@ -41,7 +56,6 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         NotificationCenter.default.removeObserver(self)
         eventSink = nil
         engine.stop()
-        //self.emitValues(values: audioData)
         return nil
     }
 
