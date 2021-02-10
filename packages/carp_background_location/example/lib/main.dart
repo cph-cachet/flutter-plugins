@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void start() async {
-    // Subscribe if it hasnt been done already
+    // Subscribe if it hasn't been done already
     if (dtoSubscription != null) {
       dtoSubscription.cancel();
     }

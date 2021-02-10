@@ -18,13 +18,11 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 /** ActivityRecognitionFlutterPlugin */
 class ActivityRecognitionFlutterPlugin : FlutterPlugin, ActivityAware {
 
-    lateinit var activityClient: ActivityClient
     lateinit var activityChannel: ActivityChannel
     lateinit var messenger: BinaryMessenger
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        Log.d("Kotlin", "onAttachedToEngine")
-        messenger = flutterPluginBinding.getFlutterEngine().getDartExecutor()
+        messenger = flutterPluginBinding.binaryMessenger
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -34,16 +32,19 @@ class ActivityRecognitionFlutterPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        registerEvents(binding)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        Log.d("Kotlin", "onAttachedToActivity")
-        activityClient = ActivityClient(binding.activity)
-        activityChannel = ActivityChannel(activityClient)
-        activityChannel.register(messenger)
+        registerEvents(binding)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
+    }
+
+    private fun registerEvents(binding: ActivityPluginBinding) {
+        activityChannel = ActivityChannel(ActivityClient(binding.activity))
+        activityChannel.register(messenger)
     }
 
 }

@@ -14,13 +14,16 @@ Check out the `example` directory for a sample app using activity recognition.
 
 Add permission to your Android Manifest, for Android 10 (API 29 and later), use:
 ```xml
-<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION permission" />
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 ```
 
 For Android 9 (API 28 and earlier), use:
 ```xml
 <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 ```
+
+> **Note:** If you update from SDK <=28 to >=29 remember to run `flutter clean` 
+> (see e.g. [this post](https://stackoverflow.com/questions/55407939/permission-requests-are-not-propagated-when-launching-with-flutter-but-are-when/57072913))
 
 Next, add the plugin's service inside the `<application>` tags:
 ```xml
@@ -34,42 +37,38 @@ for the types of data it needs. Failure to include these keys will cause the app
 To access motion and fitness data specifically, it must include `NSMotionUsageDescription`.
 
 ### Flutter Usage
+To use this plugin, you need to also use the permission handler plugin (https://pub.dev/packages/permission_handler)
 
 ```Dart
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
-Stream<Activity> stream;
+import 'package:permission_handler/permission_handler.dart';
+
+Stream<Activity> activityStream;
 
 @override
 void initState() {
     super.initState();
-    
-    /// Start the stream updates
-    stream = ActivityRecognition.activityUpdates();
-    stream.listen(onData);
+    _init();
 }
 
-void onData(Activity activity) {
-    /// Do something with the activity
-    ActivityType type = activity.type;
-    int confidence = activity.confidence;
+void _init() async {
+    if (await Permission.activityRecognition.request().isGranted) {
+      activityStream = ActivityRecognition.activityStream(runForegroundService: true);
+      activityStream.listen(onData);
+    }
 }
+
+void onData(ActivityEvent activityEvent) => print(activityEvent.toString());
 ```
 
 ## Data types
-### iOS
-* `Stationary`
-* `Walking`
-* `Running`
-* `Automotive`
-* `Cycling`
-* `Unknown`
+* IN_VEHICLE
+* ON_BICYCLE
+* ON_FOOT
+* RUNNING
+* STILL
+* TILTING
+* UNKNOWN
+* WALKING
+* INVALID (used for parsing errors)
 
-### Android
-* `IN_VEHICLE`
-* `ON_BICYCLE`
-* `ON_FOOT`
-* `RUNNING`
-* `STILL`
-* `TILTING`
-* `UNKNOWN`
-* `WALKING`

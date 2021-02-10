@@ -1,3 +1,6 @@
+## 1.3.0
+* Fixed an issue where using another media player/recorder would cause the plugin to go into an error state on iOS (see https://github.com/cph-cachet/flutter-plugins/issues/86)
+
 ## 1.2.0
 * Fixed an issue where the AVAudioRecorder would crash on iOS (see https://github.com/cph-cachet/flutter-plugins/issues/91)
 

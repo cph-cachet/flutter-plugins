@@ -18,4 +18,3 @@ class _HealthException implements Exception {
 String _enumToString(enumItem) => enumItem.toString().split('.').last;
 
 enum PlatformType { IOS, ANDROID }
-

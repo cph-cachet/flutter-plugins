@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
@@ -9,25 +10,24 @@ const String EVENT_CHANNEL_NAME = 'audio_streamer.eventChannel';
 
 class AudioStreamer {
   bool _isRecording = false;
-  bool debug = false;
 
-  AudioStreamer({this.debug = false});
+  static int get sampleRate => 44100;
 
-  int get sampleRate => 44100;
-
-  static const EventChannel _noiseEventChannel = EventChannel(EVENT_CHANNEL_NAME);
+  static const EventChannel _noiseEventChannel =
+      EventChannel(EVENT_CHANNEL_NAME);
 
   Stream<List<double>> _stream;
   StreamSubscription<List<dynamic>> _subscription;
 
-  void _print(String t) {
-    if (debug) print(t);
-  }
-
-  Stream<List<double>> get audioStream {
+  Stream<List<double>> _makeAudioStream(Function handleErrorFunction) {
     if (_stream == null) {
       _stream = _noiseEventChannel
           .receiveBroadcastStream()
+          .handleError((error) {
+            _isRecording = false;
+            _stream = null;
+            handleErrorFunction(error);
+          })
           .map((buffer) => buffer as List<dynamic>)
           .map((list) => list.map((e) => double.parse('$e')).toList());
     }
@@ -35,14 +35,14 @@ class AudioStreamer {
   }
 
   /// Verify that it was granted
-  static Future<bool> checkPermission() async => Permission.microphone.request().isGranted;
+  static Future<bool> checkPermission() async =>
+      Permission.microphone.request().isGranted;
 
   /// Request the microphone permission
-  static Future<void> requestPermission() async => Permission.microphone.request();
+  static Future<void> requestPermission() async =>
+      Permission.microphone.request();
 
-  Future<bool> start(Function onData) async {
-    _print('AudioStreamer: startRecorder()');
-
+  Future<bool> start(Function onData, Function handleError) async {
     if (_isRecording) {
       print('AudioStreamer: Already recording!');
       return _isRecording;
@@ -50,12 +50,12 @@ class AudioStreamer {
       bool granted = await AudioStreamer.checkPermission();
 
       if (granted) {
-        _print('AudioStreamer: Permission granted? $granted');
         try {
+          final stream = _makeAudioStream(handleError);
+          _subscription = stream.listen(onData);
           _isRecording = true;
-          _subscription = audioStream.listen(onData);
         } catch (err) {
-          _print('AudioStreamer: startRecorder() error: $err');
+          debugPrint('AudioStreamer: startRecorder() error: $err');
         }
       }
 
@@ -63,14 +63,13 @@ class AudioStreamer {
       /// ask for it, and then try recording again.
       else {
         await AudioStreamer.requestPermission();
-        start(onData);
+        start(onData, handleError);
       }
     }
     return _isRecording;
   }
 
   Future<bool> stop() async {
-    _print('AudioStreamer: stopRecorder()');
     try {
       if (_subscription != null) {
         _subscription.cancel();
@@ -78,7 +77,7 @@ class AudioStreamer {
       }
       _isRecording = false;
     } catch (err) {
-      _print('AudioStreamer: stopRecorder() error: $err');
+      debugPrint('AudioStreamer: stopRecorder() error: $err');
     }
     return _isRecording;
   }

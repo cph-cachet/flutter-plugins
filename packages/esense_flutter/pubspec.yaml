@@ -1,11 +1,12 @@
 name: esense_flutter
 description: The eSense Flutter Plugin supporting the eSense earable computing devices from Nokia Bell Labs, Cambridge.
-version: 0.2.1
+version: 0.3.0
 author:  CACHET Team <cph.cachet@gmail.com>
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/esense_flutter
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.12.0 <2.0.0"
 
 dependencies:
   flutter:
@@ -22,5 +23,10 @@ flutter:
   # be modified. They are used by the tooling to maintain consistency when
   # adding or updating assets for this project.
   plugin:
-    androidPackage: dk.cachet.esense_flutter
-    pluginClass: EsenseFlutterPlugin
+    platforms:
+      android:
+        package: dk.cachet.esense_flutter
+        pluginClass: EsenseFlutterPlugin
+      ios:
+        pluginClass: EsenseFlutterPlugin
+  

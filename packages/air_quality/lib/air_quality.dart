@@ -1,11 +1,11 @@
-library air_quality;
-
 /*
  * Copyright 2019 Copenhagen Center for Health Technology (CACHET) at the
  * Technical University of Denmark (DTU).
  * Use of this source code is governed by a MIT-style license that can be
  * found in the LICENSE file.
  */
+library air_quality;
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -20,15 +20,7 @@ class AirQualityAPIException implements Exception {
   String toString() => '${this.runtimeType} - $_cause';
 }
 
-enum AirQualityLevel {
-  UNKNOWN,
-  GOOD,
-  MODERATE,
-  UNHEALTHY_FOR_SENSITIVE_GROUPS,
-  UNHEALTHY,
-  VERY_UNHEALTHY,
-  HAZARDOUS
-}
+enum AirQualityLevel { UNKNOWN, GOOD, MODERATE, UNHEALTHY_FOR_SENSITIVE_GROUPS, UNHEALTHY, VERY_UNHEALTHY, HAZARDOUS }
 
 AirQualityLevel airQualityIndexToLevel(int index) {
   if (index < 0)
@@ -55,16 +47,11 @@ class AirQualityData {
   AirQualityLevel _airQualityLevel;
 
   AirQualityData(Map<String, dynamic> airQualityJson) {
-    _airQualityIndex =
-        int.tryParse(airQualityJson['data']['aqi'].toString()) ?? -1;
+    _airQualityIndex = int.tryParse(airQualityJson['data']['aqi'].toString()) ?? -1;
     _place = airQualityJson['data']['city']['name'].toString();
     _source = airQualityJson['data']['attributions'][0]['name'].toString();
-    _latitude =
-        double.tryParse(airQualityJson['data']['city']['geo'][0].toString()) ??
-            -1.0;
-    _longitude =
-        double.tryParse(airQualityJson['data']['city']['geo'][1].toString()) ??
-            -1.0;
+    _latitude = double.tryParse(airQualityJson['data']['city']['geo'][0].toString()) ?? -1.0;
+    _longitude = double.tryParse(airQualityJson['data']['city']['geo'][1].toString()) ?? -1.0;
 
     _airQualityLevel = airQualityIndexToLevel(_airQualityIndex);
   }
@@ -100,16 +87,13 @@ class AirQuality {
   AirQuality(this._token);
 
   /// Returns an [AirQualityData] object given a city name or a weather station ID
-  Future<AirQualityData> feedFromCity(String city) async =>
-      await _airQualityFromUrl(city);
+  Future<AirQualityData> feedFromCity(String city) async => await _airQualityFromUrl(city);
 
   /// Returns an [AirQualityData] object given a city name or a weather station ID
-  Future<AirQualityData> feedFromStationId(String stationId) async =>
-      await _airQualityFromUrl('@$stationId');
+  Future<AirQualityData> feedFromStationId(String stationId) async => await _airQualityFromUrl('@$stationId');
 
   /// Returns an [AirQualityData] object given a latitude and longitude.
-  Future<AirQualityData> feedFromGeoLocation(double lat, double lon) async =>
-      await _airQualityFromUrl('geo:$lat;$lon');
+  Future<AirQualityData> feedFromGeoLocation(double lat, double lon) async => await _airQualityFromUrl('geo:$lat;$lon');
 
   /// Returns an [AirQualityData] object given using the IP address.
   Future<AirQualityData> feedFromIP() async => await _airQualityFromUrl('here');
@@ -135,14 +119,7 @@ class AirQuality {
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
   Future<AirQualityData> _airQualityFromUrl(String url) async {
-    try {
-      Map<String, dynamic> airQualityJson =
-          await _requestAirQualityFromURL(url);
-      print(airQualityJson);
-      return AirQualityData(airQualityJson);
-    } catch (exception) {
-      print(exception);
-    }
-    return null;
+    Map<String, dynamic> airQualityJson = await _requestAirQualityFromURL(url);
+    return AirQualityData(airQualityJson);
   }
 }
