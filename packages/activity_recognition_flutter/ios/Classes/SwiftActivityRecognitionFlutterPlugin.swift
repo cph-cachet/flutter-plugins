@@ -3,24 +3,20 @@ import UIKit
 import CoreMotion
 
 
-public class SwiftActivityRecognitionFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
-
-  var activityManager: CMMotionActivityManager?
+public class SwiftActivityRecognitionFlutterPlugin: NSObject, FlutterPlugin {
 
   public static func register(with registrar: FlutterPluginRegistrar) {
+    let handler = ActivityStreamHandler()
     let channel = FlutterMethodChannel(name: "activity_recognition_flutter", binaryMessenger: registrar.messenger())
-    let instance = SwiftActivityRecognitionFlutterPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
-    
+    handler.setStreamHandler(handler)
   }
+}
+public class ActivityStreamHandler: NSObject, FlutterStreamHandler {
+
+  private let activityManager = CMMotionActivityManager()
 
   public func onListen(withArguments arguments: Any?, eventSink: @escaping FlutterEventSink) -> FlutterError? {
-      /// Init the activity recognition manager
-    activityManager = CMMotionActivityManager()
-
-    log(message: "Starting activity tracking...")
-
-    activityManager?.startActivityUpdates(to: OperationQueue.init()) { (activity) in
+    activityManager.startActivityUpdates(to: OperationQueue.init()) { (activity) in
         if let a = activity {
             
             let type = self.extractActivityType(a: a)
@@ -35,11 +31,8 @@ public class SwiftActivityRecognitionFlutterPlugin: NSObject, FlutterPlugin, Flu
   }
 
   public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    activityManager.stopActivityUpdates()
     return nil
-  }
-
-  func log(message: String) {
-    NSLog("SwiftActivityRecognitionFlutterPlugin: \(message)");
   }
 
   func extractActivityType(a: CMMotionActivity) -> String {

@@ -33,9 +33,9 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     private Activity androidActivity;
     private Context androidContext;
     public static final String DETECTED_ACTIVITY = "detected_activity";
-    public static final String ACTIVITY_RECOGNITION = "activity_recognition";
+    public static final String ACTIVITY_RECOGNITION = "activity_recognition_flutter";
 
-    private final String TAG = "activity_recognition";
+    private final String TAG = "activity_recognition_flutter";
 
     /**
      * The main function for starting activity tracking.
