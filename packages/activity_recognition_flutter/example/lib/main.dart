@@ -13,6 +13,7 @@ class _MyAppState extends State<MyApp> {
   Stream<ActivityEvent> activityStream;
   ActivityEvent latestActivity = ActivityEvent.empty();
   List<ActivityEvent> _events = [];
+  ActivityRecognition activityRecognition = ActivityRecognition.instance;
 
   @override
   void initState() {
@@ -23,7 +24,7 @@ class _MyAppState extends State<MyApp> {
   void _init() async {
     if (await Permission.activityRecognition.request().isGranted) {
       activityStream =
-          ActivityRecognition.activityStream(runForegroundService: true);
+          activityRecognition.startStream(runForegroundService: true);
       activityStream.listen(onData);
     }
   }

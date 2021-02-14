@@ -37,27 +37,26 @@ class ActivityEvent {
   int _confidence;
   DateTime _timeStamp;
 
-  ActivityEvent(this._type, this._confidence) {
+  ActivityEvent._(this._type, this._confidence) {
     this._timeStamp = DateTime.now();
   }
 
-  factory ActivityEvent.empty() => ActivityEvent(ActivityType.UNKNOWN, 100);
+  factory ActivityEvent.empty() => ActivityEvent._(ActivityType.UNKNOWN, 100);
 
-  factory ActivityEvent.fromJson(Map<String, dynamic> jsonData) {
-    /// Set activity to Invalid by default
-    ActivityType activityType = ActivityType.INVALID;
-
-    /// Parse JSON data
-    String key = jsonData['type'];
-
-    /// If parsing was successful, decode the activity type
-    if (_activityMap.containsKey(key)) {
-      activityType = _activityMap[key];
+  factory ActivityEvent.fromJson(String data) {
+    debugPrint("Activity event data: $data");
+    List<String> tokens = data.split(",");
+    if (tokens.length < 2) {
+      return ActivityEvent.empty();
     }
 
-    /// Parse the confidence
-    int confidence = jsonData['confidence'];
-    return ActivityEvent(activityType, confidence);
+    ActivityType type = ActivityType.UNKNOWN;
+    if (_activityMap.containsKey(tokens.first)) {
+      type = _activityMap[tokens.first];
+    }
+    int conf = int.tryParse(tokens.last);
+
+    return ActivityEvent._(type, conf);
   }
 
   @override
