@@ -18,7 +18,7 @@ class ActivityRecognition {
   static ActivityRecognition get instance => _instance;
 
   static const EventChannel _eventChannel =
-      const EventChannel('activity_recognition');
+      const EventChannel('activity_recognition_flutter');
 
   /// Requests continuous [ActivityEvent] updates.
   ///
