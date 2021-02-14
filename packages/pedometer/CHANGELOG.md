@@ -1,3 +1,7 @@
+## 2.1.0
+* Removed automatic error handling such as when the sensor is not available. 
+    * This allows the plugin user to see when errors occur.
+
 ## 2.0.2
 * Getters for streams are no longer async (it was unnecessary)
 

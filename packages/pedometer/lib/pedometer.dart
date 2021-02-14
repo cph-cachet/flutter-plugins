@@ -62,16 +62,9 @@ class Pedometer {
 
   /// Returns the steps taken since last system boot.
   /// Events may come with a delay.
-  static Stream<StepCount> get stepCountStream =>
-      _stepCountChannel
-          .receiveBroadcastStream()
-          .map((event) => StepCount._(event))
-          .handleError(_onError);
-
-  static void _onError(dynamic e) {
-    PlatformException exception = e as PlatformException;
-    print('ERROR: ${exception.message}');
-  }
+  static Stream<StepCount> get stepCountStream => _stepCountChannel
+      .receiveBroadcastStream()
+      .map((event) => StepCount._(event));
 }
 
 /// A DTO for steps taken containing the number of steps taken.
