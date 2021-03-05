@@ -97,6 +97,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
     let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
     let endDate = (arguments?["endDate"] as? NSNumber) ?? 0
+    let healthStore = HKHealthStore()
 
     // Convert dates from milliseconds to Date()
     let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
@@ -104,12 +105,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
     var dataType = dataTypeLookUp(key: dataTypeKey)
 
-    if #available(iOS 14.4, *) {
-      if dataTypeKey == ELECTROCARDIOGRAM {
-        dataType = HKObjectType.electrocardiogramType()
-      }
-    }
-
+    // if dataTypeKey == ELECTROCARDIOGRAM {
+    //   self.getECGData(dateFrom: dateFrom, dateTo: dateTo, result: result)
+    // } else {
     let predicate = HKQuery.predicateForSamples(
       withStart: dateFrom, end: dateTo, options: .strictStartDate)
     let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: true)
@@ -122,8 +120,28 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
       guard let samples = samplesOrNil as? [HKQuantitySample] else {
         guard let samplesCategory = samplesOrNil as? [HKCategorySample] else {
-          result(
-            FlutterError(code: "FlutterHealth", message: "Results are null", details: "\(error)"))
+          if #available(iOS 14.0, *) {
+            guard let ecgSamples = samplesOrNil as? [HKElectrocardiogram] else {
+              result(
+                FlutterError(
+                  code: "FlutterHealth", message: "Results are null", details: "\(error)"))
+              return
+            }
+            result(
+              ecgSamples.map { sample -> NSDictionary in
+                let unit = self.unitLookUp(key: dataTypeKey)
+                let voltages = self.getVoltages(sample: sample, unit: unit)
+
+                return [
+                  "uuid": "\(sample.uuid)",
+                  "value": voltages,
+                  "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                  "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                ]
+              }
+            )
+            return
+          }
           return
         }
         print(samplesCategory)
@@ -153,8 +171,37 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         })
       return
     }
-    HKHealthStore().execute(query)
+    healthStore.execute(query)
 
+  }
+
+  func getVoltages(sample: HKSample, unit: HKUnit) -> [Double] {
+    var results: [Double] = []
+
+    if #available(iOS 14.0, *) {
+      let voltageQuery = HKElectrocardiogramQuery(sample as! HKElectrocardiogram) {
+        (query, ecgResult) in
+        switch ecgResult {
+        case .error(let error):
+          results.append(0.0)
+          NSLog("\n*** An error occurred \(error.localizedDescription) ***")
+
+        case .measurement(let value):
+          let voltage = value.quantity(for: .appleWatchSimilarToLeadI)!.doubleValue(
+            for: HKUnit.volt())
+          results.append(4.0)
+          results.append(voltage)
+
+        case .done:
+          results.append(2.0)
+          NSLog("\nDone")
+
+        }
+      }
+      self.healthStore.execute(voltageQuery)
+    }
+
+    return results
   }
 
   func unitLookUp(key: String) -> HKUnit {
