@@ -68,7 +68,7 @@ class _MyAppState extends State<MyApp> {
       /// Print the results
       _healthDataList.forEach((x) {
         print("Data point: $x");
-        steps += (x.value.round());
+        steps += (x.value?.round() ?? 0);
       });
 
       print("Steps: $steps");
@@ -104,7 +104,7 @@ class _MyAppState extends State<MyApp> {
         itemBuilder: (_, index) {
           HealthDataPoint p = _healthDataList[index];
           return ListTile(
-            title: Text("${p.typeString}: ${p.value}"),
+            title: Text("${p.typeString}: ${p.value ?? p.values.length}"),
             trailing: Text('${p.unitString}'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
           );
