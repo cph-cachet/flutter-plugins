@@ -34,6 +34,9 @@ enum HealthDataType {
   LOW_HEART_RATE_EVENT,
   IRREGULAR_HEART_RATE_EVENT,
   ELECTRODERMAL_ACTIVITY,
+
+  // ECG type (specific to Apple Watch)
+  ELECTROCARDIOGRAM,
 }
 
 /// List of data types available on iOS
@@ -66,6 +69,7 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
   HealthDataType.WATER,
+  HealthDataType.ELECTROCARDIOGRAM,
 ];
 
 /// List of data types available on Android
@@ -122,4 +126,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
+
+  /// ECG type (specific to Apple Watch)
+  HealthDataType.ELECTROCARDIOGRAM: HealthDataUnit.VOLTS,
 };
