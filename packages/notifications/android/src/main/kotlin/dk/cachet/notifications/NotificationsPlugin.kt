@@ -62,7 +62,7 @@ class NotificationsPlugin : FlutterPlugin, EventChannel.StreamHandler, ActivityA
             val names = flat.split(":").toTypedArray()
             for (name in names) {
                 val componentName = ComponentName.unflattenFromString(name)
-                val nameMatch = TextUtils.equals(packageName, componentName.packageName)
+                val nameMatch = TextUtils.equals(packageName, componentName!!.packageName)
                 if (nameMatch) {
                     return true
                 }

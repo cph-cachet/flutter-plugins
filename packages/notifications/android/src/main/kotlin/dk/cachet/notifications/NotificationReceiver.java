@@ -20,9 +20,13 @@ class NotificationReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String packageName = intent.getStringExtra(NotificationListener.NOTIFICATION_PACKAGE_NAME);
         String packageMessage = intent.getStringExtra(NotificationListener.NOTIFICATION_PACKAGE_MESSAGE);
+        String userName = intent.getStringExtra(NotificationListener.NOTIFICATION_USER_NAME);
+        String packageTitle = intent.getStringExtra(NotificationListener.NOTIFICATION_PACKAGE_TITLE);
         HashMap<String, Object> map = new HashMap<>();
         map.put("packageName", packageName);
         map.put("packageMessage", packageMessage);
+        map.put("packageTitle", packageTitle);
+        map.put("userName", userName);
         eventSink.success(map);
     }
 }
