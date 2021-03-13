@@ -14,14 +14,18 @@ void main() async {
     WeatherFactory wf = WeatherFactory(key);
 
     test('- Fetch weather via lat and lon', () async {
-      Weather w = await wf.currentWeatherByLocation(lat, lon);
+      Weather? w = await wf.currentWeatherByLocation(lat, lon);
+      if (w == null)
+        throw TestFailure('result was null');
       print('Weather by Location:');
       print(w);
       print('-' * 50);
     });
 
     test('- Fetch weather via city name', () async {
-      Weather w = await wf.currentWeatherByCityName(cityName);
+      Weather? w = await wf.currentWeatherByCityName(cityName);
+      if (w == null)
+        throw TestFailure('result was null');
       print('Weather by city name:');
       print(w);
       print('-' * 50);
@@ -52,8 +56,10 @@ void main() async {
     test('- Fetch current weather via location, Danish', () async {
       print('Forecast by city name:');
       wf = WeatherFactory(key, language: Language.DANISH);
-      Weather weather = await wf.currentWeatherByLocation(lat, lon);
-      print(weather);
+      Weather? weather = await wf.currentWeatherByLocation(lat, lon);
+      if (weather == null)
+        throw TestFailure('result was null');
+      print(weather.toString());
       print('-' * 50);
     });
   });

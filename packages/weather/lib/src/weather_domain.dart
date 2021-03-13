@@ -30,12 +30,12 @@ class Temperature {
 /// This includes various measures such as location,
 /// temperature, wind, snow, rain and humidity.
 class Weather {
-  String _country, _areaName, _weatherMain, _weatherDescription, _weatherIcon;
-  Temperature _temperature, _tempMin, _tempMax, _tempFeelsLike;
-  Map<String, dynamic> _weatherData;
+  late String _country, _areaName, _weatherMain, _weatherDescription, _weatherIcon;
+  late Temperature _temperature, _tempMin, _tempMax, _tempFeelsLike;
+  late Map<String, dynamic> _weatherData;
 
-  DateTime _date, _sunrise, _sunset;
-  double _latitude,
+  late DateTime? _date, _sunrise, _sunset;
+  late double _latitude,
       _longitude,
       _pressure,
       _windSpeed,
@@ -48,17 +48,17 @@ class Weather {
       _snowLastHour,
       _snowLast3Hours;
 
-  int _weatherConditionCode;
+  late int _weatherConditionCode;
 
   Weather(Map<String, dynamic> jsonData) {
-    Map<String, dynamic> main = jsonData['main'];
-    Map<String, dynamic> coord = jsonData['coord'];
-    Map<String, dynamic> sys = jsonData['sys'];
-    Map<String, dynamic> wind = jsonData['wind'];
-    Map<String, dynamic> clouds = jsonData['clouds'];
-    Map<String, dynamic> rain = jsonData['rain'];
-    Map<String, dynamic> snow = jsonData['snow'];
-    Map<String, dynamic> weather = jsonData['weather'][0];
+    Map<String, dynamic>? main = jsonData['main'];
+    Map<String, dynamic>? coord = jsonData['coord'];
+    Map<String, dynamic>? sys = jsonData['sys'];
+    Map<String, dynamic>? wind = jsonData['wind'];
+    Map<String, dynamic>? clouds = jsonData['clouds'];
+    Map<String, dynamic>? rain = jsonData['rain'];
+    Map<String, dynamic>? snow = jsonData['snow'];
+    Map<String, dynamic>? weather = jsonData['weather'][0];
 
     _latitude = _unpackDouble(coord, 'lat');
     _longitude = _unpackDouble(coord, 'lon');
@@ -68,6 +68,7 @@ class Weather {
     _sunset = _unpackDate(sys, 'sunset');
 
     _weatherData = jsonData;
+
     _weatherMain = _unpackString(weather, 'main');
     _weatherDescription = _unpackString(weather, 'description');
     _weatherIcon = _unpackString(weather, 'icon');
@@ -101,6 +102,7 @@ class Weather {
   Map<String, dynamic> toJson() => _weatherData;
 
   /// The weather data formatted as a string with newlines
+  @override
   String toString() {
     return '''
     Place Name: $_areaName [$_country] ($latitude, $longitude)
@@ -114,13 +116,13 @@ class Weather {
   }
 
   /// A long description of the weather
-  String get weatherDescription => _weatherDescription;
+  String get weatherDescription => _weatherDescription.toString();
 
   /// A brief description of the weather
-  String get weatherMain => _weatherMain;
+  String get weatherMain => _weatherMain.toString();
 
   /// Icon depicting current weather
-  String get weatherIcon => _weatherIcon;
+  String get weatherIcon => _weatherIcon.toString();
 
   /// Weather condition codes
   int get weatherConditionCode => _weatherConditionCode;
@@ -162,13 +164,13 @@ class Weather {
   double get latitude => _latitude;
 
   /// Date of the weather observation
-  DateTime get date => _date;
+  DateTime? get date => _date;
 
   /// Timestamp of sunset
-  DateTime get sunset => _sunset;
+  DateTime? get sunset => _sunset;
 
   /// Timestamp of sunrise
-  DateTime get sunrise => _sunrise;
+  DateTime? get sunrise => _sunrise;
 
   /// Name of the area, ex Mountain View, or Copenhagen Municipality
   String get areaName => _areaName;
@@ -190,10 +192,10 @@ class Weather {
 }
 
 List<Weather> _parseForecast(Map<String, dynamic> jsonForecast) {
-  List<dynamic> forecastList = jsonForecast['list'];
-  Map<String, dynamic> city = jsonForecast['city'];
-  Map<String, dynamic> coord = city['coord'];
-  String country = city['country'];
+  List<dynamic> forecastList = jsonForecast['list'] ?? [];
+  Map<String, dynamic>? city = jsonForecast['city'];
+  Map<String, dynamic>? coord = city?['coord'];
+  String? country = city?['country'];
   String name = _unpackString(city, 'name');
   double lat = _unpackDouble(coord, 'lat');
   double lon = _unpackDouble(coord, 'lon');

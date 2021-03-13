@@ -3,20 +3,20 @@ part of weather_library;
 /// Plugin for fetching weather data in JSON.
 class WeatherFactory {
   String _apiKey;
-  Language language = Language.ENGLISH;
+  Language language;
   static const String FIVE_DAY_FORECAST = 'forecast';
   static const String CURRENT_WEATHER = 'weather';
   static const int STATUS_OK = 200;
 
-  WeatherFactory(this._apiKey, {this.language});
+  WeatherFactory(this._apiKey, {this.language = Language.ENGLISH});
 
   /// Fetch current weather based on geographical coordinates
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
-  Future<Weather> currentWeatherByLocation(
+  Future<Weather?> currentWeatherByLocation(
       double latitude, double longitude) async {
     try {
-      Map<String, dynamic> currentWeather =
+      Map<String, dynamic>? currentWeather =
           await _sendRequest(CURRENT_WEATHER, lat: latitude, lon: longitude);
       return Weather(currentWeather);
     } catch (exception) {
@@ -28,11 +28,12 @@ class WeatherFactory {
   /// Fetch current weather based on city name
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
-  Future<Weather> currentWeatherByCityName(String cityName) async {
+  Future<Weather?> currentWeatherByCityName(String cityName) async {
     try {
       Map<String, dynamic> currentWeather =
           await _sendRequest(CURRENT_WEATHER, cityName: cityName);
-      return Weather(currentWeather);
+      final weather = Weather(currentWeather);
+      return weather;
     } catch (exception) {
       print(exception);
     }
@@ -44,7 +45,7 @@ class WeatherFactory {
   /// For API documentation, see: https://openweathermap.org/forecast5
   Future<List<Weather>> fiveDayForecastByLocation(
       double latitude, double longitude) async {
-    List<Weather> forecast = new List<Weather>();
+    List<Weather> forecast = <Weather>[];
     try {
       Map<String, dynamic> jsonForecast =
           await _sendRequest(FIVE_DAY_FORECAST, lat: latitude, lon: longitude);
@@ -59,9 +60,9 @@ class WeatherFactory {
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/forecast5
   Future<List<Weather>> fiveDayForecastByCityName(String cityName) async {
-    List<Weather> forecasts = new List<Weather>();
+    List<Weather> forecasts = <Weather>[];
     try {
-      Map<String, dynamic> jsonForecast =
+      Map<String, dynamic>? jsonForecast =
           await _sendRequest(FIVE_DAY_FORECAST, cityName: cityName);
       forecasts = _parseForecast(jsonForecast);
     } catch (exception) {
@@ -71,12 +72,12 @@ class WeatherFactory {
   }
 
   Future<Map<String, dynamic>> _sendRequest(String tag,
-      {double lat, double lon, String cityName}) async {
+      {double? lat, double? lon, String? cityName}) async {
     /// Build HTTP get url by passing the required parameters
     String url = _buildUrl(tag, cityName, lat, lon);
 
     /// Send HTTP get response with the url
-    http.Response response = await http.get(url);
+    http.Response response = await http.get(Uri.parse(url));
 
     /// Perform error checking on response:
     /// Status code 200 means everything went well
@@ -94,13 +95,15 @@ class WeatherFactory {
     }
   }
 
-  String _buildUrl(String tag, String cityName, double lat, double lon) {
+  String _buildUrl(String tag, String? cityName, double? lat, double? lon) {
     String url = 'https://api.openweathermap.org/data/2.5/' + '$tag?';
 
     if (cityName != null) {
       url += 'q=$cityName&';
-    } else {
+    } else if (lat != null && lon != null) {
       url += 'lat=$lat&lon=$lon&';
+    } else {
+      throw new Exception("Either cityName or lat and lon must be given!");
     }
 
     url += 'appid=$_apiKey&';

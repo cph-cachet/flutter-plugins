@@ -19,10 +19,10 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String key = '856822fd8e22db5e1ba48c0e7d69844a';
-  WeatherFactory ws;
-  List<Weather> _data = [];
+  WeatherFactory? ws;
+  List<Weather?> _data = [];
   AppState _state = AppState.NOT_DOWNLOADED;
-  double lat, lon;
+  double? lat, lon;
 
   @override
   void initState() {
@@ -37,7 +37,13 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.DOWNLOADING;
     });
 
-    List<Weather> forecasts = await ws.fiveDayForecastByLocation(lat, lon);
+    if (ws == null)
+      ws = new WeatherFactory(key);
+
+    if (lat == null && lon == null)
+      return;
+
+    List<Weather> forecasts = await ws!.fiveDayForecastByLocation(lat!, lon!);
     setState(() {
       _data = forecasts;
       _state = AppState.FINISHED_DOWNLOADING;
@@ -52,7 +58,13 @@ class _MyAppState extends State<MyApp> {
       _state = AppState.DOWNLOADING;
     });
 
-    Weather weather = await ws.currentWeatherByLocation(lat, lon);
+    if (ws == null)
+      ws = new WeatherFactory(key);
+
+    if (lat == null && lon == null)
+      return;
+
+    Weather? weather = await ws!.currentWeatherByLocation(lat!, lon!);
     setState(() {
       _data = [weather];
       _state = AppState.FINISHED_DOWNLOADING;
