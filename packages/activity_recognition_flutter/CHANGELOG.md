@@ -1,3 +1,6 @@
+## 3.0.1
+* Fix the null pointer exception described in https://github.com/cph-cachet/flutter-plugins/issues/309
+
 ## 3.0.0
 * Rewrote the native source code for long-term maintenance sake.
 * Changed the API to be easier to follow.
