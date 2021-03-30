@@ -50,10 +50,14 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "flutter_health")
-            val plugin = HealthPlugin(registrar.activity(), channel)
-            registrar.addActivityResultListener(plugin)
-            channel.setMethodCallHandler(plugin)
+            try {
+                val channel = MethodChannel(registrar.messenger(), "flutter_health")
+                val plugin = HealthPlugin(registrar.activity(), channel)
+                registrar.addActivityResultListener(plugin)
+                channel.setMethodCallHandler(plugin)
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::PLUGIN_REGISTER_ERROR", e.toString())
+            }
         }
     }
 
