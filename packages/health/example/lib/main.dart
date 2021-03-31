@@ -35,11 +35,11 @@ class _MyAppState extends State<MyApp> {
 
     /// Define the types to get.
     List<HealthDataType> types = [
-      // HealthDataType.STEPS,
-      // HealthDataType.WEIGHT,
-      // HealthDataType.HEIGHT,
-      // HealthDataType.BLOOD_GLUCOSE,
-      // HealthDataType.DISTANCE_WALKING_RUNNING,
+      HealthDataType.STEPS,
+      HealthDataType.WEIGHT,
+      HealthDataType.HEIGHT,
+      HealthDataType.BLOOD_GLUCOSE,
+      HealthDataType.DISTANCE_WALKING_RUNNING,
       HealthDataType.ELECTROCARDIOGRAM,
     ];
 
