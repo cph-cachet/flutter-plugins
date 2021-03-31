@@ -56,13 +56,13 @@ class HealthFactory {
     for (int i = 0; i < weights.length; i++) {
       double bmiValue = weights[i].value.toDouble() / (h * h);
       HealthDataPoint x = HealthDataPoint._(
-          bmiValue,
           HealthDataType.BODY_MASS_INDEX,
           unit,
           weights[i].dateFrom,
           weights[i].dateTo,
           _platformType,
-          _deviceId);
+          _deviceId,
+          bmiValue);
 
       bmiHealthPoints.add(x);
     }
@@ -123,11 +123,18 @@ class HealthFactory {
       List fetchedDataPoints = await _channel.invokeMethod('getData', args);
       if (fetchedDataPoints != null) {
         healthData = fetchedDataPoints.map((e) {
-          num value = e["value"];
+          num value;
+          List values;
+
+          if (e['value'] != null) {
+            value = e['value'];
+          } else {
+            values = e['values'];
+          }
           DateTime from = DateTime.fromMillisecondsSinceEpoch(e["date_from"]);
           DateTime to = DateTime.fromMillisecondsSinceEpoch(e["date_to"]);
-          return HealthDataPoint._(
-              value, dataType, unit, from, to, _platformType, _deviceId);
+          return HealthDataPoint._(dataType, unit, from, to, _platformType,
+              _deviceId, value, values);
         }).toList();
       }
     } catch (error) {

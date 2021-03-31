@@ -97,18 +97,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
     let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
     let endDate = (arguments?["endDate"] as? NSNumber) ?? 0
+    let healthStore = HKHealthStore()
 
     // Convert dates from milliseconds to Date()
     let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
     let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
 
     var dataType = dataTypeLookUp(key: dataTypeKey)
-
-    if #available(iOS 14.4, *) {
-      if dataTypeKey == ELECTROCARDIOGRAM {
-        dataType = HKObjectType.electrocardiogramType()
-      }
-    }
 
     let predicate = HKQuery.predicateForSamples(
       withStart: dateFrom, end: dateTo, options: .strictStartDate)
@@ -122,11 +117,27 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
       guard let samples = samplesOrNil as? [HKQuantitySample] else {
         guard let samplesCategory = samplesOrNil as? [HKCategorySample] else {
-          result(
-            FlutterError(code: "FlutterHealth", message: "Results are null", details: "\(error)"))
+          if #available(iOS 14.0, *) {
+            guard let samplesEcg = samplesOrNil as? [HKElectrocardiogram] else {
+              NSLog("Error getting ECG samples")
+              return
+            }
+            result(
+              samplesEcg.map { sample -> NSDictionary in
+                let voltages = self.getVoltages(sample: sample)
+
+                return [
+                  "uuid": "\(sample.uuid)",
+                  "values": voltages,
+                  "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                  "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                ]
+              })
+          }
           return
         }
-        print(samplesCategory)
+        return
+          print(samplesCategory)
         result(
           samplesCategory.map { sample -> NSDictionary in
             let unit = self.unitLookUp(key: dataTypeKey)
@@ -153,8 +164,38 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         })
       return
     }
-    HKHealthStore().execute(query)
+    healthStore.execute(query)
+  }
 
+  func getVoltages(sample: HKSample) -> [[String: Double]] {
+    let semaphore = DispatchSemaphore(value: 0)
+    var results: [[String: Double]] = [[:]]
+
+    if #available(iOS 14.0, *) {
+      let voltageQuery = HKElectrocardiogramQuery(sample as! HKElectrocardiogram) {
+        (query, ecgResult) in
+        switch ecgResult {
+        case .error(let error):
+          NSLog("\n*** An error occurred \(error.localizedDescription) ***")
+
+        case .measurement(let value):
+          let voltage = [
+            "voltage": value.quantity(for: .appleWatchSimilarToLeadI)!.doubleValue(
+              for: HKUnit.volt()), "timeSinceStart": value.timeSinceSampleStart,
+          ]
+          results.append(voltage)
+
+        case .done:
+          semaphore.signal()
+          NSLog("\nDone")
+
+        }
+      }
+      self.healthStore.execute(voltageQuery)
+    }
+
+    semaphore.wait()
+    return results
   }
 
   func unitLookUp(key: String) -> HKUnit {

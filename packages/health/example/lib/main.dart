@@ -28,18 +28,18 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> fetchData() async {
     /// Get everything from midnight until now
-    DateTime startDate = DateTime(2020, 11, 07, 0, 0, 0);
-    DateTime endDate = DateTime(2020, 11, 07, 23, 59, 59);
+    DateTime startDate = DateTime(2020, 03, 03, 0, 0, 0);
+    DateTime endDate = DateTime(2021, 03, 04, 23, 59, 59);
 
     HealthFactory health = HealthFactory();
 
     /// Define the types to get.
     List<HealthDataType> types = [
-      HealthDataType.STEPS,
-      HealthDataType.WEIGHT,
-      HealthDataType.HEIGHT,
-      HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.DISTANCE_WALKING_RUNNING,
+      // HealthDataType.STEPS,
+      // HealthDataType.WEIGHT,
+      // HealthDataType.HEIGHT,
+      // HealthDataType.BLOOD_GLUCOSE,
+      // HealthDataType.DISTANCE_WALKING_RUNNING,
       HealthDataType.ELECTROCARDIOGRAM,
     ];
 
@@ -68,7 +68,7 @@ class _MyAppState extends State<MyApp> {
       /// Print the results
       _healthDataList.forEach((x) {
         print("Data point: $x");
-        steps += (x.value as int);
+        steps += (x.value?.round() ?? 0);
       });
 
       print("Steps: $steps");
@@ -104,7 +104,7 @@ class _MyAppState extends State<MyApp> {
         itemBuilder: (_, index) {
           HealthDataPoint p = _healthDataList[index];
           return ListTile(
-            title: Text("${p.typeString}: ${p.value}"),
+            title: Text("${p.typeString}: ${p.value ?? p.values.length}"),
             trailing: Text('${p.unitString}'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
           );
