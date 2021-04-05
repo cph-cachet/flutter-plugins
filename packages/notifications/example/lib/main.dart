@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> {
     return new MaterialApp(
       home: new Scaffold(
         appBar: new AppBar(
-          title: const Text('Screen State Example app'),
+          title: const Text('Notifications Example app'),
         ),
         body: new Center(
             child: new ListView.builder(
