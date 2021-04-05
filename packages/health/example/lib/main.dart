@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 
 void main() => runApp(MyApp());
@@ -28,8 +29,8 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> fetchData() async {
     /// Get everything from midnight until now
-    DateTime startDate = DateTime(2020, 03, 03, 0, 0, 0);
-    DateTime endDate = DateTime(2021, 03, 04, 23, 59, 59);
+    DateTime startDate = DateTime(2020, 11, 07, 0, 0, 0);
+    DateTime endDate = DateTime(2025, 11, 07, 23, 59, 59);
 
     HealthFactory health = HealthFactory();
 
@@ -68,7 +69,7 @@ class _MyAppState extends State<MyApp> {
       /// Print the results
       _healthDataList.forEach((x) {
         print("Data point: $x");
-        steps += (x.value?.round() ?? 0);
+        steps += x.value.round();
       });
 
       print("Steps: $steps");

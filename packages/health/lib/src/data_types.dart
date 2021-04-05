@@ -1,4 +1,4 @@
-part of health;
+part of '../health.dart';
 
 /// List of all available data types.
 enum HealthDataType {

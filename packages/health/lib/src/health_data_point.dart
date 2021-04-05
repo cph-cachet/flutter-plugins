@@ -1,4 +1,4 @@
-part of health;
+part of '../health.dart';
 
 /// A [HealthDataPoint] object corresponds to a data point captures from GoogleFit or Apple HealthKit
 class HealthDataPoint {
@@ -87,16 +87,17 @@ class HealthDataPoint {
 
   /// An equals (==) operator for comparing two data points
   /// This makes it possible to remove duplicate data points.
+  @override
   bool operator ==(Object o) {
     return o is HealthDataPoint &&
-        this.value == o.value &&
-        ListEquality().equals(o.values, this.values) &&
-        this.unit == o.unit &&
-        this.dateFrom == o.dateFrom &&
-        this.dateTo == o.dateTo &&
-        this.type == o.type &&
-        this.platform == o.platform &&
-        this.deviceId == o.deviceId;
+        value == o.value &&
+        ListEquality().equals(o.values, values) &&
+        unit == o.unit &&
+        dateFrom == o.dateFrom &&
+        dateTo == o.dateTo &&
+        type == o.type &&
+        platform == o.platform &&
+        deviceId == o.deviceId;
   }
 
   /// Override required due to overriding the '==' operator

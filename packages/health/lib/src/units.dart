@@ -1,4 +1,4 @@
-part of health;
+part of '../health.dart';
 
 /// List of all units.
 enum HealthDataUnit {
