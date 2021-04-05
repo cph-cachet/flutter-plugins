@@ -1,3 +1,7 @@
+## 1.3.0
+* Added null values rather than "0.0" or similar for unknown values.
+* Updated example app to android embedding v2.
+
 ## 1.2.4
 * Added a toJSON method to the Weather class
 
