@@ -1,4 +1,4 @@
-## 1.5.0
+## 2.0.0
 
 - Updated dart and flutter to null safety versions
 - package dependency updates
