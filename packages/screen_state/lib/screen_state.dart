@@ -19,24 +19,22 @@ class ScreenStateException implements Exception {
 
 class Screen {
   EventChannel _eventChannel = const EventChannel('screenStateEvents');
-  Stream<ScreenStateEvent> _screenStateStream;
+  Stream<ScreenStateEvent>? _screenStateStream;
 
-  Stream<ScreenStateEvent> get screenStateStream {
+  Stream<ScreenStateEvent>? get screenStateStream {
     if (Platform.isAndroid) {
       if (_screenStateStream == null) {
-        _screenStateStream = _eventChannel
-            .receiveBroadcastStream()
-            .map((event) => _parseScreenStateEvent(event));
+        _screenStateStream =
+            _eventChannel.receiveBroadcastStream().map((event) => _parseScreenStateEvent(event));
       }
       return _screenStateStream;
     }
-    throw ScreenStateException(
-        'Screen State API exclusively available on Android!');
+    throw ScreenStateException('Screen State API exclusively available on Android!');
   }
 
   ScreenStateEvent _parseScreenStateEvent(String event) {
     switch (event) {
-    /** Android **/
+      /** Android **/
       case 'android.intent.action.SCREEN_OFF':
         return ScreenStateEvent.SCREEN_OFF;
       case 'android.intent.action.SCREEN_ON':
