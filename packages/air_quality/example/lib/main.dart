@@ -20,20 +20,19 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, this.title}) : super(key: key);
 
-  final String title;
+  final String? title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String _content = 'Unknown';
   String _key = '9e538456b2b85c92647d8b65090e29f957638c77';
-  AirQuality _airQuality;
+  late AirQuality _airQuality;
   AppState _state = AppState.NOT_DOWNLOADED;
-  List<AirQualityData> _data;
+  late List<AirQualityData> _data;
 
   @override
   void initState() {
@@ -53,12 +52,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     /// Via station ID (Gothenburg weather station)
     AirQualityData feedFromStationId =
-    await _airQuality.feedFromStationId('7867');
+        await _airQuality.feedFromStationId('7867');
 
     /// Via Geo Location (Berlin)
     AirQualityData feedFromGeoLocation =
-    await _airQuality.feedFromGeoLocation(52.6794, 12.5346);
-
+        await _airQuality.feedFromGeoLocation(52.6794, 12.5346);
 
     /// Via IP (depends on service provider)
     AirQualityData fromIP = await _airQuality.feedFromIP();
@@ -68,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _data.add(feedFromCity);
       _data.add(feedFromStationId);
       _data.add(feedFromGeoLocation);
+      _data.add(fromIP);
     });
 
     setState(() {
@@ -82,7 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           return ListTile(
             title: Text(_data[index].toString()),
-
           );
         },
         separatorBuilder: (context, index) {
@@ -122,8 +120,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget showContent() => _state == AppState.FINISHED_DOWNLOADING
       ? contentFinishedDownload()
       : _state == AppState.DOWNLOADING
-      ? contentDownloading()
-      : contentNotDownloaded();
+          ? contentDownloading()
+          : contentNotDownloaded();
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text(widget.title!),
       ),
       body: showContent(),
       floatingActionButton: FloatingActionButton(
