@@ -1,10 +1,10 @@
 name: app_usage
 description: App usage plugin for Android only
-version: 1.2.0
+version: 2.0.0
 homepage: https://github.com/cph-cachet/flutter-plugins/blob/master/packages/app_usage
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
   flutter: ">=1.10.0"
 
 dependencies:
@@ -27,4 +27,3 @@ flutter:
         pluginClass: AppUsagePlugin
       ios:
         pluginClass: AppUsagePlugin
-
