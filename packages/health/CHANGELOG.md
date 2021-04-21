@@ -1,6 +1,10 @@
 ## 3.0.4
 * Upgrade to `device_info` version 2.0.0
 
+## 3.0.3+1
+* Upgrade to latest Google Fitness SDK and Google Sign-In for Android SDK
+
+
 ## 3.0.3
 * Merged various PRs, mostly smaller fixes
 
