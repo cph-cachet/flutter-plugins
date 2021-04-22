@@ -1,5 +1,9 @@
+## 1.0.3
+* small update to new `BackgroundLocator.registerLocationUpdate` API
+* upgrade to `background_locator` v. 1.4.0
+
 ## 1.0.2
-* upgrade to `background_locator` v. 0.2.1
+* upgrade to `background_locator` v. 1.2.2
 * support for setting `accuracy`
 * misc docs update
 
