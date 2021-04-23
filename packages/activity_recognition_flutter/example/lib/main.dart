@@ -12,7 +12,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Stream<ActivityEvent> activityStream;
+  late Stream<ActivityEvent> activityStream;
   ActivityEvent latestActivity = ActivityEvent.empty();
   List<ActivityEvent> _events = [];
   ActivityRecognition activityRecognition = ActivityRecognition.instance;
