@@ -1,6 +1,7 @@
 ## 4.0.0
 
 - Null safety migration
+- Updated swift code
 
 ## 3.0.1+1
 
