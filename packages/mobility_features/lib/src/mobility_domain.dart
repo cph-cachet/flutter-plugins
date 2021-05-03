@@ -152,34 +152,31 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
   DateTime get datetime => _arrival;
 
   List<double> get hourSlots {
-    /// Start and end should be on the same date!
     int startHour = arrival.hour;
     int endHour = departure.hour;
 
-    if (departure.midnight != arrival.midnight) {
-      throw Exception(
-          'Arrival and Departure should be on the same date, but was not! $this');
-    }
-
     List<double> hours = List<double>.filled(HOURS_IN_A_DAY, 0.0);
 
-    /// If arrived and departed within same hour
-    if (startHour == endHour) {
-      hours[startHour] = (departure.minute - arrival.minute) / 60.0;
-    }
-
-    /// Otherwise if the stop has overlap in hours
-    else {
-      /// Start
-      hours[startHour] = 1.0 - arrival.minute / 60.0;
-
-      /// In between
-      for (int hour = startHour + 1; hour < endHour; hour++) {
-        hours[hour] = 1.0;
+    // Start and end should be on the same date!
+    if (departure.midnight == arrival.midnight) {
+      // If arrived and departed within same hour
+      if (startHour == endHour) {
+        hours[startHour] = (departure.minute - arrival.minute) / 60.0;
       }
 
-      /// Departure
-      hours[endHour] = departure.minute / 60.0;
+      // Otherwise if the stop has overlap in hours
+      else {
+        // Start
+        hours[startHour] = 1.0 - arrival.minute / 60.0;
+
+        // In between
+        for (int hour = startHour + 1; hour < endHour; hour++) {
+          hours[hour] = 1.0;
+        }
+
+        // Departure
+        hours[endHour] = departure.minute / 60.0;
+      }
     }
     return hours;
   }
@@ -315,7 +312,7 @@ class _HourMatrix {
   }
 
   factory _HourMatrix.fromStops(List<Stop> stops, int numPlaces) {
-    /// Init 2d matrix with 24 rows and cols equal to number of places
+    // Init 2d matrix with 24 rows and cols equal to number of places
     List<List<double>> matrix = new List.generate(
         HOURS_IN_A_DAY, (_) => new List<double>.filled(numPlaces, 0.0));
 
@@ -323,7 +320,7 @@ class _HourMatrix {
       List<Stop> stopsAtPlace = stops.where((s) => (s.placeId) == j).toList();
 
       for (Stop s in stopsAtPlace) {
-        /// For each hour of the day, add the hours from the StopRow to the matrix
+        // For each hour of the day, add the hours from the StopRow to the matrix
         for (int i = 0; i < HOURS_IN_A_DAY; i++) {
           matrix[i][j] += s.hourSlots[i];
         }

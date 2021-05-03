@@ -3,7 +3,7 @@ library mobility_app;
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'package:mubs_background_location/mubs_background_location.dart';
+import 'package:carp_background_location/carp_background_location.dart';
 import 'package:mobility_features/mobility_features.dart';
 
 part 'stops_page.dart';

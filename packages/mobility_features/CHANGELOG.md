@@ -1,3 +1,7 @@
+## 2.0.6 
+* removal of exception
+* update to use `carp_background_location`
+
 ## [2.0.5] - Documentation
 * Added images and changed documentation somewhat
 
