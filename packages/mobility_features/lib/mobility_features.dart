@@ -1,7 +1,6 @@
 library mobility_features;
 
 import 'dart:async';
-import 'dart:isolate';
 import 'dart:math';
 import 'package:simple_cluster/simple_cluster.dart';
 import 'package:stats/stats.dart';
