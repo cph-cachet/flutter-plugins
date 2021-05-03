@@ -19,9 +19,11 @@ void main() async {
   GeoLocation pos2 = GeoLocation(55.685329, 12.538601);
 
   // Dronning Louises Bro
+  // ignore: unused_local_variable
   GeoLocation pos3 = GeoLocation(55.686723, 12.563769);
 
   // Assistentens Kirkegaard
+  // ignore: unused_local_variable
   GeoLocation pos4 = GeoLocation(55.690862, 12.549545);
 
   /// This test  verifies that the 'midnight' extension

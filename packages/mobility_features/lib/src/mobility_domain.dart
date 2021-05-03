@@ -135,8 +135,8 @@ class Stop implements _Serializable, _Geospatial, _Timestamped {
 
   /// Construct stop from point cloud
   factory Stop._fromLocationSamples(List<LocationSample> locationSamples,
-      {int placeId = -1, filler = false}) {
-    /// Calculate center
+      {int placeId = -1}) {
+    // Calculate center
     GeoLocation center = _computeCentroid(locationSamples);
     return Stop._(
         center, locationSamples.first.datetime, locationSamples.last.datetime,
@@ -257,6 +257,7 @@ class Move implements _Serializable, _Timestamped {
   }
 
   /// Create a Move with a straight line between two stops
+  // ignore: unused_element
   factory Move._fromStops(Stop a, Stop b, {double distance}) {
     /// Distance can be overridden. If it was not then it should be computed
     if (distance == null) {
@@ -329,6 +330,7 @@ class _HourMatrix {
     return _HourMatrix(matrix);
   }
 
+  // ignore: unused_element
   factory _HourMatrix.routineMatrix(List<_HourMatrix> matrices) {
     int nDays = matrices.length;
     int nPlaces = matrices.first.matrix.first.length;

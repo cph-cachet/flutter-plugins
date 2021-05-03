@@ -108,6 +108,12 @@ class _MyHomePageState extends State<MyHomePage> {
     streamInit();
   }
 
+  @override
+  void dispose() {
+    mobilitySubscription?.cancel();
+    super.dispose();
+  }
+
   void onMobilityContext(MobilityContext context) {
     print('Context received: ${context.toJson()}');
     setState(() {
@@ -221,19 +227,10 @@ class _MyHomePageState extends State<MyHomePage> {
       currentIndex: _currentIndex, // this will be set when a new tab is tapped
       type: BottomNavigationBarType.fixed,
       items: [
-        BottomNavigationBarItem(
-          icon: featuresIcon,
-          title: new Text('Features'),
-        ),
-        BottomNavigationBarItem(
-          icon: stopIcon,
-          title: new Text('Stops'),
-        ),
-        BottomNavigationBarItem(
-          icon: placeIcon,
-          title: new Text('Places'),
-        ),
-        BottomNavigationBarItem(icon: moveIcon, title: Text('Moves'))
+        BottomNavigationBarItem(icon: featuresIcon, label: 'Features'),
+        BottomNavigationBarItem(icon: stopIcon, label: 'Stops'),
+        BottomNavigationBarItem(icon: placeIcon, label: 'Places'),
+        BottomNavigationBarItem(icon: moveIcon, label: 'Moves')
       ],
     );
   }
