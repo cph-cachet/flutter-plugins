@@ -417,7 +417,6 @@ void main() async {
       Stream<MobilityContext> mobilityStream = factory.contextStream;
 
       mobilityStream.listen(expectAsync1((event) {
-
         print('=' * 150);
         print(
             "Mobility Context Received: ${jsonEncoder.convert(event.toJson())}");

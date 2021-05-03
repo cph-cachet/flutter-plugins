@@ -94,6 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+
     /// Set up Mobility Features
     mobilityFactory.stopDuration = Duration(seconds: 20);
     mobilityFactory.placeRadius = 50.0;

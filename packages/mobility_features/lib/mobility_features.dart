@@ -10,7 +10,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
-
 part 'package:mobility_features/src/mobility_functions.dart';
 part 'package:mobility_features/src/mobility_domain.dart';
 part 'package:mobility_features/src/mobility_intermediate.dart';
