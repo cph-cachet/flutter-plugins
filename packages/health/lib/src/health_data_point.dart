@@ -9,9 +9,11 @@ class HealthDataPoint {
   DateTime _dateTo;
   PlatformType _platform;
   String _deviceId;
+  bool _manual;
+  String _source;
 
   HealthDataPoint._(this._value, this._type, this._unit, this._dateFrom,
-      this._dateTo, this._platform, this._deviceId) {
+      this._dateTo, this._platform, this._deviceId, this._manual, this._source) {
     /// Set the value to minutes rather than the category
     /// returned by the native API
     if (type == HealthDataType.MINDFULNESS ||
@@ -36,6 +38,8 @@ class HealthDataPoint {
     data['date_to'] = this.dateTo;
     data['data_type'] = this.type;
     data['platform_type'] = this.platform;
+    data['manual'] = this.manual;
+    data['source'] = this.source;
     return data;
   }
 
@@ -46,7 +50,9 @@ class HealthDataPoint {
       'dateFrom: $dateFrom, '
       'dateTo: $dateTo, '
       'dataType: $type,'
-      'platform: $platform';
+      'platform: $platform,'
+      'manual: $manual,'
+      'source: $source';
 
   /// Get the quantity value of the data point
   num get value => _value;
@@ -77,6 +83,13 @@ class HealthDataPoint {
   /// the data point was extracted
   String get deviceId => _deviceId;
 
+  /// Gets whether the activity is
+  /// a manual activity or not
+  bool get manual => _manual;
+
+  /// Gets the source of the activity
+  String get source => _source;
+
   /// An equals (==) operator for comparing two data points
   /// This makes it possible to remove duplicate data points.
   @override
@@ -88,7 +101,9 @@ class HealthDataPoint {
         dateTo == o.dateTo &&
         type == o.type &&
         platform == o.platform &&
-        deviceId == o.deviceId;
+        deviceId == o.deviceId &&
+        manual == o.manual &&
+        source == o.source;
   }
 
   /// Override required due to overriding the '==' operator

@@ -123,6 +123,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "value": sample.value,
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                        "manual": sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true,
+                        "source":
                     ]
                 })
                 return
@@ -135,11 +137,21 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     "value": sample.quantity.doubleValue(for: unit),
                     "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                     "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                    "manual": sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true,
+                    "source": self.readSource(sample: sample)
                 ]
             })
             return
         }
         HKHealthStore().execute(query)
+    }
+
+    private func readSource(sample: HKSample) -> String {
+        if #available(iOS 9, *) {
+            return sample.sourceRevision.source.name;
+        }
+
+        return sample.source.name;
     }
 
     func unitLookUp(key: String) -> HKUnit {

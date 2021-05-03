@@ -29,6 +29,7 @@ Pods/
 **/Flutter/flutter_assets/
 ServiceDefinitions.json
 xcuserdata/
+flutter_export_environment.sh
 
 local.properties
 .gradle/
@@ -41,7 +42,7 @@ GeneratedPluginRegistrant.h
 GeneratedPluginRegistrant.m
 GeneratedPluginRegistrant.java
 build/
-.flutter-plugins
+.flutter-plugins*
 
 ### Eclipse Patch ###
 # Legacy Eclipse project files

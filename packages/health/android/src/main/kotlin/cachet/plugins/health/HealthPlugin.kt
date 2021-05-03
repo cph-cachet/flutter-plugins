@@ -218,7 +218,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                             "value" to getHealthDataValue(dataPoint, unit),
                             "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                             "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                            "unit" to unit.toString()
+                            "unit" to unit.toString(),
+                            "manual" to dataPoint.originalDataSource.streamName.contains("user_input"),
+                            "source" to dataPoint.originalDataSource.streamName
                     )
 
                 }
