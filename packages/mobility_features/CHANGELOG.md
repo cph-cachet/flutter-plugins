@@ -1,4 +1,4 @@
-## 2.0.6 
+## 2.0.6+1 
 * removal of exception
 * update to use `carp_background_location`
 
