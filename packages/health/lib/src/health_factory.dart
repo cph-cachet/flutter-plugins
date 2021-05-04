@@ -34,6 +34,26 @@ class HealthFactory {
     return isAuthorized;
   }
 
+  /// Returns whether we have access to GoogleFit/Apple HealthKit
+  /// Note: Apple can only let you know if you asked, before.
+  Future<bool> hasAuthorization(List<HealthDataType> types) async {
+    /// If BMI is requested, then also ask for weight and height
+    if (types.contains(HealthDataType.BODY_MASS_INDEX)) {
+      if (!types.contains(HealthDataType.WEIGHT)) {
+        types.add(HealthDataType.WEIGHT);
+      }
+
+      if (!types.contains(HealthDataType.HEIGHT)) {
+        types.add(HealthDataType.HEIGHT);
+      }
+    }
+
+    List<String> keys = types.map((e) => _enumToString(e)).toList();
+    final bool isAuthorized =
+        await _channel.invokeMethod('hasAuthorization', {'types': keys});
+    return isAuthorized;
+  }
+
   /// Calculate the BMI using the last observed height and weight values.
   Future<List<HealthDataPoint>> _computeAndroidBMI(
       DateTime startDate, DateTime endDate) async {

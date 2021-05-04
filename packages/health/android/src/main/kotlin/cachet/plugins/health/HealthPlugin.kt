@@ -251,7 +251,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val optionsToRegister = callToHealthTypes(call)
         mResult = result
 
-        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)
+        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), optionsToRegister)
 
         /// Not granted? Ask for permission
         if (!isGranted && activity != null) {
@@ -267,10 +267,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
+    /// Called when the "hasAuthorization" is invoked from Flutter
+    private fun hasAuthorization(result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+        val optionsToRegister = callToHealthTypes(call)
+        result.success(GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), optionsToRegister))
+    }
+
     /// Handle calls from the MethodChannel
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
+            "hasAuthorization" -> hasAuthorization(result)
             "getData" -> getData(call, result)
             else -> result.notImplemented()
         }
