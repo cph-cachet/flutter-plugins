@@ -41,6 +41,7 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.HEIGHT,
       HealthDataType.BLOOD_GLUCOSE,
       HealthDataType.DISTANCE_WALKING_RUNNING,
+      HealthDataType.ELECTROCARDIOGRAM,
     ];
 
     setState(() => _state = AppState.FETCHING_DATA);
@@ -104,7 +105,7 @@ class _MyAppState extends State<MyApp> {
         itemBuilder: (_, index) {
           HealthDataPoint p = _healthDataList[index];
           return ListTile(
-            title: Text("${p.typeString}: ${p.value}"),
+            title: Text("${p.typeString}: ${p.value ?? p.values.length}"),
             trailing: Text('${p.unitString}'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
           );
