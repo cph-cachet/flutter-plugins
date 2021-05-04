@@ -268,7 +268,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     /// Called when the "hasAuthorization" is invoked from Flutter
-    private fun hasAuthorization(result: Result) {
+    private fun hasAuthorization(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
             return
@@ -281,7 +281,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
-            "hasAuthorization" -> hasAuthorization(result)
+            "hasAuthorization" -> hasAuthorization(call, result)
             "getData" -> getData(call, result)
             else -> result.notImplemented()
         }
