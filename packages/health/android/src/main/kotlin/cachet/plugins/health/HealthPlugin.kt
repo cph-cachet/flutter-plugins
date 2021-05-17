@@ -182,6 +182,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
+
     /// Called when the "getHealthDataByType" is invoked from Flutter
     private fun getData(call: MethodCall, result: Result) {
         if (activity == null) {
@@ -218,7 +219,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                             "value" to getHealthDataValue(dataPoint, unit),
                             "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                             "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                            "unit" to unit.toString()
+                            "unit" to unit.toString(),
+                            "source_name" to dataPoint.getOriginalDataSource().getAppPackageName(),
+                            "source_id" to dataPoint.getOriginalDataSource().getStreamIdentifier()
                     )
 
                 }
