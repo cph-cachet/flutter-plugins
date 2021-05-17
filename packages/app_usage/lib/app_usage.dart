@@ -17,8 +17,8 @@ class AppUsageException implements Exception {
 }
 
 class AppUsageInfo {
-  String _packageName, _appName;
-  Duration _usage;
+  late String _packageName, _appName;
+  late Duration _usage;
   DateTime _startDate, _endDate;
 
   AppUsageInfo(
@@ -71,7 +71,7 @@ class AppUsage {
 
       /// Convert each entry in the map to an Application object
       return _map.keys
-          .map((k) => AppUsageInfo(k, _map[k], startDate, endDate))
+          .map((k) => AppUsageInfo(k, _map[k]!, startDate, endDate))
           .where((a) => a.usage > Duration(seconds: 0))
           .toList();
     }

@@ -35,7 +35,7 @@ Map<String, ActivityType> _activityMap = {
 class ActivityEvent {
   ActivityType _type;
   int _confidence;
-  DateTime _timeStamp;
+  late DateTime _timeStamp;
 
   ActivityEvent._(this._type, this._confidence) {
     this._timeStamp = DateTime.now();
@@ -52,9 +52,9 @@ class ActivityEvent {
 
     ActivityType type = ActivityType.UNKNOWN;
     if (_activityMap.containsKey(tokens.first)) {
-      type = _activityMap[tokens.first];
+      type = _activityMap[tokens.first]!;
     }
-    int conf = int.tryParse(tokens.last);
+    int conf = int.tryParse(tokens.last)!;
 
     return ActivityEvent._(type, conf);
   }

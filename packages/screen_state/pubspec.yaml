@@ -1,11 +1,11 @@
 name: screen_state
 description: A plugin for reporting screen events while the flutter application is running in background. Works for Android only.
-version: 1.0.1
+version: 2.0.0
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/screen_state
 #author: CACHET Team <cph.cachet@gmail.com>
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
   flutter: ">=1.10.0"
 
 dependencies:

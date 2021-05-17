@@ -165,4 +165,5 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
             eventSink.success(result);
         }
     }
+  }
 }

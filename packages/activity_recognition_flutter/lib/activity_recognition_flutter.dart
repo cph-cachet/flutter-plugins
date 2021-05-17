@@ -1,15 +1,15 @@
 library activity_recognition;
 
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io' show Platform;
+// import 'dart:convert';
+// import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 part 'ar_domain.dart';
 
 class ActivityRecognition {
-  Stream<ActivityEvent> _stream;
+  Stream<ActivityEvent>? _stream;
 
   ActivityRecognition._();
 
@@ -30,10 +30,9 @@ class ActivityRecognition {
   Stream<ActivityEvent> startStream({bool runForegroundService = true}) {
     if (_stream == null) {
       _stream = _eventChannel
-          .receiveBroadcastStream({"foreground": runForegroundService})
-          .map((x) => ActivityEvent.fromJson(x));
+          .receiveBroadcastStream({"foreground": runForegroundService}).map(
+              (x) => ActivityEvent.fromJson(x));
     }
-    return _stream;
+    return _stream!;
   }
-
 }
