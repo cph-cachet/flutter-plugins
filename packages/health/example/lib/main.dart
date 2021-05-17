@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  Future<void> fetchData() async {
+  Future fetchData() async {
     /// Get everything from midnight until now
     DateTime startDate = DateTime(2020, 11, 07, 0, 0, 0);
     DateTime endDate = DateTime(2025, 11, 07, 23, 59, 59);
