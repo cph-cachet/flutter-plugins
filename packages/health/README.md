@@ -117,6 +117,8 @@ DateTime _dateFrom;
 DateTime _dateTo;
 PlatformType _platform;
 String _uuid, _deviceId;
+String _sourceId;
+String _sourceName;
 ```
 
 A `HealthData healthData` object can be serialized to JSON with the `healthData.toJson()` method.
