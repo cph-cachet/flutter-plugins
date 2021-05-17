@@ -24,6 +24,10 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _infos = infoList;
       });
+
+      for (var info in infoList) {
+        print(info.toString());
+      }
     } on AppUsageException catch (exception) {
       print(exception);
     }

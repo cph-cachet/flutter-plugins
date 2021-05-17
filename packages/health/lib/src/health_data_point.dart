@@ -1,4 +1,4 @@
-part of health;
+part of '../health.dart';
 
 /// A [HealthDataPoint] object corresponds to a data point captures from GoogleFit or Apple HealthKit
 class HealthDataPoint {
@@ -55,7 +55,6 @@ class HealthDataPoint {
   String toString() => '${this.runtimeType} - '
       'value: $value, '
       'unit: $unit, '
-      'date_from: $dateFrom, '
       'dateFrom: $dateFrom, '
       'dateTo: $dateTo, '
       'dataType: $type,'
@@ -102,6 +101,7 @@ class HealthDataPoint {
 
   /// An equals (==) operator for comparing two data points
   /// This makes it possible to remove duplicate data points.
+  @override
   bool operator ==(Object o) {
     return o is HealthDataPoint &&
         this.value == o.value &&

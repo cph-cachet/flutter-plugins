@@ -1,3 +1,13 @@
+## 3.0.5
+* Null safety in Dart has been addressed
+* The plugin supports the Android v2 embedding
+
+## 3.0.4
+* Upgrade to `device_info` version 2.0.0
+
+## 3.0.3
+* Merged various PRs, mostly smaller fixes
+
 ## 3.0.2
 * Upgrade to `device_info` version 1.0.0
 

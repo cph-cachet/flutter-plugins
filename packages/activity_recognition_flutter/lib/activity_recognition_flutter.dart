@@ -1,19 +1,24 @@
 library activity_recognition;
 
 import 'dart:async';
-import 'dart:convert';
-
+// import 'dart:convert';
+// import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_foreground_service/flutter_foreground_service.dart';
-import 'dart:io' show Platform;
 
-part 'package:activity_recognition_flutter/src/ar_channel.dart';
-
-part 'package:activity_recognition_flutter/src/ar_domain.dart';
+part 'ar_domain.dart';
 
 class ActivityRecognition {
-  static _ActivityChannel _channel;
+  Stream<ActivityEvent>? _stream;
+
+  ActivityRecognition._();
+
+  static final ActivityRecognition _instance = ActivityRecognition._();
+
+  static ActivityRecognition get instance => _instance;
+
+  static const EventChannel _eventChannel =
+      const EventChannel('activity_recognition_flutter');
 
   /// Requests continuous [ActivityEvent] updates.
   ///
@@ -22,11 +27,12 @@ class ActivityRecognition {
   /// updates to be streamed while the app runs in the background.
   /// The programmer can choose to not enable to foreground service,
   /// if they so choose.
-  static Stream<ActivityEvent> activityStream(
-      {bool runForegroundService = true}) {
-    if (_channel == null) {
-      _channel = _ActivityChannel(runForegroundService);
+  Stream<ActivityEvent> startStream({bool runForegroundService = true}) {
+    if (_stream == null) {
+      _stream = _eventChannel
+          .receiveBroadcastStream({"foreground": runForegroundService}).map(
+              (x) => ActivityEvent.fromJson(x));
     }
-    return _channel.activityUpdates;
+    return _stream!;
   }
 }

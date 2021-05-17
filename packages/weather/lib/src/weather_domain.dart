@@ -10,32 +10,32 @@ part of weather_library;
 /// Can output temperature as Kelvin, Celsius or Fahrenheit.
 /// All results are returned as [double].
 class Temperature {
-  double _kelvin;
+  double? _kelvin;
 
   Temperature(this._kelvin);
 
   /// Convert temperature to Kelvin
-  double get kelvin => _kelvin;
+  double? get kelvin => _kelvin;
 
   /// Convert temperature to Celsius
-  double get celsius => _kelvin - 273.15;
+  double? get celsius => _kelvin != null ? _kelvin! - 273.15 : null;
 
   /// Convert temperature to Fahrenheit
-  double get fahrenheit => _kelvin * (9 / 5) - 459.67;
+  double? get fahrenheit => _kelvin != null ? _kelvin! * (9 / 5) - 459.67 : null;
 
-  String toString() => '${celsius.toStringAsFixed(1)} Celsius';
+  String toString() => celsius != null ? '${celsius!.toStringAsFixed(1)} Celsius' : "No temperature";
 }
 
 /// A class for storing a weather-query response from OpenWeatherMap.
 /// This includes various measures such as location,
 /// temperature, wind, snow, rain and humidity.
 class Weather {
-  String _country, _areaName, _weatherMain, _weatherDescription, _weatherIcon;
-  Temperature _temperature, _tempMin, _tempMax, _tempFeelsLike;
-  Map<String, dynamic> _weatherData;
+  String? _country, _areaName, _weatherMain, _weatherDescription, _weatherIcon;
+  Temperature? _temperature, _tempMin, _tempMax, _tempFeelsLike;
+  Map<String, dynamic>? _weatherData;
 
-  DateTime _date, _sunrise, _sunset;
-  double _latitude,
+  DateTime? _date, _sunrise, _sunset;
+  double? _latitude,
       _longitude,
       _pressure,
       _windSpeed,
@@ -48,17 +48,17 @@ class Weather {
       _snowLastHour,
       _snowLast3Hours;
 
-  int _weatherConditionCode;
+  int? _weatherConditionCode;
 
   Weather(Map<String, dynamic> jsonData) {
-    Map<String, dynamic> main = jsonData['main'];
-    Map<String, dynamic> coord = jsonData['coord'];
-    Map<String, dynamic> sys = jsonData['sys'];
-    Map<String, dynamic> wind = jsonData['wind'];
-    Map<String, dynamic> clouds = jsonData['clouds'];
-    Map<String, dynamic> rain = jsonData['rain'];
-    Map<String, dynamic> snow = jsonData['snow'];
-    Map<String, dynamic> weather = jsonData['weather'][0];
+    Map<String, dynamic>? main = jsonData['main'];
+    Map<String, dynamic>? coord = jsonData['coord'];
+    Map<String, dynamic>? sys = jsonData['sys'];
+    Map<String, dynamic>? wind = jsonData['wind'];
+    Map<String, dynamic>? clouds = jsonData['clouds'];
+    Map<String, dynamic>? rain = jsonData['rain'];
+    Map<String, dynamic>? snow = jsonData['snow'];
+    Map<String, dynamic>? weather = jsonData['weather'][0];
 
     _latitude = _unpackDouble(coord, 'lat');
     _longitude = _unpackDouble(coord, 'lon');
@@ -98,7 +98,7 @@ class Weather {
   }
 
   /// The original JSON data from the API
-  Map<String, dynamic> toJson() => _weatherData;
+  Map<String, dynamic>? toJson() => _weatherData;
 
   /// The weather data formatted as a string with newlines
   String toString() {
@@ -114,89 +114,89 @@ class Weather {
   }
 
   /// A long description of the weather
-  String get weatherDescription => _weatherDescription;
+  String? get weatherDescription => _weatherDescription;
 
   /// A brief description of the weather
-  String get weatherMain => _weatherMain;
+  String? get weatherMain => _weatherMain;
 
   /// Icon depicting current weather
-  String get weatherIcon => _weatherIcon;
+  String? get weatherIcon => _weatherIcon;
 
   /// Weather condition codes
-  int get weatherConditionCode => _weatherConditionCode;
+  int? get weatherConditionCode => _weatherConditionCode;
 
   /// The level of cloudiness in Okta (0-9 scale)
-  double get cloudiness => _cloudiness;
+  double? get cloudiness => _cloudiness;
 
   /// Wind direction in degrees
-  double get windDegree => _windDegree;
+  double? get windDegree => _windDegree;
 
   /// Wind speed in m/s
-  double get windSpeed => _windSpeed;
+  double? get windSpeed => _windSpeed;
 
   /// Wind gust in m/s
-  double get windGust => _windGust;
+  double? get windGust => _windGust;
 
   /// Max [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
-  Temperature get tempMax => _tempMax;
+  Temperature? get tempMax => _tempMax;
 
   /// Min [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
-  Temperature get tempMin => _tempMin;
+  Temperature? get tempMin => _tempMin;
 
   /// Mean [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
-  Temperature get temperature => _temperature;
+  Temperature? get temperature => _temperature;
 
   /// The 'feels like' [Temperature]. Available as Kelvin, Celsius and Fahrenheit.
-  Temperature get tempFeelsLike => _tempFeelsLike;
+  Temperature? get tempFeelsLike => _tempFeelsLike;
 
   /// Pressure in Pascal
-  double get pressure => _pressure;
+  double? get pressure => _pressure;
 
   /// Humidity in percent
-  double get humidity => _humidity;
+  double? get humidity => _humidity;
 
   /// Longitude of the weather observation
-  double get longitude => _longitude;
+  double? get longitude => _longitude;
 
   /// Latitude of the weather observation
-  double get latitude => _latitude;
+  double? get latitude => _latitude;
 
   /// Date of the weather observation
-  DateTime get date => _date;
+  DateTime? get date => _date;
 
   /// Timestamp of sunset
-  DateTime get sunset => _sunset;
+  DateTime? get sunset => _sunset;
 
   /// Timestamp of sunrise
-  DateTime get sunrise => _sunrise;
+  DateTime? get sunrise => _sunrise;
 
   /// Name of the area, ex Mountain View, or Copenhagen Municipality
-  String get areaName => _areaName;
+  String? get areaName => _areaName;
 
   /// Country code, ex US or DK
-  String get country => _country;
+  String? get country => _country;
 
   /// Rain fall last hour measured in mm
-  double get rainLastHour => _rainLastHour;
+  double? get rainLastHour => _rainLastHour;
 
   /// Rain fall last 3 hours measured in mm
-  double get rainLast3Hours => _rainLast3Hours;
+  double? get rainLast3Hours => _rainLast3Hours;
 
   /// Snow fall last 3 hours measured in mm
-  double get snowLastHour => _snowLastHour;
+  double? get snowLastHour => _snowLastHour;
 
   /// Snow fall last 3 hours measured in mm
-  double get snowLast3Hours => _snowLast3Hours;
+  double? get snowLast3Hours => _snowLast3Hours;
 }
 
 List<Weather> _parseForecast(Map<String, dynamic> jsonForecast) {
   List<dynamic> forecastList = jsonForecast['list'];
   Map<String, dynamic> city = jsonForecast['city'];
-  Map<String, dynamic> coord = city['coord'];
-  String country = city['country'];
-  String name = _unpackString(city, 'name');
-  double lat = _unpackDouble(coord, 'lat');
-  double lon = _unpackDouble(coord, 'lon');
+  Map<String, dynamic>? coord = city['coord'];
+  String? country = city['country'];
+  String? name = _unpackString(city, 'name');
+  double? lat = _unpackDouble(coord, 'lat');
+  double? lon = _unpackDouble(coord, 'lon');
 
   // Convert the json list to a Weather list
   return forecastList.map((w) {

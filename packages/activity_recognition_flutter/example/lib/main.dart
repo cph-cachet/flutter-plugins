@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,9 +12,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Stream<ActivityEvent> activityStream;
+  late Stream<ActivityEvent> activityStream;
   ActivityEvent latestActivity = ActivityEvent.empty();
   List<ActivityEvent> _events = [];
+  ActivityRecognition activityRecognition = ActivityRecognition.instance;
 
   @override
   void initState() {
@@ -21,11 +24,23 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _init() async {
-    if (await Permission.activityRecognition.request().isGranted) {
-      activityStream =
-          ActivityRecognition.activityStream(runForegroundService: true);
-      activityStream.listen(onData);
+    /// Android requires explicitly asking permission
+    if (Platform.isAndroid) {
+      if (await Permission.activityRecognition.request().isGranted) {
+        _startTracking();
+      }
     }
+
+    /// iOS does not
+    else {
+      _startTracking();
+    }
+  }
+
+  void _startTracking() {
+    activityStream =
+        activityRecognition.startStream(runForegroundService: true);
+    activityStream.listen(onData);
   }
 
   void onData(ActivityEvent activityEvent) {

@@ -17,14 +17,14 @@ class AppUsageException implements Exception {
 }
 
 class AppUsageInfo {
-  String _packageName, _appName;
-  Duration _usage;
+  late String _packageName, _appName;
+  late Duration _usage;
   DateTime _startDate, _endDate;
 
   AppUsageInfo(
       String name, double usageInSeconds, this._startDate, this._endDate) {
-    List<String> tokens =  name.split('.');
-    _packageName = tokens.length > 2 ? tokens[1] : tokens.first;
+    List<String> tokens = name.split('.');
+    _packageName = name;
     _appName = tokens.last;
     _usage = Duration(seconds: usageInSeconds.toInt());
   }
@@ -53,7 +53,7 @@ class AppUsageInfo {
 
 class AppUsage {
   static const MethodChannel _methodChannel =
-  const MethodChannel("app_usage.methodChannel");
+      const MethodChannel("app_usage.methodChannel");
 
   static Future<List<AppUsageInfo>> getAppUsage(
       DateTime startDate, DateTime endDate) async {
@@ -71,7 +71,7 @@ class AppUsage {
 
       /// Convert each entry in the map to an Application object
       return _map.keys
-          .map((k) => AppUsageInfo(k, _map[k], startDate, endDate))
+          .map((k) => AppUsageInfo(k, _map[k]!, startDate, endDate))
           .where((a) => a.usage > Duration(seconds: 0))
           .toList();
     }
