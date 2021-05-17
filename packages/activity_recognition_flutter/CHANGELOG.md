@@ -1,3 +1,8 @@
+## 4.0.1
+* Fix of issue #309, i.e. a null pointer that occurs when running the plugin on API 30.
+* Replaced the deprecated `IntentService` with a `JobIntentService`. 
+* PR #314
+
 ## 4.0.0
 
 - Null safety migration
