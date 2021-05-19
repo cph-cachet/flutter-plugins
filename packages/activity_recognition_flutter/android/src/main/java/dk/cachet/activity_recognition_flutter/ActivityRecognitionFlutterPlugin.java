@@ -166,4 +166,3 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
         }
     }
   }
-}
