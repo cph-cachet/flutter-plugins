@@ -140,7 +140,7 @@ class HealthFactory {
       'accountName': accountName
     };
 
-    List<HealthDataPoint> healthData = new List();
+    List<HealthDataPoint> healthData;
     HealthDataUnit unit = _dataTypeToUnit[dataType];
 
     try {
