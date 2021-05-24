@@ -53,7 +53,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         initializeTypes()
 
         /// Handle checkIfHealthDataAvailable
-        if (call.method.elementsEqual("checkIfHealthDataAvailable")){
+        if (call.method.elementsEqual("hasPermissions")){
             checkIfHealthDataAvailable(call: call, result: result)
         }
         /// Handle requestAuthorization
@@ -86,7 +86,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             healthStore.requestAuthorization(toShare: nil, read: typesToRequest) { (success, error) in
                 result(success)
             }
-        } 
+        }
         else {
             result(false)// Handle the error here.
         }
@@ -184,7 +184,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[SLEEP_AWAKE] = HKUnit.init(from: "")
 
         // Set up iOS 11 specific types (ordinary health data types)
-        if #available(iOS 11.0, *) { 
+        if #available(iOS 11.0, *) {
             dataTypesDict[ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!
             dataTypesDict[BASAL_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!
             dataTypesDict[BLOOD_GLUCOSE] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
@@ -230,7 +230,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         allDataTypes = Set(heartRateEventTypes + healthDataTypes)
     }
 }
-
 
 
 

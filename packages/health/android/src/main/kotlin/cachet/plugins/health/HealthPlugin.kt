@@ -1,6 +1,7 @@
 package cachet.plugins.health
 
 import android.app.Activity
+import android.content.Context
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -11,72 +12,50 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
 import android.content.Intent
 import android.os.Handler
 import android.util.Log
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import com.google.android.gms.fitness.data.*
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val CHANNEL_NAME = "flutter_health"
 
-class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
+const val BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+const val HEIGHT = "HEIGHT"
+const val WEIGHT = "WEIGHT"
+const val STEPS = "STEPS"
+const val ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
+const val HEART_RATE = "HEART_RATE"
+const val BODY_TEMPERATURE = "BODY_TEMPERATURE"
+const val BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
+const val BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
+const val BLOOD_OXYGEN = "BLOOD_OXYGEN"
+const val BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
+const val MOVE_MINUTES = "MOVE_MINUTES"
+const val DISTANCE_DELTA = "DISTANCE_DELTA"
+
+class HealthPlugin : MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
+    private lateinit var channel: MethodChannel
+    private lateinit var context: Context
+
     private var result: Result? = null
     private var handler: Handler? = null
     private var activity: Activity? = null
 
-    private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
-    private var HEIGHT = "HEIGHT"
-    private var WEIGHT = "WEIGHT"
-    private var STEPS = "STEPS"
-    private var ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
-    private var HEART_RATE = "HEART_RATE"
-    private var BODY_TEMPERATURE = "BODY_TEMPERATURE"
-    private var BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
-    private var BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
-    private var BLOOD_OXYGEN = "BLOOD_OXYGEN"
-    private var BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
-    private var MOVE_MINUTES = "MOVE_MINUTES"
-    private var DISTANCE_DELTA = "DISTANCE_DELTA"
-
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        var channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME);
-        val plugin = HealthPlugin(channel);
-        channel.setMethodCallHandler(plugin)
+    override fun onAttachedToEngine(binding: FlutterPluginBinding) {
+        channel = MethodChannel(binding.binaryMessenger, CHANNEL_NAME)
+        context = binding.applicationContext
+        channel.setMethodCallHandler(this)
     }
 
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel = null
-        activity = null
-    }
-
-    // This static function is optional and equivalent to onAttachedToEngine. It supports the old
-    // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
-    // plugin registration via this function while apps migrate to use the new Android APIs
-    // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
-    //
-    // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
-    // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
-    // depending on the user's project. onAttachedToEngine or registerWith must both be defined
-    // in the same class.
-    companion object {
-        @Suppress("unused")
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), CHANNEL_NAME)
-            val plugin = HealthPlugin(channel)
-            registrar.addActivityResultListener(plugin)
-            channel.setMethodCallHandler(plugin)
-        }
-    }
+    override fun onDetachedFromEngine(binding: FlutterPluginBinding) {}
 
     /// DataTypes to register
     private val fitnessOptions = FitnessOptions.builder()
@@ -96,19 +75,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
 
     override fun success(p0: Any?) {
-        handler?.post(
-                Runnable { result?.success(p0) })
+        handler?.post { result?.success(p0) }
     }
 
     override fun notImplemented() {
-        handler?.post(
-                Runnable { result?.notImplemented() })
+        handler?.post { result?.notImplemented() }
     }
 
     override fun error(
             errorCode: String, errorMessage: String?, errorDetails: Any?) {
-        handler?.post(
-                Runnable { result?.error(errorCode, errorMessage, errorDetails) })
+        handler?.post { result?.error(errorCode, errorMessage, errorDetails) }
     }
 
 
@@ -119,7 +95,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 mResult?.success(true)
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 Log.d("FLUTTER_HEALTH", "Access Denied!")
-                mResult?.success(false);
+                mResult?.success(false)
             }
         }
         return false
@@ -240,35 +216,47 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         return typesBuilder.build()
     }
 
-    /// Called when the "requestAuthorization" is invoked from Flutter 
-    private fun requestAuthorization(call: MethodCall, result: Result) {
-        if (activity == null) {
+    private fun hasOAuthPermission(fitnessOptions: FitnessOptions): Boolean {
+        return GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)
+    }
+
+    /// Called when the "hasPermissions" is invoked from Flutter
+    private fun hasPermissions(call: MethodCall, result: Result) {
+        val options = callToHealthTypes(call)
+
+        if (hasOAuthPermission(options)) {
+            result.success(true)
+        } else {
             result.success(false)
+        }
+    }
+
+    /// Called when the "requestAuthorization" is invoked from Flutter
+    private fun requestAuthorization(call: MethodCall, result: Result) {
+        val options = callToHealthTypes(call)
+        mResult = result
+
+        if (activity == null) {
+            mResult?.success(false)
             return
         }
 
-        val optionsToRegister = callToHealthTypes(call)
-        mResult = result
-
-        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)
-
-        /// Not granted? Ask for permission
-        if (!isGranted && activity != null) {
-            GoogleSignIn.requestPermissions(
-                    activity!!,
-                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(activity),
-                    optionsToRegister)
-        }
-        /// Permission already granted
-        else {
+        if (hasOAuthPermission(fitnessOptions)) {
             mResult?.success(true)
+            return
         }
+
+        GoogleSignIn.requestPermissions(
+                activity!!,
+                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                GoogleSignIn.getLastSignedInAccount(activity),
+                options)
     }
 
     /// Handle calls from the MethodChannel
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
+            "hasPermissions" -> hasPermissions(call, result)
             "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
             else -> result.notImplemented()
@@ -276,9 +264,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        if (channel == null) {
-            return
-        }
         binding.addActivityResultListener(this)
         activity = binding.activity
     }
@@ -292,9 +277,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     override fun onDetachedFromActivity() {
-        if (channel == null) {
-            return
-        }
-        activity = null
+        channel.setMethodCallHandler(null)
     }
 }
