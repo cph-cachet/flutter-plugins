@@ -1,4 +1,4 @@
-# activity_recognition_flutter
+# Activity Recognition
 
 [![pub package](https://img.shields.io/pub/v/activity_recognition_flutter.svg)](https://pub.dartlang.org/packages/activity_recognition)
 

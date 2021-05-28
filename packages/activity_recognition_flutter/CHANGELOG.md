@@ -1,7 +1,11 @@
+## 4.0.2
+* [PR #302](https://github.com/cph-cachet/flutter-plugins/pull/302)
+* [PR #351](https://github.com/cph-cachet/flutter-plugins/pull/351)
+
 ## 4.0.1
 * Fix of issue #309, i.e. a null pointer that occurs when running the plugin on API 30.
 * Replaced the deprecated `IntentService` with a `JobIntentService`. 
-* PR #314
+* [PR #314](https://github.com/cph-cachet/flutter-plugins/pull/314)
 
 ## 4.0.0
 
