@@ -86,3 +86,4 @@ packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
 packages/health/example/.flutter-plugins-dependencies
 packages/health/example/ios/Flutter/flutter_export_environment.sh
 *.sh
+packages/noise_meter/example/.flutter-plugins-dependencies
