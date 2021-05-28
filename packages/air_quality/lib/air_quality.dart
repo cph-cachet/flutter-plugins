@@ -20,7 +20,15 @@ class AirQualityAPIException implements Exception {
   String toString() => '${this.runtimeType} - $_cause';
 }
 
-enum AirQualityLevel { UNKNOWN, GOOD, MODERATE, UNHEALTHY_FOR_SENSITIVE_GROUPS, UNHEALTHY, VERY_UNHEALTHY, HAZARDOUS }
+enum AirQualityLevel {
+  UNKNOWN,
+  GOOD,
+  MODERATE,
+  UNHEALTHY_FOR_SENSITIVE_GROUPS,
+  UNHEALTHY,
+  VERY_UNHEALTHY,
+  HAZARDOUS
+}
 
 AirQualityLevel airQualityIndexToLevel(int index) {
   if (index < 0)
@@ -41,17 +49,22 @@ AirQualityLevel airQualityIndexToLevel(int index) {
 
 /// A class for storing Air Quality JSON Data fetched from the API.
 class AirQualityData {
-  int _airQualityIndex;
-  String _source, _place;
-  double _latitude, _longitude;
-  AirQualityLevel _airQualityLevel;
+  late int _airQualityIndex;
+  late String _source, _place;
+  late double _latitude, _longitude;
+  late AirQualityLevel _airQualityLevel;
 
   AirQualityData(Map<String, dynamic> airQualityJson) {
-    _airQualityIndex = int.tryParse(airQualityJson['data']['aqi'].toString()) ?? -1;
+    _airQualityIndex =
+        int.tryParse(airQualityJson['data']['aqi'].toString()) ?? -1;
     _place = airQualityJson['data']['city']['name'].toString();
     _source = airQualityJson['data']['attributions'][0]['name'].toString();
-    _latitude = double.tryParse(airQualityJson['data']['city']['geo'][0].toString()) ?? -1.0;
-    _longitude = double.tryParse(airQualityJson['data']['city']['geo'][1].toString()) ?? -1.0;
+    _latitude =
+        double.tryParse(airQualityJson['data']['city']['geo'][0].toString()) ??
+            -1.0;
+    _longitude =
+        double.tryParse(airQualityJson['data']['city']['geo'][1].toString()) ??
+            -1.0;
 
     _airQualityLevel = airQualityIndexToLevel(_airQualityIndex);
   }
@@ -87,29 +100,33 @@ class AirQuality {
   AirQuality(this._token);
 
   /// Returns an [AirQualityData] object given a city name or a weather station ID
-  Future<AirQualityData> feedFromCity(String city) async => await _airQualityFromUrl(city);
+  Future<AirQualityData> feedFromCity(String city) async =>
+      await _airQualityFromUrl(city);
 
   /// Returns an [AirQualityData] object given a city name or a weather station ID
-  Future<AirQualityData> feedFromStationId(String stationId) async => await _airQualityFromUrl('@$stationId');
+  Future<AirQualityData> feedFromStationId(String stationId) async =>
+      await _airQualityFromUrl('@$stationId');
 
   /// Returns an [AirQualityData] object given a latitude and longitude.
-  Future<AirQualityData> feedFromGeoLocation(double lat, double lon) async => await _airQualityFromUrl('geo:$lat;$lon');
+  Future<AirQualityData> feedFromGeoLocation(double lat, double lon) async =>
+      await _airQualityFromUrl('geo:$lat;$lon');
 
   /// Returns an [AirQualityData] object given using the IP address.
   Future<AirQualityData> feedFromIP() async => await _airQualityFromUrl('here');
 
   /// Send API request given a URL
-  Future<Map<String, dynamic>> _requestAirQualityFromURL(String keyword) async {
+  Future<Map<String, dynamic>?> _requestAirQualityFromURL(
+      String keyword) async {
     /// Make url using the keyword
     String url = '$_endpoint/$keyword/?token=$_token';
 
     /// Send HTTP get response with the url
-    http.Response response = await http.get(url);
+    http.Response response = await http.get(Uri.parse(url));
 
     /// Perform error checking on response:
     /// Status code 200 means everything went well
     if (response.statusCode == 200) {
-      Map<String, dynamic> jsonBody = json.decode(response.body);
+      Map<String, dynamic>? jsonBody = json.decode(response.body);
       return jsonBody;
     }
     throw AirQualityAPIException("OpenWeather API Exception: ${response.body}");
@@ -119,7 +136,7 @@ class AirQuality {
   /// Result is JSON.
   /// For API documentation, see: https://openweathermap.org/current
   Future<AirQualityData> _airQualityFromUrl(String url) async {
-    Map<String, dynamic> airQualityJson = await _requestAirQualityFromURL(url);
-    return AirQualityData(airQualityJson);
+    Map<String, dynamic>? airQualityJson = await _requestAirQualityFromURL(url);
+    return AirQualityData(airQualityJson!);
   }
 }

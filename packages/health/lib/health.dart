@@ -1,16 +1,13 @@
 library health;
 
 import 'dart:async';
-import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
+
 import 'package:device_info/device_info.dart';
+import 'package:flutter/services.dart';
 
-part 'package:health/src/units.dart';
-
-part 'package:health/src/data_types.dart';
-
-part 'package:health/src/functions.dart';
-
-part 'package:health/src/health_data_point.dart';
-
-part 'package:health/src/health_factory.dart';
+part 'src/data_types.dart';
+part 'src/functions.dart';
+part 'src/health_data_point.dart';
+part 'src/health_factory.dart';
+part 'src/units.dart';

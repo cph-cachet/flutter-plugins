@@ -2,7 +2,6 @@ import 'package:flutter/services.dart';
 import 'package:noise_meter/noise_meter.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:math';
 
 void main() {
   runApp(new MyApp());
@@ -15,13 +14,19 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isRecording = false;
-  StreamSubscription<NoiseReading> _noiseSubscription;
-  NoiseMeter _noiseMeter;
+  StreamSubscription<NoiseReading>? _noiseSubscription;
+  late NoiseMeter _noiseMeter;
 
   @override
   void initState() {
     super.initState();
     _noiseMeter = new NoiseMeter(onError);
+  }
+
+  @override
+  void dispose() {
+    _noiseSubscription?.cancel();
+    super.dispose();
   }
 
   void onData(NoiseReading noiseReading) {
@@ -49,7 +54,7 @@ class _MyAppState extends State<MyApp> {
   void stop() async {
     try {
       if (_noiseSubscription != null) {
-        _noiseSubscription.cancel();
+        _noiseSubscription!.cancel();
         _noiseSubscription = null;
       }
       this.setState(() {

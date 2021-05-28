@@ -15,17 +15,23 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import android.content.Intent
 import android.os.Handler
 import android.util.Log
+import androidx.annotation.NonNull
+import androidx.annotation.Nullable
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import com.google.android.gms.fitness.data.*
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
+const val CHANNEL_NAME = "flutter_health"
 
-class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodCallHandler, ActivityResultListener, Result {
-
+class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     private var result: Result? = null
     private var handler: Handler? = null
+    private var activity: Activity? = null
 
     private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
     private var HEIGHT = "HEIGHT"
@@ -41,17 +47,36 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
     private var MOVE_MINUTES = "MOVE_MINUTES"
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
 
+    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        var channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME);
+        val plugin = HealthPlugin(channel);
+        channel.setMethodCallHandler(plugin)
+    }
 
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel = null
+        activity = null
+    }
+
+    // This static function is optional and equivalent to onAttachedToEngine. It supports the old
+    // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
+    // plugin registration via this function while apps migrate to use the new Android APIs
+    // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
+    //
+    // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
+    // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
+    // depending on the user's project. onAttachedToEngine or registerWith must both be defined
+    // in the same class.
     companion object {
+        @Suppress("unused")
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "flutter_health")
-            val plugin = HealthPlugin(registrar.activity(), channel)
+            val channel = MethodChannel(registrar.messenger(), CHANNEL_NAME)
+            val plugin = HealthPlugin(channel)
             registrar.addActivityResultListener(plugin)
             channel.setMethodCallHandler(plugin)
         }
     }
-
 
     /// DataTypes to register
     private val fitnessOptions = FitnessOptions.builder()
@@ -157,8 +182,14 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         }
     }
 
+
     /// Called when the "getHealthDataByType" is invoked from Flutter
     private fun getData(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(null)
+            return
+        }
+
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = call.argument<Long>("startDate")!!
         val endTime = call.argument<Long>("endDate")!!
@@ -171,9 +202,9 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
         thread {
             try {
                 val fitnessOptions = FitnessOptions.builder().addDataType(dataType).build()
-                val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity.applicationContext, fitnessOptions)
+                val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
-                val response = Fitness.getHistoryClient(activity.applicationContext, googleSignInAccount)
+                val response = Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
                         .readData(DataReadRequest.Builder()
                                 .read(dataType)
                                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
@@ -188,13 +219,15 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
                             "value" to getHealthDataValue(dataPoint, unit),
                             "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                             "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                            "unit" to unit.toString()
+                            "unit" to unit.toString(),
+                            "source_name" to dataPoint.getOriginalDataSource().getAppPackageName(),
+                            "source_id" to dataPoint.getOriginalDataSource().getStreamIdentifier()
                     )
 
                 }
-                activity.runOnUiThread { result.success(healthData) }
+                activity!!.runOnUiThread { result.success(healthData) }
             } catch (e3: Exception) {
-                activity.runOnUiThread { result.success(null) }
+                activity!!.runOnUiThread { result.success(null) }
             }
         }
     }
@@ -212,15 +245,20 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
 
     /// Called when the "requestAuthorization" is invoked from Flutter 
     private fun requestAuthorization(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
         val optionsToRegister = callToHealthTypes(call)
         mResult = result
 
         val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)
 
         /// Not granted? Ask for permission
-        if (!isGranted) {
+        if (!isGranted && activity != null) {
             GoogleSignIn.requestPermissions(
-                    activity,
+                    activity!!,
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(activity),
                     optionsToRegister)
@@ -238,5 +276,28 @@ class HealthPlugin(val activity: Activity, val channel: MethodChannel) : MethodC
             "getData" -> getData(call, result)
             else -> result.notImplemented()
         }
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        if (channel == null) {
+            return
+        }
+        binding.addActivityResultListener(this)
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity()
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        onAttachedToActivity(binding)
+    }
+
+    override fun onDetachedFromActivity() {
+        if (channel == null) {
+            return
+        }
+        activity = null
     }
 }

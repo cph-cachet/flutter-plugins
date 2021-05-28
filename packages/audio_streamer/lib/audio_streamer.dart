@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/services.dart';
 
-/** A [AudioStreamer] object is reponsible for connecting
- * to the native environment and streaming audio from the microphone.**/
+/*
+ * A [AudioStreamer] object is reponsible for connecting
+ * to the native environment and streaming audio from the microphone.*
+ */
 const String EVENT_CHANNEL_NAME = 'audio_streamer.eventChannel';
 
 class AudioStreamer {
@@ -16,8 +17,8 @@ class AudioStreamer {
   static const EventChannel _noiseEventChannel =
       EventChannel(EVENT_CHANNEL_NAME);
 
-  Stream<List<double>> _stream;
-  StreamSubscription<List<dynamic>> _subscription;
+  Stream<List<double>>? _stream;
+  StreamSubscription<List<dynamic>>? _subscription;
 
   Stream<List<double>> _makeAudioStream(Function handleErrorFunction) {
     if (_stream == null) {
@@ -28,10 +29,10 @@ class AudioStreamer {
             _stream = null;
             handleErrorFunction(error);
           })
-          .map((buffer) => buffer as List<dynamic>)
-          .map((list) => list.map((e) => double.parse('$e')).toList());
+          .map((buffer) => buffer as List<dynamic>?)
+          .map((list) => list!.map((e) => double.parse('$e')).toList());
     }
-    return _stream;
+    return _stream!;
   }
 
   /// Verify that it was granted
@@ -52,7 +53,7 @@ class AudioStreamer {
       if (granted) {
         try {
           final stream = _makeAudioStream(handleError);
-          _subscription = stream.listen(onData);
+          _subscription = stream.listen(onData as void Function(List<double>)?);
           _isRecording = true;
         } catch (err) {
           debugPrint('AudioStreamer: startRecorder() error: $err');
@@ -72,7 +73,7 @@ class AudioStreamer {
   Future<bool> stop() async {
     try {
       if (_subscription != null) {
-        _subscription.cancel();
+        _subscription!.cancel();
         _subscription = null;
       }
       _isRecording = false;

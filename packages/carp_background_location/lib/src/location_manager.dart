@@ -31,7 +31,8 @@ class LocationManager {
 
   /// Get the status of the location manager.
   /// Will return true if a location service is currently running.
-  Future<bool> get isRunning async => await BackgroundLocator.isRegisterLocationUpdate();
+  Future<bool> get isRunning async =>
+      await BackgroundLocator.isRegisterLocationUpdate();
 
   static final LocationManager _instance = LocationManager._();
 
@@ -40,12 +41,16 @@ class LocationManager {
 
   LocationManager._() {
     // Check if the port is already used
-    if (IsolateNameServer.lookupPortByName(LocationServiceRepository.isolateName) != null) {
-      IsolateNameServer.removePortNameMapping(LocationServiceRepository.isolateName);
+    if (IsolateNameServer.lookupPortByName(
+            LocationServiceRepository.isolateName) !=
+        null) {
+      IsolateNameServer.removePortNameMapping(
+          LocationServiceRepository.isolateName);
     }
 
     // Register the service to the port name
-    IsolateNameServer.registerPortWithName(_port.sendPort, LocationServiceRepository.isolateName);
+    IsolateNameServer.registerPortWithName(
+        _port.sendPort, LocationServiceRepository.isolateName);
   }
 
   /// Get the current location.
@@ -120,8 +125,6 @@ class LocationManager {
   void _startLocator() {
     BackgroundLocator.registerLocationUpdate(
       LocationCallbackHandler.callback,
-      initCallback: LocationCallbackHandler.initCallback,
-      disposeCallback: LocationCallbackHandler.disposeCallback,
       autoStop: false,
       androidSettings: AndroidSettings(
           accuracy: _accuracy,
