@@ -47,7 +47,7 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
         Intent intent = new Intent(androidActivity, ActivityRecognizedBroadcastReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(androidActivity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        /// Frequency in milliseconds
+        // Frequency in milliseconds
         long frequency = 5 * 1000;
         Task<Void> task = ActivityRecognition.getClient(androidContext)
                 .requestActivityUpdates(frequency, pendingIntent);

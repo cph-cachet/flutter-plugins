@@ -50,7 +50,7 @@ public class ActivityRecognizedService extends JobIntentService {
 
         Log.d("onHandleIntent", data);
 
-        /// Same preferences as in ActivityRecognitionFlutterPlugin.java
+        // Same preferences as in ActivityRecognitionFlutterPlugin.java
         SharedPreferences preferences =
                 getApplicationContext().getSharedPreferences(
                         ActivityRecognitionFlutterPlugin.ACTIVITY_RECOGNITION, MODE_PRIVATE);
