@@ -31,7 +31,7 @@ class ActivityRecognition {
     if (_stream == null) {
       _stream = _eventChannel
           .receiveBroadcastStream({"foreground": runForegroundService}).map(
-              (x) => ActivityEvent.fromJson(x));
+              (json) => ActivityEvent.fromJson(json));
     }
     return _stream!;
   }
