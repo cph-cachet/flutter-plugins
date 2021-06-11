@@ -1,10 +1,10 @@
-part of health;
+part of '../health.dart';
 
 /// Main class for the Plugin
 class HealthFactory {
-  static const MethodChannel _channel = const MethodChannel('flutter_health');
-  String _deviceId;
-  DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
+  static const MethodChannel _channel = MethodChannel('flutter_health');
+  String? _deviceId;
+  final _deviceInfo = DeviceInfoPlugin();
 
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
@@ -26,14 +26,14 @@ class HealthFactory {
   ///
   /// On iOS, [accountName] is simply ignored
   /// and returns `""`(succeed) or `null`(failed).
-  Future<String> requestAuthorizationWithAccount(
+  Future<String?> requestAuthorizationWithAccount(
     List<HealthDataType> types, [
-      String accountName,
+      String? accountName,
   ]) => _requestAuthorization(types, accountName ?? "");
 
-  Future<String> _requestAuthorization(
+  Future<String?> _requestAuthorization(
     List<HealthDataType> types, [
-      String accountName,
+      String accountName = "",
   ]) async {
     /// If BMI is requested, then also ask for weight and height
     if (types.contains(HealthDataType.BODY_MASS_INDEX)) {
@@ -54,7 +54,7 @@ class HealthFactory {
 
   /// Calculate the BMI using the last observed height and weight values.
   Future<List<HealthDataPoint>> _computeAndroidBMI(
-      DateTime startDate, DateTime endDate, String accountName) async {
+      DateTime startDate, DateTime endDate, String? accountName) async {
     List<HealthDataPoint> heights =
         await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT, accountName);
 
@@ -67,20 +67,14 @@ class HealthFactory {
 
     double h = heights.last.value.toDouble();
 
-    HealthDataType dataType = HealthDataType.BODY_MASS_INDEX;
-    HealthDataUnit unit = _dataTypeToUnit[dataType];
+    const dataType = HealthDataType.BODY_MASS_INDEX;
+    final unit = _dataTypeToUnit[dataType]!;
 
-    List<HealthDataPoint> bmiHealthPoints = [];
-    for (int i = 0; i < weights.length; i++) {
-      double bmiValue = weights[i].value.toDouble() / (h * h);
-      HealthDataPoint x = HealthDataPoint._(
-          bmiValue,
-          HealthDataType.BODY_MASS_INDEX,
-          unit,
-          weights[i].dateFrom,
-          weights[i].dateTo,
-          _platformType,
-          _deviceId);
+    final bmiHealthPoints = <HealthDataPoint>[];
+    for (var i = 0; i < weights.length; i++) {
+      final bmiValue = weights[i].value.toDouble() / (h * h);
+      final x = HealthDataPoint._(bmiValue, dataType, unit, weights[i].dateFrom,
+          weights[i].dateTo, _platformType, _deviceId!, '', '');
 
       bmiHealthPoints.add(x);
     }
@@ -94,12 +88,11 @@ class HealthFactory {
   ///
   /// On iOS, [accountName] is simply ignored.
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
-      DateTime startDate, DateTime endDate, List<HealthDataType> types, [String accountName]) async {
-    List<HealthDataPoint> dataPoints = [];
+      DateTime startDate, DateTime endDate, List<HealthDataType> types, [String? accountName]) async {
+    final dataPoints = <HealthDataPoint>[];
 
-    for (HealthDataType type in types) {
-      List<HealthDataPoint> result =
-          await _prepareQuery(startDate, endDate, type, accountName);
+    for (var type in types) {
+      final result = await _prepareQuery(startDate, endDate, type, accountName);
       dataPoints.addAll(result);
     }
     return removeDuplicates(dataPoints);
@@ -107,18 +100,16 @@ class HealthFactory {
 
   /// Prepares a query, i.e. checks if the types are available, etc.
   Future<List<HealthDataPoint>> _prepareQuery(
-      DateTime startDate, DateTime endDate, HealthDataType dataType, String accountName) async {
+      DateTime startDate, DateTime endDate, HealthDataType dataType, String? accountName) async {
     /// Ask for device ID only once
-    if (_deviceId == null) {
-      _deviceId = _platformType == PlatformType.ANDROID
-          ? (await _deviceInfo.androidInfo).androidId
-          : (await _deviceInfo.iosInfo).identifierForVendor;
-    }
+    _deviceId ??= _platformType == PlatformType.ANDROID
+        ? (await _deviceInfo.androidInfo).androidId
+        : (await _deviceInfo.iosInfo).identifierForVendor;
 
     /// If not implemented on platform, throw an exception
     if (!_isDataTypeAvailable(dataType)) {
       throw _HealthException(
-          dataType, "Not available on platform $_platformType");
+          dataType, 'Not available on platform $_platformType');
     }
 
     /// If BodyMassIndex is requested on Android, calculate this manually in Dart
@@ -131,28 +122,41 @@ class HealthFactory {
 
   /// The main function for fetching health data
   Future<List<HealthDataPoint>> _dataQuery(
-      DateTime startDate, DateTime endDate, HealthDataType dataType, String accountName) async {
+      DateTime startDate, DateTime endDate, HealthDataType dataType, String? accountName) async {
     // Set parameters for method channel request
-    Map<String, dynamic> args = {
+    final args = <String, dynamic>{
       'dataTypeKey': _enumToString(dataType),
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch,
       'accountName': accountName
     };
 
-    List<HealthDataPoint> healthData;
-    HealthDataUnit unit = _dataTypeToUnit[dataType];
+    final unit = _dataTypeToUnit[dataType]!;
 
     try {
-      List fetchedDataPoints = await _channel.invokeMethod('getData', args);
+      final fetchedDataPoints = await _channel.invokeMethod('getData', args);
       if (fetchedDataPoints != null) {
-        healthData = fetchedDataPoints.map((e) {
-          num value = e["value"];
-          DateTime from = DateTime.fromMillisecondsSinceEpoch(e["date_from"]);
-          DateTime to = DateTime.fromMillisecondsSinceEpoch(e["date_to"]);
+        return fetchedDataPoints.map<HealthDataPoint>((e) {
+          final value = e["value"];
+          final from =
+              DateTime.fromMillisecondsSinceEpoch(e["date_from"]);
+          final DateTime to = DateTime.fromMillisecondsSinceEpoch(e["date_to"]);
+          final String sourceId = e["source_id"];
+          final String sourceName = e["source_name"];
           return HealthDataPoint._(
-              value, dataType, unit, from, to, _platformType, _deviceId);
+            value,
+            dataType,
+            unit,
+            from,
+            to,
+            _platformType,
+            _deviceId!,
+            sourceId,
+            sourceName,
+          );
         }).toList();
+      } else {
+        return <HealthDataPoint>[];
       }
     } catch (error) {
       print("Health Plugin Error:\n");
@@ -161,17 +165,16 @@ class HealthFactory {
       // Exception should be reported to caller.
       rethrow;
     }
-    return healthData;
   }
 
   /// Given an array of [HealthDataPoint]s, this method will return the array
   /// without any duplicates.
   static List<HealthDataPoint> removeDuplicates(List<HealthDataPoint> points) {
-    List<HealthDataPoint> unique = [];
+    final unique = <HealthDataPoint>[];
 
-    for (HealthDataPoint p in points) {
-      bool seenBefore = false;
-      for (HealthDataPoint s in unique) {
+    for (var p in points) {
+      var seenBefore = false;
+      for (var s in unique) {
         if (s == p) {
           seenBefore = true;
         }

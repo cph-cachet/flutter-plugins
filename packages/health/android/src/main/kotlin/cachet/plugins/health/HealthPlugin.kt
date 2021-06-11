@@ -35,10 +35,13 @@ const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val GOOGLE_SIGN_IN_REQUEST_CODE = 2222
 const val CHANNEL_NAME = "flutter_health"
 
-class HealthPlugin : MethodCallHandler, ActivityResultListener, ActivityAware, FlutterPlugin {
+class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     private lateinit var channel: MethodChannel
-
     private lateinit var context: Context
+
+    private var result: Result? = null
+    private val handler: Handler by lazy { Handler(Looper.getMainLooper()) }
+
     private var activity: Activity? = null
 
     private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
@@ -55,16 +58,28 @@ class HealthPlugin : MethodCallHandler, ActivityResultListener, ActivityAware, F
     private var MOVE_MINUTES = "MOVE_MINUTES"
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
 
+    private fun _runOnUiThread(predicate: () -> Unit) = handler.post(predicate);
+
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME);
         context = flutterPluginBinding.applicationContext
         channel.setMethodCallHandler(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+        activity = null
     }
 
+    // This static function is optional and equivalent to onAttachedToEngine. It supports the old
+    // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
+    // plugin registration via this function while apps migrate to use the new Android APIs
+    // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
+    //
+    // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
+    // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
+    // depending on the user's project. onAttachedToEngine or registerWith must both be defined
+    // in the same class.
     companion object {
         @Suppress("unused")
         @JvmStatic
@@ -79,21 +94,20 @@ class HealthPlugin : MethodCallHandler, ActivityResultListener, ActivityAware, F
         }
     }
 
-    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        binding.addActivityResultListener(this)
-        activity = binding.activity
+    override fun success(p0: Any?) {
+        handler.post(
+                Runnable { result?.success(p0) })
     }
 
-    override fun onDetachedFromActivityForConfigChanges() {
-        onDetachedFromActivity()
+    override fun notImplemented() {
+        handler.post(
+                Runnable { result?.notImplemented() })
     }
 
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        onAttachedToActivity(binding)
-    }
-
-    override fun onDetachedFromActivity() {
-        activity = null
+    override fun error(
+            errorCode: String, errorMessage: String?, errorDetails: Any?) {
+        handler.post(
+                Runnable { result?.error(errorCode, errorMessage, errorDetails) })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
@@ -181,10 +195,6 @@ class HealthPlugin : MethodCallHandler, ActivityResultListener, ActivityAware, F
         }
     }
 
-    private val handler: Handler by lazy { Handler(Looper.getMainLooper()) }
-
-    private fun _runOnUiThread(predicate: () -> Unit) = handler.post(predicate);
-
     private fun _createGoogleSignInOption(
         signInOptions: GoogleSignInOptionsExtension? = null,
         accountName: String? = null
@@ -229,6 +239,11 @@ class HealthPlugin : MethodCallHandler, ActivityResultListener, ActivityAware, F
 
     /// Called when the "getHealthDataByType" is invoked from Flutter
     private fun getData(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(null)
+            return
+        }
+
         val type = call.argument<String>("dataTypeKey")!!
 
         // Look up data type and unit for the type key
@@ -276,7 +291,9 @@ class HealthPlugin : MethodCallHandler, ActivityResultListener, ActivityAware, F
                             "value" to getHealthDataValue(dataPoint, unit),
                             "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                             "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                            "unit" to unit.toString()
+                            "unit" to unit.toString(),
+                            "source_name" to dataPoint.getOriginalDataSource().getAppPackageName(),
+                            "source_id" to dataPoint.getOriginalDataSource().getStreamIdentifier()
                     )
 
                 }
@@ -300,6 +317,11 @@ class HealthPlugin : MethodCallHandler, ActivityResultListener, ActivityAware, F
 
     /// Called when the "requestAuthorization" is invoked from Flutter
     private fun requestAuthorization(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(null)
+            return
+        }
+
         val optionsToRegister = callToHealthTypes(call)
 
         val accountName = call.argument<String?>("accountName")
@@ -377,5 +399,28 @@ class HealthPlugin : MethodCallHandler, ActivityResultListener, ActivityAware, F
             "getData" -> getData(call, result)
             else -> result.notImplemented()
         }
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        if (channel == null) {
+            return
+        }
+        binding.addActivityResultListener(this)
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity()
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        onAttachedToActivity(binding)
+    }
+
+    override fun onDetachedFromActivity() {
+        if (channel == null) {
+            return
+        }
+        activity = null
     }
 }

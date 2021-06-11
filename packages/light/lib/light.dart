@@ -18,12 +18,12 @@ class LightException implements Exception {
 
 class Light {
   static const EventChannel _eventChannel =
-  const EventChannel("light.eventChannel");
+      const EventChannel("light.eventChannel");
 
-  Stream<int> _lightSensorStream;
+  Stream<int>? _lightSensorStream;
 
   /// Getter for light stream, throws an exception if device isn't on Android platform
-  Stream<int> get lightSensorStream {
+  Stream<int>? get lightSensorStream {
     if (Platform.isAndroid) {
       if (_lightSensorStream == null) {
         _lightSensorStream =

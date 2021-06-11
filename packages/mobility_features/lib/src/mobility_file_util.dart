@@ -2,7 +2,8 @@ part of mobility_features;
 
 const String _LOCATION_SAMPLES_FILE = 'location_samples',
     _STOPS_FILE = 'stops',
-    _MOVES_FILE = 'moves', _TEST_DATA_PATH = 'test/testdata';
+    _MOVES_FILE = 'moves',
+    _TEST_DATA_PATH = 'test/testdata';
 
 Future<File> _fileReference(Type T) async {
   bool isMobile = Platform.isAndroid || Platform.isIOS;

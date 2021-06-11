@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 
+/// Enumeration of Screen State events coming from android.
 enum ScreenStateEvent { SCREEN_UNLOCKED, SCREEN_ON, SCREEN_OFF }
 
 /// Custom Exception for the plugin,
@@ -17,11 +18,15 @@ class ScreenStateException implements Exception {
   }
 }
 
+/// Screen representation as object which holds the stream for [ScreenStateEvent]s.
 class Screen {
   EventChannel _eventChannel = const EventChannel('screenStateEvents');
-  Stream<ScreenStateEvent> _screenStateStream;
+  Stream<ScreenStateEvent>? _screenStateStream;
 
-  Stream<ScreenStateEvent> get screenStateStream {
+  /// Stream of [ScreenStateEvent]s.
+  /// Each event is streamed as it occurs on the phone.
+  /// Only Android [ScreenStateEvent] are streamed.
+  Stream<ScreenStateEvent>? get screenStateStream {
     if (Platform.isAndroid) {
       if (_screenStateStream == null) {
         _screenStateStream = _eventChannel
@@ -36,7 +41,7 @@ class Screen {
 
   ScreenStateEvent _parseScreenStateEvent(String event) {
     switch (event) {
-    /** Android **/
+      /** Android **/
       case 'android.intent.action.SCREEN_OFF':
         return ScreenStateEvent.SCREEN_OFF;
       case 'android.intent.action.SCREEN_ON':

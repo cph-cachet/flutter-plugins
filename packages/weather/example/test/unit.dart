@@ -1,5 +1,4 @@
 import 'package:weather/weather.dart';
-import 'json_examples.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() async {

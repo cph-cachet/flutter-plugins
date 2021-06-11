@@ -1,3 +1,6 @@
+## 1.1.0
+* Rewrote Android plugin in Java
+
 ## 1.0.2+1
 * Slight android source code update
 

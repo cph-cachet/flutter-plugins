@@ -12,7 +12,7 @@ class MyApp extends StatefulWidget {
 
 class ScreenStateEventEntry {
   ScreenStateEvent event;
-  DateTime time;
+  DateTime? time;
 
   ScreenStateEventEntry(this.event) {
     time = DateTime.now();
@@ -21,7 +21,7 @@ class ScreenStateEventEntry {
 
 class _MyAppState extends State<MyApp> {
   Screen _screen = Screen();
-  StreamSubscription<ScreenStateEvent> _subscription;
+  late StreamSubscription<ScreenStateEvent> _subscription;
   bool started = false;
   List<ScreenStateEventEntry> _log = [];
 
@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
 
   void startListening() {
     try {
-      _subscription = _screen.screenStateStream.listen(onData);
+      _subscription = _screen.screenStateStream!.listen(onData);
       setState(() => started = true);
     } on ScreenStateException catch (exception) {
       print(exception);
@@ -63,16 +63,16 @@ class _MyAppState extends State<MyApp> {
         appBar: new AppBar(
           title: const Text('Screen State Example app'),
         ),
-        body: new Center(child: new ListView.builder
-              (
+        body: new Center(
+            child: new ListView.builder(
                 itemCount: _log.length,
                 reverse: true,
                 itemBuilder: (BuildContext context, int idx) {
                   final entry = _log[idx];
-                  return ListTile(leading: Text(entry.time.toString().substring(0,19)), trailing: Text(entry.event.toString().split('.').last));
-                }
-            )
-        ),
+                  return ListTile(
+                      leading: Text(entry.time.toString().substring(0, 19)),
+                      trailing: Text(entry.event.toString().split('.').last));
+                })),
         floatingActionButton: new FloatingActionButton(
           onPressed: started ? stopListening : startListening,
           tooltip: 'Start/Stop sensing',

@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,10 +30,10 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  Future<void> fetchData([bool mayUseLastAccount = true]) async {
-    /// Get everything last 7 days
-    DateTime endDate = DateTime.now();
-    DateTime startDate = endDate.add(Duration(days: -7));
+  Future fetchData([bool mayUseLastAccount = true]) async {
+    /// Get everything from midnight until now
+    DateTime startDate = DateTime(2020, 11, 07, 0, 0, 0);
+    DateTime endDate = DateTime(2025, 11, 07, 23, 59, 59);
 
     HealthFactory health = HealthFactory();
 
@@ -81,7 +82,7 @@ class _MyAppState extends State<MyApp> {
       /// Print the results
       _healthDataList.forEach((x) {
         print("Data point: $x");
-        steps += (x.value.toInt());
+        steps += x.value.round();
       });
 
       print("Steps: $steps");

@@ -11,10 +11,10 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _luxString = 'Unknown';
-  Light _light;
-  StreamSubscription _subscription;
+  late Light _light;
+  late StreamSubscription _subscription;
 
-  void onData(int luxValue) async {
+  void onData(int? luxValue) async {
     print("Lux value: $luxValue");
     setState(() {
       _luxString = "$luxValue";
@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
   void startListening() {
     _light = new Light();
     try {
-      _subscription = _light.lightSensorStream.listen(onData);
+      _subscription = _light.lightSensorStream!.listen(onData);
     }
     on LightException catch (exception) {
       print(exception);

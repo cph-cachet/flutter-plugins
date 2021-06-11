@@ -1,3 +1,16 @@
+## 3.0.6
+* [PR#281](https://github.com/cph-cachet/flutter-plugins/pull/281) Added two new fields to the `HealthDataPoint` - `SourceId` and `SourceName` and populate when data is read. This allows datapoints to be disambigous and in some cases allows us to get more accurate data. For example the number of steps can be reported from Apple Health and Watch and without source data they are aggregated into just "steps" producing an innacurate result.
+
+## 3.0.5
+* Null safety in Dart has been implemented
+* The plugin supports the Android v2 embedding
+
+## 3.0.4
+* Upgrade to `device_info` version 2.0.0
+
+## 3.0.3
+* Merged various PRs, mostly smaller fixes
+
 ## 3.0.2
 * Upgrade to `device_info` version 1.0.0
 
