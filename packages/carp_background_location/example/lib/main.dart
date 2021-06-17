@@ -35,25 +35,25 @@ class _MyAppState extends State<MyApp> {
   String logStr = '';
   LocationDto lastLocation;
   DateTime lastTimeLocation;
-  LocationManager locationManager = LocationManager.instance;
-  Stream<LocationDto> dtoStream;
-  StreamSubscription<LocationDto> dtoSubscription;
+  Stream<LocationDto> locationStream;
+  StreamSubscription<LocationDto> locationSubscription;
   LocationStatus _status = LocationStatus.UNKNOWN;
 
   @override
   void initState() {
     super.initState();
+
     // Subscribe to stream in case it is already running
-    locationManager.interval = 1;
-    locationManager.distanceFilter = 0;
-    locationManager.notificationTitle = 'CARP Location Example';
-    locationManager.notificationMsg = 'CARP is tracking your location';
-    dtoStream = locationManager.dtoStream;
-    dtoSubscription = dtoStream.listen(onData);
+    LocationManager().interval = 1;
+    LocationManager().distanceFilter = 0;
+    LocationManager().notificationTitle = 'CARP Location Example';
+    LocationManager().notificationMsg = 'CARP is tracking your location';
+    locationStream = LocationManager().locationStream;
+    locationSubscription = locationStream.listen(onData);
   }
 
   void onGetCurrentLocation() async {
-    LocationDto dto = await locationManager.getCurrentLocation();
+    LocationDto dto = await LocationManager().getCurrentLocation();
     print('Current location: $dto');
   }
 
@@ -70,11 +70,11 @@ class _MyAppState extends State<MyApp> {
 
   void start() async {
     // Subscribe if it hasn't been done already
-    if (dtoSubscription != null) {
-      dtoSubscription.cancel();
+    if (locationSubscription != null) {
+      locationSubscription.cancel();
     }
-    dtoSubscription = dtoStream.listen(onData);
-    await locationManager.start();
+    locationSubscription = locationStream.listen(onData);
+    await LocationManager().start();
     setState(() {
       _status = LocationStatus.RUNNING;
     });
@@ -84,8 +84,8 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _status = LocationStatus.STOPPED;
     });
-    dtoSubscription.cancel();
-    await locationManager.stop();
+    locationSubscription.cancel();
+    await LocationManager().stop();
   }
 
   Widget stopButton() {
