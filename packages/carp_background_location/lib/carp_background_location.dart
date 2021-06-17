@@ -16,7 +16,5 @@ export 'package:background_locator/location_dto.dart';
 export 'package:background_locator/settings/locator_settings.dart';
 
 part 'src/location_callback_handler.dart';
-
 part 'src/location_service_repository.dart';
-
 part 'src/location_manager.dart';
