@@ -29,6 +29,10 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
   }
 
   @objc func handleInterruption(notification: Notification) {
+    // If no eventSink to emit events to, do nothing (wait)
+    if (eventSink == nil) {
+        return
+    }
       // To be implemented.
     eventSink!(FlutterError(code: "100", message: "Recording was interrupted", details: "Another process interrupted recording."))
   }
