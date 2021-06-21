@@ -1,3 +1,6 @@
+## 0.3.0
+* Support for null-safety.
+
 ## 0.2.1
 * Rebuild project from scratch due to iOS issues with old generated code.
 

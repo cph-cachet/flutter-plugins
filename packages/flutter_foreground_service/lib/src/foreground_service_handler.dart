@@ -4,7 +4,7 @@ class ForegroundServiceHandler {
   static const MethodChannel _mainChannel = const MethodChannel(
       "dk.cachet.flutter_foreground_service/main", JSONMethodCodec());
 
-  static MethodChannel _fromBackgroundIsolateChannel;
+  static MethodChannel? _fromBackgroundIsolateChannel;
   static Future<bool> get isBackgroundIsolate async =>
       (await isBackgroundIsolateSetupComplete()) &&
       (_fromBackgroundIsolateChannel != null);
@@ -14,18 +14,17 @@ class ForegroundServiceHandler {
     if (_fromBackgroundIsolateChannel == null) {
       return await _mainChannel.invokeMethod(method, arguments);
     } else {
-      return await _fromBackgroundIsolateChannel.invokeMethod(
+      return await _fromBackgroundIsolateChannel!.invokeMethod(
           "fromBackgroundIsolate", {"method": method, "arguments": arguments});
     }
   }
 
-  ///set notification text, etc. through methods on this property
   static final ForegroundServiceNotification notification =
       new ForegroundServiceNotification._(_invokeMainChannel);
 
-  ///when sendToPort(message) is called in one isolate,
-  ///messageHandler(message) will be invoked from the other isolate
-  ///i.e. main_sendToPort -> background_messageHandler and vice-versa
+  // when sendToPort(message) is called in one isolate,
+  // messageHandler(message) will be invoked from the other isolate
+  // i.e. main_sendToPort -> background_messageHandler and vice-versa
   static Future<void> setupIsolateCommunication(
       Function(dynamic message) messageHandler) async {
     _receiveHandler = messageHandler;
@@ -33,7 +32,7 @@ class ForegroundServiceHandler {
     if (_receivePort == null) {
       _receivePort = new ReceivePort();
 
-      _receivePort.listen((data) {
+      _receivePort!.listen((data) {
         final callHandler = _receiveHandler;
 
         callHandler?.call(data);
@@ -54,31 +53,31 @@ class ForegroundServiceHandler {
       IsolateNameServer.removePortNameMapping(portMappingName);
 
       IsolateNameServer.registerPortWithName(
-          _receivePort.sendPort, portMappingName);
+          _receivePort!.sendPort, portMappingName);
     }
   }
 
   static bool get isIsolateCommunicationSetup =>
       ((_receivePort != null) && (_receiveHandler != null));
 
-  static ReceivePort _receivePort;
+  static ReceivePort? _receivePort;
 
   static const String _MAIN_ISOLATE_PORT_NAME =
       "dk.cachet.flutter_foreground_service/MAIN_ISOLATE_PORT";
   static const String _BACKGROUND_ISOLATE_PORT_NAME =
       "dk.cachet.flutter_foreground_service/BACKGROUND_ISOLATE_PORT";
 
-  static void Function(dynamic message) _receiveHandler;
+  static void Function(dynamic message)? _receiveHandler;
 
-  ///sends a message to the other isolate, which is handled by whatever
-  ///function was passed to setupIsolateCommunication in that isolate
+  /// Sends a message to the other isolate, which is handled by whatever
+  /// function was passed to setupIsolateCommunication in that isolate
   ///
   /// i.e. background_sendToPort("a") -> main_receiveHandler("a")
   ///
-  /// values that can be sent are subject to the limitations of SendPort,
+  /// Values that can be sent are subject to the limitations of SendPort,
   /// i.e. primitives and lists/maps thereof
   static Future<void> sendToPort(dynamic message) async {
-    final SendPort targetPort = IsolateNameServer.lookupPortByName(
+    final SendPort? targetPort = IsolateNameServer.lookupPortByName(
         (await isBackgroundIsolate
             ? _MAIN_ISOLATE_PORT_NAME
             : _BACKGROUND_ISOLATE_PORT_NAME));
@@ -86,36 +85,33 @@ class ForegroundServiceHandler {
     if (targetPort != null) {
       targetPort.send(message);
     } else {
-      throw _SendToPortException(await isBackgroundIsolate);
+      throw SendToPortException(await isBackgroundIsolate);
     }
   }
 
-  ///serviceFunction needs to be self-contained
-  ///i.e. all setup/init/etc. needs to be done entirely within serviceFunction
-  ///since apparently due to how the implementation works
-  ///callback is done within a new isolate, so memory is not shared
-  ///(static variables will not have the same values, etc. etc.)
-  ///communication of simple values between serviceFunction and the main app
-  ///can be accomplished using setupIsolateCommunication & sendToPort
+  /// serviceFunction needs to be self-contained
+  /// i.e. all setup/init/etc. needs to be done entirely within serviceFunction
+  /// since apparently due to how the implementation works
+  /// callback is done within a new isolate, so memory is not shared
+  /// (static variables will not have the same values, etc. etc.)
+  /// communication of simple values between serviceFunction and the main app
+  /// can be accomplished using setupIsolateCommunication & sendToPort
   static Future<void> startForegroundService(
-      [Function serviceFunction, bool holdWakeLock = false]) async {
+      [Function? serviceFunction, bool holdWakeLock = false]) async {
     //foreground service should only be started from the main isolate
     if (!(await isBackgroundIsolate)) {
       final setupHandle = PluginUtilities.getCallbackHandle(
               _setupForegroundServiceCallbackChannel)
-          .toRawHandle();
-
-      //don't know why anyone would pass null, but w/e
-      final shouldHoldWakeLock = holdWakeLock ?? false;
+          ?.toRawHandle();
 
       await _invokeMainChannel(
-          "startForegroundService", <dynamic>[setupHandle, shouldHoldWakeLock]);
+          "startForegroundService", <dynamic>[setupHandle, holdWakeLock]);
 
 //      if (serviceFunction != null) {
 //        setServiceFunction(serviceFunction);
 //      }
     } else {
-      throw _WrongIsolateException(await isBackgroundIsolate);
+      throw WrongIsolateException(await isBackgroundIsolate);
     }
   }
 
@@ -127,71 +123,74 @@ class ForegroundServiceHandler {
     return await _invokeMainChannel("foregroundServiceIsStarted");
   }
 
-  ///get the function being executed periodically by the service
-  static Future<Function> getServiceFunction() async =>
+  /// The function being executed periodically by the service
+  static Future<Function?> getServiceFunction() async =>
       PluginUtilities.getCallbackFromHandle(
           await _invokeMainChannel("getServiceFunctionHandle"));
 
-  ///set the function being executed periodically by the service
+  /// Set the function being executed periodically by the service
   static Future<void> setServiceFunction(Function serviceFunction) async {
     try {
       final serviceFunctionHandle =
-      PluginUtilities.getCallbackHandle(serviceFunction).toRawHandle();
+          PluginUtilities.getCallbackHandle(serviceFunction)?.toRawHandle();
 
       await _invokeMainChannel(
           "setServiceFunctionHandle", <dynamic>[serviceFunctionHandle]);
-    }
-    catch (error) {
+    } catch (error) {
       debugPrint(error.toString());
     }
   }
 
-  ///get the execution period for the service function (get/setServiceFunction);
-  ///period is "minimum/best-effort" - will try to space executions with an interval that's *at least* this long
+  /// Get the execution period for the service function (get/setServiceFunction).
+  /// Period is "minimum/best-effort" - will try to space executions with an
+  /// interval that's *at least* this long
   static Future<int> getServiceIntervalSeconds() async =>
       await _invokeMainChannel("getServiceFunctionInterval");
 
-  ///set the execution period for the service function (get/setServiceFunction)
-  ///period is "minimum/best-effort" - will try to space executions with an interval that's *at least* this long
+  /// Set the execution period for the service function (get/setServiceFunction).
+  /// Period is "minimum/best-effort" - will try to space executions with an
+  /// interval that's *at least* this long
   static Future<void> setServiceIntervalSeconds(int intervalSeconds) async {
     await _invokeMainChannel(
         "setServiceFunctionInterval", <dynamic>[intervalSeconds]);
   }
 
-  ///tells the foreground service to also hold a wake lock
+  /// Tells the foreground service to also hold a wake lock
   static Future<void> getWakeLock() async {
     await _invokeMainChannel("getWakeLock");
   }
 
-  ///tells the foreground service to release the wake lock, if it's holding one
+  /// Tells the foreground service to release the wake lock, if it's holding one
   static Future<void> releaseWakeLock() async {
     await _invokeMainChannel("releaseWakeLock");
   }
 
-  ///only works with v2 Android embedding (Flutter 1.12.x+)
-  ///gets whether the foreground service should continue running after the app is killed
-  ///for instance when it's swiped off of the recent apps list
-  ///default behavior is true = keep service running after app killed
+  /// Gets whether the foreground service should continue running after the app
+  /// is killed, for instance when it's swiped off of the recent apps list.
+  /// Default behavior is true, i.e keeping the service running after the app is
+  /// killed.
+  ///
+  /// Only works with v2 Android embedding (Flutter 1.12.x+).
   static Future<bool> getContinueRunningAfterAppKilled() async =>
       await _invokeMainChannel("getContinueRunningAfterAppKilled");
 
-  ///only works with v2 Android embedding (Flutter 1.12.x+)
-  ///sets whether the foreground service should continue running after the app is killed
-  ///for instance when it's swiped off of the recent apps list
-  ///default behavior = true = keep service running after app killed
+  /// Sets whether the foreground service should continue running after the app
+  /// is killed, for instance when it's swiped off of the recent apps list.
+  /// Default behavior = true = keep service running after app killed.
+  /// only works with v2 Android embedding (Flutter 1.12.x+)
   static Future<void> setContinueRunningAfterAppKilled(
       bool shouldContinueRunning) async {
     await _invokeMainChannel(
         "setContinueRunningAfterAppKilled", <dynamic>[shouldContinueRunning]);
   }
 
-  ///if coordinating communication between foreground service function
-  ///and main isolate, can use this to confirm setup complete
-  ///before sending any messages
+  // if coordinating communication between foreground service function
+  // and main isolate, can use this to confirm setup complete
+  // before sending any messages
   static Future<bool> isBackgroundIsolateSetupComplete() async =>
       await _invokeMainChannel("isBackgroundIsolateSetupComplete");
 
-  ///see setServiceFunctionAsync
+  // see setServiceFunctionAsync
   static Future<bool> getServiceFunctionAsync() async =>
       await _invokeMainChannel("getServiceFunctionAsync");
 
@@ -291,18 +290,17 @@ class ForegroundServiceNotification {
   }
 }
 
-//enums can't belong to classes
-//so here we are
 enum AndroidNotificationPriority { LOW, DEFAULT, HIGH }
 
-//the android side will use this function as the entry point
-//for the background isolate that will be used to execute dart handles
+// the android side will use this function as the entry point
+// for the background isolate that will be used to execute dart handles
 void _setupForegroundServiceCallbackChannel() async {
   const MethodChannel _callbackChannel = MethodChannel(
       "dk.cachet.flutter_foreground_service/callback", JSONMethodCodec());
 
   ForegroundServiceHandler._fromBackgroundIsolateChannel = MethodChannel(
-      "dk.cachet.flutter_foreground_service/fromBackgroundIsolate", JSONMethodCodec());
+      "dk.cachet.flutter_foreground_service/fromBackgroundIsolate",
+      JSONMethodCodec());
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -310,36 +308,35 @@ void _setupForegroundServiceCallbackChannel() async {
     final dynamic args = call.arguments;
     final CallbackHandle handle = CallbackHandle.fromRawHandle(args[0]);
 
-    await PluginUtilities.getCallbackFromHandle(handle)();
+    Function? callbackFunction = PluginUtilities.getCallbackFromHandle(handle);
+    if (callbackFunction != null) await callbackFunction();
     await ForegroundServiceHandler._invokeMainChannel(
         "backgroundIsolateCallbackComplete");
   });
 
-  await ForegroundServiceHandler._invokeMainChannel("backgroundIsolateSetupComplete");
+  await ForegroundServiceHandler._invokeMainChannel(
+      "backgroundIsolateSetupComplete");
 }
 
-class _SendToPortException implements Exception {
+class SendToPortException implements Exception {
   final bool contextIsBackgroundIsolate;
 
-  _SendToPortException(this.contextIsBackgroundIsolate);
+  SendToPortException(this.contextIsBackgroundIsolate);
 
   @override
-  String toString() {
-    return "sendToPort was called in "
-        "${contextIsBackgroundIsolate ? "background" : "main"} isolate "
-        "before setupIsolateCommunication for "
-        "${contextIsBackgroundIsolate ? "main" : "background"} isolate was "
-        "called.";
-  }
+  String toString() => "sendToPort was called in "
+      "${contextIsBackgroundIsolate ? "background" : "main"} isolate "
+      "before setupIsolateCommunication for "
+      "${contextIsBackgroundIsolate ? "main" : "background"} isolate was "
+      "called.";
 }
 
-class _WrongIsolateException implements Exception {
+class WrongIsolateException implements Exception {
   final bool contextIsBackgroundIsolate;
 
-  _WrongIsolateException(this.contextIsBackgroundIsolate);
+  WrongIsolateException(this.contextIsBackgroundIsolate);
 
   @override
-  String toString() {
-    return "Throwing function was executed in the ${contextIsBackgroundIsolate ? "background" : "main"} isolate.";
-  }
+  String toString() =>
+      "Throwing function was executed in the ${contextIsBackgroundIsolate ? "background" : "main"} isolate.";
 }

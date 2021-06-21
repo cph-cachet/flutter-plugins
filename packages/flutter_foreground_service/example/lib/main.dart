@@ -7,7 +7,7 @@ void main() {
 }
 
 void startForegroundService() async {
-  await ForegroundService().start();
+  ForegroundService().start();
   debugPrint("Started service");
 }
 
@@ -17,7 +17,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
@@ -28,11 +27,17 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Foreground Service Example'),
         ),
         body: Center(
             child: Text('Foreground service example, check notification bar')),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    ForegroundService().stop();
+    super.dispose();
   }
 }

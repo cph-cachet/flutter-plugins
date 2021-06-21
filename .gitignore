@@ -79,6 +79,7 @@ packages/esense_flutter/example/.flutter-plugins-dependencies
 packages/esense_flutter/example/ios/Flutter/flutter_export_environment.sh
 packages/esense_flutter/example/.flutter-plugins-dependencies
 packages/esense_flutter/example/ios/Flutter/flutter_export_environment.sh
+packages/flutter_foreground_service/example/.flutter-plugins-dependencies
 packages/mobility_features/example/.flutter-plugins-dependencies
 packages/mobility_features/example/.flutter-plugins-dependencies
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
