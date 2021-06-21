@@ -1,3 +1,7 @@
+## 2.0.1
+
+- Update Weather parsing to accept int values for double fields.
+
 ## 2.0.0
 
 - Updated dart and flutter to null safety versions

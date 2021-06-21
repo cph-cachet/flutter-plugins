@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Copenhagen Center for Health Technology (CACHET) at the
+ * Copyright Copenhagen Center for Health Technology (CACHET) at the
  * Technical University of Denmark (DTU).
  * Use of this source code is governed by a MIT-style license that can be
  * found in the LICENSE file.
@@ -125,7 +125,8 @@ class _MyAppState extends State<MyApp> {
           child: Container(
               margin: EdgeInsets.all(5),
               child: TextField(
-                  decoration: InputDecoration(border: OutlineInputBorder(), hintText: 'Enter latitude'),
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(), hintText: 'Enter latitude'),
                   keyboardType: TextInputType.number,
                   onChanged: _saveLat,
                   onSubmitted: _saveLat)),
@@ -134,7 +135,9 @@ class _MyAppState extends State<MyApp> {
             child: Container(
                 margin: EdgeInsets.all(5),
                 child: TextField(
-                    decoration: InputDecoration(border: OutlineInputBorder(), hintText: 'Enter longitude'),
+                    decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Enter longitude'),
                     keyboardType: TextInputType.number,
                     onChanged: _saveLon,
                     onSubmitted: _saveLon)))
@@ -154,7 +157,8 @@ class _MyAppState extends State<MyApp> {
               style: TextStyle(color: Colors.white),
             ),
             onPressed: queryWeather,
-            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.blue)),
+            style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.blue)),
           ),
         ),
         Container(
@@ -165,7 +169,8 @@ class _MyAppState extends State<MyApp> {
               style: TextStyle(color: Colors.white),
             ),
             onPressed: queryForecast,
-            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.blue)),
+            style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.blue)),
           ),
         )
       ],

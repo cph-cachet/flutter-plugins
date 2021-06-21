@@ -16,9 +16,6 @@ class MovesPage extends StatelessWidget {
         ));
   }
 
-
-
-
   Widget list() {
     return ListView.builder(
         itemCount: moves.length,

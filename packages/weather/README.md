@@ -79,7 +79,7 @@ The [Temperature](https://pub.dartlang.org/documentation/weather/latest/weather/
 This can be done as given a `Weather` object `w`
 ```dart
 double celsius = w.temperature.celsius;
-double fahrenheit = w.temperature.celsius;
+double fahrenheit = w.temperature.fahrenheit;
 double kelvin = w.temperature.kelvin;
 ```
 

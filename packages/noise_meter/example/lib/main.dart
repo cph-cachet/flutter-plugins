@@ -23,6 +23,12 @@ class _MyAppState extends State<MyApp> {
     _noiseMeter = new NoiseMeter(onError);
   }
 
+  @override
+  void dispose() {
+    _noiseSubscription?.cancel();
+    super.dispose();
+  }
+
   void onData(NoiseReading noiseReading) {
     this.setState(() {
       if (!this._isRecording) {

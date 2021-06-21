@@ -1,4 +1,4 @@
-# noise_meter
+# Noise Meter
 
 A noise meter package for iOS and Android.
 

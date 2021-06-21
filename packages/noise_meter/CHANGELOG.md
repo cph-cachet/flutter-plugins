@@ -1,3 +1,6 @@
+## 3.0.1
+- Fix Hot Restart crash & infinity dB with dispose ([PR #256](https://github.com/cph-cachet/flutter-plugins/pull/256))
+
 ## 3.0.0
 
 - Null safety migration
