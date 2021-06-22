@@ -1,6 +1,6 @@
 name: mobility_features
 description: Real-time mobility feature calculation
-version: 3.0.0
+version: 3.0.0+1
 homepage: https://github.com/cph-cachet/flutter-plugins/
 
 environment:
