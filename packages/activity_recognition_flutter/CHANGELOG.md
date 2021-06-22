@@ -1,3 +1,6 @@
+## 4.0.3
+* [PR #358](https://github.com/cph-cachet/flutter-plugins/pull/358)
+
 ## 4.0.2
 * [PR #302](https://github.com/cph-cachet/flutter-plugins/pull/302)
 * [PR #351](https://github.com/cph-cachet/flutter-plugins/pull/351)
