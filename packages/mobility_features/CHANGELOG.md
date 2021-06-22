@@ -1,6 +1,7 @@
-## 3.0.0
+## 3.0.0+2
 * update to null-safety
 * rename of `MobilityFactory` to `MobilityFeatures`and using the standard Dart singleton syntax for `MobilityFeatures()`.
+* misc updates to documentation
 
 ## 2.0.6+1 
 * removal of exception
