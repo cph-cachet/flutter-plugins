@@ -38,8 +38,8 @@ extension CompareDates on DateTime {
 }
 
 extension AverageIterable on Iterable {
-  double get mean {
-    return this.fold(0, (a, b) => a + b) / this.length.toDouble();
+  double? get mean {
+    return this.fold(0, (dynamic a, b) => a + b) / this.length.toDouble();
   }
 }
 
@@ -82,7 +82,6 @@ void printMatrix(List<List> m) {
 List<List<double>> zeroMatrix(int rows, int cols) {
   return new List.generate(rows, (_) => new List<double>.filled(cols, 0.0));
 }
-
 
 List<Stop> _mergeStops(List<Stop> stops) {
   List<Stop> merged = [];
