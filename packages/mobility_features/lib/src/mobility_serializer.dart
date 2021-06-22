@@ -2,21 +2,21 @@ part of mobility_features;
 
 class _MobilitySerializer<T> {
   /// Provide a file reference in order to serialize objects.
-  File _file;
+  File? _file;
   String delimiter = '\n';
 
   _MobilitySerializer();
 
   /// Deletes the content of the file
   void flush() {
-    _file.writeAsStringSync('', mode: FileMode.write);
+    _file!.writeAsStringSync('', mode: FileMode.write);
   }
 
   Future<File> get file async {
     if (_file == null) {
       _file = await _fileReference(T);
     }
-    return _file;
+    return _file!;
   }
 
   /// Writes a list of [_Serializable] to the file given in the constructor.

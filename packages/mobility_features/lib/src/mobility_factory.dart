@@ -1,13 +1,15 @@
 part of mobility_features;
 
-class MobilityFactory {
+/// Main entry for configuring and listening for mobility features.
+/// Used as a singleton `MobilityFactory()`.
+class MobilityFeatures {
   double _stopRadius = 5, _placeRadius = 50;
   Duration _stopDuration = const Duration(seconds: 20);
 
-  StreamSubscription<LocationSample> _subscription;
-  _MobilitySerializer<LocationSample> _serializerSamples;
-  _MobilitySerializer<Stop> _serializerStops;
-  _MobilitySerializer<Move> _serializerMoves;
+  StreamSubscription<LocationSample>? _subscription;
+  _MobilitySerializer<LocationSample>? _serializerSamples;
+  late _MobilitySerializer<Stop> _serializerStops;
+  late _MobilitySerializer<Move> _serializerMoves;
   List<Stop> _stops = [];
   List<Move> _moves = [];
   List<Place> _places = [];
@@ -21,31 +23,31 @@ class MobilityFactory {
     }
   }
 
-  /// Outgoing stream
+  // Outgoing stream
   StreamController<MobilityContext> _streamController =
       StreamController<MobilityContext>.broadcast();
 
   Stream<MobilityContext> get contextStream => _streamController.stream;
 
-  /// Private constructor
-  MobilityFactory._();
+  // Private constructor
+  MobilityFeatures._();
 
-  /// Private Singleton field
-  static final MobilityFactory _instance = MobilityFactory._();
+  // Private Singleton field
+  static final MobilityFeatures _instance = MobilityFeatures._();
 
   /// Public getter for the Singleton instance
-  static MobilityFactory get instance => _instance;
+  factory MobilityFeatures() => _instance;
 
-  /// Listen to a Stream of [LocationSample]
+  /// Listen to a Stream of [LocationSample].
   /// The subscription will be stored as a [StreamSubscription]
-  /// which may be cancelled later
-  Future startListening(Stream<LocationSample> s) async {
+  /// which may be cancelled later.
+  Future startListening(Stream<LocationSample> stream) async {
     await _handleInit();
 
     if (_subscription != null) {
-      await _subscription.cancel();
+      await _subscription!.cancel();
     }
-    _subscription = s.listen(_onData);
+    _subscription = stream.listen(_onData);
   }
 
   Future<void> _handleInit() async {
@@ -54,11 +56,11 @@ class MobilityFactory {
     _serializerStops = _MobilitySerializer<Stop>();
     _serializerMoves = _MobilitySerializer<Move>();
 
-    _stops = await _serializerStops.load();
-    _moves = await _serializerMoves.load();
-    _cluster = await _serializerSamples.load();
-    _stops = uniqueElements(_stops);
-    _moves = uniqueElements(_moves);
+    _stops = (await _serializerStops.load() as List<Stop>);
+    _moves = (await _serializerMoves.load() as List<Move>);
+    _cluster = (await _serializerSamples!.load() as List<LocationSample>);
+    _stops = uniqueElements(_stops) as List<Stop>;
+    _moves = uniqueElements(_moves) as List<Move>;
 
     if (_cluster.isNotEmpty)
       _print('Loaded ${_cluster.length} location samples from disk');
@@ -74,28 +76,28 @@ class MobilityFactory {
     if (_stops.isNotEmpty) {
       /// Only keeps stops and moves from the last known date
       DateTime date = _stops.last.datetime.midnight;
-      _stops = _getElementsForDate(_stops, date);
-      _moves = _getElementsForDate(_moves, date);
+      _stops = _getElementsForDate(_stops, date) as List<Stop>;
+      _moves = _getElementsForDate(_moves, date) as List<Move>;
       _places = _findPlaces(_stops, placeRadius: _placeRadius);
 
-      /// Compute features
+      // Compute features
       MobilityContext context =
           MobilityContext._(_stops, _places, _moves, date);
       _streamController.add(context);
     }
   }
 
-  /// Cancel the [StreamSubscription]
+  /// Cancel the [StreamSubscription] and stop listening.
   Future stopListening() async {
     if (_subscription != null) {
-      await _subscription.cancel();
+      await _subscription!.cancel();
     }
   }
 
   void _adjustSaveRate() {
     final now = DateTime.now();
 
-    /// If night hours, increase saving rate
+    // If night hours, increase saving rate
     if (22 <= now.hour && 8 <= now.hour) {
       _saveEvery = 1;
     }
@@ -106,20 +108,20 @@ class MobilityFactory {
     _samples.add(sample);
     _adjustSaveRate();
 
-    /// If previous samples exist, check if we should compute anything
+    // If previous samples exist, check if we should compute anything
     if (_cluster.isNotEmpty) {
-      /// If previous sample was on a different date, reset everything
+      // If previous sample was on a different date, reset everything
       if (_cluster.last.datetime.midnight != sample.datetime.midnight) {
         _createStopAndResetCluster();
         _clearEverything();
       }
 
-      /// If previous sample was today
+      // If previous sample was today
       else {
-        /// Compute median location of the collected samples
+        // Compute median location of the collected samples
         GeoLocation centroid = _computeCentroid(_cluster);
 
-        /// If the new data point is far away from cluster, make stop
+        // If the new data point is far away from cluster, make stop
         if (Distance.fromGeospatial(centroid, sample) > _stopRadius) {
           _createStopAndResetCluster();
         }
@@ -144,7 +146,7 @@ class MobilityFactory {
   void _addToBuffer(LocationSample sample) {
     _buffer.add(sample);
     if (_buffer.length >= _saveEvery) {
-      _serializerSamples.save(_buffer);
+      _serializerSamples!.save(_buffer);
       _print('Stored buffer to disk');
       _buffer = [];
     }
@@ -154,26 +156,26 @@ class MobilityFactory {
   void _createStopAndResetCluster() {
     Stop s = Stop._fromLocationSamples(_cluster);
 
-    /// If the stop is too short, it is discarded
-    /// Otherwise compute a context and send it via the stream
+    // If the stop is too short, it is discarded
+    // Otherwise compute a context and send it via the stream
     if (s.duration > _stopDuration) {
       _print('----> Stop found: $s');
-      Stop stopPrev = _stops.isNotEmpty ? _stops.last : null;
+      Stop? stopPrev = _stops.isNotEmpty ? _stops.last : null;
 
       _stops.add(s);
 
-      /// Find places
+      // Find places
       _places = _findPlaces(_stops);
 
-      /// Merge stops and recompute places
+      // Merge stops and recompute places
       _stops = _mergeStops(_stops);
       _places = _findPlaces(_stops);
 
-      /// Store to disk
+      // Store to disk
       _serializerStops.flush();
       _serializerStops.save(_stops);
 
-      /// Extract date
+      // Extract date
       DateTime date = _cluster.last.datetime.midnight;
 
       if (stopPrev != null) {
@@ -182,29 +184,29 @@ class MobilityFactory {
         _serializerMoves.save(_moves);
       }
 
-      /// Compute features
+      // Compute features
       MobilityContext context =
           MobilityContext._(_stops, _places, _moves, date);
       _streamController.add(context);
     }
 
-    /// Reset samples etc
+    // Reset samples etc
     _cluster = [];
-    _serializerSamples.flush();
+    _serializerSamples!.flush();
     _buffer = [];
   }
 
-  /// Configure the Stop-duration for the Stop algorithm
+  /// Configure the stop-duration for the stop algorithm
   set stopDuration(Duration value) {
     _stopDuration = value;
   }
 
-  /// Configure the Stop-radius for the Stop algorithm
+  /// Configure the stop-radius for the stop algorithm
   set stopRadius(double value) {
     _stopRadius = value;
   }
 
-  /// Configure the Stop-radius for the Place algorithm
+  /// Configure the stop-radius for the place algorithm
   set placeRadius(value) {
     _placeRadius = value;
   }
@@ -214,7 +216,7 @@ class MobilityFactory {
     if (_serializerSamples == null) {
       _serializerSamples = _MobilitySerializer<LocationSample>();
     }
-    return _serializerSamples;
+    return _serializerSamples!;
   }
 
   Future<void> saveSamples(List<LocationSample> samples) async {
@@ -224,7 +226,7 @@ class MobilityFactory {
 
   Future<List<LocationSample>> loadSamples() async {
     final serializer = await _locationSampleSerializer;
-    return await serializer.load();
+    return (await serializer.load() as List<LocationSample>);
   }
 
   static List<_Timestamped> _getElementsForDate(

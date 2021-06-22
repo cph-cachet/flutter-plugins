@@ -6,9 +6,7 @@ import 'package:carp_background_location/carp_background_location.dart';
 import 'package:mobility_features/mobility_features.dart';
 
 part 'stops_page.dart';
-
 part 'moves_page.dart';
-
 part 'places_page.dart';
 
 void main() => runApp(MyApp());
@@ -52,11 +50,10 @@ final varianceIcon = Icon(Icons.swap_calls);
 enum AppState { NO_FEATURES, CALCULATING_FEATURES, FEATURES_READY }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Mobility Features Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -81,30 +78,28 @@ class _MyHomePageState extends State<MyHomePage> {
 
   int _currentIndex = 0;
 
-  /// Location Streaming
-  LocationManager locationManager = LocationManager.instance;
-  Stream<LocationDto> dtoStream;
-  StreamSubscription<LocationDto> dtoSubscription;
+  // Location Streaming
+  Stream<LocationDto> locationStream;
+  StreamSubscription<LocationDto> locationSubscription;
 
-  /// Mobility Features stream
+  // Mobility Features stream
   StreamSubscription<MobilityContext> mobilitySubscription;
-  MobilityFactory mobilityFactory = MobilityFactory.instance;
   MobilityContext _mobilityContext;
 
   @override
   void initState() {
     super.initState();
 
-    /// Set up Mobility Features
-    mobilityFactory.stopDuration = Duration(seconds: 20);
-    mobilityFactory.placeRadius = 50.0;
-    mobilityFactory.stopRadius = 5.0;
+    // Set up Mobility Features
+    MobilityFeatures().stopDuration = Duration(seconds: 20);
+    MobilityFeatures().placeRadius = 50.0;
+    MobilityFeatures().stopRadius = 5.0;
 
-    /// Setup Location Manager
-    locationManager.distanceFilter = 0;
-    locationManager.interval = 1;
-    locationManager.notificationTitle = 'Mobility Features';
-    locationManager.notificationMsg = 'Your geo-location is being tracked';
+    // Setup Location Manager
+    LocationManager().distanceFilter = 0;
+    LocationManager().interval = 1;
+    LocationManager().notificationTitle = 'Mobility Features';
+    LocationManager().notificationMsg = 'Your geo-location is being tracked';
     streamInit();
   }
 
@@ -122,26 +117,26 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  /// Set up streams:
+  /// * Subscribe to stream in case it is already running (Android only)
+  /// * Subscribe to MobilityContext updates
   void streamInit() async {
-    /// Set up streams:
-    /// * Subscribe to stream in case it is already running (Android only)
-    /// * Subscribe to MobilityContext updates
-    dtoStream = locationManager.dtoStream;
-    dtoSubscription = dtoStream.listen(onData);
+    locationStream = LocationManager().locationStream;
+    locationSubscription = locationStream.listen(onData);
 
     // Subscribe if it hasn't been done already
-    if (dtoSubscription != null) {
-      dtoSubscription.cancel();
+    if (locationSubscription != null) {
+      locationSubscription.cancel();
     }
-    dtoSubscription = dtoStream.listen(onData);
-    await locationManager.start();
+    locationSubscription = locationStream.listen(onData);
+    await LocationManager().start();
 
-    Stream<LocationSample> locationSampleStream = dtoStream.map((e) =>
+    Stream<LocationSample> locationSampleStream = locationStream.map((e) =>
         LocationSample(GeoLocation(e.latitude, e.longitude), DateTime.now()));
 
-    mobilityFactory.startListening(locationSampleStream);
+    MobilityFeatures().startListening(locationSampleStream);
     mobilitySubscription =
-        mobilityFactory.contextStream.listen(onMobilityContext);
+        MobilityFeatures().contextStream.listen(onMobilityContext);
   }
 
   void onData(LocationDto dto) {
