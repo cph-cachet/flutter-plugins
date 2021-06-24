@@ -2,6 +2,7 @@ package cachet.plugins.health
 
 import android.app.Activity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.request.DataReadRequest
@@ -285,8 +286,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
 
         val optionsToRegister = callToHealthTypes(call)
-        Fitness.getConfigClient(activity!!, GoogleSignIn.getAccountForExtension(activity!!, optionsToRegister))
-                .disableFit()
+        val signInOptions = GoogleSignInOptions.Builder().addExtension(optionsToRegister).build()
+        GoogleSignIn.getClient(activity!!, signInOptions).revokeAccess()
                 .addOnSuccessListener {
                     requestAuthorization(call, result)
                     Log.i("Health","Disabled Google Fit")
