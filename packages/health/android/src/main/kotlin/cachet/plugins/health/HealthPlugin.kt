@@ -277,11 +277,32 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         result.success(GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), optionsToRegister))
     }
 
+    /// Called when the "revokeAndRequestGFitAuthorization" is invoked from Flutter
+    private fun revokeAndRequestGFitAuthorization(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
+        val optionsToRegister = callToHealthTypes(call)
+        Fitness.getConfigClient(this, GoogleSignIn.getAccountForExtension(this, optionsToRegister))
+                .disableFit()
+                .addOnSuccessListener {
+                    requestAuthorization(call, result)
+                    Log.i(TAG,"Disabled Google Fit")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "There was an error disabling Google Fit", e)
+                    result.success(false)
+                }
+    }
+
     /// Handle calls from the MethodChannel
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
             "hasAuthorization" -> hasAuthorization(call, result)
+            "revokeAndRequestGFitAuthorization" -> revokeAndRequestGFitAuthorization(call, result)
             "getData" -> getData(call, result)
             else -> result.notImplemented()
         }

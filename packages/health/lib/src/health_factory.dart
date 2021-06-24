@@ -17,7 +17,16 @@ class HealthFactory {
 
   /// Request access to GoogleFit/Apple HealthKit
   Future<bool> requestAuthorization(List<HealthDataType> types) async {
-    /// If BMI is requested, then also ask for weight and height
+    final requestType = _checkTypeBMI(types);
+
+    List<String> keys = requestType.map((e) => _enumToString(e)).toList();
+    final bool isAuthorized =
+        await _channel.invokeMethod('requestAuthorization', {'types': keys});
+    return isAuthorized;
+  }
+
+  /// If BMI is requested, then also ask for weight and height
+  List<HealthDataType> _checkTypeBMI(List<HealthDataType> types) {
     if (types.contains(HealthDataType.BODY_MASS_INDEX)) {
       if (!types.contains(HealthDataType.WEIGHT)) {
         types.add(HealthDataType.WEIGHT);
@@ -27,11 +36,7 @@ class HealthFactory {
         types.add(HealthDataType.HEIGHT);
       }
     }
-
-    List<String> keys = types.map((e) => _enumToString(e)).toList();
-    final bool isAuthorized =
-        await _channel.invokeMethod('requestAuthorization', {'types': keys});
-    return isAuthorized;
+    return types;
   }
 
   /// Returns whether we have access to GoogleFit/Apple HealthKit
@@ -153,6 +158,20 @@ class HealthFactory {
     } else {
       return <HealthDataPoint>[];
     }
+  }
+
+  /// Revoke and request again Google Fit Authorization
+  Future<bool> revokeAndRequestGFitAuthorization(
+      List<HealthDataType> types) async {
+    if (Platform.isIOS) {
+      return false;
+    }
+    final requestType = _checkTypeBMI(types);
+
+    List<String> keys = requestType.map((e) => _enumToString(e)).toList();
+    final bool isAuthorized = await _channel
+        .invokeMethod('revokeAndRequestGFitAuthorization', {'types': keys});
+    return isAuthorized;
   }
 
   /// Given an array of [HealthDataPoint]s, this method will return the array
