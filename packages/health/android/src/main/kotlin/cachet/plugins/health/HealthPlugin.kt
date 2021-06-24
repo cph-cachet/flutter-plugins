@@ -285,14 +285,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
 
         val optionsToRegister = callToHealthTypes(call)
-        Fitness.getConfigClient(this, GoogleSignIn.getAccountForExtension(this, optionsToRegister))
+        Fitness.getConfigClient(activity!!, GoogleSignIn.getAccountForExtension(activity!!, optionsToRegister))
                 .disableFit()
                 .addOnSuccessListener {
                     requestAuthorization(call, result)
-                    Log.i(TAG,"Disabled Google Fit")
+                    Log.i("Health","Disabled Google Fit")
                 }
                 .addOnFailureListener { e ->
-                    Log.w(TAG, "There was an error disabling Google Fit", e)
+                    Log.w("Health", "There was an error disabling Google Fit", e)
                     result.success(false)
                 }
     }
