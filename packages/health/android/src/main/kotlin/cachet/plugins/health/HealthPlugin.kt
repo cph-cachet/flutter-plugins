@@ -48,9 +48,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        var channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME);
-        val plugin = HealthPlugin(channel);
-        channel.setMethodCallHandler(plugin)
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME);
+        channel?.setMethodCallHandler(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
