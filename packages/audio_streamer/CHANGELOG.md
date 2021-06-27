@@ -1,6 +1,7 @@
-## 2.0.1
+## 2.0.2
 - [PR#364](https://github.com/cph-cachet/flutter-plugins/pull/364)
-
+- upgrade to `permission_handler: ^8.1.0`
+ 
 ## 2.0.0
 - Null safety migration
 
