@@ -23,6 +23,7 @@ const val CHANNEL_NAME = "pedometer"
 /** PedometerPlugin */
 class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     private var result: Result? = null
+    private var mResult: Result? = null
     private var handler: Handler? = null
     private var activity: Activity? = null
 
@@ -90,12 +91,13 @@ class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHa
         if (activity == null) {
             result.success(false)
         }
+        mResult = result
         var sensorType = getSensorType(call)
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         if (sensorManager!!.getDefaultSensor(sensorType) == null) {
-            result.success(false)
+            mResult?.success(false)
         }
-        result.success(true)
+        mResult?.success(true)
     }
 
     private fun getSensorType(call: MethodCall) : Int {
