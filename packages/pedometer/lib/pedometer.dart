@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/services.dart';
-import 'dart:io' show Platform;
 
 const int _stopped = 0, _walking = 1;
 
 class Pedometer {
+  static const MethodChannel _channel = MethodChannel('pedometer');
   static const EventChannel _stepDetectionChannel =
       const EventChannel('step_detection');
   static const EventChannel _stepCountChannel =
@@ -65,6 +66,14 @@ class Pedometer {
   static Stream<StepCount> get stepCountStream => _stepCountChannel
       .receiveBroadcastStream()
       .map((event) => StepCount._(event));
+
+  /// Check if sensor is available
+  static Future<bool> isSensorAvailable(SensorType sensorType) async {
+    final type = sensorType.toString().split(".")[1];
+    final bool available =
+        await _channel.invokeMethod('isSensorAvailable', {'type': type});
+    return available;
+  }
 }
 
 /// A DTO for steps taken containing the number of steps taken.
@@ -114,3 +123,5 @@ class PedestrianStatus {
   @override
   String toString() => 'Status: $_status at ${_timeStamp.toIso8601String()}';
 }
+
+enum SensorType { StepCount, PedestrianStatus }
