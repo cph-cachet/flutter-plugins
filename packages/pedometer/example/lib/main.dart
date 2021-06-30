@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 
 String formatDate(DateTime d) {
@@ -56,7 +56,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void initPlatformState() {
+  void initPlatformState() async {
     _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
     _pedestrianStatusStream
         .listen(onPedestrianStatusChanged)
@@ -64,6 +64,11 @@ class _MyAppState extends State<MyApp> {
 
     _stepCountStream = Pedometer.stepCountStream;
     _stepCountStream.listen(onStepCount).onError(onStepCountError);
+
+    print(
+        "step count: ${await Pedometer.isSensorAvailable(SensorType.StepCount)}");
+    print(
+        "pedestrian status: ${await Pedometer.isSensorAvailable(SensorType.PedestrianStatus)}");
 
     if (!mounted) return;
   }
