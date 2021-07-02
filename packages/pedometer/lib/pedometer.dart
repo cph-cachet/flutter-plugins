@@ -74,6 +74,16 @@ class Pedometer {
         await _channel.invokeMethod('isSensorAvailable', {'type': type});
     return available;
   }
+
+  /// Check if permission is granted for pedometer
+  static Future<bool> checkPermission() async {
+    return await _channel.invokeMethod('checkPermission');
+  }
+
+  /// Request permission for pedometer
+  static Future<bool> requestPermission() async {
+    return await _channel.invokeMethod('requestPermission');
+  }
 }
 
 /// A DTO for steps taken containing the number of steps taken.
