@@ -90,12 +90,14 @@ class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHa
     private fun isSensorAvailable(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
+            return
         }
         mResult = result
         var sensorType = getSensorType(call)
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         if (sensorManager!!.getDefaultSensor(sensorType) == null) {
             mResult?.success(false)
+            return
         }
         mResult?.success(true)
     }

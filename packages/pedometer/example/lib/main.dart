@@ -84,6 +84,20 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              TextButton(
+                child: Text("Check Permission"),
+                onPressed: () {
+                  Pedometer.checkPermission()
+                      .then((value) => print("check permission: $value"));
+                },
+              ),
+              TextButton(
+                child: Text("Get Permission"),
+                onPressed: () {
+                  Pedometer.requestPermission()
+                      .then((value) => print("get permission: $value"));
+                },
+              ),
               Text(
                 'Steps taken:',
                 style: TextStyle(fontSize: 30),
