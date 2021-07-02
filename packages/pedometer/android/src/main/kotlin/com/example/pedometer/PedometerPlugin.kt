@@ -15,13 +15,20 @@ import android.app.Activity
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.PluginRegistry.Registrar
 import android.content.Context
 import android.content.Intent
+import com.example.pedometer.PermissionManager
+import com.example.pedometer.PermissionResultCallback
+import android.content.pm.PackageManager
+import android.os.Build
 
 const val CHANNEL_NAME = "pedometer"
 
 /** PedometerPlugin */
 class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
+    private val permissionManager: PermissionManager = PermissionManager();
+
     private var result: Result? = null
     private var mResult: Result? = null
     private var handler: Handler? = null
@@ -30,6 +37,7 @@ class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHa
     private lateinit var stepDetectionChannel: EventChannel
     private lateinit var stepCountChannel: EventChannel
     private lateinit var context: Context
+    private lateinit var pluginBinding: ActivityPluginBinding
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         /// Create channels
@@ -82,6 +90,8 @@ class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHa
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "isSensorAvailable" -> isSensorAvailable(call, result)
+            "checkPermission" -> checkPermission(result)
+            "requestPermission" -> requestPermission(result)
             else -> result.notImplemented()
         }
     }
@@ -92,6 +102,7 @@ class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHa
             result.success(false)
             return
         }
+
         mResult = result
         var sensorType = getSensorType(call)
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -111,12 +122,40 @@ class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHa
         return Sensor.TYPE_STEP_DETECTOR
     }
 
+    private fun checkPermission(result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
+        mResult = result
+
+        /// not needed before Android 9
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            mResult?.success(true)
+            return
+        }
+
+        mResult?.success(permissionManager.checkPermission(context))
+    }
+
+    private fun requestPermission(result: Result) {
+        val callback = object: PermissionResultCallback {
+            override fun onResult(permission: Boolean) {
+                result.success(permission)
+            }
+        }
+        permissionManager.requestPermission(activity, callback)
+    }
+
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         if (channel == null) {
             return
         }
+        this.pluginBinding = binding
+        this.pluginBinding.addRequestPermissionsResultListener(this.permissionManager);
         binding.addActivityResultListener(this)
-        activity = binding.activity
+        this.activity = binding.activity
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -132,5 +171,8 @@ class PedometerPlugin(private var channel: MethodChannel? = null) : MethodCallHa
             return
         }
         activity = null
+        if (pluginBinding != null) {
+            this.pluginBinding.removeRequestPermissionsResultListener(this.permissionManager);
+        }
     }
 }
