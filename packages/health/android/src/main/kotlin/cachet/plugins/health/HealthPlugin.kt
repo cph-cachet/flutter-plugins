@@ -239,11 +239,6 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
 
     /// Called when the "getHealthDataByType" is invoked from Flutter
     private fun getData(call: MethodCall, result: Result) {
-        if (activity == null) {
-            result.success(null)
-            return
-        }
-
         val type = call.argument<String>("dataTypeKey")!!
 
         // Look up data type and unit for the type key
@@ -317,11 +312,6 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
 
     /// Called when the "requestAuthorization" is invoked from Flutter
     private fun requestAuthorization(call: MethodCall, result: Result) {
-        if (activity == null) {
-            result.success(null)
-            return
-        }
-
         val optionsToRegister = callToHealthTypes(call)
 
         val accountName = call.argument<String?>("accountName")
