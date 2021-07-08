@@ -125,3 +125,59 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
 };
+
+const HealthDataTypeJsonValue = {
+  HealthDataType.ACTIVE_ENERGY_BURNED: 'active_energy_burned',
+  HealthDataType.BASAL_ENERGY_BURNED: 'basal_energy_burned',
+  HealthDataType.BLOOD_GLUCOSE: 'blood_glucose',
+  HealthDataType.BLOOD_OXYGEN: 'blood_oxygen',
+  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: 'blood_pressure_diastolic',
+  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: 'blood_pressure_systolic',
+  HealthDataType.BODY_FAT_PERCENTAGE: 'body_fat_percentage',
+  HealthDataType.BODY_MASS_INDEX: 'body_mass_index',
+  HealthDataType.BODY_TEMPERATURE: 'body_temperature',
+  HealthDataType.HEART_RATE: 'heart_rate',
+  HealthDataType.HEART_RATE_VARIABILITY_SDNN: 'heart_rate_variability_sdnn',
+  HealthDataType.HEIGHT: 'height',
+  HealthDataType.RESTING_HEART_RATE: 'resting_heart_rate',
+  HealthDataType.STEPS: 'steps',
+  HealthDataType.WAIST_CIRCUMFERENCE: 'waist_circumference',
+  HealthDataType.WALKING_HEART_RATE: 'walking_heart_rate',
+  HealthDataType.WEIGHT: 'weight',
+  HealthDataType.DISTANCE_WALKING_RUNNING: 'distance_walking_running',
+  HealthDataType.FLIGHTS_CLIMBED: 'flights_climbed',
+  HealthDataType.MOVE_MINUTES: 'move_minutes',
+  HealthDataType.DISTANCE_DELTA: 'distance_delta',
+  HealthDataType.MINDFULNESS: 'mindfulness',
+  HealthDataType.WATER: 'water',
+  HealthDataType.SLEEP_IN_BED: 'sleep_in_bed',
+  HealthDataType.SLEEP_ASLEEP: 'sleep_asleep',
+  HealthDataType.SLEEP_AWAKE: 'sleep_awake',
+  HealthDataType.HIGH_HEART_RATE_EVENT: 'high_heart_rate_event',
+  HealthDataType.LOW_HEART_RATE_EVENT: 'low_heart_rate_event',
+  HealthDataType.IRREGULAR_HEART_RATE_EVENT: 'irregular_heart_rate_event',
+  HealthDataType.ELECTRODERMAL_ACTIVITY: 'electrodermal_activity',
+};
+
+const HealthDataUnitJsonValue = {
+  HealthDataUnit.BEATS_PER_MINUTE: 'beats_per_minute',
+  HealthDataUnit.CALORIES: 'calories',
+  HealthDataUnit.COUNT: 'count',
+  HealthDataUnit.DEGREE_CELSIUS: 'degree_celsius',
+  HealthDataUnit.KILOGRAMS: 'kilograms',
+  HealthDataUnit.METERS: 'meters',
+  HealthDataUnit.MILLIGRAM_PER_DECILITER: 'milligram_per_deciliter',
+  HealthDataUnit.MILLIMETER_OF_MERCURY: 'millimeter_of_mercury',
+  HealthDataUnit.MILLISECONDS: 'milliseconds',
+  HealthDataUnit.MINUTES: 'minutes',
+  HealthDataUnit.NO_UNIT: 'no_unit',
+  HealthDataUnit.PERCENTAGE: 'percentage',
+  HealthDataUnit.SIEMENS: 'siemens',
+  HealthDataUnit.UNKNOWN_UNIT: 'unknown_unit',
+  HealthDataUnit.LITER: 'liter',
+};
+
+const PlatformTypeJsonValue = { 
+  PlatformType.IOS: 'ios',
+  PlatformType.ANDROID: 'android'
+};
