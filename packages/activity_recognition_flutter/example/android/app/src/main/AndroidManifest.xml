@@ -42,6 +42,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!-- configuration for the activity recognition service -->
         <receiver android:name="dk.cachet.activity_recognition_flutter.ActivityRecognizedBroadcastReceiver"/>
         <service
             android:name="dk.cachet.activity_recognition_flutter.ActivityRecognizedService"

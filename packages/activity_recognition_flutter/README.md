@@ -23,7 +23,11 @@ Add the following entries inside the `<manifest>` tag:
 Next, add the plugin's service inside the `<application>` tag:
 
 ```xml
-<service android:name="dk.cachet.activity_recognition_flutter.ActivityRecognizedService" />
+<receiver android:name="dk.cachet.activity_recognition_flutter.ActivityRecognizedBroadcastReceiver"/>
+<service
+   android:name="dk.cachet.activity_recognition_flutter.ActivityRecognizedService"
+   android:permission="android.permission.BIND_JOB_SERVICE"
+   android:exported="true"/>
 <service android:name="dk.cachet.activity_recognition_flutter.ForegroundService" />
 ```
 
