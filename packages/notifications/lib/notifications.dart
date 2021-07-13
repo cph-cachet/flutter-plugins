@@ -28,7 +28,7 @@ class NotificationEvent {
   factory NotificationEvent.fromMap(Map<dynamic, dynamic> map) {
     DateTime time = DateTime.now();
     String name = map['packageName'];
-    String message = map['mesage'];
+    String message = map['message'];
     String title = map['title'];
 
     return NotificationEvent(
