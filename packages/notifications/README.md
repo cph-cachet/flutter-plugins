@@ -25,7 +25,7 @@ void onData(NotificationEvent event) {
 void startListening() {
     _notifications = new Notifications();
     try {
-      _subscription = _notifications.notificationStream.listen(onData);
+      _subscription = _notifications!.notificationStream!.listen(onData);
     } on NotificationException catch (exception) {
       print(exception);
     }
@@ -36,14 +36,15 @@ The stream can also be cancelled again by calling the `cancel()` method:
 
 ```dart
   void stopListening() {
-    _subscription.cancel();
+    _subscription?.cancel();
   }
 ```
 
 The `NotificationEvent` provides:
 
-* package message;
-* package title;
-* package name;
-* username;
-* timestamp;
+* the title
+* the message
+* package name
+* timestamp
+
+of each notification.
