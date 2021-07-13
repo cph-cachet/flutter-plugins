@@ -35,7 +35,7 @@ class ConnectionEvent {
     }
   }
 
-  String toString() => 'ConnectionEvent - type: $type';
+  String toString() => '$runtimeType - type: $type';
 }
 
 /// Contains data from a sensor event.
@@ -56,38 +56,46 @@ class SensorEvent {
   int packetIndex;
 
   /// 3-elements array with X, Y and Z axis for accelerometer
-  List<int> accel;
+  List<int>? accel;
 
   /// 3-elements array with X, Y and Z axis for gyroscope
-  List<int> gyro;
+  List<int>? gyro;
 
-  SensorEvent({this.timestamp, this.packetIndex, this.accel, this.gyro});
+  SensorEvent({
+    required this.timestamp,
+    required this.packetIndex,
+    this.accel,
+    this.gyro,
+  });
 
   factory SensorEvent.fromMap(Map<dynamic, dynamic> map) {
     //map.forEach((key, value) => print(' > map[$key] = $value'));
     DateTime time = DateTime.fromMillisecondsSinceEpoch(map['timestamp']);
-    int index = map['packetIndex'];
+    int index = map['packetIndex'] ?? -1;
     List<int> accl = [map['accel.x'], map['accel.y'], map['accel.z']];
     List<int> gyro = [map['gyro.x'], map['gyro.y'], map['gyro.z']];
 
     return SensorEvent(
-        timestamp: time, packetIndex: index, accel: accl, gyro: gyro);
+      timestamp: time,
+      packetIndex: index,
+      accel: accl,
+      gyro: gyro,
+    );
   }
 
   String toString() =>
-      'SensorEvent - timestamp: $timestamp, packetIndex: $packetIndex, accl: [${accel[0]},${accel[1]},${accel[2]}], gyro: [${gyro[0]},${gyro[1]},${gyro[2]}]';
+      '$runtimeType - timestamp: $timestamp, packetIndex: $packetIndex, accl: [${accel![0]},${accel![1]},${accel![2]}], gyro: [${gyro![0]},${gyro![1]},${gyro![2]}]';
 }
 
 /// Default eSense event class.
 class ESenseEvent {
-  String type;
-  ESenseEvent([this.type]);
+  ESenseEvent();
 
   factory ESenseEvent.fromMap(Map<dynamic, dynamic> map) {
     final String type = map['type'];
     switch (type) {
       case 'Listen':
-        return RegisterEventListener(map['success']);
+        return RegisterListenerEvent(map['success']);
       case 'DeviceNameRead':
         return DeviceNameRead.fromMap(map);
       case 'BatteryRead':
@@ -101,38 +109,37 @@ class ESenseEvent {
       case 'SensorConfigRead':
         return SensorConfigRead.fromMap(map);
       default:
-        return ESenseEvent(type);
+        return ESenseEvent();
     }
   }
 
-  String toString() => 'ESenseEvent - type: $type';
+  String toString() => '$runtimeType';
 }
 
 /// Called when an event listener is registered to the eSense device.
-class RegisterEventListener extends ESenseEvent {
-  /// was registration successful?
+class RegisterListenerEvent extends ESenseEvent {
+  /// Was registration successful?
   bool success;
-  RegisterEventListener(this.success) : super();
-  String toString() => 'RegisterEventListener - success: $success';
+  RegisterListenerEvent(this.success) : super();
+  String toString() => '$runtimeType - success: $success';
 }
 
 /// Called when the information on accelerometer offset has been received
 class AccelerometerOffsetRead extends ESenseEvent {
   /// x-axis factory offset
-  int offsetX;
+  int? offsetX;
 
   /// y-axis factory offset
-  int offsetY;
+  int? offsetY;
 
   /// z-axis factory offset
-  int offsetZ;
+  int? offsetZ;
 
   AccelerometerOffsetRead(this.offsetX, this.offsetY, this.offsetZ) : super();
   factory AccelerometerOffsetRead.fromMap(Map<dynamic, dynamic> map) =>
       AccelerometerOffsetRead(map['offsetX'], map['offsetY'], map['offsetZ']);
-  //AccelerometerOffsetRead(int.tryParse(map['offsetX']), int.tryParse(map['offsetY']), int.tryParse(map['offsetZ']));
 
-  String toString() => 'AccelerometerOffsetRead - '
+  String toString() => '$runtimeType - '
       'offsetX: $offsetX, '
       'offsetY: $offsetY, '
       'offsetZ: $offsetZ';
@@ -142,16 +149,16 @@ class AccelerometerOffsetRead extends ESenseEvent {
 /// been received.
 class AdvertisementAndConnectionIntervalRead extends ESenseEvent {
   /// minimum advertisement interval in milliseconds
-  int minAdvertisementInterval;
+  int? minAdvertisementInterval;
 
   /// maximum advertisement interval in milliseconds
-  int maxAdvertisementInterval;
+  int? maxAdvertisementInterval;
 
   /// minimum connection interval in milliseconds
-  int minConnectionInterval;
+  int? minConnectionInterval;
 
   /// maximum connection interval in milliseconds
-  int maxConnectionInterval;
+  int? maxConnectionInterval;
 
   AdvertisementAndConnectionIntervalRead(
       this.minAdvertisementInterval,
@@ -167,12 +174,8 @@ class AdvertisementAndConnectionIntervalRead extends ESenseEvent {
         map['minConnectionInterval'],
         map['maxConnectionInterval'],
       );
-//          int.tryParse(map['minAdvertisementInterval']),
-//          int.tryParse(map['maxAdvertisementInterval']),
-//          int.tryParse(map['minConnectionInterval']),
-//          int.tryParse(map['maxConnectionInterval']));
 
-  String toString() => 'AdvertisementAndConnectionIntervalRead - '
+  String toString() => '$runtimeType - '
       'minAdvertisementInterval: $minAdvertisementInterval, '
       'maxAdvertisementInterval: $maxAdvertisementInterval, '
       'minConnectionInterval: $minConnectionInterval, '
@@ -182,50 +185,49 @@ class AdvertisementAndConnectionIntervalRead extends ESenseEvent {
 /// Called when the information on battery voltage has been received
 class BatteryRead extends ESenseEvent {
   /// eSense battery voltage in Volts
-  double voltage;
+  double? voltage;
 
   BatteryRead(this.voltage) : super();
-  //factory BatteryRead.fromMap(Map<dynamic, dynamic> map) => BatteryRead(int.tryParse(map['voltage']));
   factory BatteryRead.fromMap(Map<dynamic, dynamic> map) =>
       BatteryRead(map['voltage']);
 
-  String toString() => 'BatteryRead - voltage: $voltage';
+  String toString() => '$runtimeType - voltage: $voltage';
 }
 
 /// Called when the button event has changed
 class ButtonEventChanged extends ESenseEvent {
   /// true if the button is pressed, false if it is released
-  bool pressed;
+  bool pressed = false;
 
   ButtonEventChanged(this.pressed) : super();
   factory ButtonEventChanged.fromMap(Map<dynamic, dynamic> map) =>
       ButtonEventChanged(map['pressed']);
 
-  String toString() => 'ButtonEventChanged - pressed: $pressed';
+  String toString() => '$runtimeType - pressed: $pressed';
 }
 
 /// Called when the information on the device name has been received
 class DeviceNameRead extends ESenseEvent {
   /// Name of the eSense device
-  String deviceName;
+  String? deviceName;
 
   DeviceNameRead(this.deviceName) : super();
   factory DeviceNameRead.fromMap(Map<dynamic, dynamic> map) =>
       DeviceNameRead(map['deviceName']);
 
-  String toString() => 'DeviceNameRead - name: $deviceName';
+  String toString() => '$runtimeType - name: $deviceName';
 }
 
 /// Called when the information on sensor configuration has been received
 ///
-/// Currently __not__ implemented in this Flutter Plugin, i.e. the [ESenseConfig]
+/// Currently **NOT** implemented in this Flutter Plugin, i.e. the [ESenseConfig]
 /// class is empty.
 class SensorConfigRead extends ESenseEvent {
-  ESenseConfig config;
+  ESenseConfig? config;
 
   SensorConfigRead() : super();
   factory SensorConfigRead.fromMap(Map<dynamic, dynamic> map) =>
       SensorConfigRead()..config = ESenseConfig();
 
-  String toString() => 'SensorConfigRead - config: $config';
+  String toString() => '$runtimeType - config: $config';
 }

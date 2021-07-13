@@ -1,6 +1,6 @@
 # eSense Flutter
 
-This plugin supports the [eSense](http://www.esense.io) earable computing platform on both Android and iOS.
+This plugin supports the [eSense](https://www.esense.io) earable computing platform on both Android and iOS.
 
 
 [![pub package](https://img.shields.io/pub/v/esense_flutter.svg)](https://pub.dartlang.org/packages/esense_flutter)
@@ -75,7 +75,7 @@ Add this permission in the `Info.plist` file located in `ios/Runner`:
 The eSense Flutter plugin has been designed to resemble the Android eSense API almost __1:1__. Hence, you should be able
 to recognize the names of the different classes and class variables.  
 For example, the methods on the [`ESenseManager`](https://pub.dev/documentation/esense/latest/esense/ESenseManager-class.html) class is mapped 1:1. 
-See the [eSense Android documentation](http://www.esense.io/share/eSense-Android-Library.pdf) on how it all works.
+See the [eSense Android documentation](https://www.esense.io/share/eSense-Android-Library.pdf) on how it all works.
 
 However, one major design change has been done; this eSense Flutter plugin complies to the Dart/Flutter reactive programming 
 architecture using [Stream](https://api.dartlang.org/stable/2.4.0/dart-async/Stream-class.html)s.
@@ -208,12 +208,6 @@ Timer(Duration(seconds: 5), () async => await ESenseManager.getSensorConfig());
 
 ## Authors
 
- * [Jakob E. Bardram](http://www.bardram.net) Technical University of Denmark
+ * [Jakob E. Bardram](https://www.bardram.net) Technical University of Denmark
  * The iOS implementation uses the [eSense iOS Library](https://github.com/tetujin/ESense).
 
-
-## Getting Started with Flutter
-
-For help getting started with Flutter, view the 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
