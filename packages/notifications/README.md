@@ -12,7 +12,7 @@ For help on adding as a dependency, view the [documentation](https://flutter.io/
 ## Usage
 All incoming data points are streamed with a `StreamSubscription` which is set up by calling the `listen()` method on the `notificationStream` stream object.
 
-Given a method `_onData(ScreenStateEvent event)` the subscription can be set up as follows:
+Given a method `onData(NotificationEvent event)` the subscription can be set up as follows:
 
 ```dart
 Notifications _notifications;
