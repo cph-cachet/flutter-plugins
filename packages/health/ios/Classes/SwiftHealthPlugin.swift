@@ -115,6 +115,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     return
                 }
                 print(samplesCategory)
+                if (dataTypeKey == self.SLEEP_IN_BED) {
+                    samplesCategory = samplesCategory.filter { $0.value == 0 }
+                }
+                if (dataTypeKey == self.SLEEP_AWAKE) {
+                    samplesCategory = samplesCategory.filter { $0.value == 2 }
+                }
+                if (dataTypeKey == self.SLEEP_ASLEEP) {
+                    samplesCategory = samplesCategory.filter { $0.value == 1 }
+                }
                 result(samplesCategory.map { sample -> NSDictionary in
                     let unit = self.unitLookUp(key: dataTypeKey)
 
