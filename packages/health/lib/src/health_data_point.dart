@@ -12,7 +12,8 @@ class HealthDataPoint {
   String _sourceId;
   String _sourceName;
 
-  HealthDataPoint._(
+  @visibleForTesting
+  HealthDataPoint(
       this._value,
       this._type,
       this._unit,
