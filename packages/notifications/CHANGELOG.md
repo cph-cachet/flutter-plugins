@@ -1,3 +1,7 @@
+## 2.0.0+1
+* upgrade to null-safety
+* provided documentation in README file
+
 ## 1.1.0
 * Rewrote Android plugin in Java
 

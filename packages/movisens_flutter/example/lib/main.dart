@@ -22,9 +22,9 @@ ThemeData darkTheme = ThemeData(
   // Define the default TextTheme. Use this to specify the default
   // text styling for headlines, titles, bodies of text, and more.
   textTheme: TextTheme(
-    headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-    title: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
-    body1: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+    headline5: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+    headline6: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
+    bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
   ),
 );
 
@@ -36,12 +36,12 @@ class MovisensApp extends StatefulWidget {
 }
 
 class _MovisensAppState extends State<MovisensApp> {
-  Movisens _movisens;
-  StreamSubscription<Map<String, dynamic>> _subscription;
-  LogManager logManager = new LogManager();
+  Movisens? _movisens;
+  StreamSubscription<Map<String, dynamic>>? _subscription;
+  LogManager logManager = LogManager();
   List<Map<String, dynamic>> movisensEvents = [];
   String address = 'unknown', name = 'unknown';
-  int weight, height, age;
+  int? weight, height, age;
 
   @override
   void initState() {
@@ -49,16 +49,16 @@ class _MovisensAppState extends State<MovisensApp> {
     startListening();
   }
 
-  void onData(Map<String, dynamic> d) {
-    print(" onData_flutter: " + "$d");
+  void onData(Map<String, dynamic> event) {
+    print("Movisense event: $event");
     setState(() {
-      movisensEvents.add(d);
-      logManager.writeLog('$d');
+      movisensEvents.add(event);
+      logManager.writeLog('$event');
     });
   }
 
   void stopListening() {
-    _subscription.cancel();
+    _subscription?.cancel();
   }
 
   void startListening() {
@@ -71,12 +71,20 @@ class _MovisensAppState extends State<MovisensApp> {
     height = 180;
     age = 25;
 
-    UserData userData = new UserData(weight, height, Gender.male, age, SensorLocation.chest, address, name);
+    UserData userData = UserData(
+      weight!,
+      height!,
+      Gender.male,
+      age!,
+      SensorLocation.chest,
+      address,
+      name,
+    );
 
-    _movisens = new Movisens(userData);
+    _movisens = Movisens(userData);
 
     try {
-      _subscription = _movisens.movisensStream.listen(onData);
+      _subscription = _movisens!.movisensStream.listen(onData);
     } on MovisensException catch (exception) {
       print(exception);
     }
@@ -89,7 +97,8 @@ class _MovisensAppState extends State<MovisensApp> {
       theme: darkTheme,
       home: Scaffold(
         body: ListView.builder(
-            itemCount: this.movisensEvents.length, itemBuilder: (context, index) => this._buildRow(index)),
+            itemCount: this.movisensEvents.length,
+            itemBuilder: (context, index) => this._buildRow(index)),
       ),
     );
   }
@@ -104,7 +113,8 @@ class _MovisensAppState extends State<MovisensApp> {
             style: TextStyle(fontSize: 12),
           ),
         ),
-        decoration: new BoxDecoration(border: new Border(bottom: new BorderSide())));
+        decoration:
+            new BoxDecoration(border: new Border(bottom: new BorderSide())));
   }
 
   IconData _getIcon(Map<String, dynamic> d) {
