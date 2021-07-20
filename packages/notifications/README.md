@@ -5,9 +5,26 @@
 A plugin for monitoring notification on Android. 
 
 ## Install
-Add `notifications` as a dependency in  `pubspec.yaml`.
+- Add `notifications` as a dependency in  `pubspec.yaml`.
 
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
+
+
+- Add the following snippet of code inside the `application` tag of yours `AndroidManifest.xml`
+```
+    ...
+    <service
+        android:label="notifications"
+        android:name="dk.cachet.notifications.NotificationListener"
+        android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+        <intent-filter>
+            <action android:name="android.service.notification.NotificationListenerService" />
+        </intent-filter>
+    </service>
+</application>
+```
+
+
 
 ## Usage
 All incoming data points are streamed with a `StreamSubscription` which is set up by calling the `listen()` method on the `notificationStream` stream object.
