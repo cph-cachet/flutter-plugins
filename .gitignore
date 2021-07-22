@@ -104,3 +104,5 @@ packages/esense_flutter/example/.flutter-plugins-dependencies
 packages/esense_flutter/example/.flutter-plugins-dependencies
 packages/esense_flutter/example/.flutter-plugins-dependencies
 packages/notifications/example/.flutter-plugins-dependencies
+packages/noise_meter/example/.flutter-plugins-dependencies
+*.sh
