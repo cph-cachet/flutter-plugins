@@ -1,3 +1,6 @@
+## 2.0.1
+* Improvement to install documentation - [PR #392](https://github.com/cph-cachet/flutter-plugins/pull/392)
+
 ## 2.0.0+1
 * upgrade to null-safety
 * provided documentation in README file

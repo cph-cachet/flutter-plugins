@@ -5,12 +5,11 @@
 A plugin for monitoring notification on Android. 
 
 ## Install
-- Add `notifications` as a dependency in  `pubspec.yaml`.
 
-For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
+Add `notifications` as a dependency in  `pubspec.yaml`. For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
+Add the following snippet of code inside the `application` tag of yours `AndroidManifest.xml`
 
-- Add the following snippet of code inside the `application` tag of yours `AndroidManifest.xml`
 ```
     ...
     <service
@@ -23,8 +22,6 @@ For help on adding as a dependency, view the [documentation](https://flutter.io/
     </service>
 </application>
 ```
-
-
 
 ## Usage
 All incoming data points are streamed with a `StreamSubscription` which is set up by calling the `listen()` method on the `notificationStream` stream object.
