@@ -55,7 +55,7 @@ class HealthFactory {
     final bmiHealthPoints = <HealthDataPoint>[];
     for (var i = 0; i < weights.length; i++) {
       final bmiValue = weights[i].value.toDouble() / (h * h);
-      final x = HealthDataPoint._(bmiValue, dataType, unit, weights[i].dateFrom,
+      final x = HealthDataPoint(bmiValue, dataType, unit, weights[i].dateFrom,
           weights[i].dateTo, _platformType, _deviceId!, '', '');
 
       bmiHealthPoints.add(x);
