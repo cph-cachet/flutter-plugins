@@ -1,3 +1,6 @@
+## 0.4.0
+* upgrade to null-safety
+
 ## 0.3.0
 * singleton changed to recommended dart style using `ESenseManager()`.
 * fixed bug in reconnection.

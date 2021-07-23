@@ -10,8 +10,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Notifications _notifications;
-  StreamSubscription<NotificationEvent> _subscription;
+  Notifications? _notifications;
+  StreamSubscription<NotificationEvent>? _subscription;
   List<NotificationEvent> _log = [];
   bool started = false;
 
@@ -33,10 +33,14 @@ class _MyAppState extends State<MyApp> {
     print(event.toString());
   }
 
+  void example() {
+    Notifications().notificationStream!.listen((event) => print(event));
+  }
+
   void startListening() {
-    _notifications = new Notifications();
+    _notifications = Notifications();
     try {
-      _subscription = _notifications.notificationStream.listen(onData);
+      _subscription = _notifications!.notificationStream!.listen(onData);
       setState(() => started = true);
     } on NotificationException catch (exception) {
       print(exception);
@@ -44,7 +48,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void stopListening() {
-    _subscription.cancel();
+    _subscription?.cancel();
     setState(() => started = false);
   }
 
@@ -63,9 +67,9 @@ class _MyAppState extends State<MyApp> {
                   final entry = _log[idx];
                   return ListTile(
                       leading:
-                      Text(entry.timeStamp.toString().substring(0, 19)),
+                          Text(entry.timeStamp.toString().substring(0, 19)),
                       trailing:
-                      Text(entry.packageName.toString().split('.').last));
+                          Text(entry.packageName.toString().split('.').last));
                 })),
         floatingActionButton: new FloatingActionButton(
           onPressed: started ? stopListening : startListening,

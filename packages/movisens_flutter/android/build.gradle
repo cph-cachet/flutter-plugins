@@ -1,5 +1,5 @@
 group 'dk.cachet.movisens_flutter'
-version '1.0-SNAPSHOT'
+version '1.0'
 
 buildscript {
     repositories {
@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:4.1.0'
     }
 }
 
@@ -23,33 +23,25 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 24
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
         disable 'InvalidPackage'
     }
 }
 
+/// Movisens dependencies
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.2'
 
-
-
-
     /// ********This is working version ********
-
    // implementation 'com.github.cph-cachet:movisenslibrary:df97c6293b'
 
-
-
-   ///FINAL-Version that removes foreground service  notification on app kill ---7sept2019
-
+    //FINAL-Version that removes foreground service  notification on app kill ---7sept2019
     implementation 'com.github.cph-cachet:movisenslibrary:637731e54a'
-
 
     //implementation project(':movisenslibrary')
     // implementation files('libs/flutter.jar')

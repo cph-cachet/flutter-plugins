@@ -23,8 +23,6 @@ Afterwards, include the following entries within the application tag, as follows
 ```xml
 <application
        ...
-        <!-- Don't delete the meta-data below.
-         This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <receiver
                 android:name="rekab.app.background_locator.LocatorBroadcastReceiver"
                 android:enabled="true"
@@ -48,9 +46,6 @@ Afterwards, include the following entries within the application tag, as follows
                 android:permission="android.permission.FOREGROUND_SERVICE"
                 android:exported="true"
         />
-        <meta-data
-            android:name="flutterEmbedding"
-            android:value="2" />
     </application>
 ```
 
