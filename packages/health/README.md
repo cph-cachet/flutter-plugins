@@ -33,8 +33,8 @@ NB: For Android, your app _needs_ to have Google Fit installed and have access t
 | DISTANCE_DELTA              | METERS                  | yes         |                 |                                                             |
 | MINDFULNESS                 | MINUTES                 | yes         |                 |                                                             |
 | SLEEP_IN_BED                | MINUTES                 | yes         |                 |                                                             |
-| SLEEP_ASLEEP                | MINUTES                 | yes         |                 |                                                             |
-| SLEEP_AWAKE                 | MINUTES                 | yes         |                 |                                                             |
+| SLEEP_ASLEEP                | MINUTES                 | yes         | yes             |                                                             |
+| SLEEP_AWAKE                 | MINUTES                 | yes         | yes             |                                                             |
 | WATER                       | LITER                   | yes         | yes             | On Android water requires a 3rd party app to be registered. |
 | HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes         |                 | Requires Apple Watch                                        |
 | LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |                 | Requires Apple Watch                                        |
