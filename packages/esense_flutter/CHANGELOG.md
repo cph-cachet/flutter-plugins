@@ -1,3 +1,6 @@
+## 0.4.1
+* fix of assert error in setSamplingRate method
+
 ## 0.4.0
 * upgrade to null-safety
 
