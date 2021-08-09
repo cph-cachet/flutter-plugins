@@ -177,7 +177,7 @@ const HealthDataUnitJsonValue = {
   HealthDataUnit.LITER: 'liter',
 };
 
-const PlatformTypeJsonValue = { 
+const PlatformTypeJsonValue = {
   PlatformType.IOS: 'ios',
   PlatformType.ANDROID: 'android'
 };

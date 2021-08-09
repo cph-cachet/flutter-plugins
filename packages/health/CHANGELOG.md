@@ -1,3 +1,6 @@
+## 3.1.1+1
+* [PR #394](https://github.com/cph-cachet/flutter-plugins/pull/394) - added functions to request authorization
+
 ## 3.1.0
 * [PR #372](https://github.com/cph-cachet/flutter-plugins/pull/372) - added sleep data to Android + fix of permissions and initialization
 * [PR #388](https://github.com/cph-cachet/flutter-plugins/pull/388) - testability of HealthDataPoint
