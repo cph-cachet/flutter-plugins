@@ -1,5 +1,5 @@
-## 0.4.1
-* fix of assert error in setSamplingRate method
+## 0.4.2
+* fix of error in setSamplingRate method on iOS
 
 ## 0.4.0
 * upgrade to null-safety
