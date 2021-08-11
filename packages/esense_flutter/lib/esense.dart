@@ -94,8 +94,10 @@ class ESenseManager {
     assert(rate > 0 && rate <= 100,
         'Must provide a sampling rate between 1 and 100 Hz.');
     _samplingRate = rate;
-    return await _eSenseManagerMethodChannel
-            .invokeMethod('setSamplingRate', <String, dynamic>{'rate': rate}) ??
+    // note that for some strange reason, iOS does not accept an int as argument
+    // hence, [rate] is converted to a string
+    return await _eSenseManagerMethodChannel.invokeMethod(
+            'setSamplingRate', <String, dynamic>{'rate': '$rate'}) ??
         false;
   }
 

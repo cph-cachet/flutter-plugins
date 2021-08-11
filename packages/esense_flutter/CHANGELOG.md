@@ -1,4 +1,4 @@
-## 0.4.2
+## 0.4.3
 * fix of error in setSamplingRate method on iOS
 
 ## 0.4.0

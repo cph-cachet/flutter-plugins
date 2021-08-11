@@ -85,8 +85,15 @@ class ESenseManagerMethodCallHandler: NSObject, FlutterPlugin {
             result(connected)
         case "setSamplingRate":
             let rate = args?["rate"]
-            samplingRate = Int(rate ?? "10") ?? 10
-            result(true)
+            if rate != nil  {
+                 samplingRate = Int(rate ?? "10") ?? 10
+                 result(true)
+             } else {
+                 samplingRate = 10
+                 result(FlutterError.init(code: "BAD_ARGS",
+                                          message: "Wrong argument - setSamplingRate expects the sampling rate as an argument (was \(rate))" ,
+                                          details: "Sampling rate set to default rate: \(samplingRate)"))
+             }
         case "getDeviceName":
             let success = manager?.getDeviceName()
             result(success)
