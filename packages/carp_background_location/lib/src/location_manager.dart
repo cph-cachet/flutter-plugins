@@ -4,11 +4,11 @@ part of carp_background_location;
 ///
 /// Use as a singleton:
 ///
-///  `LocationManager locationManager = LocationManager.instance;`
+///  `LocationManager()...`
 ///
 class LocationManager {
   ReceivePort _port = ReceivePort();
-  Stream<LocationDto> _dtoStream;
+  Stream<LocationDto>? _locationStream;
   String _channelName = "BackgroundLocationChannel",
       _notificationTitle = "Background Location",
       _notificationMsg = "Your location is being tracked";
@@ -17,27 +17,26 @@ class LocationManager {
   double _distanceFilter = 0;
   LocationAccuracy _accuracy = LocationAccuracy.NAVIGATION;
 
-  /// Getting the stream that provides location data updates
-  Stream<LocationDto> get dtoStream {
-    if (_dtoStream == null) {
+  /// A stream of location data updates
+  Stream<LocationDto> get locationStream {
+    if (_locationStream == null) {
       Stream<dynamic> dataStream = _port.asBroadcastStream();
-      _dtoStream = dataStream.where((event) => event != null).map((e) {
-        LocationDto dto = e as LocationDto;
-        return dto;
-      });
+      _locationStream = dataStream
+          .where((event) => event != null)
+          .map((location) => location as LocationDto);
     }
-    return _dtoStream;
+    return _locationStream!;
   }
 
   /// Get the status of the location manager.
-  /// Will return true if a location service is currently running.
+  /// Will return `true` if a location service is currently running.
   Future<bool> get isRunning async =>
       await BackgroundLocator.isRegisterLocationUpdate();
 
   static final LocationManager _instance = LocationManager._();
 
   /// Get the singleton [LocationManager] instance
-  static LocationManager get instance => _instance;
+  factory LocationManager() => _instance;
 
   LocationManager._() {
     // Check if the port is already used
@@ -57,11 +56,11 @@ class LocationManager {
   Future<LocationDto> getCurrentLocation() async {
     if (!await BackgroundLocator.isRegisterLocationUpdate()) {
       await start();
-      LocationDto dto = await dtoStream.first;
+      LocationDto dto = await locationStream.first;
       stop();
       return dto;
     }
-    return await dtoStream.first;
+    return await locationStream.first;
   }
 
   /// Start the location service.
@@ -111,13 +110,10 @@ class LocationManager {
         } else {
           return false;
         }
-        break;
       case PermissionStatus.granted:
         return true;
-        break;
       default:
         return false;
-        break;
     }
   }
 

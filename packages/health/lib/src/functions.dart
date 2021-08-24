@@ -1,4 +1,4 @@
-part of '../health.dart';
+part of health;
 
 /// Custom Exception for the plugin,
 /// thrown whenever a Health Data Type is requested,

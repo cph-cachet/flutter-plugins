@@ -1,3 +1,9 @@
+## 0.4.3
+* fix of error in setSamplingRate method on iOS
+
+## 0.4.0
+* upgrade to null-safety
+
 ## 0.3.0
 * singleton changed to recommended dart style using `ESenseManager()`.
 * fixed bug in reconnection.

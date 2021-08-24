@@ -1,4 +1,4 @@
-# movisens_flutter_plugin
+# Movisens Flutter Plugin
 
 [![pub package](https://img.shields.io/pub/v/movisens_flutter.svg)](https://pub.dartlang.org/packages/movisens_flutter)
 
@@ -6,7 +6,7 @@ A plugin for connecting and collecting data from a Movisens sensor. **This plugi
 
 ## Install
 
-Add ```movisens_flutter``` as a dependency in  `pubspec.yaml`.
+Add `movisens_flutter` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
 ## Android permissions
@@ -31,12 +31,12 @@ These include: Weight, height, age, sensor address and sensor name.
 
 ### Intialization:
 ```dart
-Movisens _movisens;
-StreamSubscription<MovisensDataPoint> _subscription;
-LogManager logManager = new LogManager();
+Movisens? _movisens;
+StreamSubscription<MovisensDataPoint>? _subscription;
+LogManager logManager = LogManager();
 List<MovisensDataPoint> movisensEvents = [];
 String address = 'unknown', name = 'unknown';
-int weight, height, age;
+int? weight, height, age;
 ```
 
 
@@ -53,20 +53,28 @@ void startListening() {
     height = 180;
     age = 25;
     
-    UserData userData = new UserData(
-        weight, height, Gender.male, age, SensorLocation.chest, address, name);
+    UserData userData = UserData(
+      weight!,
+      height!,
+      Gender.male,
+      age!,
+      SensorLocation.chest,
+      address,
+      name,
+    );
     
-    _movisens = new Movisens(userData);
+    _movisens = Movisens(userData);
     
     try {
-      _subscription = _movisens.movisensStream.listen(onData);
+      _subscription = _movisens!.movisensStream.listen(onData);
     } on MovisensException catch (exception) {
       print(exception);
     }
 }
 ```
 
-Additionally, it can be a good idea to have a separate method for handling incoming data, such as the `onData` method shown below:
+It can be a good idea to have a separate method for handling incoming data, such as the `onData` method shown below:
+
 ```dart
 void onData(MovisensDataPoint d) {
     setState(() {
@@ -82,8 +90,10 @@ The subscription can be cancelled again, by invoking the `cancel` method:
 
 ```dart
 void stopListening() {
-    _subscription.cancel(); 
+    _subscription?.cancel(); 
 }
 ```
 
-![image](https://i.imgur.com/EZuiKm5.png)# movisens_plugin
+## Example App
+
+![image](https://i.imgur.com/EZuiKm5.png)

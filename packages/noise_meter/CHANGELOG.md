@@ -1,3 +1,6 @@
+## 3.0.2
+- upgrade to audio_streamer 3.0.2 - [PR #390](https://github.com/cph-cachet/flutter-plugins/pull/390)
+
 ## 3.0.1
 - Fix Hot Restart crash & infinity dB with dispose ([PR #256](https://github.com/cph-cachet/flutter-plugins/pull/256))
 

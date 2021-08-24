@@ -1,3 +1,7 @@
+## 2.0.0
+* update to null-safety
+* using a singleton as `LocationManager()` to access the location manager.
+
 ## 1.0.3
 * small update to new `BackgroundLocator.registerLocationUpdate` API
 * upgrade to `background_locator` v. 1.4.0

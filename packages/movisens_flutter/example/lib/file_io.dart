@@ -8,9 +8,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 class LogManager {
-  DateTime date;
-  String logName;
-  File file;
+  late DateTime date;
+  late String logName;
+  // File file;
 
   LogManager() {
     date = DateTime.now();

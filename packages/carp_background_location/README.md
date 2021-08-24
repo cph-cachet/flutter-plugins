@@ -23,8 +23,6 @@ Afterwards, include the following entries within the application tag, as follows
 ```xml
 <application
        ...
-        <!-- Don't delete the meta-data below.
-         This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <receiver
                 android:name="rekab.app.background_locator.LocatorBroadcastReceiver"
                 android:enabled="true"
@@ -48,9 +46,6 @@ Afterwards, include the following entries within the application tag, as follows
                 android:permission="android.permission.FOREGROUND_SERVICE"
                 android:exported="true"
         />
-        <meta-data
-            android:name="flutterEmbedding"
-            android:value="2" />
     </application>
 ```
 
@@ -102,29 +97,29 @@ func registerPlugins(registry: FlutterPluginRegistry) -> () {
 ## Usage
 
 ```dart
-  LocationManager locationManager = LocationManager.instance;
-  Stream<LocationDto> dtoStream;
-  StreamSubscription<LocationDto> dtoSubscription;
+  Stream<LocationDto> locationStream;
+  StreamSubscription<LocationDto> locationSubscription;
  
   @override
   void initState() {
     super.initState();
+
     // Subscribe to stream in case it is already running
-    locationManager.interval = 1;
-    locationManager.distanceFilter = 0;
-    locationManager.notificationTitle = 'CARP Location Example';
-    locationManager.notificationMsg = 'CARP is tracking your location';
-    dtoStream = locationManager.dtoStream;
-    dtoSubscription = dtoStream.listen(onData);
+    LocationManager().interval = 1;
+    LocationManager().distanceFilter = 0;
+    LocationManager().notificationTitle = 'CARP Location Example';
+    LocationManager().notificationMsg = 'CARP is tracking your location';
+    locationStream = LocationManager().locationStream;
+    locationSubscription = locationStream.listen(onData);
   }
 
   void start() async {
     // Subscribe if it hasnt been done already
-    if (dtoSubscription != null) {
-      dtoSubscription.cancel();
+    if (locationSubscription != null) {
+      locationSubscription.cancel();
     }
-    dtoSubscription = dtoStream.listen(onData);
-    await locationManager.start();
+    locationSubscription = locationStream.listen(onData);
+    await LocationManager().start();
     setState(() {
       _status = LocationStatus.RUNNING;
     });
@@ -134,8 +129,8 @@ func registerPlugins(registry: FlutterPluginRegistry) -> () {
     setState(() {
       _status = LocationStatus.STOPPED;
     });
-    dtoSubscription.cancel();
-    await locationManager.stop();
+    locationSubscription.cancel();
+    await LocationManager().stop();
   }
 ```
 
@@ -149,8 +144,7 @@ Please file feature requests and bug reports at the [issue tracker][tracker].
 
 ## License
 
-This software is copyright (c) [Copenhagen Center for Health Technology (CACHET)](https://www.cachet.dk/) 
-at the [Technical University of Denmark (DTU)](https://www.dtu.dk).
+This software is copyright (c) [Copenhagen Center for Health Technology (CACHET)](https://www.cachet.dk/) at the [Technical University of Denmark (DTU)](https://www.dtu.dk).
 This software is available 'as-is' under a [MIT license](https://github.com/cph-cachet/flutter-plugins/blob/master/packages/carp_background_location/LICENSE).
 
 

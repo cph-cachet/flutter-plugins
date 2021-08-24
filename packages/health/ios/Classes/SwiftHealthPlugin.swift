@@ -110,11 +110,20 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             x, samplesOrNil, error in
 
             guard let samples = samplesOrNil as? [HKQuantitySample] else {
-                guard let samplesCategory = samplesOrNil as? [HKCategorySample] else {
+                guard var samplesCategory = samplesOrNil as? [HKCategorySample] else {
                     result(FlutterError(code: "FlutterHealth", message: "Results are null", details: "\(error)"))
                     return
                 }
                 print(samplesCategory)
+                if (dataTypeKey == self.SLEEP_IN_BED) {
+                    samplesCategory = samplesCategory.filter { $0.value == 0 }
+                }
+                if (dataTypeKey == self.SLEEP_AWAKE) {
+                    samplesCategory = samplesCategory.filter { $0.value == 2 }
+                }
+                if (dataTypeKey == self.SLEEP_ASLEEP) {
+                    samplesCategory = samplesCategory.filter { $0.value == 1 }
+                }
                 result(samplesCategory.map { sample -> NSDictionary in
                     let unit = self.unitLookUp(key: dataTypeKey)
 

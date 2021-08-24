@@ -75,10 +75,10 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         switch (event.runtimeType) {
           case DeviceNameRead:
-            _deviceName = (event as DeviceNameRead).deviceName;
+            _deviceName = (event as DeviceNameRead).deviceName ?? 'Unknown';
             break;
           case BatteryRead:
-            _voltage = (event as BatteryRead).voltage;
+            _voltage = (event as BatteryRead).voltage ?? -1;
             break;
           case ButtonEventChanged:
             _button = (event as ButtonEventChanged).pressed
@@ -124,7 +124,7 @@ class _MyAppState extends State<MyApp> {
         () async => await ESenseManager().getSensorConfig());
   }
 
-  StreamSubscription subscription;
+  StreamSubscription? subscription;
   void _startListenToSensorEvents() async {
     // subscribe to sensor event from the eSense device
     subscription = ESenseManager().sensorEvents.listen((event) {
@@ -139,7 +139,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _pauseListenToSensorEvents() async {
-    subscription.cancel();
+    subscription?.cancel();
     setState(() {
       sampling = false;
     });

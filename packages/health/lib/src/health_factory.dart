@@ -1,4 +1,4 @@
-part of '../health.dart';
+part of health;
 
 /// Main class for the Plugin
 class HealthFactory {
@@ -10,10 +10,38 @@ class HealthFactory {
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
   /// Check if a given data type is available on the platform
-  bool _isDataTypeAvailable(HealthDataType dataType) =>
+  bool isDataTypeAvailable(HealthDataType dataType) =>
       _platformType == PlatformType.ANDROID
           ? _dataTypeKeysAndroid.contains(dataType)
           : _dataTypeKeysIOS.contains(dataType);
+
+  /// Has permission been optained for the list of [HealthDataType]?
+  ///
+  /// iOS isn't completely supported by HealthKit, `false` means no, `true` means
+  /// that the user has approved or declined permissions.
+  /// In case user has declined permissions, reading using the [getHealthDataFromTypes]
+  /// method will just return empty list for declined data types.
+  static Future<bool?> hasPermissions(List<HealthDataType> types) async {
+    return await _channel.invokeMethod('hasPermissions', {
+      "types": types.map((type) => _enumToString(type)).toList(),
+    });
+  }
+
+  /// Request permissions.
+  ///
+  /// If you're using more than one [HealthDataType] it's advised to call
+  /// [requestPermissions] with all the data types once. Otherwise iOS HealthKit
+  /// will ask to approve every permission one by one in separate screens.
+  static Future<bool?> requestPermissions(List<HealthDataType> types) async {
+    return await _channel.invokeMethod('requestPermissions', {
+      "types": types.map((type) => _enumToString(type)).toList(),
+    });
+  }
+
+  /// iOS isn't supported by HealthKit, method does nothing.
+  static Future<void> revokePermissions() async {
+    return await _channel.invokeMethod('revokePermissions');
+  }
 
   /// Request access to GoogleFit/Apple HealthKit.
   Future<bool> requestAuthorization(List<HealthDataType> types) async =>
@@ -73,7 +101,7 @@ class HealthFactory {
     final bmiHealthPoints = <HealthDataPoint>[];
     for (var i = 0; i < weights.length; i++) {
       final bmiValue = weights[i].value.toDouble() / (h * h);
-      final x = HealthDataPoint._(bmiValue, dataType, unit, weights[i].dateFrom,
+      final x = HealthDataPoint(bmiValue, dataType, unit, weights[i].dateFrom,
           weights[i].dateTo, _platformType, _deviceId!, '', '');
 
       bmiHealthPoints.add(x);
@@ -106,13 +134,13 @@ class HealthFactory {
         ? (await _deviceInfo.androidInfo).androidId
         : (await _deviceInfo.iosInfo).identifierForVendor;
 
-    /// If not implemented on platform, throw an exception
-    if (!_isDataTypeAvailable(dataType)) {
+    // If not implemented on platform, throw an exception
+    if (!isDataTypeAvailable(dataType)) {
       throw _HealthException(
           dataType, 'Not available on platform $_platformType');
     }
 
-    /// If BodyMassIndex is requested on Android, calculate this manually in Dart
+    // If BodyMassIndex is requested on Android, calculate this manually
     if (dataType == HealthDataType.BODY_MASS_INDEX &&
         _platformType == PlatformType.ANDROID) {
       return _computeAndroidBMI(startDate, endDate, accountName);
@@ -143,7 +171,7 @@ class HealthFactory {
           final DateTime to = DateTime.fromMillisecondsSinceEpoch(e["date_to"]);
           final String sourceId = e["source_id"];
           final String sourceName = e["source_name"];
-          return HealthDataPoint._(
+          return HealthDataPoint(
             value,
             dataType,
             unit,
