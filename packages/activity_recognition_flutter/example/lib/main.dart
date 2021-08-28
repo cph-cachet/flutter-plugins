@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
 
   void _startTracking() {
     activityStream =
-        activityRecognition.startStream(runForegroundService: true);
+        activityRecognition.startStream(runForegroundService: true,notificationTitle: 'Test title');
     activityStream.listen(onData);
   }
 
