@@ -42,13 +42,13 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
      * The main function for starting activity tracking.
      * Handling events is done inside [ActivityRecognizedService]
      */
-    private void startActivityTracking() {
+    private void startActivityTracking(int appFrequency) {
         // Start the service
         Intent intent = new Intent(androidActivity, ActivityRecognizedBroadcastReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(androidActivity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Frequency in milliseconds
-        long frequency = 5 * 1000;
+        long frequency = appFrequency * 1000;
         Task<Void> task = ActivityRecognition.getClient(androidContext)
                 .requestActivityUpdates(frequency, pendingIntent);
 
@@ -82,26 +82,53 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events) {
         HashMap<String, Object> args = (HashMap<String, Object>) arguments;
+        /**
+         {
+         "foreground":true,
+         "notification_title":"Some string",
+         "notification_desc":"Some string",
+         "detection_frequency":10 //in seconds
+         }
+         */
         Log.d(TAG, "args: " + args);
-        boolean fg = (boolean) args.get("foreground");
-        startForegroundService();
+        boolean fg = false;
+        if (args.get("foreground") != null) {
+            fg = (boolean) args.get("foreground");
+        }
         Log.d(TAG, "foreground: " + fg);
+        if (fg) {
+            String title = "MonsensoMonitor";
+            String desc = "Monsenso Foreground Service";
+            if (args.get("notification_title") != null) {
+                title = (String) args.get("notification_title");
+            }
+            if (args.get("notification_desc") != null) {
+                desc = (String) args.get("notification_desc");
+            }
+
+
+            startForegroundService(title, desc);
+        }
+        int appFrequency = 5;
+        if (args.get("detection_frequency") != null) {
+            appFrequency = (int) args.get("detection_frequency");
+        }
 
 
         eventSink = events;
-        startActivityTracking();
+        startActivityTracking(appFrequency);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    void startForegroundService() {
+    void startForegroundService(String notificationTitle, String notificationDescription) {
         Intent intent = new Intent(androidActivity, ForegroundService.class);
 
         // Tell the service we want to start it
         intent.setAction("start");
 
         // Pass the notification title/text/icon to the service
-        intent.putExtra("title", "MonsensoMonitor")
-                .putExtra("text", "Monsenso Foreground Service")
+        intent.putExtra("title", notificationTitle)
+                .putExtra("text", notificationDescription)
                 .putExtra("icon", R.drawable.common_full_open_on_phone)
                 .putExtra("importance", 3)
                 .putExtra("id", 10);
