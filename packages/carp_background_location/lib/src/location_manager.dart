@@ -150,7 +150,7 @@ class LocationManager {
   /// Android only.
   set notificationMsg(value) => _notificationMsg = value;
 
-  /// Set the expaneded message of the notification for the background service.
+  /// Set the expanded message of the notification for the background service.
   /// Android only.
   set notificationBigMsg(value) => _notificationBigMsg = value;
 
