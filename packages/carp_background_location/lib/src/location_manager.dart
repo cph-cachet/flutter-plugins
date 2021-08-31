@@ -11,7 +11,10 @@ class LocationManager {
   Stream<LocationDto>? _locationStream;
   String _channelName = "BackgroundLocationChannel",
       _notificationTitle = "Background Location",
-      _notificationMsg = "Your location is being tracked";
+      _notificationMsg = "Your location is being tracked",
+      _notificationBigMsg = "Background location is on to keep the app "
+          "up-to-date with your location. This is required for the main "
+          "features to work properly when the app is not running.";
 
   int _interval = 1;
   double _distanceFilter = 0;
@@ -130,6 +133,7 @@ class LocationManager {
             notificationChannelName: _channelName,
             notificationTitle: _notificationTitle,
             notificationMsg: _notificationMsg,
+            notificationBigMsg: _notificationBigMsg,
           )),
       iosSettings: IOSSettings(
         accuracy: _accuracy,
@@ -145,6 +149,10 @@ class LocationManager {
   /// Set the message of the notification for the background service.
   /// Android only.
   set notificationMsg(value) => _notificationMsg = value;
+
+  /// Set the expaneded message of the notification for the background service.
+  /// Android only.
+  set notificationBigMsg(value) => _notificationBigMsg = value;
 
   /// Set the update interval in seconds.
   /// Android only.
