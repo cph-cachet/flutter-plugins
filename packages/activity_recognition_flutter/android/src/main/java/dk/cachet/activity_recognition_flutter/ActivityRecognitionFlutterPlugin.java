@@ -84,7 +84,9 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
         HashMap<String, Object> args = (HashMap<String, Object>) arguments;
         Log.d(TAG, "args: " + args);
         boolean fg = (boolean) args.get("foreground");
-        startForegroundService();
+        if(fg) {
+            startForegroundService();
+        }
         Log.d(TAG, "foreground: " + fg);
 
 
