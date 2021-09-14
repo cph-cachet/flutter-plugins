@@ -1,3 +1,6 @@
+## 4.0.4
+* improvements to documentation
+
 ## 4.0.3
 * [PR #358](https://github.com/cph-cachet/flutter-plugins/pull/358)
 

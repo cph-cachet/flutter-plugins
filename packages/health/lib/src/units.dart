@@ -1,6 +1,6 @@
-part of '../health.dart';
+part of health;
 
-/// List of all units.
+/// List of all [HealthDataPoint] units.
 enum HealthDataUnit {
   BEATS_PER_MINUTE,
   CALORIES,

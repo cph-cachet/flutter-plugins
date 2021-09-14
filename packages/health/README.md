@@ -8,7 +8,7 @@ NB: For Android, your app _needs_ to have Google Fit installed and have access t
 
 ## Data Types
 
-| Data Type                   | Unit                    | iOS Support | Android support | Comments                                                    |
+| **Data Type**               | **Unit**                | **iOS**  | **Android**  | **Comments**                                                    |
 | --------------------------- | ----------------------- | ----------- | --------------- | ----------------------------------------------------------- |
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes         | yes             |                                                             |
 | BASAL_ENERGY_BURNED         | CALORIES                | yes         |                 |                                                             |
@@ -32,9 +32,9 @@ NB: For Android, your app _needs_ to have Google Fit installed and have access t
 | MOVE_MINUTES                | MINUTES                 |             | yes             |                                                             |
 | DISTANCE_DELTA              | METERS                  | yes         |                 |                                                             |
 | MINDFULNESS                 | MINUTES                 | yes         |                 |                                                             |
-| SLEEP_IN_BED                | MINUTES                 | yes         |                 |                                                             |
-| SLEEP_ASLEEP                | MINUTES                 | yes         | yes             |                                                             |
-| SLEEP_AWAKE                 | MINUTES                 | yes         | yes             |                                                             |
+| SLEEP_IN_BED                | MINUTES                 | yes         | yes                |                                                             |
+| SLEEP_ASLEEP                | MINUTES                 | yes         | yes                |                                                             |
+| SLEEP_AWAKE                 | MINUTES                 | yes         | yes                |                                                             |
 | WATER                       | LITER                   | yes         | yes             | On Android water requires a 3rd party app to be registered. |
 | HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes         |                 | Requires Apple Watch                                        |
 | LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |                 | Requires Apple Watch                                        |
@@ -107,21 +107,21 @@ Below is a snippet from the `example app` showing the plugin in use.
 
 ### Health data
 
-A `HealthData` object contains the following fields:
+A `HealthData` object contains the following data fields:
 
 ```dart
-num _value;
-HealthDataType _type;
-HealthDataUnit _unit;
-DateTime _dateFrom;
-DateTime _dateTo;
-PlatformType _platform;
-String _uuid, _deviceId;
-String _sourceId;
-String _sourceName;
+num value;
+HealthDataType type;
+HealthDataUnit unit;
+DateTime dateFrom;
+DateTime dateTo;
+PlatformType platform;
+String uuid, deviceId;
+String sourceId;
+String sourceName;
 ```
 
-A `HealthData healthData` object can be serialized to JSON with the `healthData.toJson()` method.
+A `HealthData` object can be serialized to JSON with the `toJson()` method.
 
 ### Fetch health data
 

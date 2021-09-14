@@ -59,7 +59,8 @@ public class ESenseManagerMethodCallHandler implements MethodCallHandler {
                 result.success(connected);
                 break;
             case "setSamplingRate":
-                samplingRate = call.argument("rate");
+                // the rate is passed as a string
+                samplingRate = Integer.parseInt(String.valueOf(call.argument("rate")));
                 result.success(true);
                 break;
             case "getDeviceName":

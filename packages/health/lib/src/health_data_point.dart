@@ -1,6 +1,7 @@
-part of '../health.dart';
+part of health;
 
-/// A [HealthDataPoint] object corresponds to a data point captures from GoogleFit or Apple HealthKit
+/// A [HealthDataPoint] object corresponds to a data point captures from
+/// GoogleFit or Apple HealthKit
 class HealthDataPoint {
   num _value;
   HealthDataType _type;
@@ -12,7 +13,6 @@ class HealthDataPoint {
   String _sourceId;
   String _sourceName;
 
-  @visibleForTesting
   HealthDataPoint(
       this._value,
       this._type,
@@ -23,8 +23,8 @@ class HealthDataPoint {
       this._deviceId,
       this._sourceId,
       this._sourceName) {
-    /// Set the value to minutes rather than the category
-    /// returned by the native API
+    // set the value to minutes rather than the category
+    // returned by the native API
     if (type == HealthDataType.MINDFULNESS ||
         type == HealthDataType.SLEEP_IN_BED ||
         type == HealthDataType.SLEEP_ASLEEP ||
@@ -40,7 +40,7 @@ class HealthDataPoint {
   }
 
   /// Converts a json object to the [HealthDataPoint]
-  factory HealthDataPoint.fromJson(json) => HealthDataPoint._(
+  factory HealthDataPoint.fromJson(json) => HealthDataPoint(
       json['value'],
       HealthDataTypeJsonValue.keys.toList()[
           HealthDataTypeJsonValue.values.toList().indexOf(json['data_type'])],
