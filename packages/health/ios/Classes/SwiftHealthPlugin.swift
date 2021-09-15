@@ -196,7 +196,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[SLEEP_IN_BED] = HKUnit.init(from: "")
         unitDict[SLEEP_ASLEEP] = HKUnit.init(from: "")
         unitDict[SLEEP_AWAKE] = HKUnit.init(from: "")
-        unitDict[APPLE_EXERCISE_TIME] =  HKUnit.init(from: "")
+        unitDict[APPLE_EXERCISE_TIME] =  HKUnit.minute()
 
         // Set up iOS 11 specific types (ordinary health data types)
         if #available(iOS 11.0, *) {

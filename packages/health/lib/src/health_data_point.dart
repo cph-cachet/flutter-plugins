@@ -28,8 +28,7 @@ class HealthDataPoint {
     if (type == HealthDataType.MINDFULNESS ||
         type == HealthDataType.SLEEP_IN_BED ||
         type == HealthDataType.SLEEP_ASLEEP ||
-        type == HealthDataType.SLEEP_AWAKE ||
-        type == HealthDataType.APPLE_EXERCISE_TIME) {
+        type == HealthDataType.SLEEP_AWAKE) {
       this._value = _convertMinutes();
     }
   }
