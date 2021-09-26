@@ -29,6 +29,7 @@ enum HealthDataType {
   SLEEP_ASLEEP,
   SLEEP_AWAKE,
   APPLE_EXERCISE_TIME,
+  WORKOUT,
 
 // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
@@ -68,6 +69,7 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.SLEEP_ASLEEP,
   HealthDataType.WATER,
   HealthDataType.APPLE_EXERCISE_TIME,
+  HealthDataType.WORKOUT,
 ];
 
 /// List of data types available on Android
@@ -121,6 +123,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.SLEEP_AWAKE: HealthDataUnit.MINUTES,
   HealthDataType.MINDFULNESS: HealthDataUnit.MINUTES,
   HealthDataType.APPLE_EXERCISE_TIME: HealthDataUnit.MINUTES,
+  HealthDataType.WORKOUT: HealthDataUnit.MINUTES,
 
   /// Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
@@ -161,6 +164,7 @@ const HealthDataTypeJsonValue = {
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: 'irregular_heart_rate_event',
   HealthDataType.ELECTRODERMAL_ACTIVITY: 'electrodermal_activity',
   HealthDataType.APPLE_EXERCISE_TIME: 'apple_exercise_time',
+  HealthDataType.WORKOUT: 'workout',
 };
 
 const HealthDataUnitJsonValue = {
