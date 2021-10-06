@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  /// Fetch data from the healt plugin and print it
+  /// Fetch data from the health plugin and print it
   Future fetchData() async {
     // get everything from midnight until now
     DateTime startDate = DateTime(2020, 11, 07, 0, 0, 0);
