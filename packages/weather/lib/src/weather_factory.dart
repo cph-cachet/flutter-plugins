@@ -1,5 +1,8 @@
 part of weather_library;
 
+const _weatherKey = "cached-weather-data";
+const _forecastKey = "cached-forecast-data";
+
 /// Plugin for fetching weather data in JSON.
 class WeatherFactory {
   String _apiKey;
@@ -10,8 +13,11 @@ class WeatherFactory {
 
   late http.Client _httpClient;
 
+  final Completer<SharedPreferences> _sharedPreferenceCompleter = Completer();
+
   WeatherFactory(this._apiKey, {this.language = Language.ENGLISH}) {
     _httpClient = http.Client();
+    SharedPreferences.getInstance().then((value) => _sharedPreferenceCompleter.complete(value));
   }
 
   /// Fetch current weather based on geographical coordinates
@@ -48,6 +54,33 @@ class WeatherFactory {
     return forecasts;
   }
 
+  Future<Weather> getCachedWeather() async {
+    final _prefs = await _sharedPreferenceCompleter.future;
+    final _restoredData = _prefs.getString(_weatherKey);
+
+    if(_restoredData != null) {
+      Map<String, dynamic>? jsonBody = json.decode(_restoredData);
+      return Weather(jsonBody!);
+    } else {
+      throw OpenWeatherAPIException("No cached data for weather");
+    }
+  }
+
+  Future<List<Weather>?> getCachedForecast() async {
+    final _prefs = await _sharedPreferenceCompleter.future;
+    final _restoredData = _prefs.getString(_forecastKey);
+
+    if(_restoredData != null){
+      Map<String, dynamic>? jsonBody = json.decode(_restoredData);
+      List<Weather> forecasts = _parseForecast(jsonBody!);
+      return forecasts;
+
+    } else {
+      throw OpenWeatherAPIException("No cached data for forecast");
+    }
+  }
+
+
   Future<Map<String, dynamic>?> _sendRequest(String tag, {double? lat, double? lon, String? cityName}) async {
     /// Build HTTP get url by passing the required parameters
     String url = _buildUrl(tag, cityName, lat, lon);
@@ -58,6 +91,10 @@ class WeatherFactory {
     /// Perform error checking on response:
     /// Status code 200 means everything went well
     if (response.statusCode == STATUS_OK) {
+
+      final _prefs = await _sharedPreferenceCompleter.future;
+      _prefs.setString(tag == FIVE_DAY_FORECAST ? _forecastKey : _weatherKey, response.body);
+
       Map<String, dynamic>? jsonBody = json.decode(response.body);
       return jsonBody;
     }

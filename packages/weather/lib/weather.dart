@@ -10,6 +10,7 @@ library weather_library;
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'package:weather/src/weather_domain.dart';
 part 'package:weather/src/weather_factory.dart';
