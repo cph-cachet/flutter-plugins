@@ -1,17 +1,16 @@
 name: carp_background_location
 description: A location plugin that works in the background. Supports Android and iOS
-version: 2.0.0
+version: 3.0.0
 homepage: https://github.com/cph-cachet/flutter-plugins
 author:  CACHET Team <cph.cachet@gmail.com>
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0' 
 
 dependencies:
   flutter:
     sdk: flutter
-  background_locator: ^1.6.2+1-beta
-  location_permissions: ^4.0.0
+  background_locator: ^1.6.6
 
 dev_dependencies:
   flutter_test:

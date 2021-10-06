@@ -1,3 +1,9 @@
+## 3.0.0
+* **BREAKING** The plugin no longer support asking for location permissions. This is better handled at the application level. See the example app for how this can be done.
+* upgrade to `background_locator: ^1.6.6`.
+* cleanup and adding the `permission_handler` in example app
+* added description of new location permission in Android 11 to README
+
 ## 2.0.0
 * update to null-safety
 * using a singleton as `LocationManager()` to access the location manager.
