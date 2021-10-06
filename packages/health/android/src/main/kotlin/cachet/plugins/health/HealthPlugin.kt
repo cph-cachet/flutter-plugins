@@ -16,7 +16,6 @@ import android.content.Intent
 import android.os.Handler
 import android.util.Log
 import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -181,18 +180,70 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     /// Extracts the (numeric) value from a Health Data Point
     private fun getHealthDataValue(dataPoint: DataPoint, unit: Field): Any {
-        return try {
-            dataPoint.getValue(unit).asFloat()
-        } catch (e1: Exception) {
-            try {
-                dataPoint.getValue(unit).asInt()
-            } catch (e2: Exception) {
-                try {
-                    dataPoint.getValue(unit).asString()
-                } catch (e3: Exception) {
-                    Log.e("FLUTTER_HEALTH::ERROR", e3.toString())
-                }
-            }
+        val value = dataPoint.getValue(unit)
+        return when (value.format) {
+            Field.FORMAT_FLOAT -> value.asFloat()
+            Field.FORMAT_INT32 -> value.asInt()
+            Field.FORMAT_STRING -> value.asString()
+            else -> Log.e("Unsupported format:", value.format.toString())
+        }
+    }
+
+    private fun writeData(call: MethodCall, result: Result) {
+
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
+        val type = call.argument<String>("dataTypeKey")!!
+        val time = call.argument<Long>("time")!!
+        val value = call.argument<Float>( "value")!!
+
+        // Look up data type and unit for the type key
+        val dataType = keyToHealthDataType(type)
+        val unit = getUnit(type)
+
+        val typesBuilder = FitnessOptions.builder()
+        typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+        val dataSource = DataSource.Builder()
+                .setDataType(dataType)
+                .setType(DataSource.TYPE_RAW)
+                //.setAppPackageName("health_example")
+                .setAppPackageName(activity!!.applicationContext)
+                .build()
+
+        val dataPoint = DataPoint.builder(dataSource)
+                .setTimestamp(time, TimeUnit.MILLISECONDS)
+                .setField(unit, value)
+                .build()
+
+        val dataSet = DataSet.builder(dataSource)
+                .add(dataPoint)
+                .build()
+
+
+        if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
+            typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+        }
+        val fitnessOptions = typesBuilder.build()
+
+
+        try {
+            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+            Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                    .insertData(dataSet)
+                    .addOnSuccessListener {
+                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                        result.success(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                        result.success(false)
+                    }
+        } catch (e3: Exception) {
+             result.success(false)
         }
     }
 
@@ -316,7 +367,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val types = args["types"] as ArrayList<*>
         for (typeKey in types) {
             if (typeKey !is String) continue
-            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
+            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_WRITE)
             if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE) {
                 typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
             }
@@ -355,6 +406,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
+            "writeData" -> writeData(call, result)
             else -> result.notImplemented()
         }
     }

@@ -91,37 +91,24 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
-  Future<void> writeHealthData(
+  Future<bool> writeHealthData(
       double value, HealthDataType type, DateTime time) async {
-    if (_platformType == PlatformType.ANDROID) {
-      print('Writing is not supported on Android');
-      return;
-    }
-    print("AWAITING PERMISSION");
-    bool granted = await requestAuthorization([type]);
-    print("PERMISSION: " + granted.toString());
-    if (granted) {
-      Map<String, dynamic> args = {
-        'value': value,
-        'type': _enumToString(type),
-        'time': time.millisecondsSinceEpoch
-      };
-      _channel.invokeMethod('writeData', args);
-    }
+    Map<String, dynamic> args = {
+      'value': value,
+      'dataTypeKey': _enumToString(type),
+      'time': time.millisecondsSinceEpoch
+    };
+    bool? success = await _channel.invokeMethod('writeData', args);
+    return success ?? false;
   }
 
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
       DateTime startDate, DateTime endDate, List<HealthDataType> types) async {
     List<HealthDataPoint> dataPoints = [];
-    bool granted = await requestAuthorization(types);
-    for (HealthDataType type in types) {
-      bool p = await requestAuthorization([type]);
-      print('$type, $p');
-    }
 
     for (var type in types) {
-      final result = await _prepareQuery(startDate, endDate, type);
-      dataPoints.addAll(result);
+        final result = await _prepareQuery(startDate, endDate, type);
+        dataPoints.addAll(result);
     }
     return removeDuplicates(dataPoints);
   }
@@ -176,7 +163,7 @@ class HealthFactory {
           from,
           to,
           _platformType,
-          _deviceId!,
+          _deviceId!, 
           sourceId,
           sourceName,
         );

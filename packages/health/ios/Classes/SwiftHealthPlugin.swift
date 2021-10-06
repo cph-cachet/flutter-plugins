@@ -107,7 +107,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     func writeData(call: FlutterMethodCall, result: @escaping FlutterResult){
         guard let arguments = call.arguments as? NSDictionary,
             let value = (arguments["value"] as? Double),
-            let type = (arguments["type"] as? String),
+            let type = (arguments["dataTypeKey"] as? String),
             let startDate = (arguments["time"] as? NSNumber)
             else {
                 print("GUARD FAILED")
@@ -123,11 +123,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateFrom)
         
         HKHealthStore().save(sample, withCompletion: { (success, error) in
-          if let error = error {
-            print("Error Saving \(type) Sample: \(error.localizedDescription)")
-          } else {
-            print("Successfully saved \(type) Sample")
-          }
+            if let err = error {
+                print("Error Saving \(type) Sample: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
         })
     }
 
