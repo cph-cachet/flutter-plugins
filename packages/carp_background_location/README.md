@@ -102,47 +102,23 @@ func registerPlugins(registry: FlutterPluginRegistry) -> () {
 ## Usage
 
 ```dart
-  Stream<LocationDto> locationStream;
-  StreamSubscription<LocationDto> locationSubscription;
- 
-  @override
-  void initState() {
-    super.initState();
+  // configure the location manager
+  LocationManager().interval = 1;
+  LocationManager().distanceFilter = 0;
+  LocationManager().notificationTitle = 'CARP Location Example';
+  LocationManager().notificationMsg = 'CARP is tracking your location';
 
-    LocationManager().interval = 1;
-    LocationManager().distanceFilter = 0;
-    LocationManager().notificationTitle = 'CARP Location Example';
-    LocationManager().notificationMsg = 'CARP is tracking your location';
-    locationStream = LocationManager().locationStream;
-  }
+  // get the current location
+  await LocationManager().getCurrentLocation();
 
-  void onData(LocationDto dto) {
-    setState(() {
-      if (_status == LocationStatus.UNKNOWN) {
-        _status = LocationStatus.RUNNING;
-      }
-      lastLocation = dto;
-      lastTimeLocation = DateTime.now();
-    });
-  }
+  // start listen to location updates
+  StreamSubscription<LocationDto> locationSubscription = LocationManager()
+      .locationStream
+      .listen((LocationDto dto) => print(dto));
 
-
-  void start() async {
-    locationSubscription?.cancel();
-    locationSubscription = locationStream?.listen(onData);
-    await LocationManager().start();
-    setState(() {
-      _status = LocationStatus.RUNNING;
-    });
-  }
-
-  void stop() {
-    locationSubscription?.cancel();
-    LocationManager().stop();
-    setState(() {
-      _status = LocationStatus.STOPPED;
-    });
-  }
+  // cancel listening and stop the location manager
+  locationSubscription?.cancel();
+  LocationManager().stop();
 ```
 
 See the example app for a complete example of usage.
