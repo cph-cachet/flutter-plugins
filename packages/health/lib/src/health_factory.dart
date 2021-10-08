@@ -7,7 +7,7 @@ class HealthFactory {
   final _deviceInfo = DeviceInfoPlugin();
 
   static PlatformType _platformType =
-  Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
   /// Check if a given data type is available on the platform
   bool _isDataTypeAvailable(HealthDataType dataType) =>
@@ -30,7 +30,7 @@ class HealthFactory {
 
     List<String> keys = types.map((e) => _enumToString(e)).toList();
     final bool hasPermissions =
-    await _channel.invokeMethod('hasPermissions', {'types': keys});
+        await _channel.invokeMethod('hasPermissions', {'types': keys});
     return hasPermissions;
   }
 
@@ -49,7 +49,7 @@ class HealthFactory {
 
     List<String> keys = types.map((e) => _enumToString(e)).toList();
     final bool isAuthorized =
-    await _channel.invokeMethod('requestAuthorization', {'types': keys});
+        await _channel.invokeMethod('requestAuthorization', {'types': keys});
     return isAuthorized;
   }
 
@@ -57,14 +57,14 @@ class HealthFactory {
   Future<List<HealthDataPoint>> _computeAndroidBMI(
       DateTime startDate, DateTime endDate) async {
     List<HealthDataPoint> heights =
-    await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
+        await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
 
     if (heights.isEmpty) {
       return [];
     }
 
     List<HealthDataPoint> weights =
-    await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
+        await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
 
     double h = heights.last.value.toDouble();
 
@@ -75,7 +75,7 @@ class HealthFactory {
     for (var i = 0; i < weights.length; i++) {
       final bmiValue = weights[i].value.toDouble() / (h * h);
       final x = HealthDataPoint._(bmiValue, dataType, unit, weights[i].dateFrom,
-          weights[i].dateTo, _platformType, _deviceId!);
+          weights[i].dateTo, _platformType, _deviceId!, '', '');
 
       bmiHealthPoints.add(x);
     }
@@ -134,8 +134,10 @@ class HealthFactory {
         num value = e['value'];
         DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
         DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
-        return HealthDataPoint._(
-            value, dataType, unit, from, to, _platformType, _deviceId!);
+        final String sourceId = e['source_id'];
+        final String sourceName = e['source_name'];
+        return HealthDataPoint._(value, dataType, unit, from, to, _platformType,
+            _deviceId!, sourceId, sourceName);
       }).toList();
     } else {
       return <HealthDataPoint>[];
