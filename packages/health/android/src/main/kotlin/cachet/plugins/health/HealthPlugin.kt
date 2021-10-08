@@ -156,7 +156,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
-    private fun getUnit(type: String): Field {
+    private fun getField(type: String): Field {
         return when (type) {
             BODY_FAT_PERCENTAGE -> Field.FIELD_PERCENTAGE
             HEIGHT -> Field.FIELD_HEIGHT
@@ -178,6 +178,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
+    private fun isIntField(dataSource: DataSource, unit: Field): Boolean {
+        val dataPoint =  DataPoint.builder(dataSource).build()
+        val value = dataPoint.getValue(unit)
+        return value.format == Field.FORMAT_INT32
+    }
+
     /// Extracts the (numeric) value from a Health Data Point
     private fun getHealthDataValue(dataPoint: DataPoint, unit: Field): Any {
         val value = dataPoint.getValue(unit)
@@ -197,12 +203,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
 
         val type = call.argument<String>("dataTypeKey")!!
-        val time = call.argument<Long>("time")!!
+        val startTime = call.argument<Long>("startTime")!!
+        val endTime = call.argument<Long>("endTime")!!
         val value = call.argument<Float>( "value")!!
 
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
-        val unit = getUnit(type)
+        val field = getField(type)
 
         val typesBuilder = FitnessOptions.builder()
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
@@ -210,19 +217,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val dataSource = DataSource.Builder()
                 .setDataType(dataType)
                 .setType(DataSource.TYPE_RAW)
-                //.setAppPackageName("health_example")
                 .setAppPackageName(activity!!.applicationContext)
                 .build()
 
-        val dataPoint = DataPoint.builder(dataSource)
-                .setTimestamp(time, TimeUnit.MILLISECONDS)
-                .setField(unit, value)
-                .build()
+        val builder = if (startTime == endTime)
+            DataPoint.builder(dataSource)
+                    .setTimestamp(startTime, TimeUnit.MILLISECONDS)
+        else
+            DataPoint.builder(dataSource)
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+
+        val dataPoint = if (!isIntField(dataSource, field))
+            builder.setField(field, value).build() else
+                builder.setField(field, value.toInt()).build()
 
         val dataSet = DataSet.builder(dataSource)
                 .add(dataPoint)
                 .build()
-
 
         if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
             typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
@@ -259,7 +270,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
-        val unit = getUnit(type)
+        val field = getField(type)
 
         /// Start a new thread for doing a GoogleFit data lookup
         thread {
@@ -285,10 +296,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     /// For each data point, extract the contents and send them to Flutter, along with date and unit.
                     val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
                         return@mapIndexed hashMapOf(
-                                "value" to getHealthDataValue(dataPoint, unit),
+                                "value" to getHealthDataValue(dataPoint, field),
                                 "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                                 "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                "unit" to unit.toString(),
+                                "unit" to field.toString(),
                                 "source_name" to (dataPoint.getOriginalDataSource().appPackageName ?: (dataPoint.originalDataSource?.getDevice()?.model ?: "" )),
                                 "source_id" to dataPoint.getOriginalDataSource().getStreamIdentifier()
                         )

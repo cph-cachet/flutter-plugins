@@ -108,19 +108,21 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         guard let arguments = call.arguments as? NSDictionary,
             let value = (arguments["value"] as? Double),
             let type = (arguments["dataTypeKey"] as? String),
-            let startDate = (arguments["time"] as? NSNumber)
+            let startDate = (arguments["startTime"] as? NSNumber),
+            let endDate = (arguments["endTime"] as? NSNumber)
             else {
-                print("GUARD FAILED")
+                print("writeData: Invalid arguments")
                 return
             }
         
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
         
         print("Successfully called writeData with value of \(value) and type of \(type)")
         
         let quantity = HKQuantity(unit: unitLookUp(key: type), doubleValue: value)
         
-        let sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateFrom)
+        let sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateTo)
         
         HKHealthStore().save(sample, withCompletion: { (success, error) in
             if let err = error {

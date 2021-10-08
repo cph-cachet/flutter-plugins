@@ -91,12 +91,35 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
-  Future<bool> writeHealthData(
-      double value, HealthDataType type, DateTime time) async {
+  ///
+  /// Saves health data into the HealthKit or Google Fit store
+  ///
+  /// Returns a Future of true if successful, a Future of false otherwise
+  /// 
+  /// Parameters
+  /// 
+  /// [value]  
+  ///   value of the health data in double
+  /// [type]   
+  ///   the value's HealthDataType 
+  /// [startTime] 
+  ///   a DateTime object that specifies the start time when this data value is measured. 
+  ///   It must be equal to or earlier than [endTime]
+  /// [endTime]
+  ///   a DateTime object that specifies the end time when this value is measured.
+  ///   It must be equal to or later than [startTime].
+  ///   Simply set [endTime] equal to [startTime] 
+  ///   if the value is measured only at a specific point in time.
+  /// 
+  Future<bool> writeHealthData(double value, HealthDataType type,
+      DateTime startTime, DateTime endTime) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
       'value': value,
       'dataTypeKey': _enumToString(type),
-      'time': time.millisecondsSinceEpoch
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
     };
     bool? success = await _channel.invokeMethod('writeData', args);
     return success ?? false;
@@ -107,8 +130,8 @@ class HealthFactory {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
-        final result = await _prepareQuery(startDate, endDate, type);
-        dataPoints.addAll(result);
+      final result = await _prepareQuery(startDate, endDate, type);
+      dataPoints.addAll(result);
     }
     return removeDuplicates(dataPoints);
   }
@@ -163,7 +186,7 @@ class HealthFactory {
           from,
           to,
           _platformType,
-          _deviceId!, 
+          _deviceId!,
           sourceId,
           sourceName,
         );

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
@@ -15,19 +16,44 @@ enum AppState {
   FETCHING_DATA,
   DATA_READY,
   NO_DATA,
-  AUTH_NOT_GRANTED
+  AUTH_NOT_GRANTED,
+  DATA_ADDED,
+  DATA_NOT_ADDED,
 }
 
 class _MyAppState extends State<MyApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
+  int _nofSteps = 10;
+  double _mgdl = 10.0;
 
   @override
   void initState() {
     super.initState();
   }
 
-  /// Fetch data from the health plugin and print it
+  Future addData() async {
+    HealthFactory health = HealthFactory();
+
+    final time = DateTime.now();
+    final ago = time.add(Duration(minutes: -5));
+
+    _nofSteps = Random().nextInt(10);
+    _mgdl = Random().nextInt(10) * 1.0;
+    bool success = await health.writeHealthData(
+        _nofSteps.toDouble(), HealthDataType.STEPS, ago, time);
+
+    if (success) {
+      success = await health.writeHealthData(
+          _mgdl, HealthDataType.BLOOD_GLUCOSE, time, time);
+    }
+
+    setState(() {
+      _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
+    });
+  }
+
+  /// Fetch data from the healt plugin and print it
   Future fetchData() async {
     // get everything from midnight until now
     DateTime startDate = DateTime(2020, 11, 07, 0, 0, 0);
@@ -41,7 +67,8 @@ class _MyAppState extends State<MyApp> {
       HealthDataType.WEIGHT,
       HealthDataType.HEIGHT,
       HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.DISTANCE_WALKING_RUNNING,
+      // Uncomment this line on iOS. This type is supported ONLY on Android!
+      // HealthDataType.DISTANCE_WALKING_RUNNING,
     ];
 
     setState(() => _state = AppState.FETCHING_DATA);
@@ -53,6 +80,7 @@ class _MyAppState extends State<MyApp> {
 
     if (accessWasGranted) {
       try {
+
         // fetch new data
         List<HealthDataPoint> healthData =
             await health.getHealthDataFromTypes(startDate, endDate, types);
@@ -117,13 +145,27 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget _contentNotFetched() {
-    return Text('Press the download button to fetch data');
+    return Column(
+      children: [
+        Text('Press the download button to fetch data.'),
+        Text('Press the plus button to insert some random data.')
+      ],
+      mainAxisAlignment: MainAxisAlignment.center,
+    );
   }
 
   Widget _authorizationNotGranted() {
     return Text('''Authorization not given.
         For Android please check your OAUTH2 client ID is correct in Google Developer Console.
          For iOS check your permissions in Apple Health.''');
+  }
+
+  Widget _dataAdded() {
+    return Text('$_nofSteps steps and $_mgdl mgdl are inserted successfully!');
+  }
+
+  Widget _dataNotAdded() {
+    return Text('Failed to add data');
   }
 
   Widget _content() {
@@ -135,6 +177,9 @@ class _MyAppState extends State<MyApp> {
       return _contentFetchingData();
     else if (_state == AppState.AUTH_NOT_GRANTED)
       return _authorizationNotGranted();
+    else if (_state == AppState.DATA_ADDED)
+      return _dataAdded();
+    else if (_state == AppState.DATA_NOT_ADDED) return _dataNotAdded();
 
     return _contentNotFetched();
   }
@@ -151,7 +196,12 @@ class _MyAppState extends State<MyApp> {
                 onPressed: () {
                   fetchData();
                 },
-              )
+              ),
+              IconButton(
+                  onPressed: () {
+                    addData();
+                  },
+                  icon: Icon(Icons.add))
             ],
           ),
           body: Center(
