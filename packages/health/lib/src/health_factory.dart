@@ -134,8 +134,8 @@ class HealthFactory {
         num value = e['value'];
         DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
         DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
-        final String sourceId = e["source_id"];
-        final String sourceName = e["source_name"];
+        final String sourceId = e['source_id'];
+        final String sourceName = e['source_name'];
         return HealthDataPoint._(value, dataType, unit, from, to, _platformType,
             _deviceId!, sourceId, sourceName);
       }).toList();

@@ -47,7 +47,7 @@ class HealthDataPoint {
     data['data_type'] = this.type;
     data['platform_type'] = this.platform;
     data['source_id'] = this.sourceId;
-    data['source_name'] = this.sourceId;
+    data['source_name'] = this.sourceName;
     return data;
   }
 
