@@ -28,6 +28,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val CHANNEL_NAME = "flutter_health"
+const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
 
 class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     private var result: Result? = null
@@ -185,10 +186,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     /// Extracts the (numeric) value from a Health Data Point
-    private fun getHealthDataValue(dataPoint: DataPoint, unit: Field): Any {
-        val value = dataPoint.getValue(unit)
+    private fun getHealthDataValue(dataPoint: DataPoint, field: Field): Any {
+        val value = dataPoint.getValue(field)
+        // Conversion is needed because glucose is stored as mmoll in Google Fit;
+        // while mgdl is used for glucose in this plugin.
+        val isGlucose = field == HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
         return when (value.format) {
-            Field.FORMAT_FLOAT -> value.asFloat()
+            Field.FORMAT_FLOAT -> if (!isGlucose)  value.asFloat() else value.asFloat() * MMOLL_2_MGDL
             Field.FORMAT_INT32 -> value.asInt()
             Field.FORMAT_STRING -> value.asString()
             else -> Log.e("Unsupported format:", value.format.toString())
@@ -227,8 +231,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             DataPoint.builder(dataSource)
                     .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
 
+        // Conversion is needed because glucose is stored as mmoll in Google Fit;
+        // while mgdl is used for glucose in this plugin.
+        val isGlucose = field == HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
         val dataPoint = if (!isIntField(dataSource, field))
-            builder.setField(field, value).build() else
+            builder.setField(field, if (!isGlucose) value else (value/ MMOLL_2_MGDL).toFloat()).build() else
                 builder.setField(field, value.toInt()).build()
 
         val dataSet = DataSet.builder(dataSource)
