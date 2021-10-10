@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:noise_meter/noise_meter.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -38,8 +37,8 @@ class _MyAppState extends State<MyApp> {
     print(noiseReading.toString());
   }
 
-  void onError(PlatformException e) {
-    print(e.toString());
+  void onError(Object error) {
+    print(error.toString());
     _isRecording = false;
   }
 
