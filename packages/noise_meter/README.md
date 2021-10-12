@@ -56,10 +56,12 @@ void onData(NoiseReading noiseReading) {
 
 ### On errors
 Platform errors may occur when recording is interupted. You must decide what happens if such an error occurs.
+The [onError] callback must be of type `void Function(Object error)`
+or `void Function(Object error, StackTrace)`.
 
 ````dart
-void onError(PlatformException e) {
-    print(e.toString());
+void onError(Object error) {
+    print(error.toString());
     _isRecording = false;
 }
 ````

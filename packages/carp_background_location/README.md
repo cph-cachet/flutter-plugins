@@ -1,8 +1,6 @@
 # CARP Background Location Plugin
 
-A background location plugin for Android and iOS which works even when the app is in the background.
-
-The plugin will not necessarily work if the app has been terminated.
+A background location plugin for Android and iOS which works even when the app is in the background. This is a simple wrapper to the [`background_locator`](https://pub.dev/packages/background_locator) plugin. Refer to the background_locator's [wiki](https://github.com/rekab-app/background_locator/wiki) page for install and setup instruction.
 
 ## Android setup
 
@@ -49,9 +47,16 @@ Afterwards, include the following entries within the application tag, as follows
     </application>
 ```
 
+**NOTE** In Android 11 location permissions cannot be set automatically by the app (via the manifest file). Google writes on [this page](https://developer.android.com/training/location/permissions#request-background-location) that:
+
+
+> On Android 11 (API level 30) and higher [...] the system dialog doesn’t include the **Allow all the time** option. Instead, users must enable background location on a settings page, as shown in figure 7.
+
+Hence, for this plugin (and the example app) to work, you need to go to this settings screen and **manually** set the permission to "Alow all the time".
+
 ## iOS setup
 
-Add the following entries to your Info.plist file
+Add the following entries to your `Info.plist` file
 
 ```xml
 <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -97,44 +102,26 @@ func registerPlugins(registry: FlutterPluginRegistry) -> () {
 ## Usage
 
 ```dart
-  Stream<LocationDto> locationStream;
-  StreamSubscription<LocationDto> locationSubscription;
- 
-  @override
-  void initState() {
-    super.initState();
+  // configure the location manager
+  LocationManager().interval = 1;
+  LocationManager().distanceFilter = 0;
+  LocationManager().notificationTitle = 'CARP Location Example';
+  LocationManager().notificationMsg = 'CARP is tracking your location';
 
-    // Subscribe to stream in case it is already running
-    LocationManager().interval = 1;
-    LocationManager().distanceFilter = 0;
-    LocationManager().notificationTitle = 'CARP Location Example';
-    LocationManager().notificationMsg = 'CARP is tracking your location';
-    locationStream = LocationManager().locationStream;
-    locationSubscription = locationStream.listen(onData);
-  }
+  // get the current location
+  await LocationManager().getCurrentLocation();
 
-  void start() async {
-    // Subscribe if it hasnt been done already
-    if (locationSubscription != null) {
-      locationSubscription.cancel();
-    }
-    locationSubscription = locationStream.listen(onData);
-    await LocationManager().start();
-    setState(() {
-      _status = LocationStatus.RUNNING;
-    });
-  }
+  // start listen to location updates
+  StreamSubscription<LocationDto> locationSubscription = LocationManager()
+      .locationStream
+      .listen((LocationDto dto) => print(dto));
 
-  void stop() async {
-    setState(() {
-      _status = LocationStatus.STOPPED;
-    });
-    locationSubscription.cancel();
-    await LocationManager().stop();
-  }
+  // cancel listening and stop the location manager
+  locationSubscription?.cancel();
+  LocationManager().stop();
 ```
 
-See the example app on Github for a complete example of usage.
+See the example app for a complete example of usage.
 
 ## Features and bugs
 

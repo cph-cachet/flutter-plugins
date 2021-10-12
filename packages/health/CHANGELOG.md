@@ -1,3 +1,6 @@
+## 3.2.0
+* [PR #421](https://github.com/cph-cachet/flutter-plugins/pull/421) -  added simple `HKWorkout` and `ExerciseTime` support
+
 ## 3.1.1+1
 * [PR #394](https://github.com/cph-cachet/flutter-plugins/pull/394) - added functions to request authorization
 
