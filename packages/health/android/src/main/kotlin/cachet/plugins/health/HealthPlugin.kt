@@ -53,7 +53,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var SLEEP_AWAKE = "SLEEP_AWAKE"
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME);
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         channel?.setMethodCallHandler(this)
     }
 
@@ -127,7 +127,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 mResult?.success(true)
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 Log.d("FLUTTER_HEALTH", "Access Denied!")
-                mResult?.success(false);
+                mResult?.success(false)
             }
         }
         return false
@@ -221,6 +221,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val dataSource = DataSource.Builder()
                 .setDataType(dataType)
                 .setType(DataSource.TYPE_RAW)
+                .setDevice(Device.getLocalDevice(activity!!.applicationContext))
                 .setAppPackageName(activity!!.applicationContext)
                 .build()
 
@@ -306,9 +307,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                                 "value" to getHealthDataValue(dataPoint, field),
                                 "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                                 "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                "unit" to field.toString(),
-                                "source_name" to (dataPoint.getOriginalDataSource().appPackageName ?: (dataPoint.originalDataSource?.getDevice()?.model ?: "" )),
-                                "source_id" to dataPoint.getOriginalDataSource().getStreamIdentifier()
+                                "source_name" to (dataPoint.originalDataSource.appPackageName ?: (dataPoint.originalDataSource.device?.model ?: "" )),
+                                "source_id" to dataPoint.originalDataSource.streamIdentifier
                         )
                     }
 
