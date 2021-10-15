@@ -1,3 +1,6 @@
+## 3.2.1
+* Updated `device_info_plus` version dependency
+
 ## 3.2.0
 * [PR #421](https://github.com/cph-cachet/flutter-plugins/pull/421) -  added simple `HKWorkout` and `ExerciseTime` support
 
