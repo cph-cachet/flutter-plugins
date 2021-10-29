@@ -39,8 +39,6 @@ void main() async {
 
   group("Mobility Context Tests", () {
     test('Serialize and load three location samples', () async {
-      MobilityFactory mf = MobilityFactory.instance;
-
       LocationSample x =
           LocationSample(GeoLocation(123.456, 123.456), DateTime(2020, 01, 01));
 
@@ -48,18 +46,15 @@ void main() async {
 
       flushFiles();
 
-      await mf.saveSamples(dataset);
+      await MobilityFeatures().saveSamples(dataset);
 
-      List<LocationSample> loaded = await mf.loadSamples();
+      List<LocationSample> loaded = await MobilityFeatures().loadSamples();
       printList(loaded);
       expect(loaded.length, dataset.length);
     });
 
     test('Serialize and load and multiple days', () async {
-      /// Clean file every time test is run
       flushFiles();
-
-      MobilityFactory mf = MobilityFactory.instance;
 
       List<LocationSample> dataset = [];
 
@@ -77,19 +72,18 @@ void main() async {
         ];
 
         /// Save
-        await mf.saveSamples(locationSamples);
+        await MobilityFeatures().saveSamples(locationSamples);
         dataset.addAll(locationSamples);
 
         /// Load, make sure data from previous days is not stored.
-        List<LocationSample> loaded = await mf.loadSamples();
+        List<LocationSample> loaded = await MobilityFeatures().loadSamples();
         expect(loaded.length, dataset.length);
       }
     });
 
     test('Test that samples persist', () async {
-      /// Clean file every time test is run
+      // Clean file every time test is run
       flushFiles();
-      MobilityFactory mf = MobilityFactory.instance;
 
       List<LocationSample> samples = [
         // 5 hours spent at home
@@ -104,13 +98,13 @@ void main() async {
             pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
-      await mf.saveSamples(samples);
-      final loaded = await mf.loadSamples();
+      await MobilityFeatures().saveSamples(samples);
+      final loaded = await MobilityFeatures().loadSamples();
       expect(loaded.length, samples.length);
     });
 
     test('Remove duplicate samples', () async {
-      /// Clean file every time test is run
+      // Clean file every time test is run
       flushFiles();
 
       List<LocationSample> samplesNoDuplicates = [
@@ -149,14 +143,12 @@ void main() async {
             pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
-      final samples = MobilityFactory.uniqueElements(samplesWithDuplicates);
+      final samples = MobilityFeatures.uniqueElements(samplesWithDuplicates);
       expect(samples.length, samplesNoDuplicates.length);
     });
 
     test('Save samples one at a time', () async {
       flushFiles();
-
-      MobilityFactory mf = MobilityFactory.instance;
 
       List<LocationSample> samples = [
         /// Location 1
@@ -175,11 +167,11 @@ void main() async {
 
       // Save samples, one by one
       for (var s in samples) {
-        mf.saveSamples([s]);
+        MobilityFeatures().saveSamples([s]);
       }
 
       // Load samples again, verify that they were all saved
-      final loaded = await mf.loadSamples();
+      final loaded = await MobilityFeatures().loadSamples();
       expect(samples.length, loaded.length);
     });
 
@@ -205,29 +197,28 @@ void main() async {
 
         /// Gap in data
 
-        /// Location 1 (Home)
+        // Location 1 (Home)
         LocationSample(pos1, date.add(Duration(hours: 16, seconds: 1))),
         LocationSample(pos1, date.add(Duration(hours: 20, minutes: 0))),
 
         /// end of stop 3
 
-        /// Location 0 (Home), New day
+        // Location 0 (Home), New day
         LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
       ];
 
-      /// Create stream controller to stream the individual samples
-      /// to the MobilityFactory instance
+      // Create stream controller to stream the individual samples
+      // to the MobilityFactory instance
       StreamController<LocationSample> controller =
           StreamController.broadcast();
 
-      /// Set up stream
-      MobilityFactory mf = MobilityFactory.instance;
-      await mf.startListening(controller.stream);
+      // Set up stream
+      await MobilityFeatures().startListening(controller.stream);
 
       int expectedContexts = 3;
 
-      /// Listen to the Context stream
-      Stream<MobilityContext> contextStream = mf.contextStream;
+      // Listen to the Context stream
+      Stream<MobilityContext> contextStream = MobilityFeatures().contextStream;
       contextStream.listen(expectAsync1((c) {
         printList(c.stops);
         print(c.toJson());
@@ -309,14 +300,13 @@ void main() async {
       StreamController<LocationSample> controller =
           StreamController.broadcast();
 
-      /// Set up stream
-      MobilityFactory mf = MobilityFactory.instance;
-      await mf.startListening(controller.stream);
+      // Set up stream
+      await MobilityFeatures().startListening(controller.stream);
 
       int expectedContexts = 3;
 
       /// Listen to the Context stream
-      Stream<MobilityContext> contextStream = mf.contextStream;
+      Stream<MobilityContext> contextStream = MobilityFeatures().contextStream;
       contextStream.listen(expectAsync1(onContext, count: expectedContexts));
 
       // Stream all the samples one by one
@@ -377,14 +367,13 @@ void main() async {
       StreamController<LocationSample> controller =
           StreamController.broadcast();
 
-      /// Set up stream
-      MobilityFactory mf = MobilityFactory.instance;
-      await mf.startListening(controller.stream);
+      // Set up stream
+      await MobilityFeatures().startListening(controller.stream);
 
       int expectedContexts = 6;
 
       /// Listen to the Context stream
-      Stream<MobilityContext> contextStream = mf.contextStream;
+      Stream<MobilityContext> contextStream = MobilityFeatures().contextStream;
       contextStream.listen(
           expectAsync1((c) => printList(c.stops), count: expectedContexts));
 
@@ -413,10 +402,8 @@ void main() async {
       StreamController<LocationSample> controller =
           StreamController.broadcast();
 
-      MobilityFactory factory = MobilityFactory.instance;
-
-      await factory.startListening(controller.stream);
-      Stream<MobilityContext> mobilityStream = factory.contextStream;
+      await MobilityFeatures().startListening(controller.stream);
+      Stream<MobilityContext> mobilityStream = MobilityFeatures().contextStream;
 
       mobilityStream.listen(expectAsync1((event) {
         print('=' * 150);
@@ -426,9 +413,9 @@ void main() async {
         print("STOPS");
         printList(event.stops);
         print("ALL PLACES");
-        printList(event.places);
+        printList(event.places!);
         print("SIGNIFICANT PLACES");
-        printList(event.significantPlaces);
+        printList(event.significantPlaces!);
         print(
             "TOTAL DURATION (STOPS): ${event.stops.map((p) => p.duration).reduce((a, b) => a + b)}");
       }, count: 283));

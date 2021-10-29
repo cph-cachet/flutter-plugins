@@ -9,4 +9,3 @@ class OpenWeatherAPIException implements Exception {
 
   String toString() => '${this.runtimeType} - $_cause';
 }
-

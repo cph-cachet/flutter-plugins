@@ -8,6 +8,7 @@ Duration takeTime(DateTime start, DateTime end) {
   return Duration(milliseconds: ms);
 }
 
+/// Clean file every time test is run
 void flushFiles() async {
   File samples = new File('$testDataDir/location_samples.json');
   File stops = new File('$testDataDir/stops.json');

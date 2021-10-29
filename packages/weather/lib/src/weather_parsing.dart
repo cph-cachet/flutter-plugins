@@ -5,10 +5,10 @@ int? _unpackInt(Map<String, dynamic>? M, String k) {
   if (M != null) {
     if (M.containsKey(k)) {
       final val = M[k];
-      if (val.runtimeType == String) {
-        return int.parse(M[k]);
-      } else if (val.runtimeType == int) {
-        return M[k];
+      if (val is String) {
+        return int.parse(val);
+      } else if (val is int) {
+        return val;
       }
       return -1;
     }
@@ -21,10 +21,10 @@ double? _unpackDouble(Map<String, dynamic>? M, String k) {
   if (M != null) {
     if (M.containsKey(k)) {
       final val = M[k];
-      if (val.runtimeType == String) {
-        return double.parse(M[k]);
-      } else if (val.runtimeType == double) {
-        return M[k];
+      if (val is String) {
+        return double.parse(val);
+      } else if (val is num) {
+        return val.toDouble();
       }
     }
   }

@@ -6,8 +6,9 @@ import CoreMotion
 public class SwiftActivityRecognitionFlutterPlugin: NSObject, FlutterPlugin {
 
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let eventChannel = FlutterEventChannel(name: "activity_recognition_flutter", binaryMessenger: registrar.messenger())                                                                            
-    eventChannel.setStreamHandler(ActivityStreamHandler())   
+    let handler = ActivityStreamHandler() 
+    let channel = FlutterEventChannel(name: "activity_recognition_flutter", binaryMessenger: registrar.messenger())
+    channel.setStreamHandler(handler)
   }
 }
 public class ActivityStreamHandler: NSObject, FlutterStreamHandler {

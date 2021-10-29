@@ -1,5 +1,22 @@
+## 3.2.1
+* Updated `device_info_plus` version dependency
+
+## 3.2.0
+* [PR #421](https://github.com/cph-cachet/flutter-plugins/pull/421) -  added simple `HKWorkout` and `ExerciseTime` support
+
+## 3.1.1+1
+* [PR #394](https://github.com/cph-cachet/flutter-plugins/pull/394) - added functions to request authorization
+
+## 3.1.0
+* [PR #372](https://github.com/cph-cachet/flutter-plugins/pull/372) - added sleep data to Android + fix of permissions and initialization
+* [PR #388](https://github.com/cph-cachet/flutter-plugins/pull/388) - testability of HealthDataPoint
+* update to using the `device_info_plus` plugin 
+
+## 3.0.6
+* [PR#281](https://github.com/cph-cachet/flutter-plugins/pull/281) Added two new fields to the `HealthDataPoint` - `SourceId` and `SourceName` and populate when data is read. This allows datapoints to be disambigous and in some cases allows us to get more accurate data. For example the number of steps can be reported from Apple Health and Watch and without source data they are aggregated into just "steps" producing an innacurate result.
+
 ## 3.0.5
-* Null safety in Dart has been addressed
+* Null safety in Dart has been implemented
 * The plugin supports the Android v2 embedding
 
 ## 3.0.4

@@ -6,7 +6,8 @@ import 'dart:math';
 import 'package:audio_streamer/audio_streamer.dart';
 import 'package:flutter/services.dart';
 
-/// A [NoiseReading] holds a decibel value for a particular noise level reading.
+/// A [NoiseReading] holds a decibel value for a particular noise
+/// level reading.
 class NoiseReading {
   late double _meanDecibel, _maxDecibel;
 
@@ -31,33 +32,36 @@ class NoiseReading {
   double get meanDecibel => _meanDecibel;
 
   @override
-  String toString() {
-    return '''[VolumeReading]
-      - max dB    $maxDecibel
-      - mean dB   $meanDecibel
-    ''';
-  }
+  String toString() =>
+      '$runtimeType - meanDecibel: $meanDecibel, maxDecibel: $maxDecibel';
 }
 
-/// A [NoiseMeter] object is reponsible for connecting to to
-/// the native environment.
+/// A [NoiseMeter] provides continous access to noise reading
+/// via the [noiseStream].
 class NoiseMeter {
   AudioStreamer _streamer = AudioStreamer();
-  Function _onError;
+  late StreamController<NoiseReading> _controller;
   Stream<NoiseReading>? _stream;
 
-  NoiseMeter(this._onError);
+  // The error callback function.
+  Function? onError;
+
+  /// Creates a [NoiseMeter].
+  /// The [onError] callback must be of type `void Function(Object error)`
+  /// or `void Function(Object error, StackTrace)`.
+  NoiseMeter([this.onError]);
 
   /// The rate at which the audio is sampled
   static int get sampleRate => AudioStreamer.sampleRate;
 
-  late StreamController<NoiseReading> _controller;
-
+  /// The stream of noise readings.
   Stream<NoiseReading> get noiseStream {
     if (_stream == null) {
       _controller = StreamController<NoiseReading>.broadcast(
           onListen: _start, onCancel: _stop);
-      _stream = _controller.stream.handleError(_onError);
+      _stream = (onError != null)
+          ? _controller.stream.handleError(onError!)
+          : _controller.stream;
     }
     return _stream!;
   }
@@ -65,9 +69,7 @@ class NoiseMeter {
   /// Whenever an array of PCM data comes in,
   /// they are converted to a [NoiseReading],
   /// and then send out via the stream
-  void _onAudio(List<double> buffer) {
-    _controller.add(NoiseReading(buffer));
-  }
+  void _onAudio(List<double> buffer) => _controller.add(NoiseReading(buffer));
 
   void _onInternalError(PlatformException e) {
     _stream = null;
@@ -86,7 +88,5 @@ class NoiseMeter {
   }
 
   /// Stop noise monitoring
-  void _stop() async {
-    await _streamer.stop();
-  }
+  void _stop() async => await _streamer.stop();
 }

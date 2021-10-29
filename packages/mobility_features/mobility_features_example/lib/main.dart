@@ -89,7 +89,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   /// Mobility Features stream
   StreamSubscription<MobilityContext> mobilitySubscription;
-  MobilityFactory mobilityFactory = MobilityFactory.instance;
   MobilityContext _mobilityContext;
 
   @override
@@ -97,9 +96,9 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     /// Set up Mobility Features
-    mobilityFactory.stopDuration = Duration(seconds: 20);
-    mobilityFactory.placeRadius = 50.0;
-    mobilityFactory.stopRadius = 5.0;
+    MobilityFeatures().stopDuration = Duration(seconds: 20);
+    MobilityFeatures().placeRadius = 50.0;
+    MobilityFeatures().stopRadius = 5.0;
 
     /// Setup Location Manager
     locationManager.distanceFilter = 0;
@@ -140,9 +139,9 @@ class _MyHomePageState extends State<MyHomePage> {
     Stream<LocationSample> locationSampleStream = dtoStream.map((e) =>
         LocationSample(GeoLocation(e.latitude, e.longitude), DateTime.now()));
 
-    mobilityFactory.startListening(locationSampleStream);
+    MobilityFeatures().startListening(locationSampleStream);
     mobilitySubscription =
-        mobilityFactory.contextStream.listen(onMobilityContext);
+        MobilityFeatures().contextStream.listen(onMobilityContext);
   }
 
   void onData(LocationDto dto) {

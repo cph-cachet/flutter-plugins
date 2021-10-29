@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:carp_background_location/carp_background_location.dart';
 
 void main() => runApp(MyApp());
@@ -9,12 +10,12 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-enum LocationStatus { UNKNOWN, RUNNING, STOPPED }
+enum LocationStatus { UNKNOWN, INITIALIZED, RUNNING, STOPPED }
 
 String dtoToString(LocationDto dto) =>
     'Location ${dto.latitude}, ${dto.longitude} at ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
 
-Widget dtoWidget(LocationDto dto) {
+Widget dtoWidget(LocationDto? dto) {
   if (dto == null)
     return Text("No location yet");
   else
@@ -33,110 +34,110 @@ Widget dtoWidget(LocationDto dto) {
 
 class _MyAppState extends State<MyApp> {
   String logStr = '';
-  LocationDto lastLocation;
-  DateTime lastTimeLocation;
-  LocationManager locationManager = LocationManager.instance;
-  Stream<LocationDto> dtoStream;
-  StreamSubscription<LocationDto> dtoSubscription;
+  LocationDto? lastLocation;
+  DateTime? lastTimeLocation;
+  Stream<LocationDto>? locationStream;
+  StreamSubscription<LocationDto>? locationSubscription;
   LocationStatus _status = LocationStatus.UNKNOWN;
 
   @override
   void initState() {
     super.initState();
-    // Subscribe to stream in case it is already running
-    locationManager.interval = 1;
-    locationManager.distanceFilter = 0;
-    locationManager.notificationTitle = 'CARP Location Example';
-    locationManager.notificationMsg = 'CARP is tracking your location';
-    dtoStream = locationManager.dtoStream;
-    dtoSubscription = dtoStream.listen(onData);
+
+    LocationManager().interval = 1;
+    LocationManager().distanceFilter = 0;
+    LocationManager().notificationTitle = 'CARP Location Example';
+    LocationManager().notificationMsg = 'CARP is tracking your location';
+    locationStream = LocationManager().locationStream;
+
+    _status = LocationStatus.INITIALIZED;
   }
 
-  void onGetCurrentLocation() async {
-    LocationDto dto = await locationManager.getCurrentLocation();
-    print('Current location: $dto');
-  }
+  void getCurrentLocation() async =>
+      onData(await LocationManager().getCurrentLocation());
 
   void onData(LocationDto dto) {
-    print(dtoToString(dto));
+    // print(dtoToString(dto));
+    print(dto);
     setState(() {
-      if (_status == LocationStatus.UNKNOWN) {
-        _status = LocationStatus.RUNNING;
-      }
       lastLocation = dto;
       lastTimeLocation = DateTime.now();
     });
   }
 
-  void start() async {
-    // Subscribe if it hasn't been done already
-    if (dtoSubscription != null) {
-      dtoSubscription.cancel();
+  /// Is "location always" permission granted?
+  Future<bool> isLocationAlwaysGranted() async =>
+      await Permission.locationAlways.isGranted;
+
+  /// Tries to ask for "location always" permissions from the user.
+  /// Returns `true` if successful, `false` othervise.
+  Future<bool> askForLocationAlwaysPermission() async {
+    bool granted = await Permission.locationAlways.isGranted;
+
+    if (!granted) {
+      granted =
+          await Permission.locationAlways.request() == PermissionStatus.granted;
     }
-    dtoSubscription = dtoStream.listen(onData);
-    await locationManager.start();
+
+    return granted;
+  }
+
+  /// Start listening to location events.
+  void start() async {
+    // ask for location permissions, if not already granted
+    if (!await isLocationAlwaysGranted())
+      await askForLocationAlwaysPermission();
+
+    locationSubscription?.cancel();
+    locationSubscription = locationStream?.listen(onData);
+    await LocationManager().start();
     setState(() {
       _status = LocationStatus.RUNNING;
     });
   }
 
-  void stop() async {
+  void stop() {
+    locationSubscription?.cancel();
+    LocationManager().stop();
     setState(() {
       _status = LocationStatus.STOPPED;
     });
-    dtoSubscription.cancel();
-    await locationManager.stop();
   }
 
-  Widget stopButton() {
-    Function f = stop;
-    String msg = 'STOP';
+  Widget stopButton() => SizedBox(
+        width: double.maxFinite,
+        child: ElevatedButton(
+          child: const Text('STOP'),
+          onPressed: stop,
+        ),
+      );
 
-    return SizedBox(
-      width: double.maxFinite,
-      child: RaisedButton(
-        child: Text(msg),
-        onPressed: f,
-      ),
-    );
-  }
+  Widget startButton() => SizedBox(
+        width: double.maxFinite,
+        child: ElevatedButton(
+          child: const Text('START'),
+          onPressed: start,
+        ),
+      );
 
-  Widget startButton() {
-    Function f = start;
-    String msg = 'START';
-    return SizedBox(
-      width: double.maxFinite,
-      child: RaisedButton(
-        child: Text(msg),
-        onPressed: f,
-      ),
-    );
-  }
+  Widget status() => Text("Status: ${_status.toString().split('.').last}");
 
-  Widget status() {
-    String msg = _status.toString().split('.').last;
-    return Text("Status: $msg");
-  }
+  Widget lastLoc() => Text(
+      lastLocation != null
+          ? dtoToString(lastLocation!)
+          : 'Unknown last location',
+      textAlign: TextAlign.center);
 
-  Widget lastLoc() {
-    return Text(
-        lastLocation != null
-            ? dtoToString(lastLocation)
-            : 'Unknown last location',
-        textAlign: TextAlign.center);
-  }
-
-  Widget getButton() {
-    return RaisedButton(
-      child: Text("Get Current Location"),
-      onPressed: onGetCurrentLocation,
-    );
-  }
+  Widget currentLocationButton() => SizedBox(
+        width: double.maxFinite,
+        child: ElevatedButton(
+          child: const Text('CURRENT LOCATION'),
+          onPressed: getCurrentLocation,
+        ),
+      );
 
   @override
-  void dispose() {
-    super.dispose();
-  }
+  void dispose() => super.dispose();
 
   @override
   Widget build(BuildContext context) {
@@ -154,11 +155,11 @@ class _MyAppState extends State<MyApp> {
               children: <Widget>[
                 startButton(),
                 stopButton(),
+                currentLocationButton(),
                 Divider(),
                 status(),
                 Divider(),
                 dtoWidget(lastLocation),
-                getButton()
               ],
             ),
           ),

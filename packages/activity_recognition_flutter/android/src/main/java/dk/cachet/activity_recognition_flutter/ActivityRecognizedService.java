@@ -1,25 +1,23 @@
 package dk.cachet.activity_recognition_flutter;
 
-import android.app.IntentService;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+import androidx.core.app.JobIntentService;
+
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
-import io.flutter.plugin.common.EventChannel;
-
 import java.util.List;
 
-import androidx.annotation.Nullable;
+public class ActivityRecognizedService extends JobIntentService {
 
-public class ActivityRecognizedService extends IntentService {
-
-    private EventChannel.EventSink eventSink;
-
-    public ActivityRecognizedService() {
-        super("ActivityRecognizedService");
+    static void enqueueWork(Context context, Intent work) {
+        enqueueWork(context, ActivityRecognizedService.class, 1, work);
     }
 
     @Override
@@ -27,8 +25,13 @@ public class ActivityRecognizedService extends IntentService {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
+    // This method is called when service starts instead of onHandleIntent
+    protected void onHandleWork(@Nullable Intent intent) {
+        onHandleIntent(intent);
+    }
+
+    // remove override and make onHandleIntent private.
+    private void onHandleIntent(@Nullable Intent intent) {
         ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
         List<DetectedActivity> activities = result.getProbableActivities();
 
@@ -47,7 +50,7 @@ public class ActivityRecognizedService extends IntentService {
 
         Log.d("onHandleIntent", data);
 
-        /// Same preferences as in ActivityRecognitionFlutterPlugin.java
+        // Same preferences as in ActivityRecognitionFlutterPlugin.java
         SharedPreferences preferences =
                 getApplicationContext().getSharedPreferences(
                         ActivityRecognitionFlutterPlugin.ACTIVITY_RECOGNITION, MODE_PRIVATE);
@@ -58,7 +61,6 @@ public class ActivityRecognizedService extends IntentService {
                         data
                 )
                 .apply();
-
     }
 
     public static String getActivityString(int type) {
@@ -74,3 +76,4 @@ public class ActivityRecognizedService extends IntentService {
         return "UNKNOWN";
     }
 }
+

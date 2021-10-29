@@ -46,21 +46,21 @@ List<Place> _findPlaces(List<Stop> stops, {double placeRadius = 50.0}) {
       epsilon: placeRadius, minPoints: 1, distanceMeasure: Distance.fromList);
 
   /// Extract gps coordinates from stops
-  List<List<double>> stopCoordinates = stops
+  List<List<double?>> stopCoordinates = stops
       .map((s) => ([s.geoLocation.latitude, s.geoLocation.longitude]))
       .toList();
 
   /// Run DBSCAN on stops
-  dbscan.run(stopCoordinates);
+  dbscan.run(stopCoordinates as List<List<double>>);
 
   /// Extract labels for each stop, each label being a cluster
   /// Filter out stops labelled as noise (where label is -1)
-  Set<int> clusterLabels = dbscan.label.where((l) => (l != -1)).toSet();
+  Set<int> clusterLabels = dbscan.label!.where((l) => (l != -1)).toSet();
 
   for (int label in clusterLabels) {
     /// Get indices of all stops with the current cluster label
     List<int> indices =
-        stops.asMap().keys.where((i) => (dbscan.label[i] == label)).toList();
+        stops.asMap().keys.where((i) => (dbscan.label![i] == label)).toList();
 
     /// For each index, get the corresponding stop
     List<Stop> stopsForPlace = indices.map((i) => (stops[i])).toList();
@@ -76,14 +76,14 @@ List<Place> _findPlaces(List<Stop> stops, {double placeRadius = 50.0}) {
 }
 
 List<Move> _findMoves(List<Stop> stops, List<LocationSample> samples) {
-  Stop previous;
+  Stop? previous;
   List<Move> moves = [];
 
   for (Stop current in stops) {
     if (previous != null) {
       final path = samples
           .where((s) =>
-              previous.datetime.leq(s.datetime) &&
+              previous!.datetime.leq(s.datetime) &&
               previous.datetime.geq(s.datetime))
           .toList();
       Move m = Move._fromPath(previous, current, path);
@@ -95,11 +95,11 @@ List<Move> _findMoves(List<Stop> stops, List<LocationSample> samples) {
 }
 
 GeoLocation _computeCentroid(List<_Geospatial> data) {
-  double lat = Stats
-      .fromData(data.map((d) => (d.geoLocation.latitude)).toList())
-      .median as double;
-  double lon = Stats
-      .fromData(data.map((d) => (d.geoLocation.longitude)).toList())
-      .median as double;
+  double lat =
+      Stats.fromData(data.map((d) => (d.geoLocation.latitude)).toList()).median
+          as double;
+  double lon =
+      Stats.fromData(data.map((d) => (d.geoLocation.longitude)).toList()).median
+          as double;
   return GeoLocation(lat, lon);
 }

@@ -1,8 +1,6 @@
 # CARP Background Location Plugin
 
-A background location plugin for Android and iOS which works even when the app is in the background.
-
-The plugin will not necessarily work if the app has been terminated.
+A background location plugin for Android and iOS which works even when the app is in the background. This is a simple wrapper to the [`background_locator`](https://pub.dev/packages/background_locator) plugin. Refer to the background_locator's [wiki](https://github.com/rekab-app/background_locator/wiki) page for install and setup instruction.
 
 ## Android setup
 
@@ -23,8 +21,6 @@ Afterwards, include the following entries within the application tag, as follows
 ```xml
 <application
        ...
-        <!-- Don't delete the meta-data below.
-         This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <receiver
                 android:name="rekab.app.background_locator.LocatorBroadcastReceiver"
                 android:enabled="true"
@@ -48,15 +44,19 @@ Afterwards, include the following entries within the application tag, as follows
                 android:permission="android.permission.FOREGROUND_SERVICE"
                 android:exported="true"
         />
-        <meta-data
-            android:name="flutterEmbedding"
-            android:value="2" />
     </application>
 ```
 
+**NOTE** In Android 11 location permissions cannot be set automatically by the app (via the manifest file). Google writes on [this page](https://developer.android.com/training/location/permissions#request-background-location) that:
+
+
+> On Android 11 (API level 30) and higher [...] the system dialog doesn’t include the **Allow all the time** option. Instead, users must enable background location on a settings page, as shown in figure 7.
+
+Hence, for this plugin (and the example app) to work, you need to go to this settings screen and **manually** set the permission to "Alow all the time".
+
 ## iOS setup
 
-Add the following entries to your Info.plist file
+Add the following entries to your `Info.plist` file
 
 ```xml
 <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -102,44 +102,26 @@ func registerPlugins(registry: FlutterPluginRegistry) -> () {
 ## Usage
 
 ```dart
-  LocationManager locationManager = LocationManager.instance;
-  Stream<LocationDto> dtoStream;
-  StreamSubscription<LocationDto> dtoSubscription;
- 
-  @override
-  void initState() {
-    super.initState();
-    // Subscribe to stream in case it is already running
-    locationManager.interval = 1;
-    locationManager.distanceFilter = 0;
-    locationManager.notificationTitle = 'CARP Location Example';
-    locationManager.notificationMsg = 'CARP is tracking your location';
-    dtoStream = locationManager.dtoStream;
-    dtoSubscription = dtoStream.listen(onData);
-  }
+  // configure the location manager
+  LocationManager().interval = 1;
+  LocationManager().distanceFilter = 0;
+  LocationManager().notificationTitle = 'CARP Location Example';
+  LocationManager().notificationMsg = 'CARP is tracking your location';
 
-  void start() async {
-    // Subscribe if it hasnt been done already
-    if (dtoSubscription != null) {
-      dtoSubscription.cancel();
-    }
-    dtoSubscription = dtoStream.listen(onData);
-    await locationManager.start();
-    setState(() {
-      _status = LocationStatus.RUNNING;
-    });
-  }
+  // get the current location
+  await LocationManager().getCurrentLocation();
 
-  void stop() async {
-    setState(() {
-      _status = LocationStatus.STOPPED;
-    });
-    dtoSubscription.cancel();
-    await locationManager.stop();
-  }
+  // start listen to location updates
+  StreamSubscription<LocationDto> locationSubscription = LocationManager()
+      .locationStream
+      .listen((LocationDto dto) => print(dto));
+
+  // cancel listening and stop the location manager
+  locationSubscription?.cancel();
+  LocationManager().stop();
 ```
 
-See the example app on Github for a complete example of usage.
+See the example app for a complete example of usage.
 
 ## Features and bugs
 
@@ -149,8 +131,7 @@ Please file feature requests and bug reports at the [issue tracker][tracker].
 
 ## License
 
-This software is copyright (c) [Copenhagen Center for Health Technology (CACHET)](https://www.cachet.dk/) 
-at the [Technical University of Denmark (DTU)](https://www.dtu.dk).
+This software is copyright (c) [Copenhagen Center for Health Technology (CACHET)](https://www.cachet.dk/) at the [Technical University of Denmark (DTU)](https://www.dtu.dk).
 This software is available 'as-is' under a [MIT license](https://github.com/cph-cachet/flutter-plugins/blob/master/packages/carp_background_location/LICENSE).
 
 
