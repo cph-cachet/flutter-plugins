@@ -1,3 +1,6 @@
+## 3.3.0
+* [PR #430](https://github.com/cph-cachet/flutter-plugins/pull/430) -  Write support on Google Fit and HealthKit
+
 ## 3.2.1
 * Updated `device_info_plus` version dependency
 
