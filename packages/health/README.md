@@ -30,7 +30,7 @@ NB: For Android, your app _needs_ to have Google Fit installed and have access t
 | DISTANCE_WALKING_RUNNING    | METERS                  | yes         |              |                                                             |
 | FLIGHTS_CLIMBED             | COUNT                   | yes         |              |                                                             |
 | MOVE_MINUTES                | MINUTES                 |             | yes          |                                                             |
-| DISTANCE_DELTA              | METERS                  | yes         |              |                                                             |
+| DISTANCE_DELTA              | METERS                  |             | yes          |                                                             |
 | MINDFULNESS                 | MINUTES                 | yes         |              |                                                             |
 | SLEEP_IN_BED                | MINUTES                 | yes         | yes          |                                                             |
 | SLEEP_ASLEEP                | MINUTES                 | yes         | yes          |                                                             |
