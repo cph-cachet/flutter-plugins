@@ -343,18 +343,28 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                                                 )
                                         )
                                     }
-
+                                    // Returns time spent in bed in Minutes
                                     if (type == SLEEP_IN_BED) {
-                                        healthData.add(
-                                                hashMapOf(
-                                                        "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
-                                                        "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                                                        "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                                                        "unit" to "MINUTES",
-                                                        "source_name" to session.appPackageName,
-                                                        "source_id" to session.identifier
-                                                )
-                                        )
+                                        val dataSets = response.getDataSet(session)
+                                        for (dataSet in dataSets) {
+                                            for (dataPoint in dataSet.dataPoints) {
+                                                // searching OUT OF BED data
+                                                if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() != 3) {
+                                                    healthData.add(
+                                                            hashMapOf(
+                                                                    "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(TimeUnit.MINUTES),
+                                                                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                                                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                                                    "unit" to "MINUTES",
+                                                                    "source_name" to (dataPoint.originalDataSource.appPackageName
+                                                                            ?: (dataPoint.originalDataSource.device?.model
+                                                                                    ?: "unknown")),
+                                                                    "source_id" to dataPoint.originalDataSource.streamIdentifier
+                                                            )
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
 
                                     // If the sleep session has finer granularity sub-components, extract them:
