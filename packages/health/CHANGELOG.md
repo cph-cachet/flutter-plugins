@@ -1,5 +1,9 @@
+## 3.3.1
+* [PR #428](https://github.com/cph-cachet/flutter-plugins/pull/428) - DISTANCE_DELTA is for Android, not iOS
+* [PR #454](https://github.com/cph-cachet/flutter-plugins/pull/454) - added missing READ_ACCESS
+
 ## 3.3.0
-* [PR #430](https://github.com/cph-cachet/flutter-plugins/pull/430) -  Write support on Google Fit and HealthKit
+* [PR #430](https://github.com/cph-cachet/flutter-plugins/pull/430) - Write support on Google Fit and HealthKit
 
 ## 3.2.1
 * Updated `device_info_plus` version dependency
