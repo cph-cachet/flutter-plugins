@@ -120,3 +120,5 @@ packages/health/example/.flutter-plugins-dependencies
 packages/noise_meter/example/.flutter-plugins-dependencies
 packages/audio_streamer/example/.flutter-plugins-dependencies
 *.sh
+packages/health/example/.flutter-plugins-dependencies
+*.sh

@@ -22,7 +22,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -36,6 +35,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val GOOGLE_SIGN_IN_REQUEST_CODE = 2222
 const val CHANNEL_NAME = "flutter_health"
+const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
 
 class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     private lateinit var channel: MethodChannel
@@ -68,7 +68,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME);
         context = flutterPluginBinding.applicationContext
-        channel.setMethodCallHandler(this)
+        channel?.setMethodCallHandler(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -167,7 +167,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
         }
     }
 
-    private fun getUnit(type: String): Field {
+    private fun getField(type: String): Field {
         return when (type) {
             BODY_FAT_PERCENTAGE -> Field.FIELD_PERCENTAGE
             HEIGHT -> Field.FIELD_HEIGHT
@@ -189,20 +189,90 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
         }
     }
 
+    private fun isIntField(dataSource: DataSource, unit: Field): Boolean {
+        val dataPoint =  DataPoint.builder(dataSource).build()
+        val value = dataPoint.getValue(unit)
+        return value.format == Field.FORMAT_INT32
+    }
+
     /// Extracts the (numeric) value from a Health Data Point
-    private fun getHealthDataValue(dataPoint: DataPoint, unit: Field): Any {
-        return try {
-            dataPoint.getValue(unit).asFloat()
-        } catch (e1: Exception) {
-            try {
-                dataPoint.getValue(unit).asInt()
-            } catch (e2: Exception) {
-                try {
-                    dataPoint.getValue(unit).asString()
-                } catch (e3: Exception) {
-                    Log.e("FLUTTER_HEALTH::ERROR", e3.toString())
-                }
-            }
+    private fun getHealthDataValue(dataPoint: DataPoint, field: Field): Any {
+        val value = dataPoint.getValue(field)
+        // Conversion is needed because glucose is stored as mmoll in Google Fit;
+        // while mgdl is used for glucose in this plugin.
+        val isGlucose = field == HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
+        return when (value.format) {
+            Field.FORMAT_FLOAT -> if (!isGlucose)  value.asFloat() else value.asFloat() * MMOLL_2_MGDL
+            Field.FORMAT_INT32 -> value.asInt()
+            Field.FORMAT_STRING -> value.asString()
+            else -> Log.e("Unsupported format:", value.format.toString())
+        }
+    }
+
+    private fun writeData(call: MethodCall, result: Result) {
+
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
+        val type = call.argument<String>("dataTypeKey")!!
+        val startTime = call.argument<Long>("startTime")!!
+        val endTime = call.argument<Long>("endTime")!!
+        val value = call.argument<Float>( "value")!!
+
+        // Look up data type and unit for the type key
+        val dataType = keyToHealthDataType(type)
+        val field = getField(type)
+
+        val typesBuilder = FitnessOptions.builder()
+        typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+        val dataSource = DataSource.Builder()
+                .setDataType(dataType)
+                .setType(DataSource.TYPE_RAW)
+                .setDevice(Device.getLocalDevice(activity!!.applicationContext))
+                .setAppPackageName(activity!!.applicationContext)
+                .build()
+
+        val builder = if (startTime == endTime)
+            DataPoint.builder(dataSource)
+                    .setTimestamp(startTime, TimeUnit.MILLISECONDS)
+        else
+            DataPoint.builder(dataSource)
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+
+        // Conversion is needed because glucose is stored as mmoll in Google Fit;
+        // while mgdl is used for glucose in this plugin.
+        val isGlucose = field == HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
+        val dataPoint = if (!isIntField(dataSource, field))
+            builder.setField(field, if (!isGlucose) value else (value/ MMOLL_2_MGDL).toFloat()).build() else
+                builder.setField(field, value.toInt()).build()
+
+        val dataSet = DataSet.builder(dataSource)
+                .add(dataPoint)
+                .build()
+
+        if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
+            typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+        }
+        val fitnessOptions = typesBuilder.build()
+
+
+        try {
+            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+            Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                    .insertData(dataSet)
+                    .addOnSuccessListener {
+                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                        result.success(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                        result.success(false)
+                    }
+        } catch (e3: Exception) {
+             result.success(false)
         }
     }
 
@@ -254,7 +324,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
 
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
-        val unit = getUnit(type)
+        val field = getField(type)
 
         val typesBuilder = FitnessOptions.builder()
         typesBuilder.addDataType(dataType)
@@ -266,17 +336,17 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
         call.argument<String?>("accountName")?.let {
             _getGoogleSignInAccount(it, fitnessOptions) {
                 if (it != null) {
-                    _getData(call, result, type, dataType, unit, it)
+                    _getData(call, result, type, dataType, field, it)
                 } else {
                     result.success(null)
                 }
             }
             return
         }
-        _getData(call, result, type, dataType, unit, GoogleSignIn.getAccountForExtension(context, fitnessOptions));
+        _getData(call, result, type, dataType, field, GoogleSignIn.getAccountForExtension(context, fitnessOptions));
     }
 
-    private fun _getData(call: MethodCall, result: Result, type: String, dataType: DataType, unit: Field, googleSignInAccount: GoogleSignInAccount) {
+    private fun _getData(call: MethodCall, result: Result, type: String, dataType: DataType, field: Field, googleSignInAccount: GoogleSignInAccount) {
         val startTime = call.argument<Long>("startDate")!!
         val endTime = call.argument<Long>("endDate")!!
 
@@ -300,12 +370,11 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
                     /// For each data point, extract the contents and send them to Flutter, along with date and unit.
                     val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
                         return@mapIndexed hashMapOf(
-                                "value" to getHealthDataValue(dataPoint, unit),
+                                "value" to getHealthDataValue(dataPoint, field),
                                 "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                                 "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                "unit" to unit.toString(),
-                                "source_name" to (dataPoint.getOriginalDataSource().appPackageName ?: (dataPoint.originalDataSource?.getDevice()?.model ?: "" )),
-                                "source_id" to dataPoint.getOriginalDataSource().getStreamIdentifier()
+                                "source_name" to (dataPoint.originalDataSource.appPackageName ?: (dataPoint.originalDataSource.device?.model ?: "" )),
+                                "source_id" to dataPoint.originalDataSource.streamIdentifier
                         )
                     }
 
@@ -388,6 +457,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
         for (typeKey in types) {
             if (typeKey !is String) continue
             typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
+            //typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_WRITE)
             if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE) {
                 typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
             }
@@ -472,6 +542,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
+            "writeData" -> writeData(call, result)
             else -> result.notImplemented()
         }
     }

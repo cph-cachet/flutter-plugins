@@ -109,6 +109,40 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
+  ///
+  /// Saves health data into the HealthKit or Google Fit store
+  ///
+  /// Returns a Future of true if successful, a Future of false otherwise
+  /// 
+  /// Parameters
+  /// 
+  /// [value]  
+  ///   value of the health data in double
+  /// [type]   
+  ///   the value's HealthDataType 
+  /// [startTime] 
+  ///   a DateTime object that specifies the start time when this data value is measured. 
+  ///   It must be equal to or earlier than [endTime]
+  /// [endTime]
+  ///   a DateTime object that specifies the end time when this value is measured.
+  ///   It must be equal to or later than [startTime].
+  ///   Simply set [endTime] equal to [startTime] 
+  ///   if the value is measured only at a specific point in time.
+  /// 
+  Future<bool> writeHealthData(double value, HealthDataType type,
+      DateTime startTime, DateTime endTime) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+    Map<String, dynamic> args = {
+      'value': value,
+      'dataTypeKey': _enumToString(type),
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+    bool? success = await _channel.invokeMethod('writeData', args);
+    return success ?? false;
+  }
+
   /// Get an array of [HealthDataPoint] from an array of [HealthDataType].
   ///
   /// (Android only) If [accountName] is not empty, use it to get data,
@@ -117,7 +151,7 @@ class HealthFactory {
   /// On iOS, [accountName] is simply ignored.
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
       DateTime startDate, DateTime endDate, List<HealthDataType> types, [String? accountName]) async {
-    final dataPoints = <HealthDataPoint>[];
+    List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
       final result = await _prepareQuery(startDate, endDate, type, accountName);
