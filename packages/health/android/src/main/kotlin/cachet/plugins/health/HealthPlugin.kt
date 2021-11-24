@@ -457,7 +457,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
         for (typeKey in types) {
             if (typeKey !is String) continue
             typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
-            //typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_WRITE)
+            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_WRITE)
             if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE) {
                 typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
             }
