@@ -199,6 +199,12 @@ class HealthFactory {
       final result = await _prepareQuery(startDate, endDate, type);
       dataPoints.addAll(result);
     }
+
+    const int threshold = 100;
+    if (dataPoints.length > threshold) {
+      return compute(removeDuplicates, dataPoints);
+    }
+
     return removeDuplicates(dataPoints);
   }
 
@@ -240,25 +246,23 @@ class HealthFactory {
         "dataPoints": fetchedDataPoints,
         "deviceId": _deviceId!,
       };
-      const thresHold = 10;
+      const thresHold = 100;
       // If the no. of data points are larger than the threshold,
       // call the compute method to spawn an Isolate to do the parsing in a separate thread.
-      if (fetchedDataPoints.length > thresHold)
+      if (fetchedDataPoints.length > thresHold) {
         return compute(_parse, mesg);
+      }
       return _parse(mesg);
     } else {
       return <HealthDataPoint>[];
     }
   }
 
-  static List<HealthDataPoint> _parse(dynamic message) {
+  static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
     final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
     final device = message["deviceId"];
-    final unit = _dataTypeToUnit[dataType]!;
-    final stopwatch = Stopwatch();
-    stopwatch.start();
-
+    final unit = _dataTypeToUnit[dataType]!;    
     final list = dataPoints.map<HealthDataPoint>((e) {
       final num value = e['value'];
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
@@ -278,9 +282,6 @@ class HealthFactory {
       );
     }).toList();
 
-    stopwatch.stop();
-
-    print('Nof items: ${list.length} time elapsed: ${stopwatch.elapsedMilliseconds} ms');
     return list;
   }
 
@@ -294,6 +295,7 @@ class HealthFactory {
       for (var s in unique) {
         if (s == p) {
           seenBefore = true;
+          break;
         }
       }
       if (!seenBefore) {

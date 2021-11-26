@@ -6,7 +6,6 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
-import com.google.android.gms.tasks.Tasks
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -17,14 +16,18 @@ import android.os.Handler
 import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
-import java.util.concurrent.TimeUnit
-import java.util.Date
-import kotlin.concurrent.thread
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.SessionReadRequest
+import com.google.android.gms.fitness.result.SessionReadResponse
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import java.util.concurrent.TimeUnit
+import java.util.Date
+
+import java.util.concurrent.*
 
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
@@ -35,6 +38,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var result: Result? = null
     private var handler: Handler? = null
     private var activity: Activity? = null
+    private var threadPoolExecutor: ExecutorService? = null
 
     private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
     private var HEIGHT = "HEIGHT"
@@ -58,11 +62,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         channel?.setMethodCallHandler(this)
+        threadPoolExecutor = Executors.newFixedThreadPool(4)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel = null
         activity = null
+        threadPoolExecutor!!.shutdown()
+        threadPoolExecutor = null
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -253,8 +260,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
         }
         val fitnessOptions = typesBuilder.build()
-
-
         try {
             val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
             Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
@@ -272,6 +277,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
+
+
     private fun getData(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(null)
@@ -285,143 +292,154 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
         val field = getField(type)
+        val typesBuilder = FitnessOptions.builder()
+        typesBuilder.addDataType(dataType)
+        if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
+            typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+        }
+        val fitnessOptions = typesBuilder.build()
+        val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
-        /// Start a new thread for doing a GoogleFit data lookup
-        thread {
-            try {
-                val typesBuilder = FitnessOptions.builder()
-                typesBuilder.addDataType(dataType)
-                if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
-                    typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
-                }
-                val fitnessOptions = typesBuilder.build()
-                val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
-
-                if (dataType != DataType.TYPE_SLEEP_SEGMENT) {
-                    val response = Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                        .readData(DataReadRequest.Builder()
+        if (dataType != DataType.TYPE_SLEEP_SEGMENT) {
+            Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                    .readData(DataReadRequest.Builder()
                             .read(dataType)
                             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                             .build())
+                    .addOnSuccessListener (threadPoolExecutor!!, dataHandler(dataType, field, result))
+                    .addOnFailureListener(errHandler(result))
+        }  else {
+            // request to the sessions for sleep data
+            val request = SessionReadRequest.Builder()
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .enableServerQueries()
+                    .readSessionsFromAllApps()
+                    .includeSleepSessions()
+                    .build()
+            Fitness.getSessionsClient(activity!!.applicationContext, googleSignInAccount)
+                    .readSession(request)
+                    .addOnSuccessListener(threadPoolExecutor!!, sleepDataHandler(type, result))
+                    .addOnFailureListener(errHandler(result))
+        }
 
-                    /// Fetch all data points for the specified DataType
-                    val dataPoints = Tasks.await<DataReadResponse>(response).getDataSet(dataType)
+    }
 
-                    /// For each data point, extract the contents and send them to Flutter, along with date and unit.
-                    val healthData = dataPoints.dataPoints.mapIndexed { _, dataPoint ->
-                        return@mapIndexed hashMapOf(
-                                "value" to getHealthDataValue(dataPoint, field),
-                                "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                                "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                "source_name" to (dataPoint.originalDataSource.appPackageName ?: (dataPoint.originalDataSource.device?.model ?: "" )),
-                                "source_id" to dataPoint.originalDataSource.streamIdentifier
+    private fun dataHandler(dataType: DataType, field: Field, result: Result) =
+            OnSuccessListener { response: DataReadResponse ->
+                /// Fetch all data points for the specified DataType
+                val dataSet = response.getDataSet(dataType)
+                /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+                val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
+                    return@mapIndexed hashMapOf(
+                            "value" to getHealthDataValue(dataPoint, field),
+                            "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                            "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                            "source_name" to (dataPoint.originalDataSource.appPackageName
+                                    ?: (dataPoint.originalDataSource.device?.model
+                                            ?: "")),
+                            "source_id" to dataPoint.originalDataSource.streamIdentifier
+                    )
+                }
+                activity!!.runOnUiThread { result.success(healthData) }
+            }
+
+    private fun errHandler(result: Result) = OnFailureListener { exception ->
+        activity!!.runOnUiThread { result.success(null) }
+        Log.i("FLUTTER_HEALTH::ERROR", exception.message ?: "unknown error")
+        Log.i("FLUTTER_HEALTH::ERROR", exception.stackTrace.toString())
+    }
+
+    private fun sleepDataHandler(type: String, result: Result) =
+            OnSuccessListener { response: SessionReadResponse ->
+                val healthData: MutableList<Map<String, Any?>> = mutableListOf()
+                for (session in response.sessions) {
+
+                    // Return sleep time in Minutes if requested ASLEEP data
+                    if (type == SLEEP_ASLEEP) {
+                        healthData.add(
+                                hashMapOf(
+                                        "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
+                                        "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                                        "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                                        "unit" to "MINUTES",
+                                        "source_name" to session.appPackageName,
+                                        "source_id" to session.identifier
+                                )
                         )
                     }
 
-                    activity!!.runOnUiThread { result.success(healthData) }
-                } else {
-                    // request to the sessions for sleep data
-                    val request = SessionReadRequest.Builder()
-                            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                            .enableServerQueries()
-                            .readSessionsFromAllApps()
-                            .includeSleepSessions()
-                            .build()
-                    Fitness.getSessionsClient(activity!!.applicationContext, googleSignInAccount)
-                            .readSession(request)
-                            .addOnSuccessListener { response ->
-                                var healthData: MutableList<Map<String, Any?>> = mutableListOf()
-                                for (session in response.sessions) {
+                    if (type == SLEEP_IN_BED) {
+                        val dataSets = response.getDataSet(session)
 
-                                    // Return sleep time in Minutes if requested ASLEEP data
-                                    if (type == SLEEP_ASLEEP) {
+                        // If the sleep session has finer granularity sub-components, extract them:
+                        if (dataSets.isNotEmpty()) {
+                            for (dataSet in dataSets) {
+                                for (dataPoint in dataSet.dataPoints) {
+                                    // searching OUT OF BED data
+                                    if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE)
+                                            .asInt() != 3
+                                    ) {
                                         healthData.add(
-                                                hashMapOf(
-                                                        "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
-                                                        "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                                                        "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                                                        "unit" to "MINUTES",
-                                                        "source_name" to session.appPackageName,
-                                                        "source_id" to session.identifier
-                                                )
+                                            hashMapOf(
+                                                "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
+                                                    TimeUnit.MINUTES
+                                                ),
+                                                "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                                "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                                "unit" to "MINUTES",
+                                                "source_name" to (dataPoint.originalDataSource.appPackageName
+                                                    ?: (dataPoint.originalDataSource.device?.model
+                                                        ?: "unknown")),
+                                                "source_id" to dataPoint.originalDataSource.streamIdentifier
+                                            )
                                         )
                                     }
-                                    // Returns time spent in bed in Minutes
-                                    if (type == SLEEP_IN_BED) {
-                                        val dataSets = response.getDataSet(session)
-
-                                        // If the sleep session has finer granularity sub-components, extract them:
-                                        if( dataSets.isNotEmpty()){
-                                            for (dataSet in dataSets) {
-                                                for (dataPoint in dataSet.dataPoints) {
-                                                    // searching OUT OF BED data
-                                                    if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() != 3) {
-                                                        healthData.add(
-                                                                hashMapOf(
-                                                                        "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(TimeUnit.MINUTES),
-                                                                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                                                                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                                                        "unit" to "MINUTES",
-                                                                        "source_name" to (dataPoint.originalDataSource.appPackageName
-                                                                                ?: (dataPoint.originalDataSource.device?.model
-                                                                                        ?: "unknown")),
-                                                                        "source_id" to dataPoint.originalDataSource.streamIdentifier
-                                                                )
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            healthData.add(
-                                                    hashMapOf(
-                                                            "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
-                                                            "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                                                            "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                                                            "unit" to "MINUTES",
-                                                            "source_name" to session.appPackageName,
-                                                            "source_id" to session.identifier
-                                                    )
-                                            )
-                                        }
-                                    }
-
-                                    // If the sleep session has finer granularity sub-components, extract them:
-                                    if (type == SLEEP_AWAKE) {
-                                        val dataSets = response.getDataSet(session)
-                                        for (dataSet in dataSets) {
-                                            for (dataPoint in dataSet.dataPoints) {
-                                                // searching SLEEP AWAKE data
-                                                if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1) {
-                                                    healthData.add(
-                                                            hashMapOf(
-                                                                    "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(TimeUnit.MINUTES),
-                                                                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                                                                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                                                    "unit" to "MINUTES",
-                                                                    "source_name" to (dataPoint.originalDataSource.appPackageName
-                                                                            ?: (dataPoint.originalDataSource.device?.model
-                                                                                    ?: "unknown")),
-                                                                    "source_id" to dataPoint.originalDataSource.streamIdentifier
-                                                            )
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
                                 }
-                                activity!!.runOnUiThread { result.success(healthData) }
                             }
-                            .addOnFailureListener { exception ->
-                                activity!!.runOnUiThread { result.success(null) }
-                                Log.i("FLUTTER_HEALTH::ERROR", exception.message ?: "unknown error")
-                                Log.i("FLUTTER_HEALTH::ERROR", exception.stackTrace.toString())
+                        } else {
+                            healthData.add(
+                                hashMapOf(
+                                    "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
+                                        TimeUnit.MINUTES
+                                    ),
+                                    "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                                    "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                                    "unit" to "MINUTES",
+                                    "source_name" to session.appPackageName,
+                                    "source_id" to session.identifier
+                                )
+                            )
+                        }
+                    }
+
+                    if (type == SLEEP_AWAKE) {
+                        val dataSets = response.getDataSet(session)
+                        for (dataSet in dataSets) {
+                            for (dataPoint in dataSet.dataPoints) {
+                                // searching SLEEP AWAKE data
+                                if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1) {
+                                    healthData.add(
+                                            hashMapOf(
+                                                    "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(TimeUnit.MINUTES),
+                                                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                                    "unit" to "MINUTES",
+                                                    "source_name" to (dataPoint.originalDataSource.appPackageName
+                                                            ?: (dataPoint.originalDataSource.device?.model
+                                                                    ?: "unknown")),
+                                                    "source_id" to dataPoint.originalDataSource.streamIdentifier
+                                            )
+                                    )
+                                }
                             }
+                        }
+                    }
                 }
-            } catch (e3: Exception) {
-                activity!!.runOnUiThread { result.success(null) }
+                activity!!.runOnUiThread { result.success(healthData) }
             }
-        }
-    }
+
+
+
 
     private fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
@@ -502,25 +520,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
-    fun getTotalStepsInInterval(call: MethodCall, result: Result) {
+    private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
         val start = call.argument<Long>("startDate")!!
         val end = call.argument<Long>("endDate")!!
 
-        getStepsInRange(start, end) { map: Map<Long, Int>?, e: Throwable? ->
-            if (map != null) {
-                assert(map.size <= 1) { "getTotalStepsInInterval should return only one interval. Found: ${map.size}" }
-                result.success(map.values.firstOrNull())
-            } else {
-                result.error("failed", e?.message, null)
-            }
-        }
-    }
-
-    private fun getStepsInRange(
-        start: Long,
-        end: Long,
-        result: (Map<Long, Int>?, Throwable?) -> Unit
-    ) {
         val activity = activity ?: return
 
         val stepsDataType = keyToHealthDataType(STEPS)
@@ -547,44 +550,41 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             .setTimeRange(start, end, TimeUnit.MILLISECONDS)
             .build()
 
-        val response = Fitness.getHistoryClient(activity, gsa).readData(request)
+        Fitness.getHistoryClient(activity, gsa).readData(request)
+            .addOnFailureListener(errHandler(result))
+            .addOnSuccessListener(threadPoolExecutor!!, getStepsInRange(start, end, aggregatedDataType, result))
 
-        Thread {
-            try {
-                val readDataResult = Tasks.await(response)
+    }
 
-                val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
-                for (bucket in readDataResult.buckets) {
-                    val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
-                    if (dp != null) {
-                        print(dp)
 
-                        val count = dp.getValue(aggregatedDataType.fields[0])
+    private fun getStepsInRange(start: Long, end: Long, aggregatedDataType: DataType , result: Result) =
+        OnSuccessListener { response: DataReadResponse ->
 
-                        val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
-                        val startDate = Date(startTime)
-                        val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "returning $count steps for $startDate - $endDate")
-                        map[startTime] = count.asInt()
-                    } else {
-                        val startDay = Date(start)
-                        val endDay = Date(end)
-                        Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
-                    }
-                }
-                activity.runOnUiThread {
-                    result(map, null)
-                }
-            } catch (e: Throwable) {
-                Log.e("FLUTTER_HEALTH::ERROR", "failed: ${e.message}")
+            val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
+            for (bucket in response.buckets) {
+                val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
+                if (dp != null) {
+                    print(dp)
 
-                activity.runOnUiThread {
-                    result(null, e)
+                    val count = dp.getValue(aggregatedDataType.fields[0])
+
+                    val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
+                    val startDate = Date(startTime)
+                    val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "returning $count steps for $startDate - $endDate")
+                    map[startTime] = count.asInt()
+                } else {
+                    val startDay = Date(start)
+                    val endDay = Date(end)
+                    Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
                 }
             }
 
-        }.start()
-    }
+            assert(map.size <= 1) { "getTotalStepsInInterval should return only one interval. Found: ${map.size}" }
+            activity!!.runOnUiThread {
+                result.success(map.values.firstOrNull())
+            }
+        }
 
     /// Handle calls from the MethodChannel
     override fun onMethodCall(call: MethodCall, result: Result) {
