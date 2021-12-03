@@ -223,13 +223,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
      func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as! [String: Int]
-        let startMillis = arguments["startDate"]!
-        let endMillis = arguments["endDate"]!
+        let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
+        let endDate = (arguments?["endDate"] as? NSNumber) ?? 0
 
-        let startDate = Date(timeIntervalSince1970: startMillis.toTimeInterval)
-        let endDate = Date(timeIntervalSince1970: endMillis.toTimeInterval)
+        // Convert dates from milliseconds to Date()
+        let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
+
         let sampleType = dataTypeLookUp(key: STEPS)
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [.strictStartDate])
+        let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
 
         let query = HKStatisticsQuery(quantityType: sampleType,
             quantitySamplePredicate: predicate,
@@ -237,7 +239,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
             guard let queryResult = queryResult else {
                 let error = error! as NSError
-                print("[getTotalStepsInInterval] got error: \(error)")
                 result(FlutterError(code: "\(error.code)", message: error.domain, details: error.localizedDescription))
                 return
             }
@@ -247,7 +248,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             if let quantity = queryResult.sumQuantity() {
                 let unit = HKUnit.count()
                 steps = quantity.doubleValue(for: unit)
-                print("Amount of steps: \(steps), since: \(queryResult.startDate) until: \(queryResult.endDate)")
+                print("Amount of steps: \(steps)")
             }
 
             let totalSteps = Int(steps)
