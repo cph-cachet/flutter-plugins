@@ -215,7 +215,7 @@ class HealthFactory {
     return unique;
   }
 
-  Future<List<HealthDataPoint>> getTotalStepsCount(
+  Future<int?> getTotalStepsCount(
     DateTime startDate,
     DateTime endDate,
   ) async {
