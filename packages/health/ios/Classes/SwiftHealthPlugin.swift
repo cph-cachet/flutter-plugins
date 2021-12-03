@@ -73,6 +73,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             getData(call: call, result: result)
         }
 
+        /// Handle getTotalStepsInInterval
+        else if (call.method.elementsEqual("getTotalStepsInInterval")){
+            getTotalStepsInInterval(call: call, result: result)
+        }
+
         /// Handle writeData
         else if (call.method.elementsEqual("writeData")){
             writeData(call: call, result: result)
@@ -211,6 +216,42 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             default:
                 return
             }
+        }
+
+        HKHealthStore().execute(query)
+    }
+
+     func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as! [String: Int]
+        let startMillis = arguments["startDate"]!
+        let endMillis = arguments["endDate"]!
+
+        let startDate = Date(timeIntervalSince1970: startMillis.toTimeInterval)
+        let endDate = Date(timeIntervalSince1970: endMillis.toTimeInterval)
+        let sampleType = dataTypeLookUp(key: STEPS)
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [.strictStartDate])
+
+        let query = HKStatisticsQuery(quantityType: sampleType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum) { query, queryResult, error in
+
+            guard let queryResult = queryResult else {
+                let error = error! as NSError
+                print("[getTotalStepsInInterval] got error: \(error)")
+                result(FlutterError(code: "\(error.code)", message: error.domain, details: error.localizedDescription))
+                return
+            }
+
+            var steps = 0.0
+
+            if let quantity = queryResult.sumQuantity() {
+                let unit = HKUnit.count()
+                steps = quantity.doubleValue(for: unit)
+                print("Amount of steps: \(steps), since: \(queryResult.startDate) until: \(queryResult.endDate)")
+            }
+
+            let totalSteps = Int(steps)
+            result(totalSteps)
         }
 
         HKHealthStore().execute(query)
