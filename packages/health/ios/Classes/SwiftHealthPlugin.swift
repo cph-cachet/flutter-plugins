@@ -222,7 +222,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
 
      func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        let arguments = call.arguments as! [String: Int]
+        let arguments = call.arguments as? NSDictionary
         let startDate = (arguments?["startDate"] as? NSNumber) ?? 0
         let endDate = (arguments?["endDate"] as? NSNumber) ?? 0
 
@@ -230,7 +230,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
 
-        let sampleType = dataTypeLookUp(key: STEPS)
+        let sampleType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
 
         let query = HKStatisticsQuery(quantityType: sampleType,
