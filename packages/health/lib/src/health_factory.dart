@@ -215,7 +215,7 @@ class HealthFactory {
     return unique;
   }
 
-  Future<int?> getTotalStepsCount(
+  Future<int?> getTotalStepsInInterval(
     DateTime startDate,
     DateTime endDate,
   ) async {
