@@ -18,6 +18,7 @@ import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import java.util.concurrent.TimeUnit
+import java.util.Date
 import kotlin.concurrent.thread
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.SessionReadRequest
@@ -39,6 +40,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var HEIGHT = "HEIGHT"
     private var WEIGHT = "WEIGHT"
     private var STEPS = "STEPS"
+    private var AGGREGATE_STEP_COUNT = "AGGREGATE_STEP_COUNT"
     private var ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
     private var HEART_RATE = "HEART_RATE"
     private var BODY_TEMPERATURE = "BODY_TEMPERATURE"
@@ -141,6 +143,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             HEIGHT -> DataType.TYPE_HEIGHT
             WEIGHT -> DataType.TYPE_WEIGHT
             STEPS -> DataType.TYPE_STEP_COUNT_DELTA
+            AGGREGATE_STEP_COUNT -> DataType.AGGREGATE_STEP_COUNT_DELTA
             ACTIVE_ENERGY_BURNED -> DataType.TYPE_CALORIES_EXPENDED
             HEART_RATE -> DataType.TYPE_HEART_RATE_BPM
             BODY_TEMPERATURE -> HealthDataTypes.TYPE_BODY_TEMPERATURE
