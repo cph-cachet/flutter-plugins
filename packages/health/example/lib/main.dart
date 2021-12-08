@@ -39,6 +39,16 @@ class _MyAppState extends State<MyApp> {
     final ago = time.add(Duration(minutes: -5));
 
     _nofSteps = Random().nextInt(10);
+    final types = [HealthDataType.STEPS, HealthDataType.BLOOD_GLUCOSE];
+    final rights = [HealthDataAccess.WRITE, HealthDataAccess.WRITE];
+    final permissions = [HealthDataAccess.READ_WRITE, HealthDataAccess.READ_WRITE];
+    bool? hasPermissions =
+        await HealthFactory.hasPermissions(types, permissions: rights);
+    if (hasPermissions == false) {
+      await health.requestAuthorization(types, permissions: permissions);
+    }
+
+    //_nofSteps = Random().nextInt(10);
     _mgdl = Random().nextInt(10) * 1.0;
     bool success = await health.writeHealthData(
         _nofSteps.toDouble(), HealthDataType.STEPS, ago, time);
@@ -71,16 +81,21 @@ class _MyAppState extends State<MyApp> {
       // HealthDataType.DISTANCE_WALKING_RUNNING,
     ];
 
+    List<HealthDataAccess> permissions = [
+      HealthDataAccess.READ_WRITE,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ_WRITE,
+    ];
+
     setState(() => _state = AppState.FETCHING_DATA);
 
     // you MUST request access to the data types before reading them
-    bool accessWasGranted = await health.requestAuthorization(types);
-
+    bool requested = await health.requestAuthorization(types, permissions: permissions);
     int steps = 0;
 
-    if (accessWasGranted) {
+    if (requested) {
       try {
-
         // fetch new data
         List<HealthDataPoint> healthData =
             await health.getHealthDataFromTypes(startDate, endDate, types);
