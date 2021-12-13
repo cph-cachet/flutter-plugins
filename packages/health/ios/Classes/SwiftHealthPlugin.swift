@@ -85,17 +85,31 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
     func requestAuthorization(call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? NSDictionary
-        let types = (arguments?["types"] as? Array) ?? []
+        let bothTypes = (arguments?["types"] as? Array) ?? []
+        var readTypes = (arguments?["readTypes"] as? Array) ?? []
+        var writeTypes = (arguments?["writeTypes"] as? Array) ?? []
 
-        var typesToRequest = Set<HKSampleType>()
+        //Handle user just requesting the types for identical read and write permissions.
+        if bothTypes.count > 0 {
+            readTypes = bothTypes
+            writeTypes = bothTypes
+        }
 
-        for key in types {
+        var readTypesToRequest = Set<HKSampleType>()
+        var writeTypesToRequest = Set<HKSampleType>()
+
+        for key in readTypes {
             let keyString = "\(key)"
-            typesToRequest.insert(dataTypeLookUp(key: keyString))
+            readTypesToRequest.insert(dataTypeLookUp(key: keyString))
+        }
+
+        for key in writeTypes {
+            let keyString = "\(key)"
+            writeTypesToRequest.insert(dataTypeLookUp(key: keyString))
         }
 
         if #available(iOS 11.0, *) {
-            healthStore.requestAuthorization(toShare: typesToRequest, read: typesToRequest) { (success, error) in
+            healthStore.requestAuthorization(toShare: writeTypesToRequest, read: readTypesToRequest) { (success, error) in
                 result(success)
             }
         }

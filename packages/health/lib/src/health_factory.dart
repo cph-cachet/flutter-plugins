@@ -43,8 +43,17 @@ class HealthFactory {
     return await _channel.invokeMethod('revokePermissions');
   }
 
-  /// Request access to GoogleFit or Apple HealthKit
+  /// Request access to GoogleFit or Apple HealthKit. If AppleKit requests both Read and Write, but if you want to separate, use requestIOSAuthorization
   Future<bool> requestAuthorization(List<HealthDataType> types) async {
+    _addBMI(types);
+
+    List<String> keys = types.map((e) => _enumToString(e)).toList();
+    final bool isAuthorized =
+        await _channel.invokeMethod('requestAuthorization', {'types': keys});
+    return isAuthorized;
+  }
+
+  _addBMI(List<HealthDataType> types) {
     /// If BMI is requested, then also ask for weight and height
     if (types.contains(HealthDataType.BODY_MASS_INDEX)) {
       if (!types.contains(HealthDataType.WEIGHT)) {
@@ -55,10 +64,25 @@ class HealthFactory {
         types.add(HealthDataType.HEIGHT);
       }
     }
+  }
 
-    List<String> keys = types.map((e) => _enumToString(e)).toList();
+  /// On iOS you can have different read and write types for Apple HealthKit
+  Future<bool> requestIOSAuthorization(List<HealthDataType>? readTypes, List<HealthDataType>? writeTypes ) async {
+    if (readTypes == null) {
+      readTypes = [];
+    }
+
+    if (writeTypes == null) {
+      writeTypes = [];
+    }
+    _addBMI(readTypes);
+    _addBMI(writeTypes);
+
+    List<String> readKeys = readTypes.map((e) => _enumToString(e)).toList();
+    List<String> writeKeys = writeTypes.map((e) => _enumToString(e)).toList();
+
     final bool isAuthorized =
-        await _channel.invokeMethod('requestAuthorization', {'types': keys});
+        await _channel.invokeMethod('requestAuthorization', {'readTypes': readKeys, 'writeTypes': writeKeys});
     return isAuthorized;
   }
 
