@@ -68,6 +68,11 @@ class HealthFactory {
 
   /// On iOS you can have different read and write types for Apple HealthKit
   Future<bool> requestIOSAuthorization(List<HealthDataType>? readTypes, List<HealthDataType>? writeTypes ) async {
+
+    if (!Platform.isIOS) {
+      throw _HealthException('requestIOSAuthorization', 'requestIOSAuthorization can only be used on iOS and not $_platformType');
+    }
+
     if (readTypes == null) {
       readTypes = [];
     }
