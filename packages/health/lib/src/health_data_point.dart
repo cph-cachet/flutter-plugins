@@ -13,6 +13,10 @@ class HealthDataPoint {
   String _sourceId;
   String _sourceName;
 
+  num? _totalEnergyBurned;
+  num? _totalDistance;
+  int? _workoutType;
+
   HealthDataPoint(
       this._value,
       this._type,
@@ -31,6 +35,23 @@ class HealthDataPoint {
         type == HealthDataType.SLEEP_AWAKE) {
       this._value = _convertMinutes();
     }
+  }
+
+  HealthDataPoint.forWorkout(
+      this._value,
+      this._type,
+      this._unit,
+      this._dateFrom,
+      this._dateTo,
+      this._platform,
+      this._deviceId,
+      this._sourceId,
+      this._sourceName,
+      this._workoutType,
+      this._totalDistance,
+      this._totalEnergyBurned,
+      ) {
+    //only used for workouts
   }
 
   double _convertMinutes() {
@@ -114,6 +135,17 @@ class HealthDataPoint {
   /// the data point was extracted
   String get sourceName => _sourceName;
 
+  //For workouts these three fields are populated
+  /// For workout data points what was the total distance travelled
+  num get totalDistance => _totalDistance ?? 0;
+
+  /// For workout data points what was the total energy burned
+  num get totalEnergyBurned => _totalEnergyBurned ?? 0;
+
+  /// For workout data points what was the workout type (iOS HealthKit HKWorkoutActivityType)
+  int get workoutType => _workoutType ?? 0;
+
+
   /// An equals (==) operator for comparing two data points
   /// This makes it possible to remove duplicate data points.
   @override
@@ -127,7 +159,10 @@ class HealthDataPoint {
         this.platform == o.platform &&
         this.deviceId == o.deviceId &&
         this.sourceId == o.sourceId &&
-        this.sourceName == o.sourceName;
+        this.sourceName == o.sourceName &&
+        this.workoutType == o.workoutType &&
+        this.totalEnergyBurned == o.totalEnergyBurned &&
+        this.totalDistance == o.totalDistance;
   }
 
   /// Override required due to overriding the '==' operator

@@ -165,10 +165,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         let query = HKSampleQuery(sampleType: dataType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) {
             x, samplesOrNil, error in
-
             switch samplesOrNil {
             case let (samples as [HKQuantitySample]) as Any:
-                
                 DispatchQueue.main.async {
                     result(samples.map { sample -> NSDictionary in
                         let unit = self.unitLookUp(key: dataTypeKey)
@@ -217,7 +215,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                             "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                             "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                             "source_id": sample.sourceRevision.source.bundleIdentifier,
-                            "source_name": sample.sourceRevision.source.name
+                            "source_name": sample.sourceRevision.source.name,
+                            "workoutType": sample.workoutActivityType.rawValue,
+                            "totalDistance": sample.totalDistance?.doubleValue(for: HKUnit.meter()) ?? 0,
+                            "totalEnergyBurned": sample.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie()) ?? 0
                         ]
                     })
                 }

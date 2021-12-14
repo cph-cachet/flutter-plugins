@@ -208,6 +208,28 @@ class HealthFactory {
         final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
         final String sourceId = e["source_id"];
         final String sourceName = e["source_name"];
+
+        if (dataType == HealthDataType.WORKOUT){
+          final int workoutType = e['workoutType'];
+          final num totalDistance = e['totalDistance'];
+          final num totalEnergyBurned = e['totalEnergyBurned'];
+
+          return HealthDataPoint.forWorkout(
+            value,
+            dataType,
+            unit,
+            from,
+            to,
+            _platformType,
+            _deviceId!,
+            sourceId,
+            sourceName,
+            workoutType,
+            totalDistance,
+            totalEnergyBurned
+          );
+        }
+
         return HealthDataPoint(
           value,
           dataType,
