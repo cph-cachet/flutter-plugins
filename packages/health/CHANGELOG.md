@@ -1,3 +1,7 @@
+## 3.3.2
+* [PR #457](https://github.com/cph-cachet/flutter-plugins/pull/457) - Add sleep in bed to android
+* [PR #462](https://github.com/cph-cachet/flutter-plugins/pull/462) - Fixed (regression) issues with metric and permissions
+
 ## 3.3.1
 * [PR #428](https://github.com/cph-cachet/flutter-plugins/pull/428) - DISTANCE_DELTA is for Android, not iOS
 * [PR #454](https://github.com/cph-cachet/flutter-plugins/pull/454) - added missing READ_ACCESS

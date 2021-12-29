@@ -423,7 +423,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
         val args = call.arguments as HashMap<*, *>
-//<<<<<<< metric
         val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()
         val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()
 
@@ -443,15 +442,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 }
                 else -> throw IllegalArgumentException("Unknown access type $access")
             }
-            if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE) {
-//=======
-        val types = args["types"] as ArrayList<*>
-        for (typeKey in types) {
-            if (typeKey !is String) continue
-            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
-            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_WRITE)
             if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE || typeKey == SLEEP_IN_BED) {
-//>>>>>>> master
                 typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
                 when (access) {
                     0 -> typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
