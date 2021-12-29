@@ -1,6 +1,6 @@
 part of health;
 
-/// Main class for the Plugin
+/// Main class for the Plugin.
 class HealthFactory {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   String? _deviceId;
@@ -17,26 +17,26 @@ class HealthFactory {
 
   /// Determines if the data types have been granted with the specified access rights.
   ///
-  /// Returns: 
-  /// 
+  /// Returns:
+  ///
   /// * true - if all of the data types have been granted with the specfied access rights.
   /// * false - if any of the data types has not been granted with the specified access right(s)
   /// * null - if it can not be determined if the data types have been granted with the specified access right(s).
   ///
   /// Parameters:
-  /// 
+  ///
   /// * [types]  - List of [HealthDataType] whose permissions are to be checked.
-  /// * [permissions] - Optional. 
+  /// * [permissions] - Optional.
   ///   + If unspecified, this method checks if each HealthDataType in [types] has been granted READ access.
-  ///   + If specified, this method checks if each [HealthDataType] in [types] has been granted with the access specified in its 
+  ///   + If specified, this method checks if each [HealthDataType] in [types] has been granted with the access specified in its
   ///   corresponding entry in this list. The length of this list must be equal to that of [types].
-  /// 
+  ///
   ///  Caveat:
-  /// 
+  ///
   ///   As Apple HealthKit will not disclose if READ access has been granted for a data type due to privacy concern,
   ///   this method can only return null to represent an undertermined status, if it is called on iOS
-  ///   with a READ or READ_WRITE access. 
-  /// 
+  ///   with a READ or READ_WRITE access.
+  ///
   ///   On Android, this function returns true or false, depending on whether the specified access right has been granted.
   static Future<bool?> hasPermissions(List<HealthDataType> types,
       {List<HealthDataAccess>? permissions}) async {
@@ -51,8 +51,7 @@ class HealthFactory {
         : permissions.map((permission) => permission.index).toList();
 
     /// On Android, if BMI is requested, then also ask for weight and height
-    if (_platformType == PlatformType.ANDROID)
-      _handleBMI(mTypes, mPermissions);
+    if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     return await _channel.invokeMethod('hasPermissions', {
       "types": mTypes.map((type) => _enumToString(type)).toList(),
@@ -71,24 +70,24 @@ class HealthFactory {
     });
   }
 
-  /// iOS isn't supported by HealthKit, method does nothing.
+  /// Revoke permissions obtained earlier.
+  ///
+  /// Not supported on iOS and method does nothing.
   static Future<void> revokePermissions() async {
     return await _channel.invokeMethod('revokePermissions');
   }
 
+  /// Requests permissions to access data types in Apple Health or Google Fit.
   ///
-  /// Requests permissions to access data types in the HealthKit or Google Fit store.
+  /// Returns true if successful, false otherwise
   ///
-  /// Returns a Future of true if successful, a Future of false otherwise
-  ///
-  /// Parameters
+  /// Parameters:
   ///
   /// * [types] - a list of [HealthDataType] which the permissions are requested for.
-  /// * [permissions] - Optional. 
+  /// * [permissions] - Optional.
   ///   + If unspecified, each [HealthDataType] in [types] is requested for READ [HealthDataAccess].
-  ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed 
+  ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
   ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
-  /// 
   Future<bool> requestAuthorization(List<HealthDataType> types,
       {List<HealthDataAccess>? permissions}) async {
     if (permissions != null && permissions.length != types.length) {
@@ -102,9 +101,8 @@ class HealthFactory {
             growable: true)
         : permissions.map((permission) => permission.index).toList();
 
-    /// On Android, if BMI is requested, then also ask for weight and height
-    if (_platformType == PlatformType.ANDROID)
-      _handleBMI(mTypes, mPermissions);
+    // on Android, if BMI is requested, then also ask for weight and height
+    if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
     final bool isAuthorized = await _channel.invokeMethod(
@@ -112,8 +110,7 @@ class HealthFactory {
     return isAuthorized;
   }
 
-  static void _handleBMI(
-      List<HealthDataType> mTypes, List<int> mPermissions) {
+  static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
     final index = mTypes.indexOf(HealthDataType.BODY_MASS_INDEX);
 
     if (index != -1 && _platformType == PlatformType.ANDROID) {
@@ -159,13 +156,11 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
+  /// Saves health data into Apple Health or Google Fit.
   ///
-  /// Saves health data into the HealthKit or Google Fit store.
-  ///
-  /// Returns a Future of true if successful, a Future of false otherwise
+  /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  ///
   /// * [value] - the health data's value in double
   /// * [type] - the value's HealthDataType
   /// * [startTime] - the start time when this [value] is measured.
@@ -174,8 +169,12 @@ class HealthFactory {
   ///   + It must be equal to or later than [startTime].
   ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
   ///
-  Future<bool> writeHealthData(double value, HealthDataType type,
-      DateTime startTime, DateTime endTime) async {
+  Future<bool> writeHealthData(
+    double value,
+    HealthDataType type,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
@@ -188,8 +187,12 @@ class HealthFactory {
     return success ?? false;
   }
 
+  /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
-      DateTime startDate, DateTime endDate, List<HealthDataType> types) async {
+    DateTime startDate,
+    DateTime endDate,
+    List<HealthDataType> types,
+  ) async {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
@@ -224,7 +227,6 @@ class HealthFactory {
   /// The main function for fetching health data
   Future<List<HealthDataPoint>> _dataQuery(
       DateTime startDate, DateTime endDate, HealthDataType dataType) async {
-    // Set parameters for method channel request
     final args = <String, dynamic>{
       'dataTypeKey': _enumToString(dataType),
       'startDate': startDate.millisecondsSinceEpoch,
@@ -278,11 +280,14 @@ class HealthFactory {
     return unique;
   }
 
+  /// Get the total numbner of steps within a specific time period.
+  /// Returns null if not successful.
+  ///
+  /// Is a fix according to https://stackoverflow.com/questions/29414386/step-count-retrieved-through-google-fit-api-does-not-match-step-count-displayed/29415091#29415091
   Future<int?> getTotalStepsInInterval(
     DateTime startDate,
     DateTime endDate,
   ) async {
-    // Set parameters for method channel request
     final args = <String, dynamic>{
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch

@@ -1,6 +1,7 @@
 name: health_example
 description: Demonstrates how to use the health plugin.
 publish_to: 'none'
+version: 3.4.0
 
 environment:
   sdk: ">=2.12.0-0 <3.0.0"

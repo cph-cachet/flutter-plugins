@@ -1,14 +1,12 @@
 # Health
 
-This library combines both GoogleFit and AppleHealthKit. It support most of the values provided.
+Enables reading and writing health data from/to Apple Health and Google Fit. Also allow for getting the total number of steps for a specific time period.
 
-Supports **iOS** and **Android X**
-
-NB: For Android, your app _needs_ to have Google Fit installed and have access to the internet, otherwise this plugin will not work.
+> For Android, the target phone __needs__ to have [Google Fit](https://www.google.com/fit/) installed and have access to the internet, otherwise this plugin will not work.
 
 ## Data Types
 
-| **Data Type**               | **Unit**                | **iOS**     | **Android**  | **Comments**                                                    |
+| **Data Type**               | **Unit**                | **iOS**     | **Android**  | **Comments**                                                |
 | --------------------------- | ----------------------- | ----------- | ------------ | ----------------------------------------------------------- |
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes         | yes          |                                                             |
 | BASAL_ENERGY_BURNED         | CALORIES                | yes         |              |                                                             |
@@ -46,7 +44,7 @@ NB: For Android, your app _needs_ to have Google Fit installed and have access t
 
 ## Setup
 
-### Apple HealthKit (iOS)
+### Apple Health (iOS)
 
 Step 1: Append the Info.plist with the following 2 entries
 
@@ -92,21 +90,21 @@ Certificate fingerprints:
 
 Follow the instructions at https://console.developers.google.com/flows/enableapi?apiid=fitness for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
 
-The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`
+The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`.
 
 ### Android Permissions
 
 Starting from API level 28 (Android 9.0) acessing some fitness data (e.g. Steps) requires a special permission.
 
 To set it add the following line to your `AndroidManifest.xml` file.
+
 ```
 <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 ```
 
 There's a `debug`, `main` and `profile` version which are chosen depending on how you start your app. In general, it's sufficient to add permission only to the `main` version.
 
-Beacuse this is a `dangerous` protectionLevel permission system will not grant it automaticlly and it requires user action.
-
+Beacuse this is labled as a `dangerous` protection level, the permission system will not grant it automaticlly and it requires the user's action.
 You can prompt the user for it using the [permission_handler](https://pub.dev/packages/permission_handler) plugin.
 Follow the plugin setup instructions and add the following line before requsting the data:
 
@@ -127,9 +125,50 @@ android.useAndroidX=true
 
 ## Usage
 
-Below is a snippet from the `example app` showing the plugin in use.
+See the example app for detailed examples of how to use the Health API.
 
-### Health data
+The Health plugin is used via the `HealthFactory` class using the different methods for handling permissions and getting and adding data to Apple Health / Google Fit.
+Below is a simplified flow of how to use the plugin.
+
+```dart
+  // create a HealthFactory for use in the app
+  HealthFactory health = HealthFactory();
+
+  // define the types to get
+  var types = [
+    HealthDataType.STEPS,
+    HealthDataType.WEIGHT,
+    HealthDataType.HEIGHT,
+    HealthDataType.BLOOD_GLUCOSE,
+  ];
+
+  // requesting access to the data types before reading them
+  bool requested = await health.requestAuthorization(types);
+
+  var now = DateTime.now();
+
+  // fetch health data from the last 24 hours
+  List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(
+     now.subtract(Duration(days: 1)), now, types);
+
+  // request permissions to write steps and blood glucose
+  types = [HealthDataType.STEPS, HealthDataType.BLOOD_GLUCOSE];
+  var permissions = [
+      HealthDataAccess.READ_WRITE,
+      HealthDataAccess.READ_WRITE
+  ];  
+  await health.requestAuthorization(types, permissions: permissions);
+  
+  // write steps and blood glucose 
+  bool success = await health.writeHealthData(10, HealthDataType.STEPS, now, now);
+  success = await health.writeHealthData(3.1, HealthDataType.BLOOD_GLUCOSE, now, now);
+
+  // get the number of steps for today
+  var midnight = DateTime(now.year, now.month, now.day);
+  int? steps = await health.getTotalStepsInInterval(midnight, now);
+```
+
+### Health Data
 
 A `HealthData` object contains the following data fields:
 

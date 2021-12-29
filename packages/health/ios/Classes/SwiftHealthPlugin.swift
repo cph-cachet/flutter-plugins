@@ -314,7 +314,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             if let quantity = queryResult.sumQuantity() {
                 let unit = HKUnit.count()
                 steps = quantity.doubleValue(for: unit)
-                print("Amount of steps: \(steps)")
             }
 
             let totalSteps = Int(steps)
