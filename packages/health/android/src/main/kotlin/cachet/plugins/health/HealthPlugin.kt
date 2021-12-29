@@ -51,6 +51,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var WATER = "WATER"
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
     private var SLEEP_AWAKE = "SLEEP_AWAKE"
+    private var SLEEP_IN_BED = "SLEEP_IN_BED"
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
@@ -153,6 +154,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             WATER -> DataType.TYPE_HYDRATION
             SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
+            SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
@@ -175,6 +177,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             WATER -> Field.FIELD_VOLUME
             SLEEP_ASLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
@@ -340,6 +343,44 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                                                 )
                                         )
                                     }
+                                    // Returns time spent in bed in Minutes
+                                    if (type == SLEEP_IN_BED) {
+                                        val dataSets = response.getDataSet(session)
+
+                                        // If the sleep session has finer granularity sub-components, extract them:
+                                        if( dataSets.isNotEmpty()){
+                                            for (dataSet in dataSets) {
+                                                for (dataPoint in dataSet.dataPoints) {
+                                                    // searching OUT OF BED data
+                                                    if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() != 3) {
+                                                        healthData.add(
+                                                                hashMapOf(
+                                                                        "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(TimeUnit.MINUTES),
+                                                                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                                                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                                                        "unit" to "MINUTES",
+                                                                        "source_name" to (dataPoint.originalDataSource.appPackageName
+                                                                                ?: (dataPoint.originalDataSource.device?.model
+                                                                                        ?: "unknown")),
+                                                                        "source_id" to dataPoint.originalDataSource.streamIdentifier
+                                                                )
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            healthData.add(
+                                                    hashMapOf(
+                                                            "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
+                                                            "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                                                            "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                                                            "unit" to "MINUTES",
+                                                            "source_name" to session.appPackageName,
+                                                            "source_id" to session.identifier
+                                                    )
+                                            )
+                                        }
+                                    }
 
                                     // If the sleep session has finer granularity sub-components, extract them:
                                     if (type == SLEEP_AWAKE) {
@@ -382,6 +423,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
         val args = call.arguments as HashMap<*, *>
+//<<<<<<< metric
         val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()
         val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()
 
@@ -402,6 +444,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 else -> throw IllegalArgumentException("Unknown access type $access")
             }
             if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE) {
+//=======
+        val types = args["types"] as ArrayList<*>
+        for (typeKey in types) {
+            if (typeKey !is String) continue
+            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
+            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_WRITE)
+            if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE || typeKey == SLEEP_IN_BED) {
+//>>>>>>> master
                 typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
                 when (access) {
                     0 -> typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
