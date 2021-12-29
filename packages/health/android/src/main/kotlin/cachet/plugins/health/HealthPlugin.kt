@@ -155,7 +155,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
-            else -> DataType.TYPE_STEP_COUNT_DELTA
+            else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
 
@@ -178,7 +178,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             SLEEP_ASLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
-            else -> Field.FIELD_PERCENTAGE
+            else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
 
@@ -423,16 +423,64 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
         val args = call.arguments as HashMap<*, *>
+//<<<<<<< metric
+        val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()
+        val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()
+
+        assert(types != null)
+        assert(permissions != null)
+        assert(types!!.count() == permissions!!.count())
+
+        for ((i, typeKey) in types.withIndex()) {
+            val access = permissions[i]
+            val dataType = keyToHealthDataType(typeKey)
+            when (access) {
+                0 -> typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_READ)
+                1 -> typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+                2 -> {
+                    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_READ)
+                    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+                }
+                else -> throw IllegalArgumentException("Unknown access type $access")
+            }
+            if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE) {
+//=======
         val types = args["types"] as ArrayList<*>
         for (typeKey in types) {
             if (typeKey !is String) continue
             typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
             typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_WRITE)
             if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE || typeKey == SLEEP_IN_BED) {
+//>>>>>>> master
                 typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+                when (access) {
+                    0 -> typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+                    1 -> typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_WRITE)
+                    2 -> {
+                        typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+                        typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_WRITE)
+                    }
+                    else -> throw IllegalArgumentException("Unknown access type $access")
+                }
             }
+
         }
         return typesBuilder.build()
+    }
+
+    private fun hasPermissions(call: MethodCall, result: Result) {
+
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
+        val optionsToRegister = callToHealthTypes(call)
+        mResult = result
+
+        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), optionsToRegister)
+
+        mResult?.success(isGranted)
     }
 
     /// Called when the "requestAuthorization" is invoked from Flutter 
@@ -446,7 +494,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         mResult = result
 
         val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), optionsToRegister)
-
         /// Not granted? Ask for permission
         if (!isGranted && activity != null) {
             GoogleSignIn.requestPermissions(
@@ -467,6 +514,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
             "writeData" -> writeData(call, result)
+            "hasPermissions" -> hasPermissions(call, result)
             else -> result.notImplemented()
         }
     }
