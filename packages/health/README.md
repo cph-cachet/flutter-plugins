@@ -94,6 +94,27 @@ Follow the instructions at https://console.developers.google.com/flows/enableapi
 
 The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`
 
+### Android Permissions
+
+Starting from API level 28 (Android 9.0) acessing some fitness data (e.g. Steps) requires a special permission.
+
+To set it add the following line to your `AndroidManifest.xml` file.
+```
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+```
+
+There's a `debug`, `main` and `profile` version which are chosen depending on how you start your app. In general, it's sufficient to add permission only to the `main` version.
+
+Beacuse this is a `dangerous` protectionLevel permission system will not grant it automaticlly and it requires user action.
+
+You can prompt the user for it using the [permission_handler](https://pub.dev/packages/permission_handler) plugin.
+Follow the plugin setup instructions and add the following line before requsting the data:
+
+ ```
+ await Permission.activityRecognition.request();
+ ```
+  
+
 ### Android X
 
 Replace the content of the `android/gradle.properties` file with the following lines:

@@ -48,7 +48,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let EXERCISE_TIME = "EXERCISE_TIME"
     let WORKOUT = "WORKOUT"
 
-
+    struct PluginError: Error {
+        let message: String
+    }
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_health", binaryMessenger: registrar.messenger())
         let instance = SwiftHealthPlugin()
@@ -65,7 +68,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         /// Handle requestAuthorization
         else if (call.method.elementsEqual("requestAuthorization")){
-            requestAuthorization(call: call, result: result)
+            try! requestAuthorization(call: call, result: result)
         }
 
         /// Handle getData
@@ -80,28 +83,90 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         /// Handle writeData
         else if (call.method.elementsEqual("writeData")){
-            writeData(call: call, result: result)
+            try! writeData(call: call, result: result)
+        }
+        /// Handle hasPermission
+        else if (call.method.elementsEqual("hasPermissions")){
+            try! hasPermissions(call: call, result: result)
         }
     }
 
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
         result(HKHealthStore.isHealthDataAvailable())
     }
-
-    func requestAuthorization(call: FlutterMethodCall, result: @escaping FlutterResult) {
+    
+    func hasPermissions(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
         let arguments = call.arguments as? NSDictionary
-        let types = (arguments?["types"] as? Array) ?? []
+        guard let types = arguments?["types"] as? Array<String>,
+              let permissions = arguments?["permissions"] as? Array<Int>,
+              types.count == permissions.count
+        else {
+            throw PluginError(message: "Invalid Arguments!")
+        }
+        
+        for (index, type) in types.enumerated() {
+            let sampleType = dataTypeLookUp(key: type)
+            let success = hasPermission(type: sampleType, access: permissions[index])
+            if (success == nil || success == false) {
+                result(success)
+                return
+            }
+        }
 
-        var typesToRequest = Set<HKSampleType>()
+        result(true)
+    }
 
-        for key in types {
-            let keyString = "\(key)"
-            typesToRequest.insert(dataTypeLookUp(key: keyString))
+    
+    func hasPermission(type: HKSampleType, access: Int) -> Bool? {
+        
+        if #available(iOS 11.0, *) {
+            let status = healthStore.authorizationStatus(for: type)
+            switch access {
+            case 0: // READ
+                return nil
+            case 1: // WRITE
+                return  (status == HKAuthorizationStatus.sharingAuthorized)
+            default: // READ_WRITE
+                return nil
+            }
+        }
+        else {
+           return nil
+        }
+    }
+
+    func requestAuthorization(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        
+        guard let arguments = call.arguments as? NSDictionary,
+              let types = arguments["types"] as? Array<String>,
+              let permissions = arguments["permissions"] as? Array<Int>,
+              permissions.count == types.count
+        else {
+           throw PluginError(message: "Invalid Arguments!")
+        }
+        
+        
+        var typesToRead = Set<HKSampleType>()
+        var typesToWrite = Set<HKSampleType>()
+        for (index, key) in types.enumerated() {
+            let dataType = dataTypeLookUp(key: key)
+            let access = permissions[index]
+            switch access {
+            case 0:
+                typesToRead.insert(dataType)
+            case 1:
+                typesToWrite.insert(dataType)
+            default:
+                typesToRead.insert(dataType)
+                typesToWrite.insert(dataType)
+            }
         }
 
         if #available(iOS 11.0, *) {
-            healthStore.requestAuthorization(toShare: typesToRequest, read: typesToRequest) { (success, error) in
-                result(success)
+            healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { (success, error) in
+                DispatchQueue.main.async {
+                    result(success)
+                }
             }
         }
         else {
@@ -109,15 +174,14 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    func writeData(call: FlutterMethodCall, result: @escaping FlutterResult){
+    func writeData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
         guard let arguments = call.arguments as? NSDictionary,
             let value = (arguments["value"] as? Double),
             let type = (arguments["dataTypeKey"] as? String),
             let startDate = (arguments["startTime"] as? NSNumber),
             let endDate = (arguments["endTime"] as? NSNumber)
             else {
-                print("writeData: Invalid arguments")
-                return
+                throw PluginError(message: "Invalid Arguments")
             }
         
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
@@ -154,7 +218,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
 
-        let query = HKSampleQuery(sampleType: dataType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) {
+        let query =  HKSampleQuery(sampleType: dataType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) {
             x, samplesOrNil, error in
 
             switch samplesOrNil {
@@ -214,7 +278,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 
             default:
-                return
+                DispatchQueue.main.async {
+                    result(nil)
+                }
             }
         }
 
@@ -281,7 +347,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[BLOOD_PRESSURE_SYSTOLIC] = HKUnit.millimeterOfMercury()
         unitDict[BODY_FAT_PERCENTAGE] = HKUnit.percent()
         unitDict[BODY_MASS_INDEX] = HKUnit.init(from: "")
-        unitDict[BODY_TEMPERATURE] = HKUnit.degreeFahrenheit()
+        unitDict[BODY_TEMPERATURE] = HKUnit.degreeCelsius()
         unitDict[DIETARY_CARBS_CONSUMED] = HKUnit.gram()
         unitDict[DIETARY_ENERGY_CONSUMED] = HKUnit.kilocalorie()
         unitDict[DIETARY_FATS_CONSUMED] = HKUnit.gram()
@@ -290,12 +356,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[FORCED_EXPIRATORY_VOLUME] = HKUnit.liter()
         unitDict[HEART_RATE] = HKUnit.init(from: "count/min")
         unitDict[HEART_RATE_VARIABILITY_SDNN] = HKUnit.secondUnit(with: .milli)
-        unitDict[HEIGHT] = HKUnit.inch()
+        unitDict[HEIGHT] = HKUnit.meter()
         unitDict[RESTING_HEART_RATE] = HKUnit.init(from: "count/min")
         unitDict[STEPS] = HKUnit.count()
         unitDict[WAIST_CIRCUMFERENCE] = HKUnit.meter()
         unitDict[WALKING_HEART_RATE] = HKUnit.init(from: "count/min")
-        unitDict[WEIGHT] = HKUnit.pound()
+        unitDict[WEIGHT] = HKUnit.gramUnit(with: .kilo)
         unitDict[DISTANCE_WALKING_RUNNING] = HKUnit.meter()
         unitDict[FLIGHTS_CLIMBED] = HKUnit.count()
         unitDict[WATER] = HKUnit.liter()

@@ -43,6 +43,11 @@ enum HealthDataType {
   ELECTRODERMAL_ACTIVITY,
 }
 
+enum HealthDataAccess {
+  READ,
+  WRITE,
+  READ_WRITE,
+}
 /// List of data types available on iOS
 const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
@@ -100,6 +105,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.DISTANCE_DELTA,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
+  HealthDataType.SLEEP_IN_BED,
   HealthDataType.WATER,
 ];
 
