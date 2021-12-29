@@ -277,4 +277,20 @@ class HealthFactory {
     }
     return unique;
   }
+
+  Future<int?> getTotalStepsInInterval(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    // Set parameters for method channel request
+    final args = <String, dynamic>{
+      'startDate': startDate.millisecondsSinceEpoch,
+      'endDate': endDate.millisecondsSinceEpoch
+    };
+    final stepsCount = await _channel.invokeMethod(
+      'getTotalStepsInInterval',
+      args,
+    );
+    return stepsCount;
+  }
 }
