@@ -45,8 +45,10 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     private void startActivityTracking() {
         // Start the service
         Intent intent = new Intent(androidActivity, ActivityRecognizedBroadcastReceiver.class);
+        
+        Log.d(TAG, "SDK = " + Build.VERSION.SDK_INT);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-        if (Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= 31) {
             flags |= PendingIntent.FLAG_IMMUTABLE;
         }
         PendingIntent pendingIntent = PendingIntent.getBroadcast(androidActivity, 0, intent, flags);
@@ -59,13 +61,13 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
         task.addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void e) {
-                Log.d(TAG, "ActivityRecognition: onSuccess");
+                Log.d(TAG, "Successfully registered ActivityRecognition listener.");
             }
         });
         task.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "ActivityRecognition: onFailure");
+                Log.d(TAG, "Failed to registered ActivityRecognition listener.");
             }
         });
     }
@@ -86,12 +88,11 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events) {
         HashMap<String, Object> args = (HashMap<String, Object>) arguments;
-        Log.d(TAG, "args: " + args);
         boolean fg = (boolean) args.get("foreground");
         if(fg) {
             startForegroundService();
         }
-        Log.d(TAG, "foreground: " + fg);
+        Log.d(TAG, "Foreground moce: " + fg);
 
 
         eventSink = events;
@@ -136,7 +137,7 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
 
         SharedPreferences prefs = androidContext.getSharedPreferences(ACTIVITY_RECOGNITION, Context.MODE_PRIVATE);
         prefs.registerOnSharedPreferenceChangeListener(this);
-        Log.d(TAG, "onAttachedToActivity");
+        // Log.d(TAG, "onAttachedToActivity");
     }
 
     @Override
@@ -165,9 +166,9 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         String result = sharedPreferences
                 .getString(DETECTED_ACTIVITY, "error");
-        Log.d("onSharedPreferenceChange", result);
+        // Log.d("onSharedPreferenceChange", result);
         if (key!= null && key.equals(DETECTED_ACTIVITY)) {
-            Log.d(TAG, "Detected activity: " + result);
+            // Log.d(TAG, "Detected activity: " + result);
             eventSink.success(result);
         }
     }

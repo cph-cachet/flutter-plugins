@@ -1,4 +1,5 @@
 name: activity_recognition_flutter_example
+version: 4.1.0
 description: Demonstrates how to use the activity_recognition_flutter plugin.
 
 # The following line prevents the package from being accidentally published to

@@ -1,19 +1,19 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(new MyApp());
+void main() => runApp(new ActivityRecognitionApp());
 
-class MyApp extends StatefulWidget {
+class ActivityRecognitionApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  _ActivityRecognitionAppState createState() => _ActivityRecognitionAppState();
 }
 
-class _MyAppState extends State<MyApp> {
-  late Stream<ActivityEvent> activityStream;
-  ActivityEvent latestActivity = ActivityEvent.empty();
+class _ActivityRecognitionAppState extends State<ActivityRecognitionApp> {
+  StreamSubscription<ActivityEvent>? activityStreamSubscription;
   List<ActivityEvent> _events = [];
   ActivityRecognition activityRecognition = ActivityRecognition.instance;
 
@@ -21,55 +21,93 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _init();
+    _events.add(ActivityEvent.empty());
+  }
+
+  @override
+  void dispose() {
+    activityStreamSubscription?.cancel();
+    super.dispose();
   }
 
   void _init() async {
-    /// Android requires explicitly asking permission
+    // Android requires explicitly asking permission
     if (Platform.isAndroid) {
       if (await Permission.activityRecognition.request().isGranted) {
         _startTracking();
       }
     }
 
-    /// iOS does not
+    // iOS does not
     else {
       _startTracking();
     }
   }
 
   void _startTracking() {
-    activityStream =
-        activityRecognition.startStream(runForegroundService: true);
-    activityStream.listen(onData);
+    activityStreamSubscription = activityRecognition
+        .activityStream(runForegroundService: true)
+        .listen(onData, onError: onError);
   }
 
   void onData(ActivityEvent activityEvent) {
-    print(activityEvent.toString());
+    print('ACTIVITY - $activityEvent');
     setState(() {
       _events.add(activityEvent);
-      latestActivity = activityEvent;
     });
+  }
+
+  void onError(Object error) {
+    print('ERROR - $error');
   }
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: const Text('Activity Recognition Demo'),
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Activity Recognition'),
         ),
-        body: new Center(
-            child: new ListView.builder(
+        body: Center(
+            child: ListView.builder(
                 itemCount: _events.length,
                 reverse: true,
-                itemBuilder: (BuildContext context, int idx) {
-                  final entry = _events[idx];
+                itemBuilder: (_, int idx) {
+                  final activity = _events[idx];
                   return ListTile(
-                      leading:
-                          Text(entry.timeStamp.toString().substring(0, 19)),
-                      trailing: Text(entry.type.toString().split('.').last));
+                    leading: _activityIcon(activity.type),
+                    title: Text(
+                        '${activity.type.toString().split('.').last} (${activity.confidence}%)'),
+                    trailing: Text(activity.timeStamp
+                        .toString()
+                        .split(' ')
+                        .last
+                        .split('.')
+                        .first),
+                  );
                 })),
       ),
     );
+  }
+
+  Icon _activityIcon(ActivityType type) {
+    switch (type) {
+      case ActivityType.WALKING:
+        return Icon(Icons.directions_walk);
+      case ActivityType.IN_VEHICLE:
+        return Icon(Icons.car_rental);
+      case ActivityType.ON_BICYCLE:
+        return Icon(Icons.pedal_bike);
+      case ActivityType.ON_FOOT:
+        return Icon(Icons.directions_walk);
+      case ActivityType.RUNNING:
+        return Icon(Icons.run_circle);
+      case ActivityType.STILL:
+        return Icon(Icons.cancel_outlined);
+      case ActivityType.TILTING:
+        return Icon(Icons.redo);
+      default:
+        return Icon(Icons.device_unknown);
+    }
   }
 }

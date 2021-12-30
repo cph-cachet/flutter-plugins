@@ -1,3 +1,8 @@
+## 4.1.0
+* [PR #474](https://github.com/cph-cachet/flutter-plugins/pull/474) - Android 12 intent-flag
+* then name of the stream has been changed from `startStream` to `activityStream`
+* cleanup in example app
+
 ## 4.0.5+1
 * [PR #408](https://github.com/cph-cachet/flutter-plugins/pull/408)
 
