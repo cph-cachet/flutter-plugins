@@ -45,7 +45,11 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
     private void startActivityTracking() {
         // Start the service
         Intent intent = new Intent(androidActivity, ActivityRecognizedBroadcastReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(androidActivity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= 23) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(androidActivity, 0, intent, flags);
 
         // Frequency in milliseconds
         long frequency = 5 * 1000;
