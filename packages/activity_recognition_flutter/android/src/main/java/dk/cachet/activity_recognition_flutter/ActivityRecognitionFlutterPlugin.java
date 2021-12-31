@@ -92,7 +92,7 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
         if(fg) {
             startForegroundService();
         }
-        Log.d(TAG, "Foreground moce: " + fg);
+        Log.d(TAG, "Foreground mode: " + fg);
 
 
         eventSink = events;

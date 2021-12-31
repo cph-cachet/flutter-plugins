@@ -69,23 +69,24 @@ class _ActivityRecognitionAppState extends State<ActivityRecognitionApp> {
           title: const Text('Activity Recognition'),
         ),
         body: Center(
-            child: ListView.builder(
-                itemCount: _events.length,
-                reverse: true,
-                itemBuilder: (_, int idx) {
-                  final activity = _events[idx];
-                  return ListTile(
-                    leading: _activityIcon(activity.type),
-                    title: Text(
-                        '${activity.type.toString().split('.').last} (${activity.confidence}%)'),
-                    trailing: Text(activity.timeStamp
-                        .toString()
-                        .split(' ')
-                        .last
-                        .split('.')
-                        .first),
-                  );
-                })),
+          child: ListView.builder(
+              itemCount: _events.length,
+              reverse: true,
+              itemBuilder: (_, int idx) {
+                final activity = _events[idx];
+                return ListTile(
+                  leading: _activityIcon(activity.type),
+                  title: Text(
+                      '${activity.type.toString().split('.').last} (${activity.confidence}%)'),
+                  trailing: Text(activity.timeStamp
+                      .toString()
+                      .split(' ')
+                      .last
+                      .split('.')
+                      .first),
+                );
+              }),
+        ),
       ),
     );
   }
