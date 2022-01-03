@@ -308,7 +308,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
             guard let queryResult = queryResult else {
                 let error = error! as NSError
-                result(FlutterError(code: "\(error.code)", message: error.domain, details: error.localizedDescription))
+                print("Error getting total steps in interval \(error.localizedDescription)")
+                
+                DispatchQueue.main.async {
+                    result(nil)
+                }
                 return
             }
 
@@ -320,7 +324,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
 
             let totalSteps = Int(steps)
-            result(totalSteps)
+            DispatchQueue.main.async {
+                result(totalSteps)
+            }
         }
 
         HKHealthStore().execute(query)

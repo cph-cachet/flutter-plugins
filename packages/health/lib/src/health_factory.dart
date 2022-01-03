@@ -105,9 +105,9 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
-    final bool isAuthorized = await _channel.invokeMethod(
+    final bool? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
-    return isAuthorized;
+    return isAuthorized ?? false;
   }
 
   static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
@@ -262,7 +262,7 @@ class HealthFactory {
     final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
     final device = message["deviceId"];
-    final unit = _dataTypeToUnit[dataType]!;    
+    final unit = _dataTypeToUnit[dataType]!;
     final list = dataPoints.map<HealthDataPoint>((e) {
       final num value = e['value'];
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
@@ -317,7 +317,7 @@ class HealthFactory {
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch
     };
-    final stepsCount = await _channel.invokeMethod(
+    final stepsCount = await _channel.invokeMethod<int?>(
       'getTotalStepsInInterval',
       args,
     );
