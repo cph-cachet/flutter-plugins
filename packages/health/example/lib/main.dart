@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(HealthApp());
 
-class MyApp extends StatefulWidget {
+class HealthApp extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  _HealthAppState createState() => _HealthAppState();
 }
 
 enum AppState {
@@ -20,35 +20,132 @@ enum AppState {
   AUTH_NOT_GRANTED,
   DATA_ADDED,
   DATA_NOT_ADDED,
+  STEPS_READY,
 }
 
 const _accountNamePreference = 'accountName';
 
-class _MyAppState extends State<MyApp> {
+Future<bool> _requestAuthorization(
+  bool mayUseLastAccount,
+  List<HealthDataType> types, {
+    List<HealthDataAccess> permissions,
+  }
+) async {
+  var prefs = await SharedPreferences.getInstance();
+  var accountName;
+  if (mayUseLastAccount) {
+    accountName = prefs.getString(_accountNamePreference);
+  }
+
+  var requested = await health.requestAuthorizationWithAccount(
+    types, accountName, permissions: permissions,
+  );
+  if (requested == null) return false;
+
+  if (accountName != requested) {
+    await prefs.setString(_accountNamePreference, requested);
+  }
+  returnn true;
+}
+
+class _HealthAppState extends State<HealthApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 10;
   double _mgdl = 10.0;
 
-  @override
-  void initState() {
-    super.initState();
+  // create a HealthFactory for use in the app
+  HealthFactory health = HealthFactory();
+
+  /// Fetch data points from the health plugin and show them in the app.
+  Future fetchData([bool mayUseLastAccount = true]) async {
+    setState(() => _state = AppState.FETCHING_DATA);
+
+    // define the types to get
+    final types = [
+      HealthDataType.STEPS,
+      HealthDataType.WEIGHT,
+      HealthDataType.HEIGHT,
+      HealthDataType.BLOOD_GLUCOSE,
+      // Uncomment this line on iOS - only available on iOS
+      // HealthDataType.DISTANCE_WALKING_RUNNING,
+    ];
+
+    // with coresponsing permissions
+    final permissions = [
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+    ];
+
+    // get data within the last 24 hours
+    final now = DateTime.now();
+    final yesterday = now.subtract(Duration(days: 1));
+
+    // requesting access to the data types before reading them
+    // note that strictly speaking, the [permissions] are not
+    // needed, since we only want READ access.
+    bool requested = await requestAuthorization(
+      mayUseLastAccount, types, permissions: permissions,
+    );
+
+    if (requested) {
+      try {
+        // fetch health data
+        List<HealthDataPoint> healthData =
+            await health.getHealthDataFromTypes(yesterday, now, types);
+
+        // save all the new data points (only the first 100)
+        _healthDataList.addAll((healthData.length < 100)
+            ? healthData
+            : healthData.sublist(0, 100));
+      } catch (error) {
+        print("Exception in getHealthDataFromTypes: $error");
+      }
+
+      // filter out duplicates
+      _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
+
+      // print the results
+      _healthDataList.forEach((x) => print(x));
+
+      // update the UI to display the results
+      setState(() {
+        _state =
+            _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+      });
+    } else {
+      print("Authorization not granted");
+      setState(() => _state = AppState.DATA_NOT_FETCHED);
+    }
   }
 
+  /// Add some random health data.
   Future addData() async {
-    HealthFactory health = HealthFactory();
-
-    final time = DateTime.now();
-    final ago = time.add(Duration(minutes: -5));
+    final now = DateTime.now();
+    final earlier = now.subtract(Duration(minutes: 5));
 
     _nofSteps = Random().nextInt(10);
+    final types = [HealthDataType.STEPS, HealthDataType.BLOOD_GLUCOSE];
+    final rights = [HealthDataAccess.WRITE, HealthDataAccess.WRITE];
+    final permissions = [
+      HealthDataAccess.READ_WRITE,
+      HealthDataAccess.READ_WRITE
+    ];
+    bool? hasPermissions =
+        await HealthFactory.hasPermissions(types, permissions: rights);
+    if (hasPermissions == false) {
+      await health.requestAuthorization(types, permissions: permissions);
+    }
+
     _mgdl = Random().nextInt(10) * 1.0;
     bool success = await health.writeHealthData(
-        _nofSteps.toDouble(), HealthDataType.STEPS, ago, time);
+        _nofSteps.toDouble(), HealthDataType.STEPS, earlier, now);
 
     if (success) {
       success = await health.writeHealthData(
-          _mgdl, HealthDataType.BLOOD_GLUCOSE, time, time);
+          _mgdl, HealthDataType.BLOOD_GLUCOSE, now, now);
     }
 
     setState(() {
@@ -56,69 +153,30 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  /// Fetch data from the health plugin and print it
-  Future fetchData([bool mayUseLastAccount = true]) async {
-    /// get everything from midnight until now
-    DateTime startDate = DateTime(2020, 11, 07, 0, 0, 0);
-    DateTime endDate = DateTime(2025, 11, 07, 23, 59, 59);
+  /// Fetch steps from the health plugin and show them in the app.
+  Future fetchStepData([bool mayUseLastAccount = true]) async {
+    int? steps;
 
-    HealthFactory health = HealthFactory();
+    // get steps for today (i.e., since midnight)
+    final now = DateTime.now();
+    final midnight = DateTime(now.year, now.month, now.day);
 
-    // define the types to get
-    List<HealthDataType> types = [
-      HealthDataType.STEPS,
-      HealthDataType.WEIGHT,
-      HealthDataType.HEIGHT,
-      HealthDataType.BLOOD_GLUCOSE,
-      // Uncomment this line on iOS. This type is supported ONLY on Android!
-      // HealthDataType.DISTANCE_WALKING_RUNNING,
-    ];
+    bool requested = await requestAuthorization(
+      mayUseLastAccount, [HealthDataType.STEPS],
+    );
 
-    setState(() => _state = AppState.FETCHING_DATA);
-
-    var prefs = await SharedPreferences.getInstance();
-    var accountName;
-    if (mayUseLastAccount) {
-      accountName = prefs.getString(_accountNamePreference);
-    }
-
-    /// You MUST request access to the data types before reading them
-    accountName =
-      await health.requestAuthorizationWithAccount(types, accountName);
-
-    int steps = 0;
-
-    if (accountName != null) {
-      prefs.setString(_accountNamePreference, accountName);
-
+    if (requested) {
       try {
-
-        // fetch new data
-        List<HealthDataPoint> healthData =
-          await health.getHealthDataFromTypes(startDate, endDate, types, accountName);
-
-        /// save all the new data points
-        _healthDataList.clear();
-        _healthDataList.addAll(healthData);
-      } catch (e) {
-        print("Caught exception in getHealthDataFromTypes: $e");
+        steps = await health.getTotalStepsInInterval(midnight, now);
+      } catch (error) {
+        print("Caught exception in getTotalStepsInInterval: $error");
       }
 
-      // filter out duplicates
-      _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
+      print('Total number of steps: $steps');
 
-      // print the results
-      _healthDataList.forEach((x) {
-        print("Data point: $x");
-        steps += x.value.round();
-      });
-
-      print("Steps: $steps");
-
-      // update the UI to display the results
       setState(() {
-        _state =
-            _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+        _nofSteps = (steps == null) ? 0 : steps;
+        _state = (steps == null) ? AppState.NO_DATA : AppState.STEPS_READY;
       });
     } else {
       print("Authorization not granted");
@@ -161,20 +219,25 @@ class _MyAppState extends State<MyApp> {
     return Column(
       children: [
         Text('Press the download button to fetch data.'),
-        Text('Press the plus button to insert some random data.')
+        Text('Press the plus button to insert some random data.'),
+        Text('Press the walking button to get total step count.'),
       ],
       mainAxisAlignment: MainAxisAlignment.center,
     );
   }
 
   Widget _authorizationNotGranted() {
-    return Text('''Authorization not given.
-        For Android please check your OAUTH2 client ID is correct in Google Developer Console.
-         For iOS check your permissions in Apple Health.''');
+    return Text('Authorization not given. '
+        'For Android please check your OAUTH2 client ID is correct in Google Developer Console. '
+        'For iOS check your permissions in Apple Health.');
   }
 
   Widget _dataAdded() {
     return Text('$_nofSteps steps and $_mgdl mgdl are inserted successfully!');
+  }
+
+  Widget _stepsFetched() {
+    return Text('Total number of steps: $_nofSteps');
   }
 
   Widget _dataNotAdded() {
@@ -192,6 +255,8 @@ class _MyAppState extends State<MyApp> {
       return _authorizationNotGranted();
     else if (_state == AppState.DATA_ADDED)
       return _dataAdded();
+    else if (_state == AppState.STEPS_READY)
+      return _stepsFetched();
     else if (_state == AppState.DATA_NOT_ADDED) return _dataNotAdded();
 
     return _contentNotFetched();
@@ -202,24 +267,32 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
           appBar: AppBar(
-            title: const Text('Plugin example app'),
+            title: const Text('Health Example'),
             actions: <Widget>[
-              GestureDetector(
-                child: IconButton(
-                  icon: Icon(Icons.file_download),
-                  onPressed: () {
-                    fetchData();
-                  },
-                ),
+              IconButton(
+                icon: Icon(Icons.file_download),
+                onPressed: () {
+                  fetchData();
+                },
                 onLongPress: () {
                   fetchData(false);
                 },
               ),
               IconButton(
-                  onPressed: () {
-                    addData();
-                  },
-                  icon: Icon(Icons.add))
+                onPressed: () {
+                  addData();
+                },
+                icon: Icon(Icons.add),
+              ),
+              IconButton(
+                onPressed: () {
+                  fetchStepData();
+                },
+                onLongPress: () {
+                  fetchData(false);
+                },
+                icon: Icon(Icons.nordic_walking),
+              )
             ],
           ),
           body: Center(

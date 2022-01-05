@@ -24,6 +24,7 @@ import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import java.util.concurrent.TimeUnit
+import java.util.Date
 import kotlin.concurrent.thread
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.SessionReadRequest
@@ -50,6 +51,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
     private var HEIGHT = "HEIGHT"
     private var WEIGHT = "WEIGHT"
     private var STEPS = "STEPS"
+    private var AGGREGATE_STEP_COUNT = "AGGREGATE_STEP_COUNT"
     private var ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
     private var HEART_RATE = "HEART_RATE"
     private var BODY_TEMPERATURE = "BODY_TEMPERATURE"
@@ -62,11 +64,12 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
     private var WATER = "WATER"
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
     private var SLEEP_AWAKE = "SLEEP_AWAKE"
+    private var SLEEP_IN_BED = "SLEEP_IN_BED"
 
-    private fun _runOnUiThread(predicate: () -> Unit) = handler.post(predicate);
+    private fun _runOnUiThread(predicate: () -> Unit) = handler.post(predicate)
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME);
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         context = flutterPluginBinding.applicationContext
         channel?.setMethodCallHandler(this)
     }
@@ -127,7 +130,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
                 }
             } else if (requestCode == GOOGLE_SIGN_IN_REQUEST_CODE) {
                 try {
-                    _requestAuthorization(mCall!!, mResult!!, GoogleSignIn.getSignedInAccountFromIntent(data).result!!);
+                    _requestAuthorization(mCall!!, mResult!!, GoogleSignIn.getSignedInAccountFromIntent(data).result!!)
                 } catch (e: Exception) {
                     Log.e("FLUTTER_HEALTH::ERROR", e.toString())
                     mResult?.success(null)
@@ -151,6 +154,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
             HEIGHT -> DataType.TYPE_HEIGHT
             WEIGHT -> DataType.TYPE_WEIGHT
             STEPS -> DataType.TYPE_STEP_COUNT_DELTA
+            AGGREGATE_STEP_COUNT -> DataType.AGGREGATE_STEP_COUNT_DELTA
             ACTIVE_ENERGY_BURNED -> DataType.TYPE_CALORIES_EXPENDED
             HEART_RATE -> DataType.TYPE_HEART_RATE_BPM
             BODY_TEMPERATURE -> HealthDataTypes.TYPE_BODY_TEMPERATURE
@@ -163,7 +167,8 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
             WATER -> DataType.TYPE_HYDRATION
             SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
-            else -> DataType.TYPE_STEP_COUNT_DELTA
+            SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
+            else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
 
@@ -185,7 +190,8 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
             WATER -> Field.FIELD_VOLUME
             SLEEP_ASLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
-            else -> Field.FIELD_PERCENTAGE
+            SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
 
@@ -343,7 +349,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
             }
             return
         }
-        _getData(call, result, type, dataType, field, GoogleSignIn.getAccountForExtension(context, fitnessOptions));
+        _getData(call, result, type, dataType, field, GoogleSignIn.getAccountForExtension(context, fitnessOptions))
     }
 
     private fun _getData(call: MethodCall, result: Result, type: String, dataType: DataType, field: Field, googleSignInAccount: GoogleSignInAccount) {
@@ -411,6 +417,44 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
                                                 )
                                         )
                                     }
+                                    // Returns time spent in bed in Minutes
+                                    if (type == SLEEP_IN_BED) {
+                                        val dataSets = response.getDataSet(session)
+
+                                        // If the sleep session has finer granularity sub-components, extract them:
+                                        if( dataSets.isNotEmpty()){
+                                            for (dataSet in dataSets) {
+                                                for (dataPoint in dataSet.dataPoints) {
+                                                    // searching OUT OF BED data
+                                                    if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() != 3) {
+                                                        healthData.add(
+                                                                hashMapOf(
+                                                                        "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(TimeUnit.MINUTES),
+                                                                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                                                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                                                        "unit" to "MINUTES",
+                                                                        "source_name" to (dataPoint.originalDataSource.appPackageName
+                                                                                ?: (dataPoint.originalDataSource.device?.model
+                                                                                        ?: "unknown")),
+                                                                        "source_id" to dataPoint.originalDataSource.streamIdentifier
+                                                                )
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            healthData.add(
+                                                    hashMapOf(
+                                                            "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
+                                                            "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                                                            "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                                                            "unit" to "MINUTES",
+                                                            "source_name" to session.appPackageName,
+                                                            "source_id" to session.identifier
+                                                    )
+                                            )
+                                        }
+                                    }
 
                                     // If the sleep session has finer granularity sub-components, extract them:
                                     if (type == SLEEP_AWAKE) {
@@ -453,19 +497,75 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
     private fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
         val args = call.arguments as HashMap<*, *>
-        val types = args["types"] as ArrayList<*>
-        for (typeKey in types) {
-            if (typeKey !is String) continue
-            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_READ)
-            typesBuilder.addDataType(keyToHealthDataType(typeKey), FitnessOptions.ACCESS_WRITE)
-            if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE) {
-                typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+        val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()
+        val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()
+
+        assert(types != null)
+        assert(permissions != null)
+        assert(types!!.count() == permissions!!.count())
+
+        for ((i, typeKey) in types.withIndex()) {
+            val access = permissions[i]
+            val dataType = keyToHealthDataType(typeKey)
+            when (access) {
+                0 -> typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_READ)
+                1 -> typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+                2 -> {
+                    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_READ)
+                    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+                }
+                else -> throw IllegalArgumentException("Unknown access type $access")
             }
+            if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE || typeKey == SLEEP_IN_BED) {
+                typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+                when (access) {
+                    0 -> typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+                    1 -> typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_WRITE)
+                    2 -> {
+                        typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+                        typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_WRITE)
+                    }
+                    else -> throw IllegalArgumentException("Unknown access type $access")
+                }
+            }
+
         }
         return typesBuilder.build()
     }
 
-    /// Called when the "requestAuthorization" is invoked from Flutter
+    private fun hasPermissions(call: MethodCall, result: Result) {
+        if (context == null) {
+            result.success(false)
+            return
+        }
+
+        val optionsToRegister = callToHealthTypes(call)
+        mResult = result
+
+        val accountName = call.argument<String?>("accountName")
+
+        if (accountName != null) {
+            if (accountName.isEmpty()) {
+                mResult?.success(false)
+                return
+            }
+            _getGoogleSignInAccount(accountName) {
+                val isGranted = if (it != null) {
+                    GoogleSignIn.hasPermissions(it, optionsToRegister)
+                } else {
+                    false
+                }
+                mResult?.success(isGranted)
+            }
+            return
+        }
+
+        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(context), optionsToRegister)
+
+        mResult?.success(isGranted)
+    }
+
+    /// Called when the "requestAuthorization" is invoked from Flutter 
     private fun requestAuthorization(call: MethodCall, result: Result) {
         val optionsToRegister = callToHealthTypes(call)
 
@@ -496,13 +596,13 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
         if (activity == null) {
             Log.d("FLUTTER_HEALTH", "No Activity!")
             result?.success(null)
-            return false;
+            return false
         }
-        return true;
+        return true
     }
 
     private fun _signIn(call: MethodCall, result: Result, optionsToRegister: GoogleSignInOptionsExtension) {
-        if (!_checkActivity(result)) return;
+        if (!_checkActivity(result)) return
 
         mCall = call
         mResult = result
@@ -520,7 +620,7 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
 
         /// Not granted? Ask for permission
         if (!isGranted) {
-            if (!_checkActivity(result)) return;
+            if (!_checkActivity(result)) return
 
             mCall = call
             mResult = result
@@ -537,12 +637,98 @@ class HealthPlugin() : MethodCallHandler, ActivityResultListener, Result, Activi
         }
     }
 
+    fun getTotalStepsInInterval(call: MethodCall, result: Result) {
+        val start = call.argument<Long>("startDate")!!
+        val end = call.argument<Long>("endDate")!!
+
+        getStepsInRange(start, end) { map: Map<Long, Int>?, e: Throwable? ->
+            if (map != null) {
+                assert(map.size <= 1) { "getTotalStepsInInterval should return only one interval. Found: ${map.size}" }
+                result.success(map.values.firstOrNull())
+            } else {
+                result.error("failed", e?.message, null)
+            }
+        }
+    }
+
+    private fun getStepsInRange(
+        start: Long,
+        end: Long,
+        result: (Map<Long, Int>?, Throwable?) -> Unit
+    ) {
+        val activity = activity ?: return
+
+        val stepsDataType = keyToHealthDataType(STEPS)
+        val aggregatedDataType = keyToHealthDataType(AGGREGATE_STEP_COUNT)
+
+        val fitnessOptions = FitnessOptions.builder()
+            .addDataType(stepsDataType)
+            .addDataType(aggregatedDataType)
+            .build()
+        val gsa = GoogleSignIn.getAccountForExtension(activity, fitnessOptions)
+
+        val ds = DataSource.Builder()
+            .setAppPackageName("com.google.android.gms")
+            .setDataType(stepsDataType)
+            .setType(DataSource.TYPE_DERIVED)
+            .setStreamName("estimated_steps")
+            .build()
+
+        val duration = (end - start).toInt()
+
+        val request = DataReadRequest.Builder()
+            .aggregate(ds)
+            .bucketByTime(duration, TimeUnit.MILLISECONDS)
+            .setTimeRange(start, end, TimeUnit.MILLISECONDS)
+            .build()
+
+        val response = Fitness.getHistoryClient(activity, gsa).readData(request)
+
+        Thread {
+            try {
+                val readDataResult = Tasks.await(response)
+
+                val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
+                for (bucket in readDataResult.buckets) {
+                    val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
+                    if (dp != null) {
+                        print(dp)
+
+                        val count = dp.getValue(aggregatedDataType.fields[0])
+
+                        val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
+                        val startDate = Date(startTime)
+                        val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
+                        Log.i("FLUTTER_HEALTH::SUCCESS", "returning $count steps for $startDate - $endDate")
+                        map[startTime] = count.asInt()
+                    } else {
+                        val startDay = Date(start)
+                        val endDay = Date(end)
+                        Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
+                    }
+                }
+                activity.runOnUiThread {
+                    result(map, null)
+                }
+            } catch (e: Throwable) {
+                Log.e("FLUTTER_HEALTH::ERROR", "failed: ${e.message}")
+
+                activity.runOnUiThread {
+                    result(null, e)
+                }
+            }
+
+        }.start()
+    }
+
     /// Handle calls from the MethodChannel
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
             "writeData" -> writeData(call, result)
+            "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
+            "hasPermissions" -> hasPermissions(call, result)
             else -> result.notImplemented()
         }
     }

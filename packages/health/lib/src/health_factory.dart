@@ -1,6 +1,6 @@
 part of health;
 
-/// Main class for the Plugin
+/// Main class for the Plugin.
 class HealthFactory {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   String? _deviceId;
@@ -15,15 +15,51 @@ class HealthFactory {
           ? _dataTypeKeysAndroid.contains(dataType)
           : _dataTypeKeysIOS.contains(dataType);
 
-  /// Has permission been optained for the list of [HealthDataType]?
+  /// Determines if the data types have been granted with the specified access rights.
   ///
-  /// iOS isn't completely supported by HealthKit, `false` means no, `true` means
-  /// that the user has approved or declined permissions.
-  /// In case user has declined permissions, reading using the [getHealthDataFromTypes]
-  /// method will just return empty list for declined data types.
-  static Future<bool?> hasPermissions(List<HealthDataType> types) async {
+  /// Returns:
+  ///
+  /// * true - if all of the data types have been granted with the specfied access rights.
+  /// * false - if any of the data types has not been granted with the specified access right(s)
+  /// * null - if it can not be determined if the data types have been granted with the specified access right(s).
+  ///
+  /// Parameters:
+  ///
+  /// * [types]  - List of [HealthDataType] whose permissions are to be checked.
+  /// * [permissions] - Optional.
+  ///   + If unspecified, this method checks if each HealthDataType in [types] has been granted READ access.
+  ///   + If specified, this method checks if each [HealthDataType] in [types] has been granted with the access specified in its
+  ///   corresponding entry in this list. The length of this list must be equal to that of [types].
+  ///
+  ///  Caveat:
+  ///
+  ///   As Apple HealthKit will not disclose if READ access has been granted for a data type due to privacy concern,
+  ///   this method can only return null to represent an undertermined status, if it is called on iOS
+  ///   with a READ or READ_WRITE access.
+  ///
+  ///   On Android, this function returns true or false, depending on whether the specified access right has been granted.
+  static Future<bool?> hasPermissions(
+    List<HealthDataType> types, {
+      List<HealthDataAccess>? permissions,
+      String? accountName,
+  }) async {
+    if (permissions != null && permissions.length != types.length)
+      throw ArgumentError(
+          "The lists of types and permissions must be of same length.");
+
+    final mTypes = List<HealthDataType>.from(types, growable: true);
+    final mPermissions = permissions == null
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
+            growable: true)
+        : permissions.map((permission) => permission.index).toList();
+
+    /// On Android, if BMI is requested, then also ask for weight and height
+    if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+
     return await _channel.invokeMethod('hasPermissions', {
-      "types": types.map((type) => _enumToString(type)).toList(),
+      "types": mTypes.map((type) => _enumToString(type)).toList(),
+      "permissions": mPermissions,
+      "accountName": accountName,
     });
   }
 
@@ -38,46 +74,91 @@ class HealthFactory {
     });
   }
 
-  /// iOS isn't supported by HealthKit, method does nothing.
+  /// Revoke permissions obtained earlier.
+  ///
+  /// Not supported on iOS and method does nothing.
   static Future<void> revokePermissions() async {
     return await _channel.invokeMethod('revokePermissions');
   }
 
-  /// Request access to GoogleFit/Apple HealthKit.
-  Future<bool> requestAuthorization(List<HealthDataType> types) async =>
-    (await _requestAuthorization(types)) != null;
+  /// Requests permissions to access data types in Apple Health or Google Fit.
+  ///
+  /// Returns true if successful, false otherwise
+  ///
+  /// Parameters:
+  ///
+  /// * [types] - a list of [HealthDataType] which the permissions are requested for.
+  /// * [permissions] - Optional.
+  ///   + If unspecified, each [HealthDataType] in [types] is requested for READ [HealthDataAccess].
+  ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
+  ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
+  Future<bool> requestAuthorization(List<HealthDataType> types,
+      {List<HealthDataAccess>? permissions}) async => (
+    await _requestAuthorization(types, permissions: permissions)
+  ) != null;
 
-  /// Request access to GoogleFit/Apple HealthKit.
+  /// Requests permissions to access data types in Apple Health or Google Fit.
   ///
-  /// (Android only) If [accountName] is not empty, use it to authorize,
+  /// Returns true if successful, false otherwise
+  ///
+  /// Parameters:
+  ///
+  /// * [types] - a list of [HealthDataType] which the permissions are requested for.
+  /// * [permissions] - Optional.
+  ///   + If unspecified, each [HealthDataType] in [types] is requested for READ [HealthDataAccess].
+  ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
+  ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
+  /// * [accountName] - (Android only) If [accountName] is not empty, use it to authorize,
   /// else show account selection dialog. And Returns authorized account name.
-  ///
-  /// On iOS, [accountName] is simply ignored
-  /// and returns `""`(succeed) or `null`(failed).
+  /// On iOS, [accountName] is simply ignored and returns `""`(succeed) or `null`(failed).
   Future<String?> requestAuthorizationWithAccount(
-    List<HealthDataType> types, [
+    List<HealthDataType> types, {
+      List<HealthDataAccess>? permissions,
       String? accountName,
-  ]) => _requestAuthorization(types, accountName ?? "");
+    }
+  ) => _requestAuthorization(types, permissions: permissions, accountName: accountName);
 
   Future<String?> _requestAuthorization(
-    List<HealthDataType> types, [
-      String accountName = "",
-  ]) async {
-    /// If BMI is requested, then also ask for weight and height
-    if (types.contains(HealthDataType.BODY_MASS_INDEX)) {
-      if (!types.contains(HealthDataType.WEIGHT)) {
-        types.add(HealthDataType.WEIGHT);
-      }
-
-      if (!types.contains(HealthDataType.HEIGHT)) {
-        types.add(HealthDataType.HEIGHT);
-      }
+    List<HealthDataType> types, {
+      List<HealthDataAccess>? permissions,
+      String? accountName,
+    }
+  ) async {
+    if (permissions != null && permissions.length != types.length) {
+      throw ArgumentError(
+          'The length of [types] must be same as that of [permissions].');
     }
 
-    List<String> keys = types.map((e) => _enumToString(e)).toList();
-    return _channel.invokeMethod(
-      'requestAuthorization', {'types': keys, 'accountName': accountName},
-    );
+    final mTypes = List<HealthDataType>.from(types, growable: true);
+    final mPermissions = permissions == null
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
+            growable: true)
+        : permissions.map((permission) => permission.index).toList();
+
+    // on Android, if BMI is requested, then also ask for weight and height
+    if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+
+    List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
+    final String isAuthorized = await _channel.invokeMethod(
+        'requestAuthorization', {'types': keys, 'permissions': mPermissions, 'accountName': accountName ?? ""});
+    return isAuthorized;
+  }
+
+  static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
+    final index = mTypes.indexOf(HealthDataType.BODY_MASS_INDEX);
+
+    if (index != -1 && _platformType == PlatformType.ANDROID) {
+      if (!mTypes.contains(HealthDataType.WEIGHT)) {
+        mTypes.add(HealthDataType.WEIGHT);
+        mPermissions.add(mPermissions[index]);
+      }
+      if (!mTypes.contains(HealthDataType.HEIGHT)) {
+        mTypes.add(HealthDataType.HEIGHT);
+        mPermissions.add(mPermissions[index]);
+      }
+      mTypes.remove(HealthDataType.BODY_MASS_INDEX);
+      mPermissions.removeAt(index);
+    }
   }
 
   /// Calculate the BMI using the last observed height and weight values.
@@ -109,28 +190,25 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
+  /// Saves health data into Apple Health or Google Fit.
   ///
-  /// Saves health data into the HealthKit or Google Fit store
+  /// Returns true if successful, false otherwise.
   ///
-  /// Returns a Future of true if successful, a Future of false otherwise
-  /// 
-  /// Parameters
-  /// 
-  /// [value]  
-  ///   value of the health data in double
-  /// [type]   
-  ///   the value's HealthDataType 
-  /// [startTime] 
-  ///   a DateTime object that specifies the start time when this data value is measured. 
-  ///   It must be equal to or earlier than [endTime]
-  /// [endTime]
-  ///   a DateTime object that specifies the end time when this value is measured.
-  ///   It must be equal to or later than [startTime].
-  ///   Simply set [endTime] equal to [startTime] 
-  ///   if the value is measured only at a specific point in time.
-  /// 
-  Future<bool> writeHealthData(double value, HealthDataType type,
-      DateTime startTime, DateTime endTime) async {
+  /// Parameters:
+  /// * [value] - the health data's value in double
+  /// * [type] - the value's HealthDataType
+  /// * [startTime] - the start time when this [value] is measured.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when this [value] is measured.
+  ///   + It must be equal to or later than [startTime].
+  ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
+  ///
+  Future<bool> writeHealthData(
+    double value,
+    HealthDataType type,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
@@ -143,14 +221,14 @@ class HealthFactory {
     return success ?? false;
   }
 
-  /// Get an array of [HealthDataPoint] from an array of [HealthDataType].
-  ///
-  /// (Android only) If [accountName] is not empty, use it to get data,
-  /// else use default account.
-  ///
-  /// On iOS, [accountName] is simply ignored.
+  /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
-      DateTime startDate, DateTime endDate, List<HealthDataType> types, [String? accountName]) async {
+    DateTime startDate,
+    DateTime endDate,
+    List<HealthDataType> types, {
+      String? accountName,
+    }
+  ) async {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
@@ -185,12 +263,11 @@ class HealthFactory {
   /// The main function for fetching health data
   Future<List<HealthDataPoint>> _dataQuery(
       DateTime startDate, DateTime endDate, HealthDataType dataType, String? accountName) async {
-    // Set parameters for method channel request
     final args = <String, dynamic>{
       'dataTypeKey': _enumToString(dataType),
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch,
-      'accountName': accountName
+      'accountName': accountName,
     };
 
     final unit = _dataTypeToUnit[dataType]!;
@@ -246,5 +323,24 @@ class HealthFactory {
       }
     }
     return unique;
+  }
+
+  /// Get the total numbner of steps within a specific time period.
+  /// Returns null if not successful.
+  ///
+  /// Is a fix according to https://stackoverflow.com/questions/29414386/step-count-retrieved-through-google-fit-api-does-not-match-step-count-displayed/29415091#29415091
+  Future<int?> getTotalStepsInInterval(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final args = <String, dynamic>{
+      'startDate': startDate.millisecondsSinceEpoch,
+      'endDate': endDate.millisecondsSinceEpoch
+    };
+    final stepsCount = await _channel.invokeMethod(
+      'getTotalStepsInInterval',
+      args,
+    );
+    return stepsCount;
   }
 }
