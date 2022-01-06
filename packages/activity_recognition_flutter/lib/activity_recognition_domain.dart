@@ -37,21 +37,28 @@ Map<String, ActivityType> _activityMap = {
 
 /// Represents an activity event detected on the phone.
 class ActivityEvent {
-  ActivityType _type;
-  int _confidence;
-  late DateTime _timeStamp;
+  /// The type of activity.
+  ActivityType type;
 
-  ActivityEvent._(this._type, this._confidence) {
-    this._timeStamp = DateTime.now();
+  /// The confidence of the dection in percentage.
+  int confidence;
+
+  /// The timestamp when detected.
+  late DateTime timeStamp;
+
+  /// The type of activity as a String.
+  String get typeString => type.toString().split('.').last;
+
+  ActivityEvent(this.type, this.confidence) {
+    this.timeStamp = DateTime.now();
   }
 
-  factory ActivityEvent.empty() => ActivityEvent._(ActivityType.UNKNOWN, 100);
+  factory ActivityEvent.unknown() => ActivityEvent(ActivityType.UNKNOWN, 100);
 
-  factory ActivityEvent.fromJson(String json) {
-    List<String> tokens = json.split(",");
-    if (tokens.length < 2) {
-      return ActivityEvent.empty();
-    }
+  /// Create an [ActivityEvent] based on the string format `type,confidence`.
+  factory ActivityEvent.fromString(String string) {
+    List<String> tokens = string.split(",");
+    if (tokens.length < 2) return ActivityEvent.unknown();
 
     ActivityType type = ActivityType.UNKNOWN;
     if (_activityMap.containsKey(tokens.first)) {
@@ -59,21 +66,9 @@ class ActivityEvent {
     }
     int conf = int.tryParse(tokens.last)!;
 
-    return ActivityEvent._(type, conf);
+    return ActivityEvent(type, conf);
   }
 
   @override
-  String toString() {
-    String typeString = type.toString().split('.').last;
-    return 'Activity: $typeString, confidence: $confidence%';
-  }
-
-  /// The type of activity.
-  ActivityType get type => _type;
-
-  /// The timestamp when detected.
-  DateTime get timeStamp => _timeStamp;
-
-  /// The confidence of the dection in percentage.
-  int get confidence => _confidence;
+  String toString() => 'Activity - type: $typeString, confidence: $confidence%';
 }

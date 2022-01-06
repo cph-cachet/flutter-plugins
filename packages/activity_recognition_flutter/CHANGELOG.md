@@ -1,3 +1,7 @@
+## 4.2.0
+* small refactor and improvement of docs
+* using `ActivityRecognition()` when creating a singleton -- standard practice in Dart.
+
 ## 4.1.0
 * [PR #474](https://github.com/cph-cachet/flutter-plugins/pull/474) - Android 12 intent-flag
 * the name of the stream has been changed from `startStream` to `activityStream`
@@ -22,7 +26,6 @@
 * [PR #314](https://github.com/cph-cachet/flutter-plugins/pull/314)
 
 ## 4.0.0
-
 - Null safety migration
 - Updated swift code
 

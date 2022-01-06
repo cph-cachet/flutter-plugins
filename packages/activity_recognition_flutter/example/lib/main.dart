@@ -15,13 +15,13 @@ class ActivityRecognitionApp extends StatefulWidget {
 class _ActivityRecognitionAppState extends State<ActivityRecognitionApp> {
   StreamSubscription<ActivityEvent>? activityStreamSubscription;
   List<ActivityEvent> _events = [];
-  ActivityRecognition activityRecognition = ActivityRecognition.instance;
+  ActivityRecognition activityRecognition = ActivityRecognition();
 
   @override
   void initState() {
     super.initState();
     _init();
-    _events.add(ActivityEvent.empty());
+    _events.add(ActivityEvent.unknown());
   }
 
   @override
@@ -51,7 +51,7 @@ class _ActivityRecognitionAppState extends State<ActivityRecognitionApp> {
   }
 
   void onData(ActivityEvent activityEvent) {
-    print('ACTIVITY - $activityEvent');
+    print(activityEvent);
     setState(() {
       _events.add(activityEvent);
     });
