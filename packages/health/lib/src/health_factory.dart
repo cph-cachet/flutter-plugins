@@ -105,9 +105,9 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
-    final bool isAuthorized = await _channel.invokeMethod(
+    final bool? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
-    return isAuthorized;
+    return isAuthorized ?? false;
   }
 
   static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
@@ -199,6 +199,12 @@ class HealthFactory {
       final result = await _prepareQuery(startDate, endDate, type);
       dataPoints.addAll(result);
     }
+
+    const int threshold = 100;
+    if (dataPoints.length > threshold) {
+      return compute(removeDuplicates, dataPoints);
+    }
+
     return removeDuplicates(dataPoints);
   }
 
@@ -233,32 +239,50 @@ class HealthFactory {
       'endDate': endDate.millisecondsSinceEpoch
     };
 
-    final unit = _dataTypeToUnit[dataType]!;
-
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
     if (fetchedDataPoints != null) {
-      return fetchedDataPoints.map<HealthDataPoint>((e) {
-        final num value = e['value'];
-        final DateTime from =
-            DateTime.fromMillisecondsSinceEpoch(e['date_from']);
-        final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
-        final String sourceId = e["source_id"];
-        final String sourceName = e["source_name"];
-        return HealthDataPoint(
-          value,
-          dataType,
-          unit,
-          from,
-          to,
-          _platformType,
-          _deviceId!,
-          sourceId,
-          sourceName,
-        );
-      }).toList();
+      final mesg = <String, dynamic>{
+        "dataType": dataType,
+        "dataPoints": fetchedDataPoints,
+        "deviceId": _deviceId!,
+      };
+      const thresHold = 100;
+      // If the no. of data points are larger than the threshold,
+      // call the compute method to spawn an Isolate to do the parsing in a separate thread.
+      if (fetchedDataPoints.length > thresHold) {
+        return compute(_parse, mesg);
+      }
+      return _parse(mesg);
     } else {
       return <HealthDataPoint>[];
     }
+  }
+
+  static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
+    final dataType = message["dataType"];
+    final dataPoints = message["dataPoints"];
+    final device = message["deviceId"];
+    final unit = _dataTypeToUnit[dataType]!;
+    final list = dataPoints.map<HealthDataPoint>((e) {
+      final num value = e['value'];
+      final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
+      final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
+      final String sourceId = e["source_id"];
+      final String sourceName = e["source_name"];
+      return HealthDataPoint(
+        value,
+        dataType,
+        unit,
+        from,
+        to,
+        _platformType,
+        device,
+        sourceId,
+        sourceName,
+      );
+    }).toList();
+
+    return list;
   }
 
   /// Given an array of [HealthDataPoint]s, this method will return the array
@@ -271,6 +295,7 @@ class HealthFactory {
       for (var s in unique) {
         if (s == p) {
           seenBefore = true;
+          break;
         }
       }
       if (!seenBefore) {
@@ -292,7 +317,7 @@ class HealthFactory {
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate.millisecondsSinceEpoch
     };
-    final stepsCount = await _channel.invokeMethod(
+    final stepsCount = await _channel.invokeMethod<int?>(
       'getTotalStepsInInterval',
       args,
     );
