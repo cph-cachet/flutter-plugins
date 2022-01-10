@@ -1,6 +1,16 @@
 # Health
 
-Enables reading and writing health data from/to Apple Health and Google Fit. Also allow for getting the total number of steps for a specific time period.
+Enables reading and writing health data from/to Apple Health and Google Fit. 
+
+The plugin supports:
+
+  * handling permissions to access health data using the `hasPermissions`,
+    `requestPermissions`, `requestAuthorization`, `revokePermissions` methods.
+  * reading health data using the `getHealthDataFromTypes` method.
+  * writing health data using the `writeHealthData` method.
+  * accessing total step counts using the `getTotalStepsInInterval` method.
+  * cleaning up dublicate data points via the `removeDuplicates` method.
+
 
 > For Android, the target phone __needs__ to have [Google Fit](https://www.google.com/fit/) installed and have access to the internet, otherwise this plugin will not work.
 

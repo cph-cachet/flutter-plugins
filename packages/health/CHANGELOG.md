@@ -1,38 +1,39 @@
-## 3.4.1
-* Resolved concurrent issues with native threads [PR #483](https://github.com/cph-cachet/flutter-plugins/pull/483).
-* Healthkit CategorySample [PR #485](https://github.com/cph-cachet/flutter-plugins/pull/485).
+## 3.4.2
+* Resolved concurrent issues with native threads [PR#483](https://github.com/cph-cachet/flutter-plugins/pull/483).
+* Healthkit CategorySample [PR#485](https://github.com/cph-cachet/flutter-plugins/pull/485).
+* update of API documentation.
 
 ## 3.4.0
-* Add sleep in bed to android [PR #457](https://github.com/cph-cachet/flutter-plugins/pull/457).
-* Add the android.permission.ACTIVITY_RECOGNITION setup to the README [PR #458](https://github.com/cph-cachet/flutter-plugins/pull/458).
-* Fixed (regression) issues with metric and permissions [PR #462](https://github.com/cph-cachet/flutter-plugins/pull/462).
-* Get total steps [PR #471](https://github.com/cph-cachet/flutter-plugins/pull/471).
+* Add sleep in bed to android [PR#457](https://github.com/cph-cachet/flutter-plugins/pull/457).
+* Add the android.permission.ACTIVITY_RECOGNITION setup to the README [PR#458](https://github.com/cph-cachet/flutter-plugins/pull/458).
+* Fixed (regression) issues with metric and permissions [PR#462](https://github.com/cph-cachet/flutter-plugins/pull/462).
+* Get total steps [PR#471](https://github.com/cph-cachet/flutter-plugins/pull/471).
 * update of example app to refelct new features. 
 * update of API documentation.
 
 ## 3.3.1
-* [PR #428](https://github.com/cph-cachet/flutter-plugins/pull/428) - DISTANCE_DELTA is for Android, not iOS
-* [PR #454](https://github.com/cph-cachet/flutter-plugins/pull/454) - added missing READ_ACCESS
+* DISTANCE_DELTA is for Android, not iOS [PR#428](https://github.com/cph-cachet/flutter-plugins/pull/428).
+* added missing READ_ACCESS [PR#454](https://github.com/cph-cachet/flutter-plugins/pull/454).
 
 ## 3.3.0
-* [PR #430](https://github.com/cph-cachet/flutter-plugins/pull/430) - Write support on Google Fit and HealthKit
+* Write support on Google Fit and HealthKit [PR#430](https://github.com/cph-cachet/flutter-plugins/pull/430).
 
 ## 3.2.1
 * Updated `device_info_plus` version dependency
 
 ## 3.2.0
-* [PR #421](https://github.com/cph-cachet/flutter-plugins/pull/421) -  added simple `HKWorkout` and `ExerciseTime` support
+* added simple `HKWorkout` and `ExerciseTime` support [PR#421](https://github.com/cph-cachet/flutter-plugins/pull/421).
 
 ## 3.1.1+1
-* [PR #394](https://github.com/cph-cachet/flutter-plugins/pull/394) - added functions to request authorization
+* added functions to request authorization [PR#394](https://github.com/cph-cachet/flutter-plugins/pull/394)
 
 ## 3.1.0
-* [PR #372](https://github.com/cph-cachet/flutter-plugins/pull/372) - added sleep data to Android + fix of permissions and initialization
-* [PR #388](https://github.com/cph-cachet/flutter-plugins/pull/388) - testability of HealthDataPoint
+* added sleep data to Android + fix of permissions and initialization [PR#372](https://github.com/cph-cachet/flutter-plugins/pull/372)
+* testability of HealthDataPoint [PR#388](https://github.com/cph-cachet/flutter-plugins/pull/388).
 * update to using the `device_info_plus` plugin 
 
 ## 3.0.6
-* [PR#281](https://github.com/cph-cachet/flutter-plugins/pull/281) Added two new fields to the `HealthDataPoint` - `SourceId` and `SourceName` and populate when data is read. This allows datapoints to be disambigous and in some cases allows us to get more accurate data. For example the number of steps can be reported from Apple Health and Watch and without source data they are aggregated into just "steps" producing an innacurate result.
+* Added two new fields to the `HealthDataPoint` - `SourceId` and `SourceName` and populate when data is read. This allows datapoints to be disambigous and in some cases allows us to get more accurate data. For example the number of steps can be reported from Apple Health and Watch and without source data they are aggregated into just "steps" producing an innacurate result [PR#281](https://github.com/cph-cachet/flutter-plugins/pull/281).
 
 ## 3.0.5
 * Null safety in Dart has been implemented

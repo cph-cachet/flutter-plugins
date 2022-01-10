@@ -1,6 +1,15 @@
 part of health;
 
 /// Main class for the Plugin.
+///
+/// The plugin supports:
+///
+///  * handling permissions to access health data using the [hasPermissions],
+///    [requestPermissions], [requestAuthorization], [revokePermissions] methods.
+///  * reading health data using the [getHealthDataFromTypes] method.
+///  * writing health data using the [writeHealthData] method.
+///  * accessing total step counts using the [getTotalStepsInInterval] method.
+///  * cleaning up dublicate data points via the [removeDuplicates] method.
 class HealthFactory {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   String? _deviceId;
@@ -88,8 +97,10 @@ class HealthFactory {
   ///   + If unspecified, each [HealthDataType] in [types] is requested for READ [HealthDataAccess].
   ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
   ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
-  Future<bool> requestAuthorization(List<HealthDataType> types,
-      {List<HealthDataAccess>? permissions}) async {
+  Future<bool> requestAuthorization(
+    List<HealthDataType> types, {
+    List<HealthDataAccess>? permissions,
+  }) async {
     if (permissions != null && permissions.length != types.length) {
       throw ArgumentError(
           'The length of [types] must be same as that of [permissions].');
