@@ -66,14 +66,14 @@ class HealthDataPoint {
         'source_name': sourceName
       };
 
-  /// Converts the [HealthDataPoint] to a string
+  @override
   String toString() => '${this.runtimeType} - '
       'value: $value, '
       'unit: $unit, '
       'dateFrom: $dateFrom, '
       'dateTo: $dateTo, '
       'dataType: $type,'
-      'platform: $platform'
+      'platform: $platform,'
       'sourceId: $sourceId,'
       'sourceName: $sourceName,';
 
