@@ -110,7 +110,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.WATER,
 ];
 
-/// Map a [HealthDataType] to a [HealthDataUnit].
+/// Maps a [HealthDataType] to a [HealthDataUnit].
 const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataUnit.CALORIES,
   HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.CALORIES,
@@ -147,7 +147,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.EXERCISE_TIME: HealthDataUnit.MINUTES,
   HealthDataType.WORKOUT: HealthDataUnit.MINUTES,
 
-  /// Heart Rate events (specific to Apple Watch)
+  // Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
@@ -212,3 +212,23 @@ const PlatformTypeJsonValue = {
   PlatformType.IOS: 'ios',
   PlatformType.ANDROID: 'android'
 };
+
+/// List of all [HealthDataPoint] units.
+enum HealthDataUnit {
+  BEATS_PER_MINUTE,
+  CALORIES,
+  COUNT,
+  DEGREE_CELSIUS,
+  GRAMS,
+  KILOGRAMS,
+  METERS,
+  MILLIGRAM_PER_DECILITER,
+  MILLIMETER_OF_MERCURY,
+  MILLISECONDS,
+  MINUTES,
+  NO_UNIT,
+  PERCENTAGE,
+  SIEMENS,
+  UNKNOWN_UNIT,
+  LITER,
+}

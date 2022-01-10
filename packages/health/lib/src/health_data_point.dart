@@ -1,7 +1,7 @@
 part of health;
 
 /// A [HealthDataPoint] object corresponds to a data point captures from
-/// GoogleFit or Apple HealthKit
+/// GoogleFit or Apple HealthKit.
 class HealthDataPoint {
   num _value;
   HealthDataType _type;
@@ -77,45 +77,39 @@ class HealthDataPoint {
       'sourceId: $sourceId,'
       'sourceName: $sourceName,';
 
-  /// Get the quantity value of the data point
+  /// The quantity value of the data point
   num get value => _value;
 
-  /// Get the start of the datetime interval
+  /// The start of the time interval
   DateTime get dateFrom => _dateFrom;
 
-  /// Get the end of the datetime interval
+  /// The end of the time interval
   DateTime get dateTo => _dateTo;
 
-  /// Get the type of the data point
+  /// The type of the data point
   HealthDataType get type => _type;
 
-  /// Get the unit of the data point
+  /// The unit of the data point
   HealthDataUnit get unit => _unit;
 
-  /// Get the software platform of the data point
-  /// (i.e. Android or iOS)
+  /// The software platform of the data point
   PlatformType get platform => _platform;
 
-  /// Get the data point type as a string
+  /// The data point type as a string
   String get typeString => _enumToString(_type);
 
-  /// Get the data point unit as a string
+  /// The data point unit as a string
   String get unitString => _enumToString(_unit);
 
-  /// Get the id of the device from which
-  /// the data point was extracted
+  /// The id of the device from which the data point was fetched.
   String get deviceId => _deviceId;
 
-  /// Get the id of the source from which
-  /// the data point was extracted
+  /// The id of the source from which the data point was fetched.
   String get sourceId => _sourceId;
 
-  /// Get the name of the source from which
-  /// the data point was extracted
+  /// The name of the source from which the data point was fetched.
   String get sourceName => _sourceName;
 
-  /// An equals (==) operator for comparing two data points
-  /// This makes it possible to remove duplicate data points.
   @override
   bool operator ==(Object o) {
     return o is HealthDataPoint &&
@@ -130,7 +124,6 @@ class HealthDataPoint {
         this.sourceName == o.sourceName;
   }
 
-  /// Override required due to overriding the '==' operator
   @override
   int get hashCode => toJson().hashCode;
 }

@@ -229,7 +229,7 @@ class HealthFactory {
 
     // If not implemented on platform, throw an exception
     if (!isDataTypeAvailable(dataType)) {
-      throw _HealthException(
+      throw HealthException(
           dataType, 'Not available on platform $_platformType');
     }
 

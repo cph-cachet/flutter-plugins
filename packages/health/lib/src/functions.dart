@@ -1,20 +1,19 @@
 part of health;
 
-/// Custom Exception for the plugin,
-/// thrown whenever a Health Data Type is requested,
-/// when not available on the current platform
-class _HealthException implements Exception {
-  dynamic _dataType;
-  String _cause;
+/// Custom Exception for the plugin. Used when a Health Data Type is requested,
+/// but not available on the current platform.
+class HealthException implements Exception {
+  dynamic dataType;
+  String cause;
 
-  _HealthException(this._dataType, this._cause);
+  HealthException(this.dataType, this.cause);
 
-  String toString() {
-    return "An exception happened when requesting ${_dataType.toString()}. Cause: $_cause";
-  }
+  String toString() =>
+      "Error requesting health data type '$dataType' - cause: $cause";
 }
 
 /// Extracts the string value from an enum
 String _enumToString(enumItem) => enumItem.toString().split('.').last;
 
+/// A list of supported platforms.
 enum PlatformType { IOS, ANDROID }
