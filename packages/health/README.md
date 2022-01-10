@@ -12,7 +12,7 @@ The plugin supports:
   * cleaning up dublicate data points via the `removeDuplicates` method.
 
 
-> For Android, the target phone __needs__ to have [Google Fit](https://www.google.com/fit/) installed and have access to the internet, otherwise this plugin will not work.
+Note that for Android, the target phone __needs__ to have [Google Fit](https://www.google.com/fit/) installed and have access to the internet, otherwise this plugin will not work.
 
 ## Data Types
 
