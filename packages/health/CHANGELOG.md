@@ -1,3 +1,6 @@
+## 3.4.3
+* fix of [#401](https://github.com/cph-cachet/flutter-plugins/issues/401).
+
 ## 3.4.2
 * Resolved concurrent issues with native threads [PR#483](https://github.com/cph-cachet/flutter-plugins/pull/483).
 * Healthkit CategorySample [PR#485](https://github.com/cph-cachet/flutter-plugins/pull/485).

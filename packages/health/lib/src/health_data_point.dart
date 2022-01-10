@@ -72,10 +72,10 @@ class HealthDataPoint {
       'unit: $unit, '
       'dateFrom: $dateFrom, '
       'dateTo: $dateTo, '
-      'dataType: $type,'
-      'platform: $platform,'
-      'sourceId: $sourceId,'
-      'sourceName: $sourceName,';
+      'dataType: $type, '
+      'platform: $platform, '
+      'sourceId: $sourceId, '
+      'sourceName: $sourceName';
 
   /// The quantity value of the data point
   num get value => _value;
