@@ -14,5 +14,5 @@ part 'package:mobility_features/src/mobility_domain.dart';
 part 'package:mobility_features/src/mobility_intermediate.dart';
 part 'package:mobility_features/src/mobility_context.dart';
 part 'package:mobility_features/src/mobility_serializer.dart';
-part 'package:mobility_features/src/mobility_factory.dart';
+part 'package:mobility_features/src/mobility_features.dart';
 part 'package:mobility_features/src/mobility_file_util.dart';

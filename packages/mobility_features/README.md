@@ -2,37 +2,29 @@
 
 ## Setup
 
+The Mobility Features package is designed to work independent of the location plugin. You may choose you own location plugin, since you may already use this in your app. 
+
+In the example app we use our own plugin [`carp_background_location`](https://pub.dev/packages/carp_background_location) which works on both Android and iOS as of August 2020. However, the 
+[location](https://pub.dev/packages/location) plugin will also work. The important thing, however, is to make sure that the app runs in the backgound. On Android this is tied to running the app as a foregound service. 
+
 Add the package to your `pubspec.yaml` file and import the package
-
-No permissions are required to use the package, however, a location plugin should be used to stream data. 
-
-We recommend our own plugin [`carp_background_location`](https://pub.dev/packages/carp_background_location) which works on both Android and iOS as of August 2020.
 
 ```dart
 import 'package:mobility_features/mobility_features.dart';
 ```
 
-### Step 1: Choose parameters
-```dart
-MobilityFeatures().stopDuration = Duration(seconds: 20);
-MobilityFeatures().placeRadius = 50.0;
-MobilityFeatures().stopRadius = 5.0;
-```
+The plugin works as a singleton and can be accessed using `MobilityFeatures()` in the code.
 
-Optionally, the following configurations can be made, which will influence the algorithms for producing features:
+
+### Step 1 - Configuration of parameters
+
+The following configurations can be made, which will influence the algorithms for producing features:
 
 * The stop radius should be kept low (5-20 meters)
 * The place radius somewhat higher (25-50 meters).
 * The stop duration can also be set to any desired duration, for most cases it should be kept lower than 3 minutes.
 
-Features computation is triggered when the user moves around and change their geo-position by a certain distance (stop distance). 
-If the stop was long enough (stop duration) the stop will be saved. Places are computed by grouping stops based on distance between them (place radius)
-
-Common for these parameters is that their value depend on what you are trying to capture: 
-Low parameter values will make the features more fine-grained but will trigger computation more often and will likely also lead to noisy features.
-
-For example, given a low stop duration, stopping for a red light in traffic will count as a stop. 
-Such granularity will be irrelevant for many use cases, but may be useful if questions such as 'do they take the same route to work every day?' are to be answered. 
+Configuration is done like shown below:
 
 ```dart
 StreamSubscription<MobilityContext> mobilitySubscription;
@@ -40,44 +32,63 @@ MobilityContext _mobilityContext;
 
 void initState() {
     ...
-    MobilityFeatures().stopDuration = Duration(seconds: 30);
-    MobilityFeatures().placeRadius = 20;
-    MobilityFeatures().stopRadius = 5;
+    MobilityFeatures().stopDuration = Duration(seconds: 20);
+    MobilityFeatures().placeRadius = 50;
+    MobilityFeatures().stopRadius = 5.0;
 }
 ```
 
-### Step 2: Set up streaming
-Location data collection is not directly supported by this package, for this you have to use a location plugin such as [`carp_background_location`](https://pub.dev/packages/carp_background_location). 
+Features computation is triggered when the user moves around and change their geo-position by a certain distance (stop distance). 
+If the stop was long enough (stop duration) the stop will be saved. Places are computed by grouping stops based on distance between them (place radius)
 
-From here, you can to convert from whichever location object is used by the location plugin to a `LocationSample`. 
+Common for these parameters is that their value depend on what you are trying to capture. 
+Low parameter values will make the features more fine-grained but will trigger computation more often and will likely also lead to noisy features.
+For example, given a low stop duration, stopping for a red light in traffic will count as a stop. Such granularity will be irrelevant for many use cases, but may be useful if questions such as "Do a user take the same route to work every day?"
 
-Next, you need to subscribe to the `MobilityFeatures()`'s `contextStream` to be be notified each time a new set of features has been computed. 
+
+### Step 2 - Set up location streaming
+
+Collection of location data is not directly supported by this package, for this you have to use a location plugin such as [`carp_background_location`](https://pub.dev/packages/carp_background_location). You can to convert from whichever location object is used by the location plugin to a `LocationSample` object. 
+Next, you can start listening to location updates and subscribe to the `MobilityFeatures()`'s `contextStream` to be be notified each time a new set of features has been computed. 
 
 Below is shown an example using the [`carp_background_location`](https://pub.dev/packages/carp_background_location) plugin, where a `LocationDto` stream is converted into a `LocationSample` stream by using a map-function.
 
 ```dart
-/// Start the streaming of location data and mobility features
-void streamInit() async {
-    /// Get the location data stream (specific to mubs_background_location)
+  /// Set up streams:
+  /// * Location streaming to MobilityContext
+  /// * Subscribe to MobilityContext updates
+  void streamInit() async {
     locationStream = LocationManager().locationStream;
-    locationSubscription = locationStream.listen(onData);
-    
-    /// Start the location service (specific to mubs_background_location)
+
+    // subscribe to location stream - in case this is needed in the app
+    if (locationSubscription != null) locationSubscription.cancel();
+    locationSubscription = locationStream.listen(onLocationUpdate);
+
+    // start the location service (specific to carp_background_location)
     await LocationManager().start();
 
-    /// Convert from [LocationDto] to [LocationSample]
-    Stream<LocationSample> locationSampleStream = locationStream.map((e) =>
-        LocationSample(GeoLocation(e.latitude, e.longitude), DateTime.now()));
+    // map from [LocationDto] to [LocationSample]
+    Stream<LocationSample> locationSampleStream = locationStream.map(
+        (location) => LocationSample(
+            GeoLocation(location.latitude, location.longitude),
+            DateTime.now()));
 
-    /// Provide the MobilityFactory instance with the LocationSample stream
+    // provide the [MobilityFeatures] instance with the LocationSample stream
     MobilityFeatures().startListening(locationSampleStream);
-    
-    /// Start listening to incoming MobilityContext objects
-    MobilityFeatures().contextStream.listen(onMobilityContext);
-}
+
+    // start listening to incoming MobilityContext objects
+    mobilitySubscription =
+        MobilityFeatures().contextStream.listen(onMobilityContext);
+  }
+
+  /// Called whenever location changes.
+  void onLocationUpdate(LocationDto dto) {
+    print(dtoToString(dto));
+  }
 ```
 
-### Step 3: Handle features
+### Step 3 - Handle mobility 
+
 A call-back method is used to handle incoming MobilityContext objects:
 
 ```dart

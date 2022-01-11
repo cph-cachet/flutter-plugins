@@ -1,3 +1,7 @@
+## 3.1.0
+* improvement to `MobilityContext` API.
+* misc updates to documentation.
+
 ## 3.0.0+2
 * update to null-safety
 * rename of `MobilityFactory` to `MobilityFeatures`and using the standard Dart singleton syntax for `MobilityFeatures()`.

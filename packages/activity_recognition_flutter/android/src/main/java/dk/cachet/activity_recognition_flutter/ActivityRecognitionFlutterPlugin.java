@@ -94,7 +94,6 @@ public class ActivityRecognitionFlutterPlugin implements FlutterPlugin, EventCha
         }
         Log.d(TAG, "Foreground mode: " + fg);
 
-
         eventSink = events;
         startActivityTracking();
     }

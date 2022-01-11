@@ -16,7 +16,7 @@
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="example"
+        android:label="Mobility Features"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -47,6 +47,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
         <receiver
                 android:name="rekab.app.background_locator.LocatorBroadcastReceiver"
                 android:enabled="true"
@@ -65,11 +66,18 @@
                 android:permission="android.permission.BIND_JOB_SERVICE"
                 android:exported="true"
         />
-        <service
+        <!-- <service
                 android:name="rekab.app.background_locator.IsolateHolderService"
                 android:permission="android.permission.FOREGROUND_SERVICE"
                 android:exported="true"
+        /> -->
+
+        <service android:name="rekab.app.background_locator.IsolateHolderService"
+            android:permission="android.permission.FOREGROUND_SERVICE"
+            android:exported="true"
+            android:foregroundServiceType = "location"
         />
+
 
         <meta-data android:name="flutterEmbedding" android:value="2"/>
     </application>

@@ -189,9 +189,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         print("Successfully called writeData with value of \(value) and type of \(type)")
         
-        let quantity = HKQuantity(unit: unitLookUp(key: type), doubleValue: value)
-        
-        let sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateTo)
+        let sample: HKObject
+      
+        if (unitLookUp(key: type) == HKUnit.init(from: "")) {
+          sample = HKCategorySample(type: dataTypeLookUp(key: type) as! HKCategoryType, value: Int(value), start: dateFrom, end: dateTo)
+        } else {
+          let quantity = HKQuantity(unit: unitLookUp(key: type), doubleValue: value)
+          
+          sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateTo)
+        }
         
         HKHealthStore().save(sample, withCompletion: { (success, error) in
             if let err = error {
@@ -224,19 +230,19 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             switch samplesOrNil {
             case let (samples as [HKQuantitySample]) as Any:
                 
+                let dictionaries = samples.map { sample -> NSDictionary in
+                    let unit = self.unitLookUp(key: dataTypeKey)
+                    return [
+                        "uuid": "\(sample.uuid)",
+                        "value": sample.quantity.doubleValue(for: unit),
+                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                        "source_id": sample.sourceRevision.source.bundleIdentifier,
+                        "source_name": sample.sourceRevision.source.name
+                    ]
+                }
                 DispatchQueue.main.async {
-                    result(samples.map { sample -> NSDictionary in
-                        let unit = self.unitLookUp(key: dataTypeKey)
-
-                        return [
-                            "uuid": "\(sample.uuid)",
-                            "value": sample.quantity.doubleValue(for: unit),
-                            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-                            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                            "source_id": sample.sourceRevision.source.bundleIdentifier,
-                            "source_name": sample.sourceRevision.source.name
-                        ]
-                    })
+                    result(dictionaries)
                 }
                 
             case var (samplesCategory as [HKCategorySample]) as Any:
@@ -249,32 +255,35 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 if (dataTypeKey == self.SLEEP_ASLEEP) {
                     samplesCategory = samplesCategory.filter { $0.value == 1 }
                 }
-                
+                let categories = samplesCategory.map { sample -> NSDictionary in
+                    return [
+                        "uuid": "\(sample.uuid)",
+                        "value": sample.value,
+                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                        "source_id": sample.sourceRevision.source.bundleIdentifier,
+                        "source_name": sample.sourceRevision.source.name
+                    ]
+                }
                 DispatchQueue.main.async {
-                    result(samplesCategory.map { sample -> NSDictionary in
-                        return [
-                            "uuid": "\(sample.uuid)",
-                            "value": sample.value,
-                            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-                            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                            "source_id": sample.sourceRevision.source.bundleIdentifier,
-                            "source_name": sample.sourceRevision.source.name
-                        ]
-                    })
+                    result(categories)
                 }
                 
             case let (samplesWorkout as [HKWorkout]) as Any:
+                
+                let dictionaries = samplesWorkout.map { sample -> NSDictionary in
+                    return [
+                        "uuid": "\(sample.uuid)",
+                        "value": Int(sample.duration),
+                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                        "source_id": sample.sourceRevision.source.bundleIdentifier,
+                        "source_name": sample.sourceRevision.source.name
+                    ]
+                }
+                
                 DispatchQueue.main.async {
-                    result(samplesWorkout.map { sample -> NSDictionary in
-                        return [
-                            "uuid": "\(sample.uuid)",
-                            "value": Int(sample.duration),
-                            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-                            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                            "source_id": sample.sourceRevision.source.bundleIdentifier,
-                            "source_name": sample.sourceRevision.source.name
-                        ]
-                    })
+                    result(dictionaries)
                 }
                 
             default:
@@ -305,7 +314,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
             guard let queryResult = queryResult else {
                 let error = error! as NSError
-                result(FlutterError(code: "\(error.code)", message: error.domain, details: error.localizedDescription))
+                print("Error getting total steps in interval \(error.localizedDescription)")
+                
+                DispatchQueue.main.async {
+                    result(nil)
+                }
                 return
             }
 
@@ -317,7 +330,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
 
             let totalSteps = Int(steps)
-            result(totalSteps)
+            DispatchQueue.main.async {
+                result(totalSteps)
+            }
         }
 
         HKHealthStore().execute(query)
