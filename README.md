@@ -10,7 +10,7 @@ For more information about plugins, and how to use them, see
 ## Plugins
 These are the available plugins in this repository.
 
-| Plugin | Description | Android | iOS |    Pub    | 
+| Plugin | Description | Android | iOS |    http://pub.dev/    | 
 |--------|-------------|:-------:|:---:|:---------:|
 | [screen_state](./packages/screen_state) | Track screen state changes | ✔️ | ❌ | [![pub package](https://img.shields.io/pub/v/screen_state.svg)](https://pub.dartlang.org/packages/screen_state) |
 | [light](./packages/light) | Track light sensor readings | ✔️ | ❌ |  [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
