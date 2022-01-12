@@ -35,15 +35,19 @@ Please check existing issues and file any new issues, bugs, or feature requests 
 
 ## Contributing
 
-If you wish to contribute a new plugin to the Flutter ecosystem, please
+As part of the open-source Flutter ecosystem, we would welcome any help in maintaining and enhancing these plugins. 
+We (i.e., CACHET) have limited resources for maintaining these plugins and we rely on **your** help in this.
+We welcome any contribution -- from small error corrections in the documentation, to bug fixes, to large features enhacements, or even new features in a plugin.
+If you wish to contribute to any of the plugins in this repo,
+please review our [contribution guide](https://github.com/cph-cachet/flutter-plugins/CONTRIBUTING.md),
+and send a [pull request](https://github.com/cph-cachet/flutter-plugins/pulls).
+
+
+In general, if you wish to contribute a new plugin to the Flutter ecosystem, please
 see the documentation for [developing packages](https://flutter.io/developing-packages/) and
 [platform channels](https://flutter.io/platform-channels/). You can store
 your plugin source code in any GitHub repository (the present repo is only
 intended for plugins developed by the core CARP team). Once your plugin
 is ready you can [publish](https://flutter.io/developing-packages/#publish)
 to the [pub repository](https://pub.dartlang.org/).
-
-If you wish to contribute a change to any of the existing plugins in this repo,
-please review our [contribution guide](https://github.com/cph-cachet/flutter-plugins/CONTRIBUTING.md),
-and send a [pull request](https://github.com/cph-cachet/flutter-plugins/pulls).
 
