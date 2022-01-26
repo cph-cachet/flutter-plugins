@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /*
- * A [AudioStreamer] object is reponsible for connecting
+ * A [AudioStreamer] object is responsible for connecting
  * to the native environment and streaming audio from the microphone.*
  */
 const String EVENT_CHANNEL_NAME = 'audio_streamer.eventChannel';
@@ -14,8 +14,7 @@ class AudioStreamer {
 
   static int get sampleRate => 44100;
 
-  static const EventChannel _noiseEventChannel =
-      EventChannel(EVENT_CHANNEL_NAME);
+  static const EventChannel _noiseEventChannel = EventChannel(EVENT_CHANNEL_NAME);
 
   Stream<List<double>>? _stream;
   StreamSubscription<List<dynamic>>? _subscription;
@@ -36,12 +35,10 @@ class AudioStreamer {
   }
 
   /// Verify that it was granted
-  static Future<bool> checkPermission() async =>
-      Permission.microphone.request().isGranted;
+  static Future<bool> checkPermission() async => Permission.microphone.request().isGranted;
 
   /// Request the microphone permission
-  static Future<void> requestPermission() async =>
-      Permission.microphone.request();
+  static Future<void> requestPermission() async => Permission.microphone.request();
 
   Future<bool> start(Function onData, Function handleError) async {
     if (_isRecording) {
