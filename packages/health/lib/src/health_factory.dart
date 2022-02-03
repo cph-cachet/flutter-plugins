@@ -79,7 +79,8 @@ class HealthFactory {
           await _prepareQuery(startDate, endDate, type);
       dataPoints.addAll(result);
     }
-    return removeDuplicates(dataPoints);
+    // return removeDuplicates(dataPoints);
+    return dataPoints;
   }
 
   /// Prepares a query, i.e. checks if the types are available, etc.
