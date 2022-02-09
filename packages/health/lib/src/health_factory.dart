@@ -198,6 +198,48 @@ class HealthFactory {
     return success ?? false;
   }
 
+  /// Saves audiogram into Apple Health.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [value] - the health data's value in double
+  /// * [startTime] - the start time when this [value] is measured.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when this [value] is measured.
+  ///   + It must be equal to or later than [startTime].
+  ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
+  ///
+  Future<bool> writeAudiogram(
+    List<double> frequencies,
+    List<double> leftEarSensitivities,
+    List<double> rightEarSensitivities,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
+    if (frequencies.isEmpty ||
+        leftEarSensitivities.isEmpty ||
+        rightEarSensitivities.isEmpty)
+      throw ArgumentError(
+          "frequencies, leftEarSensitivities and rightEarSensitivities can't be empty");
+    if (frequencies.length != leftEarSensitivities.length ||
+        rightEarSensitivities.length != leftEarSensitivities.length)
+      throw ArgumentError(
+          "frequencies, leftEarSensitivities and rightEarSensitivities need to be of the same length");
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+    Map<String, dynamic> args = {
+      'frequencies': frequencies,
+      'leftEarSensitivities': leftEarSensitivities,
+      'rightEarSensitivities': rightEarSensitivities,
+      'dataTypeKey': _enumToString(HealthDataType.AUDIOGRAM),
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+    bool? success = await _channel.invokeMethod('writeAudiogram', args);
+    return success ?? false;
+  }
+
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
     DateTime startDate,

@@ -100,9 +100,18 @@ class _HealthAppState extends State<HealthApp> {
     final earlier = now.subtract(Duration(minutes: 5));
 
     _nofSteps = Random().nextInt(10);
-    final types = [HealthDataType.STEPS, HealthDataType.BLOOD_GLUCOSE];
-    final rights = [HealthDataAccess.WRITE, HealthDataAccess.WRITE];
+    final types = [
+      HealthDataType.STEPS,
+      HealthDataType.BLOOD_GLUCOSE,
+      HealthDataType.AUDIOGRAM
+    ];
+    final rights = [
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE
+    ];
     final permissions = [
+      HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE
     ];
@@ -119,6 +128,18 @@ class _HealthAppState extends State<HealthApp> {
     if (success) {
       success = await health.writeHealthData(
           _mgdl, HealthDataType.BLOOD_GLUCOSE, now, now);
+
+      const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
+      const leftEarSensitivities = [49.0, 54.0, 89.0, 52.0, 77.0, 35.0];
+      const rightEarSensitivities = [76.0, 66.0, 90.0, 22.0, 85.0, 44.5];
+
+      success = await health.writeAudiogram(
+        frequencies,
+        leftEarSensitivities,
+        rightEarSensitivities,
+        now,
+        now,
+      );
     }
 
     setState(() {
