@@ -203,12 +203,14 @@ class HealthFactory {
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [value] - the health data's value in double
-  /// * [startTime] - the start time when this [value] is measured.
+  /// * [frequencies] - array of frequencies of the test
+  /// * [leftEarSensitivities] threshold in decibel for the left ear
+  /// * [rightEarSensitivities] threshold in decibel for the left ear
+  /// * [startTime] - the start time when the audiogram is measured.
   ///   + It must be equal to or earlier than [endTime].
-  /// * [endTime] - the end time when this [value] is measured.
+  /// * [endTime] - the end time when the audiogram is measured.
   ///   + It must be equal to or later than [startTime].
-  ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
+  ///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
   ///
   Future<bool> writeAudiogram(
     List<double> frequencies,
