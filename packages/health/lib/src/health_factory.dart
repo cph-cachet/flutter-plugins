@@ -379,4 +379,12 @@ class HealthFactory {
     );
     return stepsCount;
   }
+
+  /// Get the total numbner of steps within a specific time period.
+  /// Returns null if not successful.
+  ///
+  Future<List<String>?> getAudiogramsIds() async {
+    final ids = await _channel.invokeMethod<List<String>?>('getAudiogramsIds');
+    return ids;
+  }
 }
