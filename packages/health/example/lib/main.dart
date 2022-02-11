@@ -139,6 +139,10 @@ class _HealthAppState extends State<HealthApp> {
         rightEarSensitivities,
         now,
         now,
+        metadata: {
+          "HKMetadataKeyExternalUUID": "uniqueID",
+          "HKMetadataKeyDeviceName": "bluetooth headphone",
+        },
       );
     }
 

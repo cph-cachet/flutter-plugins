@@ -211,14 +211,14 @@ class HealthFactory {
   /// * [endTime] - the end time when the audiogram is measured.
   ///   + It must be equal to or later than [startTime].
   ///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
-  ///
+  /// * [metadata] - optional map of keys, HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName
   Future<bool> writeAudiogram(
-    List<double> frequencies,
-    List<double> leftEarSensitivities,
-    List<double> rightEarSensitivities,
-    DateTime startTime,
-    DateTime endTime,
-  ) async {
+      List<double> frequencies,
+      List<double> leftEarSensitivities,
+      List<double> rightEarSensitivities,
+      DateTime startTime,
+      DateTime endTime,
+      {Map<String, dynamic>? metadata}) async {
     if (frequencies.isEmpty ||
         leftEarSensitivities.isEmpty ||
         rightEarSensitivities.isEmpty)
@@ -236,7 +236,8 @@ class HealthFactory {
       'rightEarSensitivities': rightEarSensitivities,
       'dataTypeKey': _enumToString(HealthDataType.AUDIOGRAM),
       'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
+      'endTime': endTime.millisecondsSinceEpoch,
+      'metadata': metadata,
     };
     bool? success = await _channel.invokeMethod('writeAudiogram', args);
     return success ?? false;

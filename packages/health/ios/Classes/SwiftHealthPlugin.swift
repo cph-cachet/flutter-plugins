@@ -221,7 +221,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
              let leftEarSensitivities = (arguments["leftEarSensitivities"] as? Array<Double>),
              let rightEarSensitivities = (arguments["rightEarSensitivities"] as? Array<Double>),
              let startDate = (arguments["startTime"] as? NSNumber),
-             let endDate = (arguments["endTime"] as? NSNumber)
+             let endDate = (arguments["endTime"] as? NSNumber),
+             let metadataReceived = (arguments["metadata"] as? [String: Any]?)
              else {
                  throw PluginError(message: "Invalid Arguments")
              }
@@ -239,10 +240,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             let sensitivityPoint = try HKAudiogramSensitivityPoint(frequency: frequency,  leftEarSensitivity: left, rightEarSensitivity: right)
             sensitivityPoints.append(sensitivityPoint)
          }
-
-        let audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: nil )
-
         
+        let audiogram: HKAudiogramSample;
+                
+        if((metadataReceived!["HKMetadataKeyDeviceName"] != nil) && (metadataReceived!["HKMetadataKeyExternalUUID"] != nil)) {
+            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: metadataReceived!["HKMetadataKeyDeviceName"] as! String, HKMetadataKeyExternalUUID: metadataReceived!["HKMetadataKeyExternalUUID"] as! String])
+        } else {
+            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: nil)
+        }
+
          HKHealthStore().save(audiogram, withCompletion: { (success, error) in
              if let err = error {
                  print("Error Saving Audiogram. Sample: \(err.localizedDescription)")
