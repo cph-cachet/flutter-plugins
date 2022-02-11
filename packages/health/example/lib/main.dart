@@ -33,23 +33,25 @@ class _HealthAppState extends State<HealthApp> {
 
   /// Fetch data points from the health plugin and show them in the app.
   Future fetchData() async {
-    setState(() => _state = AppState.FETCHING_DATA);
+    // setState(() => _state = AppState.FETCHING_DATA);
 
     // define the types to get
     final types = [
-      HealthDataType.STEPS,
-      HealthDataType.WEIGHT,
-      HealthDataType.HEIGHT,
-      HealthDataType.BLOOD_GLUCOSE,
+      // HealthDataType.STEPS,
+      // HealthDataType.WEIGHT,
+      // HealthDataType.HEIGHT,
+      // HealthDataType.BLOOD_GLUCOSE,
       // Uncomment this line on iOS - only available on iOS
       // HealthDataType.DISTANCE_WALKING_RUNNING,
+      HealthDataType.AUDIOGRAM
     ];
 
     // with coresponsing permissions
     final permissions = [
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
+      // HealthDataAccess.READ,
+      // HealthDataAccess.READ,
+      // HealthDataAccess.READ,
+      // HealthDataAccess.READ,
       HealthDataAccess.READ,
     ];
 
@@ -64,30 +66,37 @@ class _HealthAppState extends State<HealthApp> {
         await health.requestAuthorization(types, permissions: permissions);
 
     if (requested) {
-      try {
-        // fetch health data
-        List<HealthDataPoint> healthData =
-            await health.getHealthDataFromTypes(yesterday, now, types);
+      // try {
+      //   // fetch health data
+      //   List<HealthDataPoint> healthData =
+      //       await health.getHealthDataFromTypes(yesterday, now, types);
 
-        // save all the new data points (only the first 100)
-        _healthDataList.addAll((healthData.length < 100)
-            ? healthData
-            : healthData.sublist(0, 100));
+      //   // save all the new data points (only the first 100)
+      //   _healthDataList.addAll((healthData.length < 100)
+      //       ? healthData
+      //       : healthData.sublist(0, 100));
+      // } catch (error) {
+      //   print("Exception in getHealthDataFromTypes: $error");
+      // }
+
+      try {
+        var audiogramsIds = await health.getAudiogramsIds();
+        print("audiogramsIds $audiogramsIds");
       } catch (error) {
-        print("Exception in getHealthDataFromTypes: $error");
+        print("Caught exception in getAudiogramsIds: $error");
       }
 
-      // filter out duplicates
-      _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
+      // // filter out duplicates
+      // _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
 
-      // print the results
-      _healthDataList.forEach((x) => print(x));
+      // // print the results
+      // _healthDataList.forEach((x) => print(x));
 
-      // update the UI to display the results
-      setState(() {
-        _state =
-            _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
-      });
+      // // update the UI to display the results
+      // setState(() {
+      //   _state =
+      //       _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+      // });
     } else {
       print("Authorization not granted");
       setState(() => _state = AppState.DATA_NOT_FETCHED);
