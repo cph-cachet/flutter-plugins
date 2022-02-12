@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import com.google.android.gms.fitness.data.*
+import com.google.android.gms.fitness.request.DataUpdateRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.SessionReadResponse
 import com.google.android.gms.tasks.OnFailureListener
@@ -233,6 +234,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val startTime = call.argument<Long>("startTime")!!
         val endTime = call.argument<Long>("endTime")!!
         val value = call.argument<Float>( "value")!!
+        val overwrite = call.argument<Boolean>( "overwrite")!!
 
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
@@ -282,7 +284,25 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
-            Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+
+            if (overwrite) {
+                val request = DataUpdateRequest.Builder()
+                    .setDataSet(dataSet)
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .build()
+
+                Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                    .updateData(request)
+                    .addOnSuccessListener {
+                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                        result.success(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                        result.success(false)
+                    }
+            } else {
+                Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
                     .insertData(dataSet)
                     .addOnSuccessListener {
                         Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
@@ -292,6 +312,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
                         result.success(false)
                     }
+            }
         } catch (e3: Exception) {
              result.success(false)
         }
