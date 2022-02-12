@@ -58,6 +58,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
     private var SLEEP_AWAKE = "SLEEP_AWAKE"
     private var SLEEP_IN_BED = "SLEEP_IN_BED"
+    private var DIETARY_ENERGY_CONSUMED = "DIETARY_ENERGY_CONSUMED"
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
@@ -165,6 +166,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
+            DIETARY_ENERGY_CONSUMED -> DataType.TYPE_NUTRITION
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
@@ -188,6 +190,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             SLEEP_ASLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            DIETARY_ENERGY_CONSUMED -> Field.FIELD_NUTRIENTS
+            else -> throw IllegalArgumentException("Unsupported dataType: $type")
+        }
+    }
+
+    private fun getNutrientField(type: String): String {
+        return when (type) {
+            DIETARY_ENERGY_CONSUMED -> Field.NUTRIENT_CALORIES
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
@@ -248,9 +258,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         // Conversion is needed because glucose is stored as mmoll in Google Fit;
         // while mgdl is used for glucose in this plugin.
         val isGlucose = field == HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
-        val dataPoint = if (!isIntField(dataSource, field))
-            builder.setField(field, if (!isGlucose) value else (value/ MMOLL_2_MGDL).toFloat()).build() else
+        val isNutrition = field == Field.FIELD_NUTRIENTS
+
+        val dataPoint: DataPoint = if (isNutrition) {
+            val nutrientField = getNutrientField(type)
+            val nutrients = mapOf(
+                    nutrientField to value
+            )
+            builder.setField(field, nutrients).build()
+        } else {
+            if (!isIntField(dataSource, field))
+                builder.setField(field, if (!isGlucose) value else (value/ MMOLL_2_MGDL).toFloat()).build() else
                 builder.setField(field, value.toInt()).build()
+        }
 
         val dataSet = DataSet.builder(dataSource)
                 .add(dataPoint)

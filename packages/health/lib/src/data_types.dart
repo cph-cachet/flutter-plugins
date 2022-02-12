@@ -98,6 +98,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.BODY_FAT_PERCENTAGE,
   HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
+  HealthDataType.DIETARY_ENERGY_CONSUMED,
   HealthDataType.HEART_RATE,
   HealthDataType.HEIGHT,
   HealthDataType.STEPS,
@@ -208,10 +209,7 @@ const HealthDataUnitJsonValue = {
   HealthDataUnit.LITER: 'liter',
 };
 
-const PlatformTypeJsonValue = {
-  PlatformType.IOS: 'ios',
-  PlatformType.ANDROID: 'android'
-};
+const PlatformTypeJsonValue = {PlatformType.IOS: 'ios', PlatformType.ANDROID: 'android'};
 
 /// List of all [HealthDataPoint] units.
 enum HealthDataUnit {
