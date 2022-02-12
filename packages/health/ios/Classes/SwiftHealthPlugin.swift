@@ -179,11 +179,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             let value = (arguments["value"] as? Double),
             let type = (arguments["dataTypeKey"] as? String),
             let startDate = (arguments["startTime"] as? NSNumber),
-            let endDate = (arguments["endTime"] as? NSNumber)
+            let endDate = (arguments["endTime"] as? NSNumber),
+            let overwrite = (arguments["overwrite"] as? Bool)
             else {
                 throw PluginError(message: "Invalid Arguments")
             }
-        
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
         
@@ -199,7 +199,20 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
           sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateTo)
         }
         
-        HKHealthStore().save(sample, withCompletion: { (success, error) in
+        let healthKitStore = HKHealthStore()
+        
+        if (overwrite == true) {
+            healthKitStore.deleteObjects(of: dataTypeLookUp(key: type), predicate: HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
+                if let err = error {
+                    print("Error Deleting \(type) Sample: \(err.localizedDescription)")
+                }
+                DispatchQueue.main.async {
+                    result(success)
+                }
+            })
+        }
+        
+        healthKitStore.save(sample, withCompletion: { (success, error) in
             if let err = error {
                 print("Error Saving \(type) Sample: \(err.localizedDescription)")
             }
