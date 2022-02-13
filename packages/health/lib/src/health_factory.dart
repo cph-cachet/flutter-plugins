@@ -100,10 +100,35 @@ class HealthFactory {
       throw ArgumentError('The length of [types] must be same as that of [permissions].');
     }
 
-    final mTypes = List<HealthDataType>.from(types, growable: true);
-    final mPermissions = permissions == null
-        ? List<int>.filled(types.length, HealthDataAccess.READ.index, growable: true)
-        : permissions.map((permission) => permission.index).toList();
+    if (_platformType != PlatformType.ANDROID && _platformType != PlatformType.IOS) {
+      return false;
+    }
+
+    List<HealthDataType> usableTypes = [];
+    List<HealthDataAccess>? usablePermissions = permissions == null ? null : [];
+
+    var platformDataTypeKeys = _platformType == PlatformType.ANDROID ? _dataTypeKeysAndroid : _dataTypeKeysIOS;
+
+    // Only use supplied types and permissions if they are valid for the current platform
+    for (var i = 0; i < types.length; i++) {
+      var typeToCheck = types[i];
+
+      if (platformDataTypeKeys.contains(typeToCheck)) {
+        usableTypes.add(typeToCheck);
+        if (permissions != null && usablePermissions != null) {
+          usablePermissions.add(permissions[i]);
+        }
+      }
+    }
+
+    if (usableTypes.isEmpty) {
+      return false;
+    }
+
+    final mTypes = List<HealthDataType>.from(usableTypes, growable: true);
+    final mPermissions = usablePermissions == null
+        ? List<int>.filled(usableTypes.length, HealthDataAccess.READ.index, growable: true)
+        : usablePermissions.map((permission) => permission.index).toList();
 
     // on Android, if BMI is requested, then also ask for weight and height
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
