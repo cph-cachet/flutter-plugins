@@ -272,7 +272,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             return
         }
 
-        val foodList = call.argument<ArrayList<HashMap<String, *>>>( "foodList")!!
+        val foodList = call.argument<List<HashMap<String, *>>>( "foodList")!!
 
         print("Successfully called writeFoodData")
         print(foodList)

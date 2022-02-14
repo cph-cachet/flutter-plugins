@@ -191,9 +191,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 throw PluginError(message: "Invalid Arguments")
             }
         
-        print("Successfully called writeFoodData")
-        print(foodList)
+        NSLog("Successfully called writeFoodData")
         
+        for food in foodList {
+            for (key, value) in food {
+                NSLog(key as! String)
+            }
+        }
     }
     
     func writeData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
