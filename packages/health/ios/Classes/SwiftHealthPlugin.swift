@@ -81,6 +81,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("getTotalStepsInInterval")){
             getTotalStepsInInterval(call: call, result: result)
         }
+        
+        /// Handle getTotalStepsInInterval
+        else if (call.method.elementsEqual("getAudiogramsIds")){
+            getAudiogramsIds(call: call, result: result)
+        }
 
         /// Handle writeData
         else if (call.method.elementsEqual("writeData")){
@@ -243,8 +248,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         let audiogram: HKAudiogramSample;
                 
-        if((metadataReceived!["HKMetadataKeyDeviceName"] != nil) && (metadataReceived!["HKMetadataKeyExternalUUID"] != nil)) {
-            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: metadataReceived!["HKMetadataKeyDeviceName"] as! String, HKMetadataKeyExternalUUID: metadataReceived!["HKMetadataKeyExternalUUID"] as! String])
+        if((metadataReceived!["HKDeviceName"] != nil) && (metadataReceived!["HKExternalUUID"] != nil)) {
+            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: metadataReceived!["HKDeviceName"] as! String, HKMetadataKeyExternalUUID: metadataReceived!["HKExternalUUID"] as! String])
         } else {
             audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: nil)
         }
@@ -386,6 +391,42 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
 
         HKHealthStore().execute(query)
+    }
+    
+    func getAudiogramsIds(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let query = HKSampleQuery.init(sampleType: HKSampleType.audiogramSampleType(), predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, queryResult, error) in
+            
+            guard let queryResult : [HKSample] = queryResult else {
+                let error = error! as NSError
+                print("Error getting total steps in interval \(error.localizedDescription)")
+                
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+            }
+                        
+            var ids: Array<String> = [];
+            for result in queryResult {
+                guard let dataItem:HKAudiogramSample = result as? HKAudiogramSample else { continue }
+                guard let id: String = dataItem.metadata?["HKExternalUUID"] as? String else { continue }
+                ids.append(id)
+            }
+
+            if(ids.isEmpty) {
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+            } else {
+                DispatchQueue.main.async {
+                    result(ids)
+                }
+                return
+            }
+       }
+        
+       HKHealthStore().execute(query)
     }
 
     func unitLookUp(key: String) -> HKUnit {

@@ -41,8 +41,9 @@ class _HealthAppState extends State<HealthApp> {
       HealthDataType.WEIGHT,
       HealthDataType.HEIGHT,
       HealthDataType.BLOOD_GLUCOSE,
-      // Uncomment this line on iOS - only available on iOS
+      // Uncomment these 2 lines on iOS - only available on iOS
       // HealthDataType.DISTANCE_WALKING_RUNNING,
+      // HealthDataType.AUDIOGRAM
     ];
 
     // with coresponsing permissions
@@ -76,6 +77,14 @@ class _HealthAppState extends State<HealthApp> {
       } catch (error) {
         print("Exception in getHealthDataFromTypes: $error");
       }
+
+      // Uncomment this try catch on iOS - only available on iOS
+      // try {
+      //   var audiogramsIds = await health.getAudiogramsIds();
+      //   print("audiogramsIds $audiogramsIds");
+      // } catch (error) {
+      //   print("Caught exception in getAudiogramsIds: $error");
+      // }
 
       // filter out duplicates
       _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
