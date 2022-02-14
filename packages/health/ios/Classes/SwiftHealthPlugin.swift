@@ -75,6 +75,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("getData")){
             getData(call: call, result: result)
         }
+        
+        /// Handle deleteData
+        else if (call.method.elementsEqual("deleteData")){
+            try! deleteData(call: call, result: result)
+        }
 
         /// Handle getTotalStepsInInterval
         else if (call.method.elementsEqual("getTotalStepsInInterval")){
@@ -219,6 +224,29 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             DispatchQueue.main.async {
                 result(success)
             }
+        })
+    }
+    
+    func deleteData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+            let type = (arguments["dataTypeKey"] as? String),
+            let startDate = (arguments["startTime"] as? NSNumber),
+            let endDate = (arguments["endTime"] as? NSNumber)
+            else {
+                throw PluginError(message: "Invalid Arguments")
+            }
+        let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
+        
+        print("Successfully called deleteData with type of \(type)")
+        
+        HKHealthStore().deleteObjects(of: dataTypeLookUp(key: type), predicate: HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
+                if let err = error {
+                    print("Error Deleting \(type) Sample: \(err.localizedDescription)")
+                }
+                DispatchQueue.main.async {
+                    result(success)
+                }
         })
     }
 

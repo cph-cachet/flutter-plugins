@@ -209,6 +209,29 @@ class HealthFactory {
     return success ?? false;
   }
 
+  /// Saves health data into Apple Health or Google Fit.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [type] - the value's HealthDataType
+  /// * [startTime] - the start time from which to delete data of [type].
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time from which to delete data of [type].
+  ///   + It must be equal to or later than [startTime].
+  ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
+  ///
+  Future<bool> deleteHealthData(HealthDataType type, DateTime startTime, DateTime endTime) async {
+    if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+    Map<String, dynamic> args = {
+      'dataTypeKey': _enumToString(type),
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch,
+    };
+    bool? success = await _channel.invokeMethod('deleteData', args);
+    return success ?? false;
+  }
+
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
     DateTime startDate,
