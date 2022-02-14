@@ -186,18 +186,67 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     
     func writeFoodData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
         guard let arguments = call.arguments as? NSDictionary,
-            let foodList = arguments["foodList"] as? Array<NSDictionary>
+            let foodList = arguments["foodList"] as? Array<Dictionary<String, Any>>,
+            let startDate = (arguments["startTime"] as? NSNumber),
+            let endDate = (arguments["endTime"] as? NSNumber)
             else {
                 throw PluginError(message: "Invalid Arguments")
             }
         
         NSLog("Successfully called writeFoodData")
+    
+        let healthKitStore = HKHealthStore()
+        
+        let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
+        
+        healthKitStore.deleteObjects(of: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
+            if let err = error {
+                NSLog("Error Deleting Foods, Sample: \(err.localizedDescription)")
+            }
+//            DispatchQueue.main.async {
+//                result(success)
+//            }
+        })
+        
+        var consumedFoods: Array<HKCorrelation> = []
         
         for food in foodList {
-            for (key, value) in food {
-                NSLog(key as! String)
+            var iterationFood = food
+            
+            var consumedSamples: Set<HKSample> = []
+            
+            let timestamp = iterationFood.removeValue(forKey: "timestamp") as! NSNumber
+            let date = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
+            
+            for (key, value) in iterationFood {
+                let sample = HKQuantitySample(
+                    type: dataTypeLookUp(key: key) as! HKQuantityType,
+                    quantity: HKQuantity(unit: unitLookUp(key: key), doubleValue: value as! Double),
+                    start: date,
+                    end: date)
+                
+                consumedSamples.insert(sample)
+                NSLog(key)
             }
+            
+            let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
+//            let foodCorrelationMetadata: [String: AnyObject] = [HKMetadataKeyFoodType: foodTitle as AnyObject]
+
+            let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
+            
+            consumedFoods.append(foodCorrelation)
         }
+        
+        healthKitStore.save(consumedFoods, withCompletion: { (success, error) in
+            if let err = error {
+                NSLog("Error Saving, Sample: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
+        })
+        
     }
     
     func writeData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
@@ -447,6 +496,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[SLEEP_AWAKE] = HKUnit.init(from: "")
         unitDict[EXERCISE_TIME] =  HKUnit.minute()
         unitDict[WORKOUT] = HKUnit.init(from: "")
+        
 
         // Set up iOS 11 specific types (ordinary health data types)
         if #available(iOS 11.0, *) {
