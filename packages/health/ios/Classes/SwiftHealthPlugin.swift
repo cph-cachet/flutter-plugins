@@ -200,7 +200,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
         
-        healthKitStore.deleteObjects(of: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
+        NSLog("\(dateFrom)")
+        NSLog("\(dateTo)")
+                
+        healthKitStore.deleteObjects(of: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKCorrelationQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
             if let err = error {
                 NSLog("Error Deleting Foods, Sample: \(err.localizedDescription)")
             }
@@ -231,9 +234,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
             
             let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
-//            let foodCorrelationMetadata: [String: AnyObject] = [HKMetadataKeyFoodType: foodTitle as AnyObject]
+            let foodCorrelationMetadata: [String: AnyObject] = [HKMetadataKeyFoodType: "food/drink" as AnyObject]
 
-            let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
+            let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples, metadata: foodCorrelationMetadata)
             
             consumedFoods.append(foodCorrelation)
         }
