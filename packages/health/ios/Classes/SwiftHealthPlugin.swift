@@ -248,8 +248,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         let audiogram: HKAudiogramSample;
                 
-        if((metadataReceived!["HKMetadataKeyDeviceName"] != nil) && (metadataReceived!["HKMetadataKeyExternalUUID"] != nil)) {
-            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: metadataReceived!["HKMetadataKeyDeviceName"] as! String, HKMetadataKeyExternalUUID: metadataReceived!["HKMetadataKeyExternalUUID"] as! String])
+        if((metadataReceived!["HKDeviceName"] != nil) && (metadataReceived!["HKExternalUUID"] != nil)) {
+            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: metadataReceived!["HKDeviceName"] as! String, HKMetadataKeyExternalUUID: metadataReceived!["HKExternalUUID"] as! String])
         } else {
             audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: nil)
         }
@@ -405,14 +405,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 return
             }
-            
+                        
             var ids: Array<String> = [];
             for result in queryResult {
-                guard let dataItem:HKAudiogramSample = result as? HKAudiogramSample else { return }
-                guard let id: String = dataItem.metadata?["HKMetadataKeyExternalUUID"] as? String else { continue }
+                guard let dataItem:HKAudiogramSample = result as? HKAudiogramSample else { continue }
+                guard let id: String = dataItem.metadata?["HKExternalUUID"] as? String else { continue }
                 ids.append(id)
             }
-            print(ids)
 
             if(ids.isEmpty) {
                 DispatchQueue.main.async {
