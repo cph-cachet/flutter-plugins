@@ -80,6 +80,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("deleteData")){
             try! deleteData(call: call, result: result)
         }
+        
+        /// Handle writeFoodData
+        else if (call.method.elementsEqual("writeFoodData")){
+            try! writeFoodData(call: call, result: result)
+        }
 
         /// Handle getTotalStepsInInterval
         else if (call.method.elementsEqual("getTotalStepsInInterval")){
@@ -177,6 +182,18 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else {
             result(false)// Handle the error here.
         }
+    }
+    
+    func writeFoodData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+            let foodList = arguments["foodList"] as? Array<NSDictionary>
+            else {
+                throw PluginError(message: "Invalid Arguments")
+            }
+        
+        print("Successfully called writeFoodData")
+        print(foodList)
+        
     }
     
     func writeData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {

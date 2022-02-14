@@ -265,6 +265,24 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
+    private fun writeFoodData(call: MethodCall, result: Result) {
+
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
+        val foodList = call.argument<ArrayList<HashMap<String, *>>>( "foodList")!!
+
+        print("Successfully called writeFoodData")
+        print(foodList)
+
+        try {
+        } catch (e3: Exception) {
+            result.success(false)
+        }
+    }
+
     private fun writeData(call: MethodCall, result: Result) {
 
         if (activity == null) {
@@ -676,6 +694,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             "getData" -> getData(call, result)
             "deleteData" -> deleteData(call, result)
             "writeData" -> writeData(call, result)
+            "writeFoodData" -> writeFoodData(call, result)
             "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
             "hasPermissions" -> hasPermissions(call, result)
             else -> result.notImplemented()

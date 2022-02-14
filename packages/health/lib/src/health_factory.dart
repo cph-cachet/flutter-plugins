@@ -209,6 +209,14 @@ class HealthFactory {
     return success ?? false;
   }
 
+  Future<bool> writeFoodData(List<Map> foodList) async {
+    Map<String, dynamic> args = {
+      'foodList': foodList,
+    };
+    bool? success = await _channel.invokeMethod('writeFoodData', args);
+    return success ?? false;
+  }
+
   /// Saves health data into Apple Health or Google Fit.
   ///
   /// Returns true if successful, false otherwise.
