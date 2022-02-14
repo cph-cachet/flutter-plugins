@@ -130,7 +130,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     
     func hasPermission(type: HKSampleType, access: Int) -> Bool? {
         
-        if #available(iOS 11.0, *) {
+        if #available(iOS 13.0, *) {
             let status = healthStore.authorizationStatus(for: type)
             switch access {
             case 0: // READ
@@ -173,7 +173,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
 
-        if #available(iOS 11.0, *) {
+        if #available(iOS 13.0, *) {
             healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { (success, error) in
                 DispatchQueue.main.async {
                     result(success)
@@ -478,8 +478,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[EXERCISE_TIME] =  HKUnit.minute()
         unitDict[WORKOUT] = HKUnit.init(from: "")
 
-        // Set up iOS 11 specific types (ordinary health data types)
-        if #available(iOS 11.0, *) {
+        // Set up iOS 13 specific types (ordinary health data types)
+        if #available(iOS 13.0, *) {
             dataTypesDict[ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!
             dataTypesDict[AUDIOGRAM] = HKSampleType.audiogramSampleType()
             dataTypesDict[BASAL_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!
