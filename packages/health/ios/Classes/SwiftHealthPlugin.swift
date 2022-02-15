@@ -219,6 +219,42 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     if let err = error {
                         NSLog("Error Deleting, Sample: \(err.localizedDescription)")
                     }
+//                    DispatchQueue.main.async {
+//                        result(success)
+//                    }
+                })
+                
+                var consumedFoods: Array<HKCorrelation> = []
+                
+                for food in foodList {
+                    var iterationFood = food
+                    
+                    var consumedSamples: Set<HKSample> = []
+                    
+                    let timestamp = iterationFood.removeValue(forKey: "timestamp") as! NSNumber
+                    let date = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
+                    
+                    for (key, value) in iterationFood {
+                        let sample = HKQuantitySample(
+                            type: self.dataTypeLookUp(key: key) as! HKQuantityType,
+                            quantity: HKQuantity(unit: self.unitLookUp(key: key), doubleValue: value as! Double),
+                            start: date,
+                            end: date)
+                        
+                        consumedSamples.insert(sample)
+                    }
+                    
+                    let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
+
+                    let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
+                    
+                    consumedFoods.append(foodCorrelation)
+                }
+                
+                healthKitStore.save(consumedFoods, withCompletion: { (success, error) in
+                    if let err = error {
+                        NSLog("Error Saving, Sample: \(err.localizedDescription)")
+                    }
                     DispatchQueue.main.async {
                         result(success)
                     }
@@ -231,43 +267,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
         healthKitStore.execute(query)
-        
-        var consumedFoods: Array<HKCorrelation> = []
-        
-        for food in foodList {
-            var iterationFood = food
-            
-            var consumedSamples: Set<HKSample> = []
-            
-            let timestamp = iterationFood.removeValue(forKey: "timestamp") as! NSNumber
-            let date = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
-            
-            for (key, value) in iterationFood {
-                let sample = HKQuantitySample(
-                    type: dataTypeLookUp(key: key) as! HKQuantityType,
-                    quantity: HKQuantity(unit: unitLookUp(key: key), doubleValue: value as! Double),
-                    start: date,
-                    end: date)
-                
-                consumedSamples.insert(sample)
-            }
-            
-            let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
-
-            let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
-            
-            consumedFoods.append(foodCorrelation)
-        }
-        
-        healthKitStore.save(consumedFoods, withCompletion: { (success, error) in
-            if let err = error {
-                NSLog("Error Saving, Sample: \(err.localizedDescription)")
-            }
-            DispatchQueue.main.async {
-                result(success)
-            }
-        })
-        
     }
     
     func writeData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
