@@ -202,20 +202,27 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         NSLog("\(dateFrom)")
         NSLog("\(dateTo)")
-        
-        var samplesToDelete: Array<HKSample> = []
                 
         let query = HKCorrelationQuery(type: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKCorrelationQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), samplePredicates: nil)
         {
             query, results, error in
             
             if let correlations = results {
+                var samplesToDelete: Array<HKSample> = []
                 for correlation in correlations {
                     for sample in correlation.objects {
                         NSLog("taco")
                         samplesToDelete.append(sample)
                     }
                 }
+                healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
+                    if let err = error {
+                        NSLog("Error Deleting, Sample: \(err.localizedDescription)")
+                    }
+                    DispatchQueue.main.async {
+                        result(success)
+                    }
+                })
             }
             else {
                 if let err = error {
@@ -224,15 +231,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
         healthKitStore.execute(query)
-        
-        healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
-            if let err = error {
-                NSLog("Error Deleting, Sample: \(err.localizedDescription)")
-            }
-            DispatchQueue.main.async {
-                result(success)
-            }
-        })
         
         var consumedFoods: Array<HKCorrelation> = []
         
