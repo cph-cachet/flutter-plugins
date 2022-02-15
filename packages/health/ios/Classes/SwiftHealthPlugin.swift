@@ -81,6 +81,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             try! deleteData(call: call, result: result)
         }
         
+        /// Handle deleteFoodData
+        else if (call.method.elementsEqual("deleteFoodData")){
+            try! deleteFoodData(call: call, result: result)
+        }
+        
         /// Handle writeFoodData
         else if (call.method.elementsEqual("writeFoodData")){
             try! writeFoodData(call: call, result: result)
@@ -200,9 +205,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
-        
-        NSLog("\(dateFrom)")
-        NSLog("\(dateTo)")
                 
         let query = HKCorrelationQuery(type: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKCorrelationQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), samplePredicates: nil)
         {
@@ -257,6 +259,52 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 healthKitStore.save(consumedFoods, withCompletion: { (success, error) in
                     if let err = error {
                         NSLog("Error Saving, Sample: \(err.localizedDescription)")
+                    }
+                    DispatchQueue.main.async {
+                        result(success)
+                    }
+                })
+            }
+            else {
+                if let err = error {
+                    NSLog("Error Querying For Samples to Delete, Sample: \(err.localizedDescription)")
+                }
+            }
+        }
+        healthKitStore.execute(query)
+    }
+    
+    func deleteFoodData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+            let startDate = (arguments["startTime"] as? NSNumber),
+            let endDate = (arguments["endTime"] as? NSNumber)
+            else {
+                throw PluginError(message: "Invalid Arguments")
+            }
+        
+        NSLog("Successfully called deleteFoodData")
+    
+        let healthKitStore = HKHealthStore()
+        
+        let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
+                
+        let query = HKCorrelationQuery(type: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKCorrelationQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), samplePredicates: nil)
+        {
+            query, results, error in
+            
+            if let correlations = results {
+                var samplesToDelete: Array<HKSample> = []
+                for correlation in correlations {
+                    for sample in correlation.objects {
+                        samplesToDelete.append(sample)
+                    }
+                }
+                
+
+                healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
+                    if let err = error {
+                        NSLog("Error Deleting, Sample: \(err.localizedDescription)")
                     }
                     DispatchQueue.main.async {
                         result(success)

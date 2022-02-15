@@ -244,6 +244,16 @@ class HealthFactory {
     return success ?? false;
   }
 
+  Future<bool> deleteFoodData(DateTime startTime, DateTime endTime) async {
+    if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+    Map<String, dynamic> args = {
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch,
+    };
+    bool? success = await _channel.invokeMethod('deleteData', args);
+    return success ?? false;
+  }
+
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
     DateTime startDate,
