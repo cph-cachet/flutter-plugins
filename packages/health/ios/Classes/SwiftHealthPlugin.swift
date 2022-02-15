@@ -202,14 +202,35 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         NSLog("\(dateFrom)")
         NSLog("\(dateTo)")
+        
+        var samplesToDelete: Array<HKSample> = []
                 
-        healthKitStore.deleteObjects(of: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKCorrelationQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
-            if let err = error {
-                NSLog("Error Deleting Foods, Sample: \(err.localizedDescription)")
+        let query = HKCorrelationQuery(type: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKCorrelationQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), samplePredicates: nil)
+        {
+            query, results, error in
+            
+            if let correlations = results {
+                for correlation in correlations {
+                    for sample in correlation.objects {
+                        samplesToDelete.append(sample)
+                    }
+                }
             }
-//            DispatchQueue.main.async {
-//                result(success)
-//            }
+            else {
+                if let err = error {
+                    print("Error Querying For Samples to Delete, Sample: \(err.localizedDescription)")
+                }
+            }
+        }
+        healthKitStore.execute(query)
+        
+        healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
+            if let err = error {
+                print("Error Deleting, Sample: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
         })
         
         var consumedFoods: Array<HKCorrelation> = []
@@ -234,9 +255,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
             
             let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
-            let foodCorrelationMetadata: [String: AnyObject] = [HKMetadataKeyFoodType: "food/drink" as AnyObject]
 
-            let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples, metadata: foodCorrelationMetadata)
+            let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
             
             consumedFoods.append(foodCorrelation)
         }
