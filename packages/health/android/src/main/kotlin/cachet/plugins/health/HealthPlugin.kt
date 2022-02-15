@@ -253,11 +253,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
                 .deleteData(request)
                 .addOnSuccessListener {
-                    Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
                     result.success(true)
                 }
                 .addOnFailureListener { e ->
-                    Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                    Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
                     result.success(false)
                 }
         } catch (e3: Exception) {
@@ -273,11 +273,83 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
 
         val foodList = call.argument<List<HashMap<String, *>>>( "foodList")!!
+        val startTime = call.argument<Long>("startTime")!!
+        val endTime = call.argument<Long>("endTime")!!
+        val overwrite = call.argument<Boolean>( "overwrite")!!
 
-        print("Successfully called writeFoodData")
+        Log.i("FLUTTER_HEALTH::SUCCESS", "Successfully called writeFoodData")
         print(foodList)
 
+        val field = Field.FIELD_NUTRIENTS
+        val dataType = DataType.TYPE_NUTRITION
+
+        val typesBuilder = FitnessOptions.builder()
+        typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+        val dataSource = DataSource.Builder()
+            .setDataType(dataType)
+            .setType(DataSource.TYPE_RAW)
+            .setDevice(Device.getLocalDevice(activity!!.applicationContext))
+            .setAppPackageName(activity!!.applicationContext)
+            .build()
+
+        val dataSetBuilder = DataSet.builder(dataSource)
+
+        for (food in foodList) {
+            val iterationFood = food.toMutableMap()
+
+            val timestamp = iterationFood["timestamp"] as Long
+            iterationFood.remove("timestamp")
+
+            val builder = DataPoint.builder(dataSource).setTimestamp(timestamp, TimeUnit.MILLISECONDS)
+
+            val nutrients = mutableMapOf<String, Float>()
+
+            for ((nutrient, value) in iterationFood) {
+                val nutrientField = getNutrientField(nutrient)
+                nutrients[nutrientField] = value as Float
+            }
+
+            val dataPoint: DataPoint = builder.setField(field, nutrients).build()
+
+            dataSetBuilder.add(dataPoint)
+
+        }
+
+        val dataSet = dataSetBuilder.build()
+
+        val fitnessOptions = typesBuilder.build()
         try {
+            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+
+            if (overwrite) {
+                val request = DataDeleteRequest.Builder()
+                    .addDataType(dataType)
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .build()
+
+                Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                    .deleteData(request)
+                    .addOnSuccessListener {
+                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
+                        result.success(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
+                        result.success(false)
+                    }
+            }
+
+            Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                .insertData(dataSet)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                    result.success(true)
+                }
+                .addOnFailureListener { e ->
+                    Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                    result.success(false)
+                }
         } catch (e3: Exception) {
             result.success(false)
         }
