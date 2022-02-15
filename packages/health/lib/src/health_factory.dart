@@ -250,7 +250,7 @@ class HealthFactory {
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
     };
-    bool? success = await _channel.invokeMethod('deleteData', args);
+    bool? success = await _channel.invokeMethod('deleteFoodData', args);
     return success ?? false;
   }
 

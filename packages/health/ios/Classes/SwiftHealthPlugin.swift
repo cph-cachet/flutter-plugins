@@ -219,14 +219,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 
                 if (overwrite == true) {
-                    healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
-                        if let err = error {
-                            NSLog("Error Deleting, Sample: \(err.localizedDescription)")
-                        }
-    //                    DispatchQueue.main.async {
-    //                        result(success)
-    //                    }
-                    })
+                    if (!samplesToDelete.isEmpty) {
+                        healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
+                            if let err = error {
+                                NSLog("Error Deleting, Sample: \(err.localizedDescription)")
+                            }
+        //                    DispatchQueue.main.async {
+        //                        result(success)
+        //                    }
+                        })
+                    }
                 }
                 
                 var consumedFoods: Array<HKCorrelation> = []
@@ -301,15 +303,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     }
                 }
                 
-
-                healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
-                    if let err = error {
-                        NSLog("Error Deleting, Sample: \(err.localizedDescription)")
-                    }
-                    DispatchQueue.main.async {
-                        result(success)
-                    }
-                })
+                if (!samplesToDelete.isEmpty) {
+                    healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
+                        if let err = error {
+                            NSLog("Error Deleting, Sample: \(err.localizedDescription)")
+                        }
+                        DispatchQueue.main.async {
+                            result(success)
+                        }
+                    })
+                }
             }
             else {
                 if let err = error {
