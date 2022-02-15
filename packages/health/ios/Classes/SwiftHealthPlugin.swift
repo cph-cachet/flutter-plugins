@@ -200,6 +200,19 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         
         NSLog("Successfully called writeFoodData")
+        
+        let nutrientsToWrite: Array<String> = [DIETARY_ENERGY_CONSUMED,
+                                               DIETARY_PROTEIN_CONSUMED,
+                                               DIETARY_FATS_CONSUMED,
+                                               DIETARY_CARBS_CONSUMED]
+        
+        var nutrientAccess: [String: Bool?] = [:]
+        
+        for nutrient in nutrientsToWrite {
+            let type = dataTypeLookUp(key: nutrient)
+            let permission = hasPermission(type: type, access: 1)
+            nutrientAccess[nutrient] = permission
+        }
     
         let healthKitStore = HKHealthStore()
         
@@ -224,9 +237,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                             if let err = error {
                                 NSLog("Error Deleting, Sample: \(err.localizedDescription)")
                             }
-        //                    DispatchQueue.main.async {
-        //                        result(success)
-        //                    }
                         })
                     }
                 }
@@ -242,30 +252,44 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     let date = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
                     
                     for (key, value) in iterationFood {
-                        let sample = HKQuantitySample(
-                            type: self.dataTypeLookUp(key: key) as! HKQuantityType,
-                            quantity: HKQuantity(unit: self.unitLookUp(key: key), doubleValue: value as! Double),
-                            start: date,
-                            end: date)
-                        
-                        consumedSamples.insert(sample)
+                        if let access = nutrientAccess[key] {
+                            if (access == true) {
+                                let sample = HKQuantitySample(
+                                    type: self.dataTypeLookUp(key: key) as! HKQuantityType,
+                                    quantity: HKQuantity(unit: self.unitLookUp(key: key), doubleValue: value as! Double),
+                                    start: date,
+                                    end: date)
+                                
+                                consumedSamples.insert(sample)
+                            }
+                        } else {
+                          NSLog("Unknown nutrient or nutrient access")
+                        }
                     }
                     
-                    let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
+                    if (!consumedSamples.isEmpty) {
+                        let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
 
-                    let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
-                    
-                    consumedFoods.append(foodCorrelation)
+                        let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
+                        
+                        consumedFoods.append(foodCorrelation)
+                    }
                 }
                 
-                healthKitStore.save(consumedFoods, withCompletion: { (success, error) in
-                    if let err = error {
-                        NSLog("Error Saving, Sample: \(err.localizedDescription)")
-                    }
+                if (!consumedFoods.isEmpty) {
+                    healthKitStore.save(consumedFoods, withCompletion: { (success, error) in
+                        if let err = error {
+                            NSLog("Error Saving, Sample: \(err.localizedDescription)")
+                        }
+                        DispatchQueue.main.async {
+                            result(success)
+                        }
+                    })
+                } else {
                     DispatchQueue.main.async {
-                        result(success)
+                        result(true)
                     }
-                })
+                }
             }
             else {
                 if let err = error {
