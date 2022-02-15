@@ -209,12 +209,13 @@ class HealthFactory {
     return success ?? false;
   }
 
-  Future<bool> writeFoodData(List<Map> foodList, DateTime startTime, DateTime endTime) async {
+  Future<bool> writeFoodData(List<Map> foodList, DateTime startTime, DateTime endTime, {bool overwrite = false}) async {
     if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
       'foodList': foodList,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
+      'overwrite': overwrite
     };
     bool? success = await _channel.invokeMethod('writeFoodData', args);
     return success ?? false;

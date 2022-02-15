@@ -188,7 +188,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         guard let arguments = call.arguments as? NSDictionary,
             let foodList = arguments["foodList"] as? Array<Dictionary<String, Any>>,
             let startDate = (arguments["startTime"] as? NSNumber),
-            let endDate = (arguments["endTime"] as? NSNumber)
+            let endDate = (arguments["endTime"] as? NSNumber),
+            let overwrite = (arguments["overwrite"] as? Bool)
             else {
                 throw PluginError(message: "Invalid Arguments")
             }
@@ -211,18 +212,20 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 var samplesToDelete: Array<HKSample> = []
                 for correlation in correlations {
                     for sample in correlation.objects {
-                        NSLog("taco")
                         samplesToDelete.append(sample)
                     }
                 }
-                healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
-                    if let err = error {
-                        NSLog("Error Deleting, Sample: \(err.localizedDescription)")
-                    }
-//                    DispatchQueue.main.async {
-//                        result(success)
-//                    }
-                })
+                
+                if (overwrite == true) {
+                    healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
+                        if let err = error {
+                            NSLog("Error Deleting, Sample: \(err.localizedDescription)")
+                        }
+    //                    DispatchQueue.main.async {
+    //                        result(success)
+    //                    }
+                    })
+                }
                 
                 var consumedFoods: Array<HKCorrelation> = []
                 
