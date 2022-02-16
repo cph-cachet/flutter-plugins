@@ -324,7 +324,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val overwrite = call.argument<Boolean>( "overwrite")!!
 
         Log.i("FLUTTER_HEALTH::SUCCESS", "Successfully called writeFoodData")
-        print(foodList)
 
         val field = Field.FIELD_NUTRIENTS
         val dataType = DataType.TYPE_NUTRITION
@@ -354,6 +353,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             for ((nutrient, value) in iterationFood) {
                 val nutrientField = getNutrientField(nutrient)
                 nutrients[nutrientField] = value.toString().toFloat()
+                Log.i("FLUTTER_HEALTH::SUCCESS", value.toString())
             }
 
             val dataPoint: DataPoint = builder.setField(field, nutrients).build()
