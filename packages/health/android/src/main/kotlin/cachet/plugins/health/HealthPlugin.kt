@@ -353,7 +353,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
             for ((nutrient, value) in iterationFood) {
                 val nutrientField = getNutrientField(nutrient)
-                nutrients[nutrientField] = value as Float
+                nutrients[nutrientField] = value.toString().toFloat()
             }
 
             val dataPoint: DataPoint = builder.setField(field, nutrients).build()
