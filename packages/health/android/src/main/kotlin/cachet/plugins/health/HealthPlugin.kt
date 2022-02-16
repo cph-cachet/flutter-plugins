@@ -378,22 +378,33 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     .deleteData(request)
                     .addOnSuccessListener {
                         Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
+
+                        Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                            .insertData(dataSet)
+                            .addOnSuccessListener {
+                                Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                                result.success(true)
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                                result.success(false)
+                            }
                     }
                     .addOnFailureListener { e ->
                         Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
                     }
+            } else {
+                Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                    .insertData(dataSet)
+                    .addOnSuccessListener {
+                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                        result.success(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                        result.success(false)
+                    }
             }
-
-            Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                .insertData(dataSet)
-                .addOnSuccessListener {
-                    Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
-                    result.success(true)
-                }
-                .addOnFailureListener { e ->
-                    Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
-                    result.success(false)
-                }
         } catch (e3: Exception) {
             result.success(false)
         }
