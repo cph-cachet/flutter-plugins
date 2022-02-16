@@ -60,7 +60,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
     private var SLEEP_AWAKE = "SLEEP_AWAKE"
     private var SLEEP_IN_BED = "SLEEP_IN_BED"
+
     private var DIETARY_ENERGY_CONSUMED = "DIETARY_ENERGY_CONSUMED"
+    private var DIETARY_CARBS_CONSUMED = "DIETARY_CARBS_CONSUMED"
+    private var DIETARY_FATS_CONSUMED = "DIETARY_FATS_CONSUMED"
+    private var DIETARY_PROTEIN_CONSUMED = "DIETARY_PROTEIN_CONSUMED"
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
@@ -200,6 +204,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private fun getNutrientField(type: String): String {
         return when (type) {
             DIETARY_ENERGY_CONSUMED -> Field.NUTRIENT_CALORIES
+            DIETARY_CARBS_CONSUMED -> Field.NUTRIENT_TOTAL_CARBS
+            DIETARY_FATS_CONSUMED -> Field.NUTRIENT_TOTAL_FAT
+            DIETARY_PROTEIN_CONSUMED -> Field.NUTRIENT_PROTEIN
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
@@ -237,6 +244,45 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
+
+        val typesBuilder = FitnessOptions.builder()
+        typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+        val fitnessOptions = typesBuilder.build()
+        try {
+            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+
+            val request = DataDeleteRequest.Builder()
+                .addDataType(dataType)
+                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build()
+
+            Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                .deleteData(request)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
+                    result.success(true)
+                }
+                .addOnFailureListener { e ->
+                    Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
+                    result.success(false)
+                }
+        } catch (e3: Exception) {
+            result.success(false)
+        }
+    }
+
+    private fun deleteFoodData(call: MethodCall, result: Result) {
+
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
+        val startTime = call.argument<Long>("startTime")!!
+        val endTime = call.argument<Long>("endTime")!!
+
+        val dataType = DataType.TYPE_NUTRITION
 
         val typesBuilder = FitnessOptions.builder()
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
@@ -765,6 +811,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
             "deleteData" -> deleteData(call, result)
+            "deleteFoodData" -> deleteFoodData(call, result)
             "writeData" -> writeData(call, result)
             "writeFoodData" -> writeFoodData(call, result)
             "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
