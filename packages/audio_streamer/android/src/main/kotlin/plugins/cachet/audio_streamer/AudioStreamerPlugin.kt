@@ -19,7 +19,7 @@ import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
 import java.util.*
 
 /** AudioStreamerPlugin */
-public class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, EventChannel.StreamHandler, ActivityAware {
+class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, EventChannel.StreamHandler, ActivityAware {
 
     /// Constants
     private val eventChannelName = "audio_streamer.eventChannel"
@@ -35,9 +35,9 @@ public class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListen
     private var currentActivity: Activity? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        val messenger = flutterPluginBinding.getFlutterEngine().getDartExecutor()
+        val messenger = flutterPluginBinding.binaryMessenger
         val eventChannel = EventChannel(messenger, eventChannelName)
-        eventChannel.setStreamHandler(AudioStreamerPlugin());
+        eventChannel.setStreamHandler(this)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
