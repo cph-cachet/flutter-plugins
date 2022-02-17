@@ -66,6 +66,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var DIETARY_FATS_CONSUMED = "DIETARY_FATS_CONSUMED"
     private var DIETARY_PROTEIN_CONSUMED = "DIETARY_PROTEIN_CONSUMED"
 
+    private var DIETARY_FAT_SATURATED = "DIETARY_FAT_SATURATED"
+    private var DIETARY_FAT_UNSATURATED = "DIETARY_FAT_UNSATURATED"
+    private var DIETARY_FAT_POLYUNSATURATED = "DIETARY_FAT_POLYUNSATURATED"
+    private var DIETARY_FAT_MONOUNSATURATED = "DIETARY_FAT_MONOUNSATURATED"
+    private var DIETARY_FAT_TRANS = "DIETARY_FAT_TRANS"
+    private var DIETARY_CHOLESTEROL = "DIETARY_CHOLESTEROL"
+    private var DIETARY_SODIUM = "DIETARY_SODIUM"
+    private var DIETARY_POTASSIUM = "DIETARY_POTASSIUM"
+    private var DIETARY_FIBER = "DIETARY_FIBER"
+    private var DIETARY_SUGAR = "DIETARY_SUGAR"
+
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         channel?.setMethodCallHandler(this)
@@ -207,6 +218,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             DIETARY_CARBS_CONSUMED -> Field.NUTRIENT_TOTAL_CARBS
             DIETARY_FATS_CONSUMED -> Field.NUTRIENT_TOTAL_FAT
             DIETARY_PROTEIN_CONSUMED -> Field.NUTRIENT_PROTEIN
+            DIETARY_FAT_SATURATED -> Field.NUTRIENT_SATURATED_FAT
+            DIETARY_FAT_UNSATURATED -> Field.NUTRIENT_UNSATURATED_FAT
+            DIETARY_FAT_POLYUNSATURATED -> Field.NUTRIENT_POLYUNSATURATED_FAT
+            DIETARY_FAT_MONOUNSATURATED -> Field.NUTRIENT_MONOUNSATURATED_FAT
+            DIETARY_FAT_TRANS -> Field.NUTRIENT_TRANS_FAT
+            DIETARY_CHOLESTEROL -> Field.NUTRIENT_CHOLESTEROL
+            DIETARY_SODIUM -> Field.NUTRIENT_SODIUM
+            DIETARY_POTASSIUM -> Field.NUTRIENT_POTASSIUM
+            DIETARY_FIBER -> Field.NUTRIENT_DIETARY_FIBER
+            DIETARY_SUGAR -> Field.NUTRIENT_SUGAR
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
