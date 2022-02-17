@@ -680,7 +680,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[DIETARY_MAGNESIUM] = HKUnit.gramUnit(with: .milli)
         unitDict[DIETARY_PHOSPHORUS] = HKUnit.gramUnit(with: .milli)
         unitDict[DIETARY_ZINC] = HKUnit.gramUnit(with: .milli)
-        unitDict[DIETARY_WATER] = HKUnit.gram()
+        unitDict[DIETARY_WATER] = HKUnit.liter()
         unitDict[DIETARY_CAFFEINE] = HKUnit.gramUnit(with: .milli)
         unitDict[DIETARY_COPPER] = HKUnit.gramUnit(with: .milli)
         unitDict[DIETARY_MANGANESE] = HKUnit.gramUnit(with: .milli)
