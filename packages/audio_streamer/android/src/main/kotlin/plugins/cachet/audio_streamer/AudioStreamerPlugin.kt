@@ -41,6 +41,7 @@ public class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListen
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        recording = false
     }
 
     override fun onDetachedFromActivity() {
