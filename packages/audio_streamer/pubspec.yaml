@@ -8,7 +8,7 @@ environment:
   flutter: ">=1.12.0"
 
 dependencies:
-  permission_handler: ^8.1.0
+  permission_handler: ^9.0.1
   flutter:
     sdk: flutter
 
