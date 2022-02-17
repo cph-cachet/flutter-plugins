@@ -684,7 +684,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[DIETARY_CAFFEINE] = HKUnit.gramUnit(with: .milli)
         unitDict[DIETARY_COPPER] = HKUnit.gramUnit(with: .milli)
         unitDict[DIETARY_MANGANESE] = HKUnit.gramUnit(with: .milli)
-        unitDict[DIETARY_SELENIUM] = HKUnit.gramUnit(with: .milli)
+        unitDict[DIETARY_SELENIUM] = HKUnit.gramUnit(with: .micro)
         
 
         // Set up iOS 11 specific types (ordinary health data types)
