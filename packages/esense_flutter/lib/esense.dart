@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Copenhagen Center for Health Technology (CACHET) at the
+ * Copyright 2022 Copenhagen Center for Health Technology (CACHET) at the
  * Technical University of Denmark (DTU).
  * Use of this source code is governed by a MIT-style license that can be
  * found in the LICENSE file.
@@ -21,12 +21,6 @@ class ESenseManager {
   static const String ESenseEventChannelName = 'esense.io/esense_events';
   static const String ESenseSensorEventChannelName = 'esense.io/esense_sensor';
 
-  static final ESenseManager _instance = ESenseManager._();
-  ESenseManager._();
-
-  /// Get the singleton [ESenseManager] manager.
-  factory ESenseManager() => _instance;
-
   final MethodChannel _eSenseManagerMethodChannel =
       MethodChannel(ESenseManagerMethodChannelName);
   final EventChannel _eSenseConnectionEventChannel =
@@ -43,26 +37,40 @@ class ESenseManager {
   bool connected = false;
 
   /// The name of the connected eSense device
-  String? eSenseDeviceName;
+  String deviceName;
 
   int _samplingRate = 10;
 
   /// The sampling rate of the eSense sensors (default sampling rate is 10 Hz.)
   int get samplingRate => _samplingRate;
 
+  /// Constructs an eSense manager for a device with name [deviceName].
+  ESenseManager(this.deviceName) {
+    assert(deviceName.length > 0,
+        'Must provide a valid name of the eSense device to connect to.');
+  }
+
   // ------------    METHOD HANDLERS --------------------
 
-  /// Connect to the eSense device named [name].
-  /// Returns `true` if connection is successful, ´false` otherwise.
-  Future<bool> connect(String name) async {
-    assert(name.length > 0,
-        'Must provide a valid name of the eSense device to connect to.');
-    eSenseDeviceName = name;
+  /// Initiates a connection scanning procedure.
+  ///
+  /// The phone will first scan for the device with the given [deviceName].
+  /// Then, if found, it will try to connect.
+  /// Different [ConnectionEvent] events of type
+  ///
+  ///   * [ConnectionType.device_found]
+  ///   * [ConnectionType.device_not_found]
+  ///   * [ConnectionType.connected]
+  ///
+  /// are fired at different stages of the procedure.
+  ///
+  /// Returns `true` if scanning is started is successful, ´false` otherwise.
+  Future<bool> connect() async {
     _eventStream = null;
     _sensorStream = null;
 
     return await _eSenseManagerMethodChannel
-        .invokeMethod('connect', <String, dynamic>{'name': name});
+        .invokeMethod('connect', <String, dynamic>{'name': deviceName});
   }
 
   /// Disconnects the device (if connected).
@@ -71,21 +79,15 @@ class ESenseManager {
   /// after the disconnection has taken place.
   /// Returns `true` if the disconnection was successfully made, `false`
   /// otherwise.
-  Future<bool> disconnect() async {
-    if (connected)
-      return await _eSenseManagerMethodChannel.invokeMethod('disconnect');
-    else
-      return false;
-  }
+  Future<bool> disconnect() async => (connected)
+      ? await _eSenseManagerMethodChannel.invokeMethod('disconnect')
+      : false;
 
   /// Checks the BTLE connection if the device is connected or not.
   ///
   /// Returns `true` if a device is connected `false` otherwise
-  Future<bool> isConnected() async {
-    connected =
-        await _eSenseManagerMethodChannel.invokeMethod('isConnected') ?? false;
-    return connected;
-  }
+  Future<bool> isConnected() async => connected =
+      await _eSenseManagerMethodChannel.invokeMethod('isConnected') ?? false;
 
   /// Set the sampling rate for sensor sampling in Hz (min: 1 - max: 100)
   /// Default sampling rate is 10 Hz.

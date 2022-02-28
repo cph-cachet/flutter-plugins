@@ -128,3 +128,5 @@ packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
 packages/mobility_features/example/.flutter-plugins-dependencies
 packages/mobility_features/example/.flutter-plugins-dependencies
 packages/health/example/.flutter-plugins-dependencies
+packages/esense_flutter/example/.flutter-plugins-dependencies
+*.sh
