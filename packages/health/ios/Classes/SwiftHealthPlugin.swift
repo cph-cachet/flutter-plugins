@@ -360,7 +360,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[BLOOD_PRESSURE_DIASTOLIC] = HKUnit.millimeterOfMercury()
         unitDict[BLOOD_PRESSURE_SYSTOLIC] = HKUnit.millimeterOfMercury()
         unitDict[BODY_FAT_PERCENTAGE] = HKUnit.percent()
-        unitDict[BODY_MASS_INDEX] = HKUnit.init(from: "")
+        unitDict[BODY_MASS_INDEX] = HKUnit.count()
         unitDict[BODY_TEMPERATURE] = HKUnit.degreeCelsius()
         unitDict[DIETARY_CARBS_CONSUMED] = HKUnit.gram()
         unitDict[DIETARY_ENERGY_CONSUMED] = HKUnit.kilocalorie()
