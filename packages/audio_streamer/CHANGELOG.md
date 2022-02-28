@@ -1,3 +1,8 @@
+## 2.1.0
+- upgrade of `permission_handler: ^9.2.0`
+- [PR#503](https://github.com/cph-cachet/flutter-plugins/pull/503)
+- [PR#504](https://github.com/cph-cachet/flutter-plugins/pull/504)
+
 ## 2.0.3
 - [PR#371](https://github.com/cph-cachet/flutter-plugins/pull/371)
 
