@@ -1,17 +1,17 @@
-# audio_streamer
+# Audio Streamer
 
 Streaming of PCM audio from Android and iOS with a sample rate of 44,100 Hz
 
 ## Permissions
-On *Android* you need to add a permission to `AndroidManifest.xml`:
+On **Android** add the audio recording permission to `AndroidManifest.xml`:
 
 ```xml
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
 
-On *iOS* enable the following:
+On **iOS** enable the following:
 * Capabilities > Background Modes > _Audio, AirPlay and Picture in Picture_
-* In the Runner Xcode project edit the _Info.plist_ file. Add an entry for _'Privacy - Microphone Usage Description'_
+* In the Runner Xcode project edit the `Info.plist` file. Add an entry for _'Privacy - Microphone Usage Description'_
 
 When editing the `Info.plist` file manually, the entries needed are:
 
@@ -24,7 +24,7 @@ When editing the `Info.plist` file manually, the entries needed are:
 </array>
 ```
 
-## Example Usage 
+## Example
 See the file `example/lib/main.dart` for a fully fledged example app using the plugin.
 
 ```dart
