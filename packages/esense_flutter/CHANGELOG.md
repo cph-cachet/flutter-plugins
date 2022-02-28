@@ -1,3 +1,6 @@
+## 0.5.0
+* upgrade to Android embedding v2
+
 ## 0.4.3
 * fix of error in setSamplingRate method on iOS
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:esense_flutter/esense.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MyApp());
 
@@ -19,14 +20,27 @@ class _MyAppState extends State<MyApp> {
   bool connected = false;
 
   // the name of the eSense device to connect to -- change this to your own device.
-  String eSenseName = 'eSense-0332';
+  String eSenseName = 'eSense-0164';
 
+  @override
   void initState() {
     super.initState();
     _listenToESense();
   }
 
-  Future _listenToESense() async {
+  Future<void> _askForPermissions() async {
+    if (!(await Permission.bluetooth.request().isGranted)) {
+      print(
+          'WARNING - no permission to use Bluetooth granted. Cannot access eSense device.');
+    }
+    if (!(await Permission.locationWhenInUse.request().isGranted)) {
+      print(
+          'WARNING - no permission to access location granted. Cannot access eSense device.');
+    }
+  }
+
+  Future<void> _listenToESense() async {
+    await _askForPermissions();
     // if you want to get the connection events when connecting,
     // set up the listener BEFORE connecting...
     ESenseManager().connectionEvents.listen((event) {
@@ -59,7 +73,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future _connectToESense() async {
+  Future<void> _connectToESense() async {
     print('connecting... connected: $connected');
     if (!connected) connected = await ESenseManager().connect(eSenseName);
 
@@ -104,7 +118,7 @@ class _MyAppState extends State<MyApp> {
   void _getESenseProperties() async {
     // get the battery level every 10 secs
     Timer.periodic(
-      Duration(seconds: 10),
+      const Duration(seconds: 10),
       (timer) async =>
           (connected) ? await ESenseManager().getBatteryVoltage() : null,
     );
@@ -112,15 +126,15 @@ class _MyAppState extends State<MyApp> {
     // wait 2, 3, 4, 5, ... secs before getting the name, offset, etc.
     // it seems like the eSense BTLE interface does NOT like to get called
     // several times in a row -- hence, delays are added in the following calls
-    Timer(Duration(seconds: 2),
+    Timer(const Duration(seconds: 2),
         () async => await ESenseManager().getDeviceName());
-    Timer(Duration(seconds: 3),
+    Timer(const Duration(seconds: 3),
         () async => await ESenseManager().getAccelerometerOffset());
     Timer(
-        Duration(seconds: 4),
+        const Duration(seconds: 4),
         () async =>
             await ESenseManager().getAdvertisementAndConnectionInterval());
-    Timer(Duration(seconds: 5),
+    Timer(const Duration(seconds: 5),
         () async => await ESenseManager().getSensorConfig());
   }
 
@@ -145,12 +159,14 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  @override
   void dispose() {
     _pauseListenToSensorEvents();
     ESenseManager().disconnect();
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
@@ -165,8 +181,8 @@ class _MyAppState extends State<MyApp> {
               Text('eSense Device Name: \t$_deviceName'),
               Text('eSense Battery Level: \t$_voltage'),
               Text('eSense Button Event: \t$_button'),
-              Text(''),
-              Text('$_event'),
+              const Text(''),
+              Text(_event),
               Container(
                 height: 80,
                 width: 200,
@@ -174,8 +190,8 @@ class _MyAppState extends State<MyApp> {
                     BoxDecoration(borderRadius: BorderRadius.circular(10)),
                 child: TextButton.icon(
                   onPressed: _connectToESense,
-                  icon: Icon(Icons.login),
-                  label: Text(
+                  icon: const Icon(Icons.login),
+                  label: const Text(
                     'CONNECT....',
                     style: TextStyle(fontSize: 35),
                   ),
@@ -193,7 +209,9 @@ class _MyAppState extends State<MyApp> {
                   ? _startListenToSensorEvents
                   : _pauseListenToSensorEvents,
           tooltip: 'Listen to eSense sensors',
-          child: (!sampling) ? Icon(Icons.play_arrow) : Icon(Icons.pause),
+          child: (!sampling)
+              ? const Icon(Icons.play_arrow)
+              : const Icon(Icons.pause),
         ),
       ),
     );

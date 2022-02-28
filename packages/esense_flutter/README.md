@@ -6,31 +6,10 @@ This plugin supports the [eSense](https://www.esense.io) earable computing platf
 [![pub package](https://img.shields.io/pub/v/esense_flutter.svg)](https://pub.dartlang.org/packages/esense_flutter)
 
 ## Install (Flutter)
-Add ```esense_flutter``` as a dependency in  `pubspec.yaml`.
+Add `esense_flutter` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [pubspec documenation](https://flutter.io/using-packages/).
 
-## AndroidX support
-**Only for Android API level 28**
-
-Update the contents of the `android/gradle.properties` file with the following:
-```
-android.enableJetifier=true
-android.useAndroidX=true
-org.gradle.jvmargs=-Xmx1536M
-```
-
-Next, add the following dependencies to your `android/build.gradle` file:
-```
-dependencies {
-  classpath 'com.android.tools.build:gradle:3.3.0'
-  classpath 'com.google.gms:google-services:4.2.0'
-} 
-```
-
-And finally, set the Android compile and minimum SDK versions to `compileSdkVersion 28`, 
-and `minSdkVersion 23` respectively, inside the `android/app/build.gradle` file.
-
-## Android Permissions
+## Android 
 The package uses your location and bluetooth to fetch data from the eSense ear plugs.
 Therefore location tracking and bluetooth must be enabled.
 
@@ -44,7 +23,11 @@ Add the following entry to your `manifest.xml` file, in the Android project of y
 <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
 ```
 
-In addition, your __minimum SDK version__ should be __23__.
+Also make sure to obtain permissions in your app to use location and bluetooth. 
+See the example app on how to e.g. use the [`permission_handler`](https://pub.dev/packages/permission_handler) for this. Note that the plugin **does not** handle permissions - this has to be done on an app level.
+
+Set the Android compile and minimum SDK versions to `compileSdkVersion 28`, 
+and `minSdkVersion 23` respectively, inside the `android/app/build.gradle` file.
 
 ## iOS
 

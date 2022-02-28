@@ -27,12 +27,12 @@ class ESenseManager {
   /// Get the singleton [ESenseManager] manager.
   factory ESenseManager() => _instance;
 
-  MethodChannel _eSenseManagerMethodChannel =
+  final MethodChannel _eSenseManagerMethodChannel =
       MethodChannel(ESenseManagerMethodChannelName);
-  EventChannel _eSenseConnectionEventChannel =
+  final EventChannel _eSenseConnectionEventChannel =
       EventChannel(ESenseConnectionEventChannelName);
-  EventChannel _eSenseEventChannel = EventChannel(ESenseEventChannelName);
-  EventChannel _eSenseSensorEventChannel =
+  final EventChannel _eSenseEventChannel = EventChannel(ESenseEventChannelName);
+  final EventChannel _eSenseSensorEventChannel =
       EventChannel(ESenseSensorEventChannelName);
 
   Stream<ConnectionEvent>? _connectionEventStream;
