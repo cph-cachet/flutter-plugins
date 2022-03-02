@@ -1,5 +1,6 @@
 ## 3.4.4
 * Fix of [#500](https://github.com/cph-cachet/flutter-plugins/issues/500).
+* Added Headache-types to HealthDataTypes on iOS
 
 ## 3.4.3
 * fix of [#401](https://github.com/cph-cachet/flutter-plugins/issues/401).
