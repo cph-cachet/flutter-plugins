@@ -50,6 +50,11 @@ Note that for Android, the target phone __needs__ to have [Google Fit](https://w
 | LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes         |              | Requires Apple Watch                                        |
 | IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes         |              | Requires Apple Watch                                        |
 | HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes         |              | Requires Apple Watch                                        |
+| HEADACHE_NOT_PRESENT        | MINUTES                 | yes         |              |                                                             |
+| HEADACHE_MILD               | MINUTES                 | yes         |              |                                                             |
+| HEADACHE_MODERATE           | MINUTES                 | yes         |              |                                                             |
+| HEADACHE_SEVETE             | MINUTES                 | yes         |              |                                                             |
+| HEADACHE_UNSPECIFIED        | MINUTES                 | yes         |              |                                                             |
 
 
 ## Setup
