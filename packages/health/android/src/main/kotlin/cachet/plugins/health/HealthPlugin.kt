@@ -374,7 +374,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             for ((nutrient, value) in iterationFood) {
                 val nutrientField = getNutrientField(nutrient)
                 nutrients[nutrientField] = value.toString().toFloat()
-                Log.i("FLUTTER_HEALTH::SUCCESS", value.toString())
             }
 
             val dataPoint: DataPoint = builder.setField(field, nutrients).build()
