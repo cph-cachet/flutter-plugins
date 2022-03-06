@@ -148,6 +148,10 @@ class _MyAppState extends State<MyApp> {
 
   StreamSubscription? subscription;
   void _startListenToSensorEvents() async {
+    // any changes to the sampling frequency must be done BEFORE listening to sensor events
+    print('setting sampling frequency...');
+    await eSenseManager.setSamplingRate(10);
+
     // subscribe to sensor event from the eSense device
     subscription = eSenseManager.sensorEvents.listen((event) {
       print('SENSOR event: $event');

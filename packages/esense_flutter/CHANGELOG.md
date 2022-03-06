@@ -1,3 +1,7 @@
+## 0.6.1
+* fixed bug in sampling rate configuration on Android
+* small improvement to API doc and example app
+
 ## 0.6.0
 * moved permission handling to app level
 * improved on iOS implementation

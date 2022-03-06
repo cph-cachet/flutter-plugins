@@ -65,6 +65,9 @@ class ESenseManager {
   /// are fired at different stages of the procedure.
   ///
   /// Returns `true` if scanning is started is successful, ´false` otherwise.
+  ///
+  /// Always make sure to [disconnect] the device when you don’t need it anymore.
+  /// Failing to do so can drain the battery significantly.
   Future<bool> connect() async {
     _eventStream = null;
     _sensorStream = null;
@@ -91,12 +94,19 @@ class ESenseManager {
 
   /// Set the sampling rate for sensor sampling in Hz (min: 1 - max: 100)
   /// Default sampling rate is 10 Hz.
+  ///
   /// Returns `true` if the request was successfully made, `false` otherwise.
+  ///
+  /// Sampling rate must be set **before** listening is started.
+  ///
+  /// Note that the sampling rate is only a hint to the system.
+  /// Sensor events may be received faster or slower than the specified rate,
+  /// depending on the Bluetooth communication status and parameter values.
   Future<bool> setSamplingRate(int rate) async {
     assert(rate > 0 && rate <= 100,
         'Must provide a sampling rate between 1 and 100 Hz.');
     _samplingRate = rate;
-    // note that for some strange reason, iOS does not accept an int as argument
+    // for some strange reason, iOS does not accept an int as argument
     // hence, [rate] is converted to a string
     return await _eSenseManagerMethodChannel.invokeMethod(
             'setSamplingRate', <String, dynamic>{'rate': '$rate'}) ??
@@ -119,8 +129,8 @@ class ESenseManager {
   /// Maximum size is 22 characters.
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool?> setDeviceName(String deviceName) async {
-    assert(deviceName.length < 22,
-        'The device name must be less than 22 characteres.');
+    assert(deviceName.isNotEmpty && deviceName.length < 22,
+        'The device name must be more that zero and less than 22 characteres long.');
     if (!connected)
       throw ESenseException('Not connected to any eSense device.');
     return await _eSenseManagerMethodChannel.invokeMethod(
@@ -276,6 +286,7 @@ class ESenseManager {
   /// Get the stream of sensor events.
   ///
   /// Use the [setSamplingRate] method to set the sampling rate.
+  /// Note that the sampling rate must be set **before** listening is started.
   ///
   /// Throws an [ESenseException] if not connected to an eSense device.
   /// Wait until [connected] before using this stream.
