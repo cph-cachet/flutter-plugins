@@ -65,7 +65,7 @@ packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
-*.podspec
+**/ios/Flutter/Flutter.podspec
 *.sh
 *.pbxproj
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
