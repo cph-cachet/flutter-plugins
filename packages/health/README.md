@@ -53,7 +53,7 @@ Note that for Android, the target phone __needs__ to have [Google Fit](https://w
 | HEADACHE_NOT_PRESENT        | MINUTES                 | yes         |              |                                                             |
 | HEADACHE_MILD               | MINUTES                 | yes         |              |                                                             |
 | HEADACHE_MODERATE           | MINUTES                 | yes         |              |                                                             |
-| HEADACHE_SEVETE             | MINUTES                 | yes         |              |                                                             |
+| HEADACHE_SEVERE             | MINUTES                 | yes         |              |                                                             |
 | HEADACHE_UNSPECIFIED        | MINUTES                 | yes         |              |                                                             |
 
 
