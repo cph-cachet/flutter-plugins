@@ -55,5 +55,4 @@ build/
 */Flutter/flutter_export_environment.sh
 packages/**/example/.flutter-plugins-dependencies
 *.sh
-*.pbxproj
 packages/activity_recognition_flutter/example/ios/Flutter/.last_build_id
