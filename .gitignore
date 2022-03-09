@@ -61,6 +61,7 @@ packages/health/example/.flutter-plugins-dependencies
 packages/health/example/.flutter-plugins-dependencies
 packages/health/example/.flutter-plugins-dependencies
 packages/screen_state/example/.flutter-plugins-dependencies
+*Flutter.podspec
 *.sh
 packages/carp_background_location/example/.flutter-plugins-dependencies
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
@@ -68,7 +69,6 @@ packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
-*.podspec
 *.sh
 *.pbxproj
 packages/activity_recognition_flutter/example/.flutter-plugins-dependencies
