@@ -7,6 +7,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let healthStore = HKHealthStore()
     var healthDataTypes = [HKSampleType]()
     var heartRateEventTypes = Set<HKSampleType>()
+    var headacheType = Set<HKSampleType>()
     var allDataTypes = Set<HKSampleType>()
     var dataTypesDict: [String: HKSampleType] = [:]
     var unitDict: [String: HKUnit] = [:]
@@ -47,6 +48,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let SLEEP_AWAKE = "SLEEP_AWAKE"
     let EXERCISE_TIME = "EXERCISE_TIME"
     let WORKOUT = "WORKOUT"
+    let HEADACHE_UNSPECIFIED = "HEADACHE_UNSPECIFIED"
+    let HEADACHE_NOT_PRESENT = "HEADACHE_NOT_PRESENT"
+    let HEADACHE_MILD = "HEADACHE_MILD"
+    let HEADACHE_MODERATE = "HEADACHE_MODERATE"
+    let HEADACHE_SEVERE = "HEADACHE_SEVERE"
 
     struct PluginError: Error {
         let message: String
@@ -249,11 +255,26 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 if (dataTypeKey == self.SLEEP_IN_BED) {
                     samplesCategory = samplesCategory.filter { $0.value == 0 }
                 }
+                if (dataTypeKey == self.SLEEP_ASLEEP) {
+                    samplesCategory = samplesCategory.filter { $0.value == 1 }
+                }
                 if (dataTypeKey == self.SLEEP_AWAKE) {
                     samplesCategory = samplesCategory.filter { $0.value == 2 }
                 }
-                if (dataTypeKey == self.SLEEP_ASLEEP) {
+                if (dataTypeKey == self.HEADACHE_UNSPECIFIED) {
+                    samplesCategory = samplesCategory.filter { $0.value == 0 }
+                }
+                if (dataTypeKey == self.HEADACHE_NOT_PRESENT) {
                     samplesCategory = samplesCategory.filter { $0.value == 1 }
+                }
+                if (dataTypeKey == self.HEADACHE_MILD) {
+                    samplesCategory = samplesCategory.filter { $0.value == 2 }
+                }
+                if (dataTypeKey == self.HEADACHE_MODERATE) {
+                    samplesCategory = samplesCategory.filter { $0.value == 3 }
+                }
+                if (dataTypeKey == self.HEADACHE_SEVERE) {
+                    samplesCategory = samplesCategory.filter { $0.value == 4 }
                 }
                 let categories = samplesCategory.map { sample -> NSDictionary in
                     return [
@@ -385,6 +406,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[SLEEP_AWAKE] = HKUnit.init(from: "")
         unitDict[EXERCISE_TIME] =  HKUnit.minute()
         unitDict[WORKOUT] = HKUnit.init(from: "")
+        unitDict[HEADACHE_UNSPECIFIED] = HKUnit.init(from: "")
+        unitDict[HEADACHE_NOT_PRESENT] = HKUnit.init(from: "")
+        unitDict[HEADACHE_MILD] = HKUnit.init(from: "")
+        unitDict[HEADACHE_MODERATE] = HKUnit.init(from: "")
+        unitDict[HEADACHE_SEVERE] = HKUnit.init(from: "")
 
         // Set up iOS 11 specific types (ordinary health data types)
         if #available(iOS 11.0, *) {
@@ -436,8 +462,21 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 ])
         }
 
-        // Concatenate heart events and health data types (both may be empty)
+        if #available(iOS 13.6, *){
+            dataTypesDict[HEADACHE_UNSPECIFIED] = HKSampleType.categoryType(forIdentifier: .headache)!
+            dataTypesDict[HEADACHE_NOT_PRESENT] = HKSampleType.categoryType(forIdentifier: .headache)!
+            dataTypesDict[HEADACHE_MILD] = HKSampleType.categoryType(forIdentifier: .headache)!
+            dataTypesDict[HEADACHE_MODERATE] = HKSampleType.categoryType(forIdentifier: .headache)!
+            dataTypesDict[HEADACHE_SEVERE] = HKSampleType.categoryType(forIdentifier: .headache)!
+
+            headacheType = Set([ 
+                HKSampleType.categoryType(forIdentifier: .headache)!,
+            ])
+        }
+
+        // Concatenate heart events, headache and health data types (both may be empty)
         allDataTypes = Set(heartRateEventTypes + healthDataTypes)
+        allDataTypes = allDataTypes.union(headacheType)
     }
 }
 

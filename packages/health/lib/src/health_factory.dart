@@ -180,6 +180,7 @@ class HealthFactory {
   ///   + It must be equal to or later than [startTime].
   ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
   ///
+  /// Values for Sleep and Headache are ignored and will be automatically assigned the coresponding value.
   Future<bool> writeHealthData(
     double value,
     HealthDataType type,
@@ -188,6 +189,19 @@ class HealthFactory {
   ) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
+
+    // Align values to type in cases where the type defines the value.
+    // E.g. SLEEP_IN_BED should have value 0
+    if (type == HealthDataType.SLEEP_ASLEEP ||
+        type == HealthDataType.SLEEP_AWAKE ||
+        type == HealthDataType.SLEEP_IN_BED ||
+        type == HealthDataType.HEADACHE_NOT_PRESENT ||
+        type == HealthDataType.HEADACHE_MILD ||
+        type == HealthDataType.HEADACHE_MODERATE ||
+        type == HealthDataType.HEADACHE_SEVERE ||
+        type == HealthDataType.HEADACHE_UNSPECIFIED) {
+      value = _alignValue(type).toDouble();
+    }
     Map<String, dynamic> args = {
       'value': value,
       'dataTypeKey': _enumToString(type),
@@ -333,5 +347,29 @@ class HealthFactory {
       args,
     );
     return stepsCount;
+  }
+
+  int _alignValue(HealthDataType type) {
+    switch (type) {
+      case HealthDataType.SLEEP_IN_BED:
+        return 0;
+      case HealthDataType.SLEEP_ASLEEP:
+        return 1;
+      case HealthDataType.SLEEP_AWAKE:
+        return 2;
+      case HealthDataType.HEADACHE_UNSPECIFIED:
+        return 0;
+      case HealthDataType.HEADACHE_NOT_PRESENT:
+        return 1;
+      case HealthDataType.HEADACHE_MILD:
+        return 2;
+      case HealthDataType.HEADACHE_MODERATE:
+        return 3;
+      case HealthDataType.HEADACHE_SEVERE:
+        return 4;
+      default:
+        throw HealthException(type,
+            "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues");
+    }
   }
 }
