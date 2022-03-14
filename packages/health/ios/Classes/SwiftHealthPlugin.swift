@@ -209,6 +209,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 
             default:
+                result([])
                 return
             }
         }
