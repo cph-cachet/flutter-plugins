@@ -774,9 +774,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(activity),
                     optionsToRegister)
+            Log.i("FLUTTER_HEALTH::SUCCESS", "Ask permission!")
         }
         /// Permission already granted
         else {
+            Log.i("FLUTTER_HEALTH::SUCCESS", "Permission already granted!")
             mResult?.success(true)
         }
     }

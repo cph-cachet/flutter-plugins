@@ -274,9 +274,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             let permission = hasPermission(type: type, access: 1)
             nutrientAccess[nutrient] = permission
         }
-    
-        let healthKitStore = HKHealthStore()
-        
+            
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
                 
@@ -294,7 +292,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 
                 if (overwrite == true) {
                     if (!samplesToDelete.isEmpty) {
-                        healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
+                        self.healthStore.delete(samplesToDelete, withCompletion: { (success, error) in
                             if let err = error {
                                 NSLog("Error Deleting, Sample: \(err.localizedDescription)")
                             }
@@ -338,7 +336,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 
                 if (!consumedFoods.isEmpty) {
-                    healthKitStore.save(consumedFoods, withCompletion: { (success, error) in
+                    self.healthStore.save(consumedFoods, withCompletion: { (success, error) in
                         if let err = error {
                             NSLog("Error Saving, Sample: \(err.localizedDescription)")
                         }
@@ -358,7 +356,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
             }
         }
-        healthKitStore.execute(query)
+        self.healthStore.execute(query)
     }
     
     func deleteFoodData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
@@ -370,9 +368,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         
         NSLog("Successfully called deleteFoodData")
-    
-        let healthKitStore = HKHealthStore()
-        
+            
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
                 
@@ -389,7 +385,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 
                 if (!samplesToDelete.isEmpty) {
-                    healthKitStore.delete(samplesToDelete, withCompletion: { (success, error) in
+                    self.healthStore.delete(samplesToDelete, withCompletion: { (success, error) in
                         if let err = error {
                             NSLog("Error Deleting, Sample: \(err.localizedDescription)")
                         }
@@ -405,7 +401,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
             }
         }
-        healthKitStore.execute(query)
+        self.healthStore.execute(query)
     }
     
     func writeData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
@@ -432,11 +428,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
           
           sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateTo)
         }
-        
-        let healthKitStore = HKHealthStore()
-        
+                
         if (overwrite == true) {
-            healthKitStore.deleteObjects(of: dataTypeLookUp(key: type), predicate: HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
+            self.healthStore.deleteObjects(of: dataTypeLookUp(key: type), predicate: HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
                 if let err = error {
                     print("Error Deleting \(type) Sample: \(err.localizedDescription)")
                 }
@@ -446,7 +440,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             })
         }
         
-        healthKitStore.save(sample, withCompletion: { (success, error) in
+        self.healthStore.save(sample, withCompletion: { (success, error) in
             if let err = error {
                 print("Error Saving \(type) Sample: \(err.localizedDescription)")
             }
@@ -469,7 +463,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         print("Successfully called deleteData with type of \(type)")
         
-        HKHealthStore().deleteObjects(of: dataTypeLookUp(key: type), predicate: HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
+        self.healthStore.deleteObjects(of: dataTypeLookUp(key: type), predicate: HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), withCompletion: { (success, _, error) in
                 if let err = error {
                     print("Error Deleting \(type) Sample: \(err.localizedDescription)")
                 }
@@ -563,7 +557,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
 
-        HKHealthStore().execute(query)
+        self.healthStore.execute(query)
     }
 
      func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -605,7 +599,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
 
-        HKHealthStore().execute(query)
+         self.healthStore.execute(query)
     }
 
     func unitLookUp(key: String) -> HKUnit {
