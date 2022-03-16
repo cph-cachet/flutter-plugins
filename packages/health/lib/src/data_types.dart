@@ -3,6 +3,7 @@ part of health;
 /// List of all available data types.
 enum HealthDataType {
   ACTIVE_ENERGY_BURNED,
+  AUDIOGRAM,
   BASAL_ENERGY_BURNED,
   BLOOD_GLUCOSE,
   BLOOD_OXYGEN,
@@ -57,6 +58,7 @@ enum HealthDataAccess {
 /// List of data types available on iOS
 const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.AUDIOGRAM,
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
   HealthDataType.BLOOD_OXYGEN,
@@ -123,6 +125,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
 /// Maps a [HealthDataType] to a [HealthDataUnit].
 const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataUnit.CALORIES,
+  HealthDataType.AUDIOGRAM: HealthDataUnit.DECIBEL_HEARING_LEVEL,
   HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.CALORIES,
   HealthDataType.BLOOD_GLUCOSE: HealthDataUnit.MILLIGRAM_PER_DECILITER,
   HealthDataType.BLOOD_OXYGEN: HealthDataUnit.PERCENTAGE,
@@ -172,6 +175,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
 
 const HealthDataTypeJsonValue = {
   HealthDataType.ACTIVE_ENERGY_BURNED: 'active_energy_burned',
+  HealthDataType.AUDIOGRAM: 'audiogram',
   HealthDataType.BASAL_ENERGY_BURNED: 'basal_energy_burned',
   HealthDataType.BLOOD_GLUCOSE: 'blood_glucose',
   HealthDataType.BLOOD_OXYGEN: 'blood_oxygen',
@@ -211,6 +215,7 @@ const HealthDataTypeJsonValue = {
 };
 
 const HealthDataUnitJsonValue = {
+  HealthDataUnit.DECIBEL_HEARING_LEVEL: 'decibel_hearing_level',
   HealthDataUnit.BEATS_PER_MINUTE: 'beats_per_minute',
   HealthDataUnit.CALORIES: 'calories',
   HealthDataUnit.COUNT: 'count',
@@ -236,6 +241,7 @@ const PlatformTypeJsonValue = {
 
 /// List of all [HealthDataPoint] units.
 enum HealthDataUnit {
+  DECIBEL_HEARING_LEVEL,
   BEATS_PER_MINUTE,
   CALORIES,
   COUNT,

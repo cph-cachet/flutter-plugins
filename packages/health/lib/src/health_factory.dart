@@ -212,6 +212,51 @@ class HealthFactory {
     return success ?? false;
   }
 
+  /// Saves audiogram into Apple Health.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [frequencies] - array of frequencies of the test
+  /// * [leftEarSensitivities] threshold in decibel for the left ear
+  /// * [rightEarSensitivities] threshold in decibel for the left ear
+  /// * [startTime] - the start time when the audiogram is measured.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when the audiogram is measured.
+  ///   + It must be equal to or later than [startTime].
+  ///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
+  /// * [metadata] - optional map of keys, both HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
+  Future<bool> writeAudiogram(
+      List<double> frequencies,
+      List<double> leftEarSensitivities,
+      List<double> rightEarSensitivities,
+      DateTime startTime,
+      DateTime endTime,
+      {Map<String, dynamic>? metadata}) async {
+    if (frequencies.isEmpty ||
+        leftEarSensitivities.isEmpty ||
+        rightEarSensitivities.isEmpty)
+      throw ArgumentError(
+          "frequencies, leftEarSensitivities and rightEarSensitivities can't be empty");
+    if (frequencies.length != leftEarSensitivities.length ||
+        rightEarSensitivities.length != leftEarSensitivities.length)
+      throw ArgumentError(
+          "frequencies, leftEarSensitivities and rightEarSensitivities need to be of the same length");
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+    Map<String, dynamic> args = {
+      'frequencies': frequencies,
+      'leftEarSensitivities': leftEarSensitivities,
+      'rightEarSensitivities': rightEarSensitivities,
+      'dataTypeKey': _enumToString(HealthDataType.AUDIOGRAM),
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch,
+      'metadata': metadata,
+    };
+    bool? success = await _channel.invokeMethod('writeAudiogram', args);
+    return success ?? false;
+  }
+
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
     DateTime startDate,
@@ -347,6 +392,15 @@ class HealthFactory {
       args,
     );
     return stepsCount;
+  }
+
+  /// Get the list of string ids of the audiograms stored in Apple Health
+  /// Returns null if not successful.
+  ///
+  Future<List<String>?> getAudiogramsIds() async {
+    final audiogramsIds =
+        await _channel.invokeMethod<List<Object?>>('getAudiogramsIds');
+    return audiogramsIds?.map((id) => id.toString()).toList();
   }
 
   int _alignValue(HealthDataType type) {

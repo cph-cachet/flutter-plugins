@@ -14,6 +14,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
     // Health Data Type Keys
     let ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
+    let AUDIOGRAM = "AUDIOGRAM"
     let BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
     let BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
     let BLOOD_OXYGEN = "BLOOD_OXYGEN"
@@ -86,10 +87,20 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("getTotalStepsInInterval")){
             getTotalStepsInInterval(call: call, result: result)
         }
+        
+        /// Handle getTotalStepsInInterval
+        else if (call.method.elementsEqual("getAudiogramsIds")){
+            getAudiogramsIds(call: call, result: result)
+        }
 
         /// Handle writeData
         else if (call.method.elementsEqual("writeData")){
             try! writeData(call: call, result: result)
+        }
+
+        /// Handle writeAudiogram
+        else if (call.method.elementsEqual("writeAudiogram")){
+            try! writeAudiogram(call: call, result: result)
         }
         /// Handle hasPermission
         else if (call.method.elementsEqual("hasPermissions")){
@@ -125,7 +136,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     
     func hasPermission(type: HKSampleType, access: Int) -> Bool? {
         
-        if #available(iOS 11.0, *) {
+        if #available(iOS 13.0, *) {
             let status = healthStore.authorizationStatus(for: type)
             switch access {
             case 0: // READ
@@ -168,7 +179,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
 
-        if #available(iOS 11.0, *) {
+        if #available(iOS 13.0, *) {
             healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { (success, error) in
                 DispatchQueue.main.async {
                     result(success)
@@ -214,6 +225,54 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         })
     }
+    
+    func writeAudiogram(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+         guard let arguments = call.arguments as? NSDictionary,
+             let frequencies = (arguments["frequencies"] as? Array<Double>),
+             let leftEarSensitivities = (arguments["leftEarSensitivities"] as? Array<Double>),
+             let rightEarSensitivities = (arguments["rightEarSensitivities"] as? Array<Double>),
+             let startDate = (arguments["startTime"] as? NSNumber),
+             let endDate = (arguments["endTime"] as? NSNumber)
+             else {
+                 throw PluginError(message: "Invalid Arguments")
+             }
+        
+         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
+         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
+              
+         var sensitivityPoints = [HKAudiogramSensitivityPoint]()
+        
+         for index in 0...frequencies.count-1 {
+            let frequency = HKQuantity(unit: HKUnit.hertz(), doubleValue: frequencies[index])
+            let dbUnit = HKUnit.decibelHearingLevel()
+            let left = HKQuantity(unit: dbUnit, doubleValue: leftEarSensitivities[index])
+            let right = HKQuantity(unit: dbUnit, doubleValue: rightEarSensitivities[index])
+            let sensitivityPoint = try HKAudiogramSensitivityPoint(frequency: frequency,  leftEarSensitivity: left, rightEarSensitivity: right)
+            sensitivityPoints.append(sensitivityPoint)
+         }
+        
+        let audiogram: HKAudiogramSample;
+        let metadataReceived = (arguments["metadata"] as? [String: Any]?)
+        
+        if((metadataReceived) != nil) {
+            guard let deviceName = metadataReceived?!["HKDeviceName"] as? String else { return }
+            guard let externalUUID = metadataReceived?!["HKExternalUUID"] as? String else { return }
+            
+            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID])
+            
+        } else {
+            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: nil)
+        }
+
+         HKHealthStore().save(audiogram, withCompletion: { (success, error) in
+             if let err = error {
+                 print("Error Saving Audiogram. Sample: \(err.localizedDescription)")
+             }
+             DispatchQueue.main.async {
+                 result(success)
+             }
+         })
+     }
 
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? NSDictionary
@@ -358,6 +417,42 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         HKHealthStore().execute(query)
     }
+    
+    func getAudiogramsIds(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let query = HKSampleQuery.init(sampleType: HKSampleType.audiogramSampleType(), predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, queryResult, error) in
+            
+            guard let queryResult : [HKSample] = queryResult else {
+                let error = error! as NSError
+                print("Error getting total steps in interval \(error.localizedDescription)")
+                
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+            }
+                        
+            var ids: Array<String> = [];
+            for result in queryResult {
+                guard let dataItem:HKAudiogramSample = result as? HKAudiogramSample else { continue }
+                guard let id: String = dataItem.metadata?["HKExternalUUID"] as? String else { continue }
+                ids.append(id)
+            }
+
+            if(ids.isEmpty) {
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+            } else {
+                DispatchQueue.main.async {
+                    result(ids)
+                }
+                return
+            }
+       }
+        
+       HKHealthStore().execute(query)
+    }
 
     func unitLookUp(key: String) -> HKUnit {
         guard let unit = unitDict[key] else {
@@ -375,6 +470,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
     func initializeTypes() {
         unitDict[ACTIVE_ENERGY_BURNED] = HKUnit.kilocalorie()
+        unitDict[AUDIOGRAM] = HKUnit.decibelHearingLevel()
         unitDict[BASAL_ENERGY_BURNED] = HKUnit.kilocalorie()
         unitDict[BLOOD_GLUCOSE] = HKUnit.init(from: "mg/dl")
         unitDict[BLOOD_OXYGEN] = HKUnit.percent()
@@ -412,9 +508,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[HEADACHE_MODERATE] = HKUnit.init(from: "")
         unitDict[HEADACHE_SEVERE] = HKUnit.init(from: "")
 
-        // Set up iOS 11 specific types (ordinary health data types)
-        if #available(iOS 11.0, *) {
+        // Set up iOS 13 specific types (ordinary health data types)
+        if #available(iOS 13.0, *) {
             dataTypesDict[ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!
+            dataTypesDict[AUDIOGRAM] = HKSampleType.audiogramSampleType()
             dataTypesDict[BASAL_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!
             dataTypesDict[BLOOD_GLUCOSE] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
             dataTypesDict[BLOOD_OXYGEN] = HKSampleType.quantityType(forIdentifier: .oxygenSaturation)!
