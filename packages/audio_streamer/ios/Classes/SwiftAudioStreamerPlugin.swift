@@ -28,14 +28,33 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
                   object: nil)
   }
 
-  @objc func handleInterruption(notification: Notification) {
-    // If no eventSink to emit events to, do nothing (wait)
-    if (eventSink == nil) {
-        return
+    @objc func handleInterruption(notification: Notification) {
+        // If no eventSink to emit events to, do nothing (wait)
+        if eventSink == nil {
+            return
+        }
+
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue)
+        else {
+            return
+        }
+
+        switch type {
+        case .began: ()
+        case .ended:
+            // An interruption ended. Resume playback, if appropriate.
+
+            guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
+            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+            if options.contains(.shouldResume) {
+                startRecording()
+            }
+
+        default: ()
+        }
     }
-      // To be implemented.
-    eventSink!(FlutterError(code: "100", message: "Recording was interrupted", details: "Another process interrupted recording."))
-  }
 
     // Handle stream emitting (Swift => Flutter)
     private func emitValues(values: [Float]) {
