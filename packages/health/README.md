@@ -55,6 +55,7 @@ Note that for Android, the target phone __needs__ to have [Google Fit](https://w
 | HEADACHE_MODERATE           | MINUTES                 | yes         |              |                                                             |
 | HEADACHE_SEVERE             | MINUTES                 | yes         |              |                                                             |
 | HEADACHE_UNSPECIFIED        | MINUTES                 | yes         |              |                                                             |
+| AUDIOGRAM                   | --                      | yes         |              |                                                             |
 
 
 ## Setup

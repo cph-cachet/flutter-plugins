@@ -151,16 +151,27 @@ class HealthFactory {
     List<HealthDataPoint> weights =
         await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
 
-    double h = heights.last.value.toDouble();
+    double h =
+        (heights.last.value as NumericHealthValue).numericValue.toDouble();
 
     const dataType = HealthDataType.BODY_MASS_INDEX;
     final unit = _dataTypeToUnit[dataType]!;
 
     final bmiHealthPoints = <HealthDataPoint>[];
     for (var i = 0; i < weights.length; i++) {
-      final bmiValue = weights[i].value.toDouble() / (h * h);
-      final x = HealthDataPoint(bmiValue, dataType, unit, weights[i].dateFrom,
-          weights[i].dateTo, _platformType, _deviceId!, '', '');
+      final bmiValue =
+          (weights[i].value as NumericHealthValue).numericValue.toDouble() /
+              (h * h);
+      final x = HealthDataPoint(
+          NumericHealthValue(bmiValue),
+          dataType,
+          unit,
+          weights[i].dateFrom,
+          weights[i].dateTo,
+          _platformType,
+          _deviceId!,
+          '',
+          '');
 
       bmiHealthPoints.add(x);
     }
@@ -334,7 +345,13 @@ class HealthFactory {
     final device = message["deviceId"];
     final unit = _dataTypeToUnit[dataType]!;
     final list = dataPoints.map<HealthDataPoint>((e) {
-      final num value = e['value'];
+      // Handling different [HealthValue] types
+      HealthValue value;
+      if (dataType == "audiogram") {
+        value = AudiogramHealthValue.fromJson(e['value']);
+      } else {
+        value = NumericHealthValue.fromJson(e['value']);
+      }
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];

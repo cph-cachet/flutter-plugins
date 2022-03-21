@@ -52,6 +52,8 @@ class _HealthAppState extends State<HealthApp> {
       HealthDataAccess.READ,
       HealthDataAccess.READ,
       HealthDataAccess.READ,
+      // HealthDataAccess.READ,
+      // HealthDataAccess.READ,
     ];
 
     // get data within the last 24 hours

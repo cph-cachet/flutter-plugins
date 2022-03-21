@@ -1,9 +1,9 @@
 part of health;
 
-/// A [HealthDataPoint] object corresponds to a data point captures from
-/// GoogleFit or Apple HealthKit.
+/// A [HealthDataPoint] object corresponds to a data point capture from
+/// GoogleFit or Apple HealthKit with a [HealthValue] as value.
 class HealthDataPoint {
-  num _value;
+  HealthValue _value;
   HealthDataType _type;
   HealthDataUnit _unit;
   DateTime _dateFrom;
@@ -38,33 +38,43 @@ class HealthDataPoint {
     }
   }
 
-  double _convertMinutes() {
+  NumericHealthValue _convertMinutes() {
     int ms = dateTo.millisecondsSinceEpoch - dateFrom.millisecondsSinceEpoch;
-    return ms / (1000 * 60);
+    return NumericHealthValue(ms / (1000 * 60));
   }
 
   /// Converts a json object to the [HealthDataPoint]
-  factory HealthDataPoint.fromJson(json) => HealthDataPoint(
-      json['value'],
-      HealthDataTypeJsonValue.keys.toList()[
-          HealthDataTypeJsonValue.values.toList().indexOf(json['data_type'])],
-      HealthDataUnitJsonValue.keys.toList()[
-          HealthDataUnitJsonValue.values.toList().indexOf(json['unit'])],
-      DateTime.parse(json['date_from']),
-      DateTime.parse(json['date_to']),
-      PlatformTypeJsonValue.keys.toList()[
-          PlatformTypeJsonValue.values.toList().indexOf(json['platform_type'])],
-      json['platform_type'],
-      json['source_id'],
-      json['source_name']);
+  factory HealthDataPoint.fromJson(json) {
+    HealthValue healthValue;
+    if (json['data_type'] == 'audiogram') {
+      healthValue = AudiogramHealthValue.fromJson(json['value']);
+    } else {
+      healthValue = NumericHealthValue.fromJson(json['value']);
+    }
+
+    return HealthDataPoint(
+        healthValue,
+        HealthDataTypeJsonValue.keys.toList()[
+            HealthDataTypeJsonValue.values.toList().indexOf(json['data_type'])],
+        HealthDataUnitJsonValue.keys.toList()[
+            HealthDataUnitJsonValue.values.toList().indexOf(json['unit'])],
+        DateTime.parse(json['date_from']),
+        DateTime.parse(json['date_to']),
+        PlatformTypeJsonValue.keys.toList()[PlatformTypeJsonValue.values
+            .toList()
+            .indexOf(json['platform_type'])],
+        json['device_id'],
+        json['source_id'],
+        json['source_name']);
+  }
 
   /// Converts the [HealthDataPoint] to a json object
   Map<String, dynamic> toJson() => {
-        'value': value,
+        'value': value.toJson(),
         'data_type': HealthDataTypeJsonValue[type],
         'unit': HealthDataUnitJsonValue[unit],
-        'date_from': DateFormat('yyyy-MM-dd HH:mm:ss').format(dateFrom),
-        'date_to': DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTo),
+        'date_from': dateFrom.toIso8601String(),
+        'date_to': dateTo.toIso8601String(),
         'platform_type': PlatformTypeJsonValue[platform],
         'device_id': deviceId,
         'source_id': sourceId,
@@ -73,17 +83,18 @@ class HealthDataPoint {
 
   @override
   String toString() => '${this.runtimeType} - '
-      'value: $value, '
+      'value: ${value.toString()}, '
       'unit: $unit, '
       'dateFrom: $dateFrom, '
       'dateTo: $dateTo, '
       'dataType: $type, '
       'platform: $platform, '
+      'deviceId: $deviceId, '
       'sourceId: $sourceId, '
       'sourceName: $sourceName';
 
-  /// The quantity value of the data point
-  num get value => _value;
+  // / The quantity value of the data point
+  HealthValue get value => _value;
 
   /// The start of the time interval
   DateTime get dateFrom => _dateFrom;
