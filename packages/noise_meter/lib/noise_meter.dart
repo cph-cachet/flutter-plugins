@@ -6,29 +6,30 @@ import 'dart:math';
 import 'package:audio_streamer/audio_streamer.dart';
 import 'package:flutter/services.dart';
 
-/// A [NoiseReading] holds a decibel value for a particular noise
-/// level reading.
+/// Holds a decibel value for a noise level reading.
 class NoiseReading {
   late double _meanDecibel, _maxDecibel;
 
   NoiseReading(List<double> volumes) {
-    /// Sorted volumes such that the last element is max amplitude
+    // sorted volumes such that the last element is max amplitude
     volumes.sort();
 
-    /// Compute average peak-amplitude using the min and max amplitude
+    // compute average peak-amplitude using the min and max amplitude
     double min = volumes.first;
     double max = volumes.last;
     double mean = 0.5 * (min.abs() + max.abs());
 
-    /// Max amplitude is 2^15
+    // max amplitude is 2^15
     double maxAmp = pow(2, 15) + 0.0;
 
     _maxDecibel = 20 * log(maxAmp * max) * log10e;
     _meanDecibel = 20 * log(maxAmp * mean) * log10e;
   }
 
+  /// Maximum measured decibel reading.
   double get maxDecibel => _maxDecibel;
 
+  /// Mean decibel across readings.
   double get meanDecibel => _meanDecibel;
 
   @override
@@ -36,8 +37,7 @@ class NoiseReading {
       '$runtimeType - meanDecibel: $meanDecibel, maxDecibel: $maxDecibel';
 }
 
-/// A [NoiseMeter] provides continous access to noise reading
-/// via the [noiseStream].
+/// A [NoiseMeter] provides continous access to noise reading via the [noiseStream].
 class NoiseMeter {
   AudioStreamer _streamer = AudioStreamer();
   late StreamController<NoiseReading> _controller;
@@ -46,7 +46,7 @@ class NoiseMeter {
   // The error callback function.
   Function? onError;
 
-  /// Creates a [NoiseMeter].
+  /// Create a [NoiseMeter].
   /// The [onError] callback must be of type `void Function(Object error)`
   /// or `void Function(Object error, StackTrace)`.
   NoiseMeter([this.onError]);

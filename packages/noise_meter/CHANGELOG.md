@@ -1,3 +1,7 @@
+## 3.1.0
+* upgrade to `audio_streamer: ^2.1.0`
+* upgrade example to Android embedding v2
+
 ## 3.0.3
 * improvement to `onError` handling.
 

@@ -43,6 +43,7 @@ public class LightPlugin implements FlutterPlugin, EventChannel.StreamHandler {
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         /// Cancel the handling of stream data
         eventChannel.setStreamHandler(null);
+        onCancel(null);
     }
 
     @Override

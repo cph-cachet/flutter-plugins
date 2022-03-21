@@ -26,6 +26,11 @@ class HealthDataPoint {
     // set the value to minutes rather than the category
     // returned by the native API
     if (type == HealthDataType.MINDFULNESS ||
+        type == HealthDataType.HEADACHE_UNSPECIFIED ||
+        type == HealthDataType.HEADACHE_NOT_PRESENT ||
+        type == HealthDataType.HEADACHE_MILD ||
+        type == HealthDataType.HEADACHE_MODERATE ||
+        type == HealthDataType.HEADACHE_SEVERE ||
         type == HealthDataType.SLEEP_IN_BED ||
         type == HealthDataType.SLEEP_ASLEEP ||
         type == HealthDataType.SLEEP_AWAKE) {
