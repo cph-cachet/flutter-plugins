@@ -36,6 +36,11 @@ enum HealthDataType {
   SLEEP_AWAKE,
   EXERCISE_TIME,
   WORKOUT,
+  HEADACHE_NOT_PRESENT,
+  HEADACHE_MILD,
+  HEADACHE_MODERATE,
+  HEADACHE_SEVERE,
+  HEADACHE_UNSPECIFIED,
 
   // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
@@ -88,6 +93,11 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.WATER,
   HealthDataType.EXERCISE_TIME,
   HealthDataType.WORKOUT,
+  HealthDataType.HEADACHE_NOT_PRESENT,
+  HealthDataType.HEADACHE_MILD,
+  HealthDataType.HEADACHE_MODERATE,
+  HealthDataType.HEADACHE_SEVERE,
+  HealthDataType.HEADACHE_UNSPECIFIED,
 ];
 
 /// List of data types available on Android
@@ -150,6 +160,12 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.EXERCISE_TIME: HealthDataUnit.MINUTES,
   HealthDataType.WORKOUT: HealthDataUnit.MINUTES,
 
+  HealthDataType.HEADACHE_NOT_PRESENT: HealthDataUnit.MINUTES,
+  HealthDataType.HEADACHE_MILD: HealthDataUnit.MINUTES,
+  HealthDataType.HEADACHE_MODERATE: HealthDataUnit.MINUTES,
+  HealthDataType.HEADACHE_SEVERE: HealthDataUnit.MINUTES,
+  HealthDataType.HEADACHE_UNSPECIFIED: HealthDataUnit.MINUTES,
+
   // Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
@@ -191,6 +207,11 @@ const HealthDataTypeJsonValue = {
   HealthDataType.ELECTRODERMAL_ACTIVITY: 'electrodermal_activity',
   HealthDataType.EXERCISE_TIME: 'exercise_time',
   HealthDataType.WORKOUT: 'workout',
+  HealthDataType.HEADACHE_NOT_PRESENT: 'headache_not_present',
+  HealthDataType.HEADACHE_MILD: 'headache_mild',
+  HealthDataType.HEADACHE_MODERATE: 'headache_moderate',
+  HealthDataType.HEADACHE_SEVERE: 'headache_severe',
+  HealthDataType.HEADACHE_UNSPECIFIED: 'headache_unspecified',
 };
 
 const HealthDataUnitJsonValue = {

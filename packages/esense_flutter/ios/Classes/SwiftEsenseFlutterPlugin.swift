@@ -95,8 +95,8 @@ class ESenseManagerMethodCallHandler: NSObject, FlutterPlugin {
                                           details: "Sampling rate set to default rate: \(samplingRate)"))
              }
         case "getDeviceName":
-            let success = manager?.getDeviceName()
-            result(success)
+            let deviceName = manager?.getDeviceName()
+            result(deviceName)
         case "setDeviceName":
             let deviceName = args?["deviceName"]
             if deviceName != nil  {

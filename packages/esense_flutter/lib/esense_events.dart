@@ -35,6 +35,7 @@ class ConnectionEvent {
     }
   }
 
+  @override
   String toString() => '$runtimeType - type: $type';
 }
 
@@ -83,6 +84,7 @@ class SensorEvent {
     );
   }
 
+  @override
   String toString() =>
       '$runtimeType - timestamp: $timestamp, packetIndex: $packetIndex, accl: [${accel![0]},${accel![1]},${accel![2]}], gyro: [${gyro![0]},${gyro![1]},${gyro![2]}]';
 }
@@ -113,6 +115,7 @@ class ESenseEvent {
     }
   }
 
+  @override
   String toString() => '$runtimeType';
 }
 
@@ -121,6 +124,8 @@ class RegisterListenerEvent extends ESenseEvent {
   /// Was registration successful?
   bool success;
   RegisterListenerEvent(this.success) : super();
+
+  @override
   String toString() => '$runtimeType - success: $success';
 }
 
@@ -139,6 +144,7 @@ class AccelerometerOffsetRead extends ESenseEvent {
   factory AccelerometerOffsetRead.fromMap(Map<dynamic, dynamic> map) =>
       AccelerometerOffsetRead(map['offsetX'], map['offsetY'], map['offsetZ']);
 
+  @override
   String toString() => '$runtimeType - '
       'offsetX: $offsetX, '
       'offsetY: $offsetY, '
@@ -175,6 +181,7 @@ class AdvertisementAndConnectionIntervalRead extends ESenseEvent {
         map['maxConnectionInterval'],
       );
 
+  @override
   String toString() => '$runtimeType - '
       'minAdvertisementInterval: $minAdvertisementInterval, '
       'maxAdvertisementInterval: $maxAdvertisementInterval, '
@@ -191,6 +198,7 @@ class BatteryRead extends ESenseEvent {
   factory BatteryRead.fromMap(Map<dynamic, dynamic> map) =>
       BatteryRead(map['voltage']);
 
+  @override
   String toString() => '$runtimeType - voltage: $voltage';
 }
 
@@ -203,6 +211,7 @@ class ButtonEventChanged extends ESenseEvent {
   factory ButtonEventChanged.fromMap(Map<dynamic, dynamic> map) =>
       ButtonEventChanged(map['pressed']);
 
+  @override
   String toString() => '$runtimeType - pressed: $pressed';
 }
 
@@ -215,6 +224,7 @@ class DeviceNameRead extends ESenseEvent {
   factory DeviceNameRead.fromMap(Map<dynamic, dynamic> map) =>
       DeviceNameRead(map['deviceName']);
 
+  @override
   String toString() => '$runtimeType - name: $deviceName';
 }
 
@@ -229,5 +239,6 @@ class SensorConfigRead extends ESenseEvent {
   factory SensorConfigRead.fromMap(Map<dynamic, dynamic> map) =>
       SensorConfigRead()..config = ESenseConfig();
 
+  @override
   String toString() => '$runtimeType - config: $config';
 }

@@ -1,18 +1,13 @@
 package dk.cachet.esense_flutter;
 
 import io.esense.esenselib.*;
-import io.flutter.plugin.common.*;
 import io.flutter.plugin.common.EventChannel.*;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class ESenseConnectionEventStreamHandler implements StreamHandler, ESenseConnectionListener {
 
-    Registrar registrar;
     MainThreadEventSink eventSink;
 
-    ESenseConnectionEventStreamHandler(Registrar registrar) {
-        this.registrar = registrar;
-    }
+    ESenseConnectionEventStreamHandler() {}
 
 
     /* -----------------------------------
