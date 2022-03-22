@@ -102,6 +102,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("writeAudiogram")){
             try! writeAudiogram(call: call, result: result)
         }
+        
+        /// Handle deleteAudiogram
+        else if (call.method.elementsEqual("deleteAudiogram")){
+            try! deleteAudiogram(call: call, result: result)
+        }
+        
         /// Handle hasPermission
         else if (call.method.elementsEqual("hasPermissions")){
             try! hasPermissions(call: call, result: result)
@@ -449,6 +455,51 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 return
             }
+       }
+        
+       HKHealthStore().execute(query)
+    }
+    
+    func deleteAudiogram(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? NSDictionary
+        let id = (arguments?["id"] as? String) ?? ""
+        
+        let query = HKSampleQuery.init(sampleType: HKSampleType.audiogramSampleType(), predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, queryResult, error) in
+            
+            guard let queryResult : [HKSample] = queryResult else {
+                let error = error! as NSError
+                print("Error getting total steps in interval \(error.localizedDescription)")
+                
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+            }
+                        
+            var itemToDelete: HKAudiogramSample?;
+            for result in queryResult {
+                guard let dataItem:HKAudiogramSample = result as? HKAudiogramSample else { continue }
+                guard let currentId: String = dataItem.metadata?["HKExternalUUID"] as? String else { continue }
+                if(currentId == id) {
+                    itemToDelete = dataItem
+                }
+            }
+
+            if(itemToDelete == nil) {
+                DispatchQueue.main.async {
+                    result(false)
+                }
+            } else {
+                HKHealthStore().delete([itemToDelete!], withCompletion: { (success, error) in
+                    if let err = error {
+                        print("Error deleting item: \(err.localizedDescription)")
+                    }
+                    DispatchQueue.main.async {
+                        result(success)
+                    }
+                })
+            }
+            return
        }
         
        HKHealthStore().execute(query)
