@@ -403,6 +403,16 @@ class HealthFactory {
     return audiogramsIds?.map((id) => id.toString()).toList();
   }
 
+  /// Delete a specific audiogram using id metadata
+  ///
+  Future<bool> deleteAudiogram(String id) async {
+    final args = <String, dynamic>{
+      'id': id,
+    };
+    final success = await _channel.invokeMethod<bool>('deleteAudiogram', args);
+    return success != null ? success : false;
+  }
+
   int _alignValue(HealthDataType type) {
     switch (type) {
       case HealthDataType.SLEEP_IN_BED:
