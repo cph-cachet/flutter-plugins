@@ -1,5 +1,33 @@
 part of health;
 
+/// Parameters:
+/// * [frequencies] - array of frequencies of the test
+/// * [leftEarSensitivities] threshold in decibel for the left ear
+/// * [rightEarSensitivities] threshold in decibel for the left ear
+/// * [startTime] - the start time when the audiogram is measured.
+///   + It must be equal to or earlier than [endTime].
+/// * [endTime] - the end time when the audiogram is measured.
+///   + It must be equal to or later than [startTime].
+///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
+/// * [metadata] - optional map of keys, HKMetadataKeySyncIdentifier and HKMetadataKeySyncVersion are optional, but HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
+class HKAudiogram {
+  final List<double> frequencies;
+  final List<double> leftEarSensitivities;
+  final List<double> rightEarSensitivities;
+  final DateTime startTime;
+  final DateTime endTime;
+  final Map<String, dynamic>? metadata;
+
+  HKAudiogram({
+    required this.frequencies,
+    required this.leftEarSensitivities,
+    required this.rightEarSensitivities,
+    required this.startTime,
+    required this.endTime,
+    required this.metadata,
+  });
+}
+
 /// Main class for the Plugin.
 ///
 /// The plugin supports:
@@ -216,42 +244,27 @@ class HealthFactory {
   ///
   /// Returns true if successful, false otherwise.
   ///
-  /// Parameters:
-  /// * [frequencies] - array of frequencies of the test
-  /// * [leftEarSensitivities] threshold in decibel for the left ear
-  /// * [rightEarSensitivities] threshold in decibel for the left ear
-  /// * [startTime] - the start time when the audiogram is measured.
-  ///   + It must be equal to or earlier than [endTime].
-  /// * [endTime] - the end time when the audiogram is measured.
-  ///   + It must be equal to or later than [startTime].
-  ///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
-  /// * [metadata] - optional map of keys, both HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
-  Future<bool> writeAudiogram(
-      List<double> frequencies,
-      List<double> leftEarSensitivities,
-      List<double> rightEarSensitivities,
-      DateTime startTime,
-      DateTime endTime,
-      {Map<String, dynamic>? metadata}) async {
-    if (frequencies.isEmpty ||
-        leftEarSensitivities.isEmpty ||
-        rightEarSensitivities.isEmpty)
+  Future<bool> writeAudiogram(HKAudiogram audiogram) async {
+    if (audiogram.frequencies.isEmpty ||
+        audiogram.leftEarSensitivities.isEmpty ||
+        audiogram.rightEarSensitivities.isEmpty)
       throw ArgumentError(
           "frequencies, leftEarSensitivities and rightEarSensitivities can't be empty");
-    if (frequencies.length != leftEarSensitivities.length ||
-        rightEarSensitivities.length != leftEarSensitivities.length)
+    if (audiogram.frequencies.length != audiogram.leftEarSensitivities.length ||
+        audiogram.rightEarSensitivities.length !=
+            audiogram.leftEarSensitivities.length)
       throw ArgumentError(
           "frequencies, leftEarSensitivities and rightEarSensitivities need to be of the same length");
-    if (startTime.isAfter(endTime))
+    if (audiogram.startTime.isAfter(audiogram.endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
-      'frequencies': frequencies,
-      'leftEarSensitivities': leftEarSensitivities,
-      'rightEarSensitivities': rightEarSensitivities,
+      'frequencies': audiogram.frequencies,
+      'leftEarSensitivities': audiogram.leftEarSensitivities,
+      'rightEarSensitivities': audiogram.rightEarSensitivities,
       'dataTypeKey': _enumToString(HealthDataType.AUDIOGRAM),
-      'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch,
-      'metadata': metadata,
+      'startTime': audiogram.startTime.millisecondsSinceEpoch,
+      'endTime': audiogram.endTime.millisecondsSinceEpoch,
+      'metadata': audiogram.metadata,
     };
     bool? success = await _channel.invokeMethod('writeAudiogram', args);
     return success ?? false;
@@ -394,13 +407,66 @@ class HealthFactory {
     return stepsCount;
   }
 
-  /// Get the list of string ids of the audiograms stored in Apple Health
-  /// Returns null if not successful.
+  /// Get the audiograms stored in Apple Health
+  /// Returns empty array if not successful.
   ///
-  Future<List<String>?> getAudiogramsIds() async {
-    final audiogramsIds =
-        await _channel.invokeMethod<List<Object?>>('getAudiogramsIds');
-    return audiogramsIds?.map((id) => id.toString()).toList();
+  Future<List<HKAudiogram>?> getAudiograms() async {
+    final List<dynamic> audiogramItems =
+        await _channel.invokeMethod('getAudiograms');
+
+    List<HKAudiogram> audiograms = [];
+
+    for (var item in audiogramItems) {
+      final results = item[0];
+      final List<Object?> frequenciesPoints = results['frequencies'];
+      List<double> frequencies = [];
+      for (var frequency in frequenciesPoints) {
+        frequencies.add(frequency as double);
+      }
+
+      final List<Object?> rightEarSensitivitiesPoints =
+          results['rightEarSensitivities'];
+      List<double> rightEarSensitivities = [];
+      for (var rightEarSensitivity in rightEarSensitivitiesPoints) {
+        rightEarSensitivities.add(rightEarSensitivity as double);
+      }
+
+      final List<Object?> leftEarSensitivitiesPoints =
+          results['leftEarSensitivities'];
+      List<double> leftEarSensitivities = [];
+      for (var leftEarSensitivity in leftEarSensitivitiesPoints) {
+        leftEarSensitivities.add(leftEarSensitivity as double);
+      }
+
+      final time = item[1];
+      final double startTime = time['startTime'];
+      final double endTime = time['endTime'];
+
+      final metadata = item[2];
+
+      final String HKExternalUUID = metadata['HKExternalUUID'] ?? "";
+      final String HKDeviceName = metadata['HKDeviceName'] ?? "";
+      final String HKMetadataKeySyncIdentifier =
+          metadata['HKMetadataKeySyncIdentifier'] ?? "";
+      final double HKMetadataKeySyncVersion =
+          double.parse(metadata['HKMetadataKeySyncVersion'] ?? "0");
+
+      audiograms.add(HKAudiogram(
+        startTime: DateTime.fromMicrosecondsSinceEpoch(startTime.round()),
+        endTime: DateTime.fromMicrosecondsSinceEpoch(endTime.round()),
+        frequencies: frequencies,
+        rightEarSensitivities: rightEarSensitivities,
+        leftEarSensitivities: leftEarSensitivities,
+        metadata: {
+          "HKExternalUUID": HKExternalUUID,
+          "HKDeviceName": HKDeviceName,
+          "HKMetadataKeySyncIdentifier": HKMetadataKeySyncIdentifier,
+          "HKMetadataKeySyncVersion": HKMetadataKeySyncVersion,
+        },
+      ));
+    }
+
+    return audiograms;
   }
 
   /// Delete a specific audiogram using id metadata
