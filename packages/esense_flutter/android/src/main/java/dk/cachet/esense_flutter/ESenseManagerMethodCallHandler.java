@@ -9,8 +9,7 @@ package dk.cachet.esense_flutter;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.*;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
-
+import android.content.Context;
 import io.esense.esenselib.*;
 
 public class ESenseManagerMethodCallHandler implements MethodCallHandler {
@@ -18,16 +17,16 @@ public class ESenseManagerMethodCallHandler implements MethodCallHandler {
     public static final int TIMEOUT = 5 * 1000;
 
     private boolean connected = false;
-    private Registrar registrar;
+    private Context context;
     private ESenseConnectionEventStreamHandler eSenseConnectionEventStreamHandler;
 
     private int samplingRate = 10;  // default 10 Hz.
     ESenseManager manager;
 
     public ESenseManagerMethodCallHandler(
-            Registrar registrar,
+            Context context,
             ESenseConnectionEventStreamHandler eSenseConnectionEventStreamHandler) {
-        this.registrar = registrar;
+        this.context = context;
         this.eSenseConnectionEventStreamHandler = eSenseConnectionEventStreamHandler;
     }
 
@@ -46,7 +45,7 @@ public class ESenseManagerMethodCallHandler implements MethodCallHandler {
         switch (call.method) {
             case "connect":
                 final String name = call.argument("name");
-                manager = new ESenseManager(name, registrar.activity().getApplicationContext(), eSenseConnectionEventStreamHandler);
+                manager = new ESenseManager(name, context, eSenseConnectionEventStreamHandler);
                 connected = manager.connect(TIMEOUT);
                 result.success(connected);
                 break;
@@ -60,7 +59,7 @@ public class ESenseManagerMethodCallHandler implements MethodCallHandler {
                 break;
             case "setSamplingRate":
                 // the rate is passed as a string
-                samplingRate = Integer.parseInt(String.valueOf(call.argument("rate")));
+                samplingRate = Integer.parseInt(call.argument("rate"));
                 result.success(true);
                 break;
             case "getDeviceName":

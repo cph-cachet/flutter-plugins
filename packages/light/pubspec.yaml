@@ -11,10 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-dev_dependencies:
-#  flutter_test:
-#    sdk: flutter
-
 flutter:
   # This section identifies this Flutter project as a plugin project.
   # The 'pluginClass' and Android 'package' identifiers should not ordinarily

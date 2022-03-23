@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Copenhagen Center for Health Technology (CACHET) at the
+ * Copyright 2022 Copenhagen Center for Health Technology (CACHET) at the
  * Technical University of Denmark (DTU).
  * Use of this source code is governed by a MIT-style license that can be
  * found in the LICENSE file.
@@ -21,18 +21,12 @@ class ESenseManager {
   static const String ESenseEventChannelName = 'esense.io/esense_events';
   static const String ESenseSensorEventChannelName = 'esense.io/esense_sensor';
 
-  static final ESenseManager _instance = ESenseManager._();
-  ESenseManager._();
-
-  /// Get the singleton [ESenseManager] manager.
-  factory ESenseManager() => _instance;
-
-  MethodChannel _eSenseManagerMethodChannel =
+  final MethodChannel _eSenseManagerMethodChannel =
       MethodChannel(ESenseManagerMethodChannelName);
-  EventChannel _eSenseConnectionEventChannel =
+  final EventChannel _eSenseConnectionEventChannel =
       EventChannel(ESenseConnectionEventChannelName);
-  EventChannel _eSenseEventChannel = EventChannel(ESenseEventChannelName);
-  EventChannel _eSenseSensorEventChannel =
+  final EventChannel _eSenseEventChannel = EventChannel(ESenseEventChannelName);
+  final EventChannel _eSenseSensorEventChannel =
       EventChannel(ESenseSensorEventChannelName);
 
   Stream<ConnectionEvent>? _connectionEventStream;
@@ -43,26 +37,43 @@ class ESenseManager {
   bool connected = false;
 
   /// The name of the connected eSense device
-  String? eSenseDeviceName;
+  String deviceName;
 
   int _samplingRate = 10;
 
   /// The sampling rate of the eSense sensors (default sampling rate is 10 Hz.)
   int get samplingRate => _samplingRate;
 
+  /// Constructs an eSense manager for a device with name [deviceName].
+  ESenseManager(this.deviceName) {
+    assert(deviceName.length > 0,
+        'Must provide a valid name of the eSense device to connect to.');
+  }
+
   // ------------    METHOD HANDLERS --------------------
 
-  /// Connect to the eSense device named [name].
-  /// Returns `true` if connection is successful, ´false` otherwise.
-  Future<bool> connect(String name) async {
-    assert(name.length > 0,
-        'Must provide a valid name of the eSense device to connect to.');
-    eSenseDeviceName = name;
+  /// Initiates a connection scanning procedure.
+  ///
+  /// The phone will first scan for the device with the given [deviceName].
+  /// Then, if found, it will try to connect.
+  /// Different [ConnectionEvent] events of type
+  ///
+  ///   * [ConnectionType.device_found]
+  ///   * [ConnectionType.device_not_found]
+  ///   * [ConnectionType.connected]
+  ///
+  /// are fired at different stages of the procedure.
+  ///
+  /// Returns `true` if scanning is started is successful, ´false` otherwise.
+  ///
+  /// Always make sure to [disconnect] the device when you don’t need it anymore.
+  /// Failing to do so can drain the battery significantly.
+  Future<bool> connect() async {
     _eventStream = null;
     _sensorStream = null;
 
     return await _eSenseManagerMethodChannel
-        .invokeMethod('connect', <String, dynamic>{'name': name});
+        .invokeMethod('connect', <String, dynamic>{'name': deviceName});
   }
 
   /// Disconnects the device (if connected).
@@ -71,30 +82,31 @@ class ESenseManager {
   /// after the disconnection has taken place.
   /// Returns `true` if the disconnection was successfully made, `false`
   /// otherwise.
-  Future<bool> disconnect() async {
-    if (connected)
-      return await _eSenseManagerMethodChannel.invokeMethod('disconnect');
-    else
-      return false;
-  }
+  Future<bool> disconnect() async => (connected)
+      ? await _eSenseManagerMethodChannel.invokeMethod('disconnect')
+      : false;
 
   /// Checks the BTLE connection if the device is connected or not.
   ///
   /// Returns `true` if a device is connected `false` otherwise
-  Future<bool> isConnected() async {
-    connected =
-        await _eSenseManagerMethodChannel.invokeMethod('isConnected') ?? false;
-    return connected;
-  }
+  Future<bool> isConnected() async => connected =
+      await _eSenseManagerMethodChannel.invokeMethod('isConnected') ?? false;
 
   /// Set the sampling rate for sensor sampling in Hz (min: 1 - max: 100)
   /// Default sampling rate is 10 Hz.
+  ///
   /// Returns `true` if the request was successfully made, `false` otherwise.
+  ///
+  /// Sampling rate must be set **before** listening is started.
+  ///
+  /// Note that the sampling rate is only a hint to the system.
+  /// Sensor events may be received faster or slower than the specified rate,
+  /// depending on the Bluetooth communication status and parameter values.
   Future<bool> setSamplingRate(int rate) async {
     assert(rate > 0 && rate <= 100,
         'Must provide a sampling rate between 1 and 100 Hz.');
     _samplingRate = rate;
-    // note that for some strange reason, iOS does not accept an int as argument
+    // for some strange reason, iOS does not accept an int as argument
     // hence, [rate] is converted to a string
     return await _eSenseManagerMethodChannel.invokeMethod(
             'setSamplingRate', <String, dynamic>{'rate': '$rate'}) ??
@@ -117,8 +129,8 @@ class ESenseManager {
   /// Maximum size is 22 characters.
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool?> setDeviceName(String deviceName) async {
-    assert(deviceName.length < 22,
-        'The device name must be less than 22 characteres.');
+    assert(deviceName.isNotEmpty && deviceName.length < 22,
+        'The device name must be more that zero and less than 22 characteres long.');
     if (!connected)
       throw ESenseException('Not connected to any eSense device.');
     return await _eSenseManagerMethodChannel.invokeMethod(
@@ -274,6 +286,7 @@ class ESenseManager {
   /// Get the stream of sensor events.
   ///
   /// Use the [setSamplingRate] method to set the sampling rate.
+  /// Note that the sampling rate must be set **before** listening is started.
   ///
   /// Throws an [ESenseException] if not connected to an eSense device.
   /// Wait until [connected] before using this stream.

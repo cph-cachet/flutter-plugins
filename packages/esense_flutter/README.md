@@ -6,31 +6,10 @@ This plugin supports the [eSense](https://www.esense.io) earable computing platf
 [![pub package](https://img.shields.io/pub/v/esense_flutter.svg)](https://pub.dartlang.org/packages/esense_flutter)
 
 ## Install (Flutter)
-Add ```esense_flutter``` as a dependency in  `pubspec.yaml`.
+Add `esense_flutter` as a dependency in  `pubspec.yaml`.
 For help on adding as a dependency, view the [pubspec documenation](https://flutter.io/using-packages/).
 
-## AndroidX support
-**Only for Android API level 28**
-
-Update the contents of the `android/gradle.properties` file with the following:
-```
-android.enableJetifier=true
-android.useAndroidX=true
-org.gradle.jvmargs=-Xmx1536M
-```
-
-Next, add the following dependencies to your `android/build.gradle` file:
-```
-dependencies {
-  classpath 'com.android.tools.build:gradle:3.3.0'
-  classpath 'com.google.gms:google-services:4.2.0'
-} 
-```
-
-And finally, set the Android compile and minimum SDK versions to `compileSdkVersion 28`, 
-and `minSdkVersion 23` respectively, inside the `android/app/build.gradle` file.
-
-## Android Permissions
+## Android 
 The package uses your location and bluetooth to fetch data from the eSense ear plugs.
 Therefore location tracking and bluetooth must be enabled.
 
@@ -44,7 +23,11 @@ Add the following entry to your `manifest.xml` file, in the Android project of y
 <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
 ```
 
-In addition, your __minimum SDK version__ should be __23__.
+Also make sure to obtain permissions in your app to use location and bluetooth. 
+See the example app on how to e.g. use the [`permission_handler`](https://pub.dev/packages/permission_handler) for this. Note that the plugin **does not** handle permissions - this has to be done on an app level.
+
+Set the Android compile and minimum SDK versions to `compileSdkVersion 28`, 
+and `minSdkVersion 23` respectively, inside the `android/app/build.gradle` file.
 
 ## iOS
 
@@ -63,6 +46,8 @@ Add this permission in the `Info.plist` file located in `ios/Runner`:
 <string>Uses bluetooth to connect to the eSense device</string>
 <key>UIBackgroundModes</key>
   <array>
+	<string>bluetooth-central</string>
+	<string>bluetooth-peripheral</string>
   <string>audio</string>
   <string>external-accessory</string>
   <string>fetch</string>
@@ -70,42 +55,47 @@ Add this permission in the `Info.plist` file located in `ios/Runner`:
 
 ```
 
+Note that on iOS, connecting to the eSense device may take several seconds. 
+
 ## Usage
 
-The eSense Flutter plugin has been designed to resemble the Android eSense API almost __1:1__. Hence, you should be able
-to recognize the names of the different classes and class variables.  
+The eSense Flutter plugin has been designed to resemble the Android eSense API almost __1:1__. Hence, you should be able to recognize the names of the different classes and class variables.  
 For example, the methods on the [`ESenseManager`](https://pub.dev/documentation/esense/latest/esense/ESenseManager-class.html) class is mapped 1:1. 
 See the [eSense Android documentation](https://www.esense.io/share/eSense-Android-Library.pdf) on how it all works.
 
-However, one major design change has been done; this eSense Flutter plugin complies to the Dart/Flutter reactive programming 
-architecture using [Stream](https://api.dartlang.org/stable/2.4.0/dart-async/Stream-class.html)s.
-Hence, you do not 'add listerners' to an eSense device (as you do in Java) -- rather, you obtain a Dart stream and listen
-to this stream (and exploit all the [other very nice stream operations](https://dart.dev/tutorials/language/streams) which are available in Dart).
+However, one major design change has been done; this eSense Flutter plugin complies to the Dart/Flutter reactive programming architecture using [Stream](https://api.dartlang.org/stable/2.4.0/dart-async/Stream-class.html)s.
+Hence, you do not 'add listerners' to an eSense device (as you do in Java) -- rather, you obtain a Dart stream and listen to this stream (and exploit all the [other very nice stream operations](https://dart.dev/tutorials/language/streams) which are available in Dart).
 Below, we shall describe how to use the eSense streams. 
 But first -- let's see how to set up and connect to an eSense device in the first place.
 
-Note that playing and recording audio are performed via the Bluetooth Classic interface and are not 
-supported by the eSense library described here.
+Note that playing and recording audio are performed via the Bluetooth Classic interface and are not supported by the eSense library described here.
 
 
 
 ### Setting up and Connecting to an eSense Device
 
 All operations on the eSense device happens via the [`ESenseManager`](https://pub.dev/documentation/esense/latest/esense/ESenseManager-class.html).
-When connecting, specify the name of the device (typically on the form `eSense-xxxx`).
+When creating the `ESenseManager`, specify the name of the device (typically on the form `eSense-xxxx`).
 
 ```dart
 import 'package:esense_flutter/esense.dart';
 
 ...
 
+// create an ESenseManager by specifying the name of the device
+ESenseManager eSenseManager = ESenseManager('eSense-0332');
+
+...
+
 // first listen to connection events before trying to connect
-ESenseManager.connectionEvents.listen((event) {
+eSenseManager.connectionEvents.listen((event) {
   print('CONNECTION event: $event');
 }
 
-// try to connect to the eSense device with a given name
-bool success = await ESenseManager.connect(eSenseName);
+...
+
+// try to connect to the eSense device 
+bool connecting = await eSenseManager.connect();
 ```
 
 Everything with the eSense API happens asynchronously. Hence, the `connect` call merely initiates the connection
@@ -117,23 +107,22 @@ __before__ the connection is initiated, as shown above.
 
 ### Listen to Sensor Events
 
-You can access a stream of [`SensorEvent`](https://pub.dev/documentation/esense/latest/esense/SensorEvent-class.html) 
-events via the [`ESenseManager.sensorEvents`](https://pub.dev/documentation/esense/latest/esense/ESenseManager/sensorEvents.html) stream.
+You can access a stream of [`SensorEvent`](https://pub.dev/documentation/esense/latest/esense/SensorEvent-class.html) events via the [`ESenseManager.sensorEvents`](https://pub.dev/documentation/esense/latest/esense/ESenseManager/sensorEvents.html) stream.
 Sampling rate can be set when not listening.
 
 `````dart
-StreamSubscription subscription = ESenseManager.sensorEvents.listen((event) {
+StreamSubscription subscription = eSenseManager.sensorEvents.listen((event) {
   print('SENSOR event: $event'
 });
 
 ...
 
 subscription.cancel();
-ESenseManager.setSamplingRate(5);
+eSenseManager.setSamplingRate(5);
 
 ... 
 
-subscription = ESenseManager.sensorEvents.listen((event) {
+subscription = eSenseManager.sensorEvents.listen((event) {
   print('SENSOR event: $event');
 });
 `````
@@ -150,12 +139,12 @@ Invoking read operations will trigger [`ESenseEvent`](https://pub.dev/documentat
 
 `````dart
 // set up a event listener
-ESenseManager.eSenseEvents.listen((event) {
+eSenseManager.eSenseEvents.listen((event) {
   print('ESENSE event: $event');
 }
 
 // now invoke read operations on the manager
-ESenseManager.getDeviceName();
+eSenseManager.getDeviceName();
 `````
 
 When the button on the eSense device is pressed, the `eSenseEvents` stream will send an [`ButtonEventChanged`](https://pub.dev/documentation/esense/latest/esense/ButtonEventChanged-class.html) event.
@@ -179,15 +168,15 @@ For example, the following code __will not work__:
 
 `````dart
 // set up a event listener
-ESenseManager.eSenseEvents.listen((event) {
+eSenseManager.eSenseEvents.listen((event) {
   print('ESENSE event: $event');
 }
 
 // now invoke read operations on the manager
 // THIS WILL NOT WORK!
-ESenseManager.getDeviceName();
-ESenseManager.getAccelerometerOffset();
-ESenseManager.getAdvertisementAndConnectionInterval();
+eSenseManager.getDeviceName();
+eSenseManager.getAccelerometerOffset();
+eSenseManager.getAdvertisementAndConnectionInterval();
 `````
 
 In this case, the first operation (listening to the Esense Events) will succeed - the rest will fail.
@@ -195,15 +184,15 @@ In the example app, this has been fixed by adding delays to method call, like;
 
 ```dart
 // get the battery level every 10 secs
-Timer.periodic(Duration(seconds: 10), (timer) async => await ESenseManager.getBatteryVoltage());
+Timer.periodic(Duration(seconds: 10), (timer) async => await eSenseManager.getBatteryVoltage());
 
 // wait 2, 3, 4, 5, ... secs before getting the name, offset, etc.
 // it seems like the eSense BTLE interface does NOT like to get called
 // several times in a row -- hence, delays are added in the following calls
-Timer(Duration(seconds: 2), () async => await ESenseManager.getDeviceName());
-Timer(Duration(seconds: 3), () async => await ESenseManager.getAccelerometerOffset());
-Timer(Duration(seconds: 4), () async => await ESenseManager.getAdvertisementAndConnectionInterval());
-Timer(Duration(seconds: 5), () async => await ESenseManager.getSensorConfig());
+Timer(Duration(seconds: 2), () async => await eSenseManager.getDeviceName());
+Timer(Duration(seconds: 3), () async => await eSenseManager.getAccelerometerOffset());
+Timer(Duration(seconds: 4), () async => await eSenseManager.getAdvertisementAndConnectionInterval());
+Timer(Duration(seconds: 5), () async => await eSenseManager.getSensorConfig());
 ```
 
 ## Authors

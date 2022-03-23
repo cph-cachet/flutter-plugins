@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:esense_flutter/esense.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MyApp());
 
@@ -19,17 +22,34 @@ class _MyAppState extends State<MyApp> {
   bool connected = false;
 
   // the name of the eSense device to connect to -- change this to your own device.
-  String eSenseName = 'eSense-0332';
+  // String eSenseName = 'eSense-0164';
+  static const String eSenseDeviceName = 'eSense-0332';
+  ESenseManager eSenseManager = ESenseManager(eSenseDeviceName);
 
+  @override
   void initState() {
     super.initState();
     _listenToESense();
   }
 
-  Future _listenToESense() async {
+  Future<void> _askForPermissions() async {
+    if (!(await Permission.bluetooth.request().isGranted)) {
+      print(
+          'WARNING - no permission to use Bluetooth granted. Cannot access eSense device.');
+    }
+    if (!(await Permission.locationWhenInUse.request().isGranted)) {
+      print(
+          'WARNING - no permission to access location granted. Cannot access eSense device.');
+    }
+  }
+
+  Future<void> _listenToESense() async {
+    // for some strange reason, Android requires permission to location for the eSense to work????
+    if (Platform.isAndroid) await _askForPermissions();
+
     // if you want to get the connection events when connecting,
     // set up the listener BEFORE connecting...
-    ESenseManager().connectionEvents.listen((event) {
+    eSenseManager.connectionEvents.listen((event) {
       print('CONNECTION event: $event');
 
       // when we're connected to the eSense device, we can start listening to events from it
@@ -59,17 +79,19 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future _connectToESense() async {
-    print('connecting... connected: $connected');
-    if (!connected) connected = await ESenseManager().connect(eSenseName);
+  Future<void> _connectToESense() async {
+    if (!connected) {
+      print('connecting...');
+      connected = await eSenseManager.connect();
 
-    setState(() {
-      _deviceStatus = connected ? 'connecting' : 'connection failed';
-    });
+      setState(() {
+        _deviceStatus = connected ? 'connecting...' : 'connection failed';
+      });
+    }
   }
 
   void _listenToESenseEvents() async {
-    ESenseManager().eSenseEvents.listen((event) {
+    eSenseManager.eSenseEvents.listen((event) {
       print('ESENSE event: $event');
 
       setState(() {
@@ -104,30 +126,34 @@ class _MyAppState extends State<MyApp> {
   void _getESenseProperties() async {
     // get the battery level every 10 secs
     Timer.periodic(
-      Duration(seconds: 10),
+      const Duration(seconds: 10),
       (timer) async =>
-          (connected) ? await ESenseManager().getBatteryVoltage() : null,
+          (connected) ? await eSenseManager.getBatteryVoltage() : null,
     );
 
     // wait 2, 3, 4, 5, ... secs before getting the name, offset, etc.
     // it seems like the eSense BTLE interface does NOT like to get called
     // several times in a row -- hence, delays are added in the following calls
-    Timer(Duration(seconds: 2),
-        () async => await ESenseManager().getDeviceName());
-    Timer(Duration(seconds: 3),
-        () async => await ESenseManager().getAccelerometerOffset());
+    Timer(const Duration(seconds: 2),
+        () async => await eSenseManager.getDeviceName());
+    Timer(const Duration(seconds: 3),
+        () async => await eSenseManager.getAccelerometerOffset());
     Timer(
-        Duration(seconds: 4),
+        const Duration(seconds: 4),
         () async =>
-            await ESenseManager().getAdvertisementAndConnectionInterval());
-    Timer(Duration(seconds: 5),
-        () async => await ESenseManager().getSensorConfig());
+            await eSenseManager.getAdvertisementAndConnectionInterval());
+    Timer(const Duration(seconds: 5),
+        () async => await eSenseManager.getSensorConfig());
   }
 
   StreamSubscription? subscription;
   void _startListenToSensorEvents() async {
+    // any changes to the sampling frequency must be done BEFORE listening to sensor events
+    print('setting sampling frequency...');
+    await eSenseManager.setSamplingRate(10);
+
     // subscribe to sensor event from the eSense device
-    subscription = ESenseManager().sensorEvents.listen((event) {
+    subscription = eSenseManager.sensorEvents.listen((event) {
       print('SENSOR event: $event');
       setState(() {
         _event = event.toString();
@@ -145,12 +171,14 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  @override
   void dispose() {
     _pauseListenToSensorEvents();
-    ESenseManager().disconnect();
+    eSenseManager.disconnect();
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
@@ -165,8 +193,8 @@ class _MyAppState extends State<MyApp> {
               Text('eSense Device Name: \t$_deviceName'),
               Text('eSense Battery Level: \t$_voltage'),
               Text('eSense Button Event: \t$_button'),
-              Text(''),
-              Text('$_event'),
+              const Text(''),
+              Text(_event),
               Container(
                 height: 80,
                 width: 200,
@@ -174,8 +202,8 @@ class _MyAppState extends State<MyApp> {
                     BoxDecoration(borderRadius: BorderRadius.circular(10)),
                 child: TextButton.icon(
                   onPressed: _connectToESense,
-                  icon: Icon(Icons.login),
-                  label: Text(
+                  icon: const Icon(Icons.login),
+                  label: const Text(
                     'CONNECT....',
                     style: TextStyle(fontSize: 35),
                   ),
@@ -187,13 +215,15 @@ class _MyAppState extends State<MyApp> {
         floatingActionButton: FloatingActionButton(
           // a floating button that starts/stops listening to sensor events.
           // is disabled until we're connected to the device.
-          onPressed: (!ESenseManager().connected)
+          onPressed: (!eSenseManager.connected)
               ? null
               : (!sampling)
                   ? _startListenToSensorEvents
                   : _pauseListenToSensorEvents,
           tooltip: 'Listen to eSense sensors',
-          child: (!sampling) ? Icon(Icons.play_arrow) : Icon(Icons.pause),
+          child: (!sampling)
+              ? const Icon(Icons.play_arrow)
+              : const Icon(Icons.pause),
         ),
       ),
     );
