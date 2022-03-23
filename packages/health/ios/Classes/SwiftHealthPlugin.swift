@@ -88,9 +88,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             getTotalStepsInInterval(call: call, result: result)
         }
         
-        /// Handle getTotalStepsInInterval
-        else if (call.method.elementsEqual("getAudiogramsIds")){
-            getAudiogramsIds(call: call, result: result)
+        /// Handle getAudiograms
+        else if (call.method.elementsEqual("getAudiograms")){
+            getAudiograms(call: call, result: result)
         }
 
         /// Handle writeData
@@ -105,7 +105,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         /// Handle deleteAudiogram
         else if (call.method.elementsEqual("deleteAudiogram")){
-            try! deleteAudiogram(call: call, result: result)
+            deleteAudiogram(call: call, result: result)
         }
         
         /// Handle hasPermission
@@ -257,14 +257,21 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             sensitivityPoints.append(sensitivityPoint)
          }
         
-        let audiogram: HKAudiogramSample;
+        var audiogram: HKAudiogramSample;
         let metadataReceived = (arguments["metadata"] as? [String: Any]?)
         
         if((metadataReceived) != nil) {
             guard let deviceName = metadataReceived?!["HKDeviceName"] as? String else { return }
             guard let externalUUID = metadataReceived?!["HKExternalUUID"] as? String else { return }
-            
-            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID])
+
+            let keySyncIdentifier: String? = metadataReceived?!["HKMetadataKeySyncIdentifier"] as! String?
+            let keySyncVersion: NSNumber? = metadataReceived?!["HKMetadataKeySyncVersion"] as! NSNumber?
+
+            if(keySyncIdentifier == nil || keySyncVersion == nil){
+                audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID])
+            } else {
+                audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID, HKMetadataKeySyncIdentifier: keySyncIdentifier!, HKMetadataKeySyncVersion: keySyncVersion!])
+            }
             
         } else {
             audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: nil)
@@ -424,37 +431,55 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         HKHealthStore().execute(query)
     }
     
-    func getAudiogramsIds(call: FlutterMethodCall, result: @escaping FlutterResult) {
+    func getAudiograms(call: FlutterMethodCall, result: @escaping FlutterResult) {
         let query = HKSampleQuery.init(sampleType: HKSampleType.audiogramSampleType(), predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, queryResult, error) in
-            
+            var audiogramSamples: Array<HKAudiogramSample> = [];
+
             guard let queryResult : [HKSample] = queryResult else {
                 let error = error! as NSError
-                print("Error getting total steps in interval \(error.localizedDescription)")
+                print("Error getting audiograms \(error.localizedDescription)")
                 
                 DispatchQueue.main.async {
-                    result(nil)
+                    result([])
                 }
                 return
             }
                         
-            var ids: Array<String> = [];
             for result in queryResult {
-                guard let dataItem:HKAudiogramSample = result as? HKAudiogramSample else { continue }
-                guard let id: String = dataItem.metadata?["HKExternalUUID"] as? String else { continue }
-                ids.append(id)
+                guard let audiogram:HKAudiogramSample = result as? HKAudiogramSample else { continue }
+                audiogramSamples.append(audiogram)
             }
 
-            if(ids.isEmpty) {
-                DispatchQueue.main.async {
-                    result(nil)
+            var audiograms: Array<Any> = [];
+            
+            
+            for audiogramSample in audiogramSamples {
+                var results: [String: [Double]] = ["frequencies": [], "leftEarSensitivities": [], "rightEarSensitivities":[]]
+                
+                let dbUnit = HKUnit.decibelHearingLevel()
+                for sensitivityPoint in audiogramSample.sensitivityPoints {
+                    results["frequencies"]?.append(sensitivityPoint.frequency.doubleValue(for: HKUnit.hertz()))
+                    results["leftEarSensitivities"]?.append((sensitivityPoint.leftEarSensitivity?.doubleValue(for: dbUnit))!)
+                    results["rightEarSensitivities"]?.append((sensitivityPoint.rightEarSensitivity?.doubleValue(for: dbUnit))!)
                 }
-                return
-            } else {
-                DispatchQueue.main.async {
-                    result(ids)
-                }
-                return
+                                
+                let time: [String: Double] = ["startTime": audiogramSample.startDate.timeIntervalSince1970, "endTime": audiogramSample.endDate.timeIntervalSince1970]
+
+                let HKExternalUUID: String = audiogramSample.metadata?["HKExternalUUID"] as? String ?? ""
+                let HKDeviceName: String = audiogramSample.metadata?["HKDeviceName"] as? String ?? ""
+                let HKMetadataKeySyncIdentifier: String = audiogramSample.metadata?["HKMetadataKeySyncIdentifier"] as? String ?? ""
+                let HKMetadataKeySyncVersion: NSNumber = audiogramSample.metadata?["HKMetadataKeySyncVersion"] as? NSNumber ?? 0
+                
+                
+                let metadata: [String: String] = ["HKExternalUUID": HKExternalUUID, "HKDeviceName": HKDeviceName, "HKMetadataKeySyncIdentifier": HKMetadataKeySyncIdentifier, "HKMetadataKeySyncVersion": HKMetadataKeySyncVersion.stringValue]
+                
+                audiograms.append([results, time, metadata])
             }
+
+            DispatchQueue.main.async {
+                result(audiograms)
+            }
+            return
        }
         
        HKHealthStore().execute(query)
