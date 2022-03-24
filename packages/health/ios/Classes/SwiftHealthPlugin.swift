@@ -266,7 +266,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
             let keySyncIdentifier: String? = metadataReceived?!["HKMetadataKeySyncIdentifier"] as! String?
             let keySyncVersion: NSNumber? = metadataReceived?!["HKMetadataKeySyncVersion"] as! NSNumber?
-
+            
             if(keySyncIdentifier == nil || keySyncVersion == nil){
                 audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID])
             } else {
@@ -280,9 +280,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
          HKHealthStore().save(audiogram, withCompletion: { (success, error) in
              if let err = error {
                  print("Error Saving Audiogram. Sample: \(err.localizedDescription)")
-             }
-             DispatchQueue.main.async {
-                 result(success)
+                 DispatchQueue.main.async {
+                     result(false)
+                 }
+             } else {
+                 DispatchQueue.main.async {
+                     result(success)
+                 }
              }
          })
      }
