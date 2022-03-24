@@ -79,12 +79,12 @@ class _HealthAppState extends State<HealthApp> {
       }
 
       // Uncomment this try catch on iOS - only available on iOS
-      try {
-        final audiograms = await health.getAudiograms();
-        print(audiograms);
-      } catch (error) {
-        print("Caught exception in getAudiograms: $error");
-      }
+      // try {
+      //   final audiograms = await health.getAudiograms();
+      //   print(audiograms);
+      // } catch (error) {
+      //   print("Caught exception in getAudiograms: $error");
+      // }
 
       // filter out duplicates
       _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
@@ -112,17 +112,17 @@ class _HealthAppState extends State<HealthApp> {
     final types = [
       HealthDataType.STEPS,
       HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.AUDIOGRAM
+      // HealthDataType.AUDIOGRAM
     ];
     final rights = [
       HealthDataAccess.WRITE,
       HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE
+      // HealthDataAccess.WRITE
     ];
     final permissions = [
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE
+      // HealthDataAccess.READ_WRITE
     ];
     bool? hasPermissions =
         await HealthFactory.hasPermissions(types, permissions: rights);
@@ -138,25 +138,25 @@ class _HealthAppState extends State<HealthApp> {
       success = await health.writeHealthData(
           _mgdl, HealthDataType.BLOOD_GLUCOSE, now, now);
 
-      const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
-      const leftEarSensitivities = [49.0, 54.0, 89.0, 52.0, 77.0, 35.0];
-      const rightEarSensitivities = [76.0, 66.0, 90.0, 22.0, 85.0, 44.5];
+      // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
+      // const leftEarSensitivities = [49.0, 54.0, 89.0, 52.0, 77.0, 35.0];
+      // const rightEarSensitivities = [76.0, 66.0, 90.0, 22.0, 85.0, 44.5];
 
-      final audiogram = HKAudiogram(
-        endTime: now,
-        startTime: now,
-        frequencies: frequencies,
-        leftEarSensitivities: leftEarSensitivities,
-        rightEarSensitivities: rightEarSensitivities,
-        metadata: {
-          "HKExternalUUID": "uniqueID",
-          "HKDeviceName": "bluetooth headphone",
-          "HKMetadataKeySyncIdentifier": "optional sync identifier",
-          "HKMetadataKeySyncVersion": 1
-        },
-      );
+      // final audiogram = HKAudiogram(
+      //   endTime: now,
+      //   startTime: now,
+      //   frequencies: frequencies,
+      //   leftEarSensitivities: leftEarSensitivities,
+      //   rightEarSensitivities: rightEarSensitivities,
+      //   metadata: {
+      //     "HKExternalUUID": "uniqueID",
+      //     "HKDeviceName": "bluetooth headphone",
+      //     "HKMetadataKeySyncIdentifier": "optional sync identifier",
+      //     "HKMetadataKeySyncVersion": 1
+      //   },
+      // );
 
-      success = await health.writeAudiogram(audiogram);
+      // success = await health.writeAudiogram(audiogram);
     }
 
     setState(() {
