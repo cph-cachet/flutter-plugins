@@ -151,8 +151,7 @@ class _HealthAppState extends State<HealthApp> {
       //   metadata: {
       //     "HKExternalUUID": "uniqueID",
       //     "HKDeviceName": "bluetooth headphone",
-      //     "HKMetadataKeySyncIdentifier": "optional sync identifier",
-      //     "HKMetadataKeySyncVersion": 1
+      //     "payload": "optional payload",
       //   },
       // );
 

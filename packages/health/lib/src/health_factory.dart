@@ -9,7 +9,7 @@ part of health;
 /// * [endTime] - the end time when the audiogram is measured.
 ///   + It must be equal to or later than [startTime].
 ///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
-/// * [metadata] - optional map of keys, HKMetadataKeySyncIdentifier and HKMetadataKeySyncVersion are optional, but HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
+/// * [metadata] - optional, consist in map of keys : payload is optional, but HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
 class HKAudiogram {
   final List<double> frequencies;
   final List<double> leftEarSensitivities;
@@ -444,12 +444,9 @@ class HealthFactory {
 
       final metadata = item[2];
 
-      final String HKExternalUUID = metadata['HKExternalUUID'] ?? "";
-      final String HKDeviceName = metadata['HKDeviceName'] ?? "";
-      final String HKMetadataKeySyncIdentifier =
-          metadata['HKMetadataKeySyncIdentifier'] ?? "";
-      final double HKMetadataKeySyncVersion =
-          double.parse(metadata['HKMetadataKeySyncVersion'] ?? "0");
+      final String externalUUID = metadata['HKExternalUUID'] ?? "";
+      final String deviceName = metadata['HKDeviceName'] ?? "";
+      final String payload = metadata['payload'] ?? "";
 
       audiograms.add(HKAudiogram(
         startTime: DateTime.fromMicrosecondsSinceEpoch(startTime.round()),
@@ -458,10 +455,9 @@ class HealthFactory {
         rightEarSensitivities: rightEarSensitivities,
         leftEarSensitivities: leftEarSensitivities,
         metadata: {
-          "HKExternalUUID": HKExternalUUID,
-          "HKDeviceName": HKDeviceName,
-          "HKMetadataKeySyncIdentifier": HKMetadataKeySyncIdentifier,
-          "HKMetadataKeySyncVersion": HKMetadataKeySyncVersion,
+          "HKExternalUUID": externalUUID,
+          "HKDeviceName": deviceName,
+          "payload": payload,
         },
       ));
     }

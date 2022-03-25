@@ -264,15 +264,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             guard let deviceName = metadataReceived?!["HKDeviceName"] as? String else { return }
             guard let externalUUID = metadataReceived?!["HKExternalUUID"] as? String else { return }
 
-            let keySyncIdentifier: String? = metadataReceived?!["HKMetadataKeySyncIdentifier"] as! String?
-            let keySyncVersion: NSNumber? = metadataReceived?!["HKMetadataKeySyncVersion"] as! NSNumber?
+            let payload: String? = metadataReceived?!["payload"] as! String?
             
-            if(keySyncIdentifier == nil || keySyncVersion == nil){
-                audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID])
-            } else {
-                audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID, HKMetadataKeySyncIdentifier: keySyncIdentifier!, HKMetadataKeySyncVersion: keySyncVersion!])
-            }
-            
+            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID, "payload": payload ?? ""])
         } else {
             audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: nil)
         }
@@ -471,11 +465,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
                 let HKExternalUUID: String = audiogramSample.metadata?["HKExternalUUID"] as? String ?? ""
                 let HKDeviceName: String = audiogramSample.metadata?["HKDeviceName"] as? String ?? ""
-                let HKMetadataKeySyncIdentifier: String = audiogramSample.metadata?["HKMetadataKeySyncIdentifier"] as? String ?? ""
-                let HKMetadataKeySyncVersion: NSNumber = audiogramSample.metadata?["HKMetadataKeySyncVersion"] as? NSNumber ?? 0
+                let payload: String = audiogramSample.metadata?["payload"] as? String ?? ""
                 
-                
-                let metadata: [String: String] = ["HKExternalUUID": HKExternalUUID, "HKDeviceName": HKDeviceName, "HKMetadataKeySyncIdentifier": HKMetadataKeySyncIdentifier, "HKMetadataKeySyncVersion": HKMetadataKeySyncVersion.stringValue]
+                let metadata: [String: String] = ["HKExternalUUID": HKExternalUUID, "HKDeviceName": HKDeviceName, "payload": payload]
                 
                 audiograms.append([results, time, metadata])
             }
