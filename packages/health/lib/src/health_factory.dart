@@ -449,8 +449,9 @@ class HealthFactory {
       final String payload = metadata['payload'] ?? "";
 
       audiograms.add(HKAudiogram(
-        startTime: DateTime.fromMicrosecondsSinceEpoch(startTime.round()),
-        endTime: DateTime.fromMicrosecondsSinceEpoch(endTime.round()),
+        startTime:
+            DateTime.fromMillisecondsSinceEpoch(startTime.round() * 1000),
+        endTime: DateTime.fromMillisecondsSinceEpoch(endTime.round() * 1000),
         frequencies: frequencies,
         rightEarSensitivities: rightEarSensitivities,
         leftEarSensitivities: leftEarSensitivities,
