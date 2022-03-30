@@ -9,7 +9,7 @@ part of health;
 /// * [endTime] - the end time when the audiogram is measured.
 ///   + It must be equal to or later than [startTime].
 ///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
-/// * [metadata] - optional, consist in map of keys : payload is optional, but HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
+/// * [metadata] - optional, consist in map of keys : HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required, and ageRange ,hearingLossLeft ,hearingLossRight, averageHearingLoss, hearingGrade are optional
 class HKAudiogram {
   final List<double> frequencies;
   final List<double> leftEarSensitivities;
@@ -446,7 +446,11 @@ class HealthFactory {
 
       final String externalUUID = metadata['HKExternalUUID'] ?? "";
       final String deviceName = metadata['HKDeviceName'] ?? "";
-      final String payload = metadata['payload'] ?? "";
+      final String ageRange = metadata['ageRange'] ?? "";
+      final String hearingLossLeft = metadata['hearingLossLeft'] ?? "";
+      final String hearingLossRight = metadata['hearingLossRight'] ?? "";
+      final String averageHearingLoss = metadata['averageHearingLoss'] ?? "";
+      final String hearingGrade = metadata['hearingGrade'] ?? "";
 
       audiograms.add(HKAudiogram(
         startTime:
@@ -458,7 +462,11 @@ class HealthFactory {
         metadata: {
           "HKExternalUUID": externalUUID,
           "HKDeviceName": deviceName,
-          "payload": payload,
+          "ageRange": ageRange,
+          "hearingLossLeft": hearingLossLeft,
+          "hearingLossRight": hearingLossRight,
+          "averageHearingLoss": averageHearingLoss,
+          "hearingGrade": hearingGrade,
         },
       ));
     }

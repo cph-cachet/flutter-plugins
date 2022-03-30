@@ -151,7 +151,11 @@ class _HealthAppState extends State<HealthApp> {
       //   metadata: {
       //     "HKExternalUUID": "uniqueID",
       //     "HKDeviceName": "bluetooth headphone",
-      //     "payload": "optional payload",
+      //     "ageRange": "some string",
+      //     "hearingLossLeft": 10,
+      //     "hearingLossRight": 20,
+      //     "averageHearingLoss": 15,
+      //     "hearingGrade": "some string",
       //   },
       // );
 
