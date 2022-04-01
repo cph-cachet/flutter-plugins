@@ -264,13 +264,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             guard let deviceName = metadataReceived?!["HKDeviceName"] as? String else { return }
             guard let externalUUID = metadataReceived?!["HKExternalUUID"] as? String else { return }
 
-            let ageRange: String? = metadataReceived?!["ageRange"] as! String?
-            let hearingLossLeft: String? = metadataReceived?!["hearingLossLeft"] as! String?
-            let hearingLossRight: String? = metadataReceived?!["hearingLossRight"] as! String?
-            let averageHearingLoss: String? = metadataReceived?!["averageHearingLoss"] as! String?
-            let hearingGrade: String? = metadataReceived?!["hearingGrade"] as! String?
+            let ageRange: String? = metadataReceived?!["age range"] as! String?
+            let hearingLossLeft: String? = metadataReceived?!["hearing loss left"] as! String?
+            let hearingLossRight: String? = metadataReceived?!["hearing loss right"] as! String?
+            let averageHearingLoss: String? = metadataReceived?!["average hearing loss"] as! String?
+            let hearingGrade: String? = metadataReceived?!["hearing grade"] as! String?
             
-            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID, "ageRange": ageRange ?? "", "hearingLossLeft": hearingLossLeft ?? "", "hearingLossRight": hearingLossRight ?? "", "averageHearingLoss": averageHearingLoss ?? "", "hearingGrade": hearingGrade ?? ""])
+            audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: [HKMetadataKeyDeviceName: deviceName, HKMetadataKeyExternalUUID: externalUUID, "age range": ageRange ?? "", "hearing loss left": hearingLossLeft ?? "", "hearing loss right": hearingLossRight ?? "", "average hearing loss": averageHearingLoss ?? "", "hearing grade": hearingGrade ?? ""])
         } else {
             audiogram = HKAudiogramSample(sensitivityPoints:sensitivityPoints, start: dateFrom, end: dateTo, metadata: nil)
         }
@@ -470,13 +470,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 let HKExternalUUID: String = audiogramSample.metadata?["HKExternalUUID"] as? String ?? ""
                 let HKDeviceName: String = audiogramSample.metadata?["HKDeviceName"] as? String ?? ""
                 
-                let ageRange: String = audiogramSample.metadata?["ageRange"] as? String ?? ""
-                let hearingLossLeft: String = audiogramSample.metadata?["hearingLossLeft"] as? String ?? ""
-                let hearingLossRight: String = audiogramSample.metadata?["hearingLossRight"] as? String ?? ""
-                let averageHearingLoss: String = audiogramSample.metadata?["averageHearingLoss"] as? String ?? ""
-                let hearingGrade: String = audiogramSample.metadata?["hearingGrade"] as? String ?? ""
+                let ageRange: String = audiogramSample.metadata?["age range"] as? String ?? ""
+                let hearingLossLeft: String = audiogramSample.metadata?["hearing loss left"] as? String ?? ""
+                let hearingLossRight: String = audiogramSample.metadata?["hearing loss right"] as? String ?? ""
+                let averageHearingLoss: String = audiogramSample.metadata?["average hearing loss"] as? String ?? ""
+                let hearingGrade: String = audiogramSample.metadata?["hearing grade"] as? String ?? ""
                 
-                let metadata: [String: String] = ["HKExternalUUID": HKExternalUUID, "HKDeviceName": HKDeviceName, "ageRange": ageRange, "hearingLossLeft": hearingLossLeft, "hearingLossRight": hearingLossRight, "averageHearingLoss": averageHearingLoss, "hearingGrade": hearingGrade]
+                let metadata: [String: String] = ["HKExternalUUID": HKExternalUUID, "HKDeviceName": HKDeviceName, "age range": ageRange, "hearing loss left": hearingLossLeft, "hearing loss right": hearingLossRight, "average hearing loss": averageHearingLoss, "hearing grade": hearingGrade]
                 
                 audiograms.append([results, time, metadata])
             }

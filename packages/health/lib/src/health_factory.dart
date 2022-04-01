@@ -9,7 +9,7 @@ part of health;
 /// * [endTime] - the end time when the audiogram is measured.
 ///   + It must be equal to or later than [startTime].
 ///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
-/// * [metadata] - optional, consist in map of keys : HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required, and ageRange ,hearingLossLeft ,hearingLossRight, averageHearingLoss, hearingGrade are optional
+/// * [metadata] - optional, consist in map of keys : HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required and age range ,hearing loss left, hearing loss right, average hearing loss, hearing grade are optional
 class HKAudiogram {
   final List<double> frequencies;
   final List<double> leftEarSensitivities;
@@ -446,11 +446,11 @@ class HealthFactory {
 
       final String externalUUID = metadata['HKExternalUUID'] ?? "";
       final String deviceName = metadata['HKDeviceName'] ?? "";
-      final String ageRange = metadata['ageRange'] ?? "";
-      final String hearingLossLeft = metadata['hearingLossLeft'] ?? "";
-      final String hearingLossRight = metadata['hearingLossRight'] ?? "";
-      final String averageHearingLoss = metadata['averageHearingLoss'] ?? "";
-      final String hearingGrade = metadata['hearingGrade'] ?? "";
+      final String ageRange = metadata['age range'] ?? "";
+      final String hearingLossLeft = metadata['hearing loss left'] ?? "";
+      final String hearingLossRight = metadata['hearing loss right'] ?? "";
+      final String averageHearingLoss = metadata['average hearing loss'] ?? "";
+      final String hearingGrade = metadata['hearing grade'] ?? "";
 
       audiograms.add(HKAudiogram(
         startTime:
@@ -462,11 +462,11 @@ class HealthFactory {
         metadata: {
           "HKExternalUUID": externalUUID,
           "HKDeviceName": deviceName,
-          "ageRange": ageRange,
-          "hearingLossLeft": hearingLossLeft,
-          "hearingLossRight": hearingLossRight,
-          "averageHearingLoss": averageHearingLoss,
-          "hearingGrade": hearingGrade,
+          "age range": ageRange,
+          "hearing loss left": hearingLossLeft,
+          "hearing loss right": hearingLossRight,
+          "average hearing loss": averageHearingLoss,
+          "hearing grade": hearingGrade,
         },
       ));
     }
