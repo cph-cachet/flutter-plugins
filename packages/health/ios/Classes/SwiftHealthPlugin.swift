@@ -88,10 +88,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             getTotalStepsInInterval(call: call, result: result)
         }
         
-        /// Handle getTotalStepsInInterval
-        else if (call.method.elementsEqual("getAudiogramsIds")){
-            getAudiogramsIds(call: call, result: result)
-        }
+        // /// Handle getTotalStepsInInterval
+        // else if (call.method.elementsEqual("getAudiogramsIds")){
+        //     getAudiogramsIds(call: call, result: result)
+        // }
 
         /// Handle writeData
         else if (call.method.elementsEqual("writeData")){
@@ -365,7 +365,32 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 DispatchQueue.main.async {
                     result(dictionaries)
                 }
-                
+
+            case let (samplesAudiogram as [HKAudiogramSample]) as Any:   
+                let dictionaries = samplesAudiogram.map { sample -> NSDictionary in 
+                    var frequencies = [Double]()
+                    var leftEarSensitivities = [Double]()
+                    var rightEarSensitivities = [Double]()
+                    for samplePoint in sample.sensitivityPoints {
+                        frequencies.append(samplePoint.frequency.doubleValue(for: HKUnit.hertz()))
+                        leftEarSensitivities.append(samplePoint.leftEarSensitivity!.doubleValue(for: HKUnit.decibelHearingLevel()))
+                        rightEarSensitivities.append(samplePoint.rightEarSensitivity!.doubleValue(for: HKUnit.decibelHearingLevel()))
+                    }
+                    return [
+                        "uuid": "\(sample.uuid)",
+                        "frequencies": frequencies,
+                        "leftEarSensitivities": leftEarSensitivities,
+                        "rightEarSensitivities": rightEarSensitivities,
+                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                        "source_id": sample.sourceRevision.source.bundleIdentifier,
+                        "source_name": sample.sourceRevision.source.name
+                    ]
+                }
+                DispatchQueue.main.async {
+                    result(dictionaries)
+                }
+
             default:
                 DispatchQueue.main.async {
                     result(nil)
@@ -418,42 +443,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         HKHealthStore().execute(query)
     }
     
-    func getAudiogramsIds(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        let query = HKSampleQuery.init(sampleType: HKSampleType.audiogramSampleType(), predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, queryResult, error) in
-            
-            guard let queryResult : [HKSample] = queryResult else {
-                let error = error! as NSError
-                print("Error getting total steps in interval \(error.localizedDescription)")
-                
-                DispatchQueue.main.async {
-                    result(nil)
-                }
-                return
-            }
-                        
-            var ids: Array<String> = [];
-            for result in queryResult {
-                guard let dataItem:HKAudiogramSample = result as? HKAudiogramSample else { continue }
-                guard let id: String = dataItem.metadata?["HKExternalUUID"] as? String else { continue }
-                ids.append(id)
-            }
-
-            if(ids.isEmpty) {
-                DispatchQueue.main.async {
-                    result(nil)
-                }
-                return
-            } else {
-                DispatchQueue.main.async {
-                    result(ids)
-                }
-                return
-            }
-       }
-        
-       HKHealthStore().execute(query)
-    }
-
     func unitLookUp(key: String) -> HKUnit {
         guard let unit = unitDict[key] else {
             return HKUnit.count()

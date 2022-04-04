@@ -347,10 +347,13 @@ class HealthFactory {
     final list = dataPoints.map<HealthDataPoint>((e) {
       // Handling different [HealthValue] types
       HealthValue value;
-      if (dataType == "audiogram") {
-        value = AudiogramHealthValue.fromJson(e['value']);
+      if (dataType == HealthDataType.AUDIOGRAM) {
+        value = AudiogramHealthValue(
+            List<num>.from(e['frequencies']),
+            List<num>.from(e['leftEarSensitivities']),
+            List<num>.from(e['rightEarSensitivities']));
       } else {
-        value = NumericHealthValue.fromJson(e['value']);
+        value = NumericHealthValue(e['value']);
       }
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
