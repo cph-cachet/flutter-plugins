@@ -300,6 +300,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name
+                        "burned_calories": sample.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie()) ?? 0
                     ]
                 }
                 

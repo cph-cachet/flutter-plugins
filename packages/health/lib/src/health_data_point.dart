@@ -12,6 +12,7 @@ class HealthDataPoint {
   String _deviceId;
   String _sourceId;
   String _sourceName;
+  num _burnedCalories;
 
   HealthDataPoint(
       this._value,
@@ -22,7 +23,8 @@ class HealthDataPoint {
       this._platform,
       this._deviceId,
       this._sourceId,
-      this._sourceName) {
+      this._sourceName,
+      this._burnedCalories) {
     // set the value to minutes rather than the category
     // returned by the native API
     if (type == HealthDataType.MINDFULNESS ||
@@ -56,7 +58,8 @@ class HealthDataPoint {
           PlatformTypeJsonValue.values.toList().indexOf(json['platform_type'])],
       json['platform_type'],
       json['source_id'],
-      json['source_name']);
+      json['source_name'],
+      json['burned_calories']);
 
   /// Converts the [HealthDataPoint] to a json object
   Map<String, dynamic> toJson() => {
@@ -68,7 +71,8 @@ class HealthDataPoint {
         'platform_type': PlatformTypeJsonValue[platform],
         'device_id': deviceId,
         'source_id': sourceId,
-        'source_name': sourceName
+        'source_name': sourceName,
+        'burned_calories': burnedCalories,
       };
 
   @override
@@ -79,6 +83,7 @@ class HealthDataPoint {
       'dateTo: $dateTo, '
       'dataType: $type, '
       'platform: $platform, '
+      'burnedCalories: $burnedCalories, '
       'sourceId: $sourceId, '
       'sourceName: $sourceName';
 
@@ -115,6 +120,8 @@ class HealthDataPoint {
   /// The name of the source from which the data point was fetched.
   String get sourceName => _sourceName;
 
+  num get burnedCalories => _burnedCalories;
+
   @override
   bool operator ==(Object o) {
     return o is HealthDataPoint &&
@@ -125,6 +132,7 @@ class HealthDataPoint {
         this.type == o.type &&
         this.platform == o.platform &&
         this.deviceId == o.deviceId &&
+        this.burnedCalories == o.burnedCalories &&
         this.sourceId == o.sourceId &&
         this.sourceName == o.sourceName;
   }
