@@ -33,3 +33,9 @@ android {
         minSdkVersion 16
     }
 }
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.empatica.empalink:E4link:1.0.0@aar'
+    implementation 'com.squareup.okhttp:okhttp:2.7.5'
+}
