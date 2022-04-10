@@ -72,7 +72,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("getData")){
             getData(call: call, result: result)
         }
-
+        /// Simple predicate
+        else if (call.method.elementsEqual("getDataWithLimit")){
+            getDataWithLimit(call: call, result: result)
+        }
+        
         /// Handle writeData
         else if (call.method.elementsEqual("writeData")){
             writeData(call: call, result: result)
@@ -133,6 +137,82 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         })
     }
+    
+    func getDataWithLimit(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? NSDictionary
+        let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
+        let limit = (arguments?["limit"] as? Int) ?? HKObjectQueryNoLimit
+
+        let dataType = dataTypeLookUp(key: dataTypeKey)
+     
+        let query = HKSampleQuery(sampleType: dataType, predicate: nil, limit: limit, sortDescriptors: []) {
+            x, samplesOrNil, error in
+
+            switch samplesOrNil {
+            case let (samples as [HKQuantitySample]) as Any:
+                
+                DispatchQueue.main.async {
+                    result(samples.map { sample -> NSDictionary in
+                        let unit = self.unitLookUp(key: dataTypeKey)
+
+                        return [
+                            "uuid": "\(sample.uuid)",
+                            "value": sample.quantity.doubleValue(for: unit),
+                            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                            "source_id": sample.sourceRevision.source.bundleIdentifier,
+                            "source_name": sample.sourceRevision.source.name
+                        ]
+                    })
+                }
+                
+            case var (samplesCategory as [HKCategorySample]) as Any:
+                if (dataTypeKey == self.SLEEP_IN_BED) {
+                    samplesCategory = samplesCategory.filter { $0.value == 0 }
+                }
+                if (dataTypeKey == self.SLEEP_AWAKE) {
+                    samplesCategory = samplesCategory.filter { $0.value == 2 }
+                }
+                if (dataTypeKey == self.SLEEP_ASLEEP) {
+                    samplesCategory = samplesCategory.filter { $0.value == 1 }
+                }
+                
+                DispatchQueue.main.async {
+                    result(samplesCategory.map { sample -> NSDictionary in
+                        return [
+                            "uuid": "\(sample.uuid)",
+                            "value": sample.value,
+                            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                            "source_id": sample.sourceRevision.source.bundleIdentifier,
+                            "source_name": sample.sourceRevision.source.name
+                        ]
+                    })
+                }
+                
+            case let (samplesWorkout as [HKWorkout]) as Any:
+                DispatchQueue.main.async {
+                    result(samplesWorkout.map { sample -> NSDictionary in
+                        return [
+                            "uuid": "\(sample.uuid)",
+                            "value": Int(sample.duration),
+                            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                            "source_id": sample.sourceRevision.source.bundleIdentifier,
+                            "source_name": sample.sourceRevision.source.name
+                        ]
+                    })
+                }
+                
+            default:
+                result([])
+                return
+            }
+        }
+
+        HKHealthStore().execute(query)
+    }
+
 
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? NSDictionary
@@ -148,7 +228,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dataType = dataTypeLookUp(key: dataTypeKey)
         let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-
+       
         let query = HKSampleQuery(sampleType: dataType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) {
             x, samplesOrNil, error in
 

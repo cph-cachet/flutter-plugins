@@ -6,14 +6,12 @@ class HealthFactory {
   String? _deviceId;
   final _deviceInfo = DeviceInfoPlugin();
 
-  static PlatformType _platformType =
-      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+  static PlatformType _platformType = Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
   /// Check if a given data type is available on the platform
-  bool isDataTypeAvailable(HealthDataType dataType) =>
-      _platformType == PlatformType.ANDROID
-          ? _dataTypeKeysAndroid.contains(dataType)
-          : _dataTypeKeysIOS.contains(dataType);
+  bool isDataTypeAvailable(HealthDataType dataType) => _platformType == PlatformType.ANDROID
+      ? _dataTypeKeysAndroid.contains(dataType)
+      : _dataTypeKeysIOS.contains(dataType);
 
   /// Has permission been optained for the list of [HealthDataType]?
   ///
@@ -57,23 +55,19 @@ class HealthFactory {
     }
 
     List<String> keys = types.map((e) => _enumToString(e)).toList();
-    final bool isAuthorized =
-        await _channel.invokeMethod('requestAuthorization', {'types': keys});
+    final bool isAuthorized = await _channel.invokeMethod('requestAuthorization', {'types': keys});
     return isAuthorized;
   }
 
   /// Calculate the BMI using the last observed height and weight values.
-  Future<List<HealthDataPoint>> _computeAndroidBMI(
-      DateTime startDate, DateTime endDate) async {
-    List<HealthDataPoint> heights =
-        await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
+  Future<List<HealthDataPoint>> _computeAndroidBMI(DateTime startDate, DateTime endDate) async {
+    List<HealthDataPoint> heights = await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
 
     if (heights.isEmpty) {
       return [];
     }
 
-    List<HealthDataPoint> weights =
-        await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
+    List<HealthDataPoint> weights = await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
 
     double h = heights.last.value.toDouble();
 
@@ -83,8 +77,8 @@ class HealthFactory {
     final bmiHealthPoints = <HealthDataPoint>[];
     for (var i = 0; i < weights.length; i++) {
       final bmiValue = weights[i].value.toDouble() / (h * h);
-      final x = HealthDataPoint(bmiValue, dataType, unit, weights[i].dateFrom,
-          weights[i].dateTo, _platformType, _deviceId!, '', '');
+      final x = HealthDataPoint(
+          bmiValue, dataType, unit, weights[i].dateFrom, weights[i].dateTo, _platformType, _deviceId!, '', '');
 
       bmiHealthPoints.add(x);
     }
@@ -95,26 +89,24 @@ class HealthFactory {
   /// Saves health data into the HealthKit or Google Fit store
   ///
   /// Returns a Future of true if successful, a Future of false otherwise
-  /// 
+  ///
   /// Parameters
-  /// 
-  /// [value]  
+  ///
+  /// [value]
   ///   value of the health data in double
-  /// [type]   
-  ///   the value's HealthDataType 
-  /// [startTime] 
-  ///   a DateTime object that specifies the start time when this data value is measured. 
+  /// [type]
+  ///   the value's HealthDataType
+  /// [startTime]
+  ///   a DateTime object that specifies the start time when this data value is measured.
   ///   It must be equal to or earlier than [endTime]
   /// [endTime]
   ///   a DateTime object that specifies the end time when this value is measured.
   ///   It must be equal to or later than [startTime].
-  ///   Simply set [endTime] equal to [startTime] 
+  ///   Simply set [endTime] equal to [startTime]
   ///   if the value is measured only at a specific point in time.
-  /// 
-  Future<bool> writeHealthData(double value, HealthDataType type,
-      DateTime startTime, DateTime endTime) async {
-    if (startTime.isAfter(endTime))
-      throw ArgumentError("startTime must be equal or earlier than endTime");
+  ///
+  Future<bool> writeHealthData(double value, HealthDataType type, DateTime startTime, DateTime endTime) async {
+    if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
       'value': value,
       'dataTypeKey': _enumToString(type),
@@ -136,9 +128,40 @@ class HealthFactory {
     return removeDuplicates(dataPoints);
   }
 
+  Future<List<HealthDataPoint>> getDataWithLimit(HealthDataType dataType, int limit) async {
+    final args = <String, dynamic>{'dataTypeKey': _enumToString(dataType), 'limit': limit};
+
+    final unit = _dataTypeToUnit[dataType]!;
+    _deviceId ??= _platformType == PlatformType.ANDROID
+        ? (await _deviceInfo.androidInfo).androidId
+        : (await _deviceInfo.iosInfo).identifierForVendor;
+    final fetchedDataPoints = await _channel.invokeMethod('getDataWithLimit', args);
+    if (fetchedDataPoints != null) {
+      return fetchedDataPoints.map<HealthDataPoint>((e) {
+        final num value = e['value'];
+        final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
+        final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
+        final String sourceId = e["source_id"];
+        final String sourceName = e["source_name"];
+        return HealthDataPoint(
+          value,
+          dataType,
+          unit,
+          from,
+          to,
+          _platformType,
+          _deviceId!,
+          sourceId,
+          sourceName,
+        );
+      }).toList();
+    } else {
+      return [];
+    }
+  }
+
   /// Prepares a query, i.e. checks if the types are available, etc.
-  Future<List<HealthDataPoint>> _prepareQuery(
-      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+  Future<List<HealthDataPoint>> _prepareQuery(DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     // Ask for device ID only once
     _deviceId ??= _platformType == PlatformType.ANDROID
         ? (await _deviceInfo.androidInfo).androidId
@@ -146,21 +169,18 @@ class HealthFactory {
 
     // If not implemented on platform, throw an exception
     if (!isDataTypeAvailable(dataType)) {
-      throw _HealthException(
-          dataType, 'Not available on platform $_platformType');
+      throw _HealthException(dataType, 'Not available on platform $_platformType');
     }
 
     // If BodyMassIndex is requested on Android, calculate this manually
-    if (dataType == HealthDataType.BODY_MASS_INDEX &&
-        _platformType == PlatformType.ANDROID) {
+    if (dataType == HealthDataType.BODY_MASS_INDEX && _platformType == PlatformType.ANDROID) {
       return _computeAndroidBMI(startDate, endDate);
     }
     return await _dataQuery(startDate, endDate, dataType);
   }
 
   /// The main function for fetching health data
-  Future<List<HealthDataPoint>> _dataQuery(
-      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+  Future<List<HealthDataPoint>> _dataQuery(DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     // Set parameters for method channel request
     final args = <String, dynamic>{
       'dataTypeKey': _enumToString(dataType),
@@ -174,8 +194,7 @@ class HealthFactory {
     if (fetchedDataPoints != null) {
       return fetchedDataPoints.map<HealthDataPoint>((e) {
         final num value = e['value'];
-        final DateTime from =
-            DateTime.fromMillisecondsSinceEpoch(e['date_from']);
+        final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
         final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
         final String sourceId = e["source_id"];
         final String sourceName = e["source_name"];
