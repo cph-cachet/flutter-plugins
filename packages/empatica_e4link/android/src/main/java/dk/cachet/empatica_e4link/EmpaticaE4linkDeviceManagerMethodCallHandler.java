@@ -67,41 +67,4 @@ public class EmpaticaE4DeviceManagerMethodCallHandler extends AppCompatActivity
         return result.success(
                 this.empaticaManager.stopScanning());
     }
-
-    @Override
-    public void onMethodCall(MethodCall call, Result rawResult) {
-        Result result = new MainThreadResult(rawResult);
-        boolean success;
-
-        switch (call.method) {
-            case "authenticateWithAPIKey":
-                final String key = call.argument("key");
-                success = manager.authenticateWithAPIKey(key);
-                result.success(success);
-                break;
-            case "connectDevice":
-                android.bluetooth.BluetoothDevice device = call.argument("device");
-                success = manager.connectDevice(device);
-                result.success(success);
-                break;
-            case "disconnect":
-                success = manager.disconnect();
-                result.success(success);
-                break;
-            case "getActiveDevice":
-                success = manager.getActiveDevice();
-                result.success(success);
-                break;
-            case "startScanning":
-                success = manager.startScanning();
-                result.success(success);
-                break;
-            case "stopScanning":
-                success = manager.stopScanning();
-                result.success(success);
-                break;
-            default:
-                result.notImplemented();
-        }
-    }
 }
