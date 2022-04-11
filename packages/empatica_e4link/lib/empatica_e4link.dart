@@ -13,10 +13,9 @@ class EmpaticaE4link {
   }
 
   Future<bool> authenticateWithAPIKey(String apiKey) async {
-    final bool result =
-        await _channel.invokeMethod('authenticateWithAPIKey', <String, dynamic>{
+    return await _channel
+        .invokeMethod('authenticateWithAPIKey', <String, dynamic>{
       'apiKey': apiKey,
     });
-    return result;
   }
 }
