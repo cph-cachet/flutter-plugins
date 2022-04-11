@@ -5,8 +5,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class EmpaticaE4link {
-
-
   static const MethodChannel _channel = MethodChannel('empatica_e4link');
 
   static Future<String?> get platformVersion async {
@@ -15,8 +13,9 @@ class EmpaticaE4link {
   }
 
   Future<bool> authenticateWithAPIKey() async {
-    final bool result = await _channel.invokeMethod('authenticateWithAPIKey', <String, dynamic>{
-      'apiKey': '4daa8ba5bc4b419c81b597d6e592289b',
+    final bool result =
+        await _channel.invokeMethod('authenticateWithAPIKey', <String, dynamic>{
+      'apiKey': '',
     });
     return result;
   }

@@ -16,20 +16,12 @@ import io.esense.esenselib.*;
 
 public class EmpaticaE4DeviceManagerMethodCallHandler implements MethodCallHandler {
 
-    public static final int TIMEOUT = 5 * 1000;
-
-    private boolean connected = false;
-    private Context context;
-    private EmpaticaE4ConnectionEventStreamHandler empaticaE4ConnectionEventStreamHandler;
 
     private int samplingRate = 10; // default 10 Hz.
     EmpaDeviceManager manager;
 
     public EmpaticaE4DeviceManagerMethodCallHandler(
-            Context context,
-            EmpaticaE4ConnectionEventStreamHandler empaticaE4ConnectionEventStreamHandler) {
-        this.context = context;
-        this.empaticaE4ConnectionEventStreamHandler = empaticaE4ConnectionEventStreamHandler;
+            Context context) {
         manager = new EmpaDeviceManager(getApplicationContext(), this, this);
     }
 

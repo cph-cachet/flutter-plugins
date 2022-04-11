@@ -10,14 +10,18 @@ import io.flutter.plugin.common.MethodChannel.Result;
 
 /** EmpaticaE4linkPlugin */
 public class EmpaticaE4linkPlugin implements FlutterPlugin, MethodCallHandler {
-  /// The MethodChannel that will the communication between Flutter and native Android
+  /// The MethodChannel that will the communication between Flutter and native
+  /// Android
   ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+  /// This local reference serves to register the plugin with the Flutter Engine
+  /// and unregister it
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    final EmpaticaE4linkDeviceManagerMethodCallHandler empaticaE4linkDeviceManagerMethodCallHandler = new EmpaticaE4linkDeviceManagerMethodCallHandler(
+        flutterPluginBinding.getApplicationContext());
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "empatica_e4link");
     channel.setMethodCallHandler(this);
   }
