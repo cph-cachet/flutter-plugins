@@ -10,15 +10,18 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.*;
 
 import java.util.Enumeration;
+import java.util.Map;
 
 import android.content.Context;
-import io.esense.esenselib.*;
+import com.empatica.empalink.*;
 
-public class EmpaticaE4DeviceManagerMethodCallHandler implements MethodCallHandler {
+public class EmpaticaE4DeviceManagerMethodCallHandler extends AppCompatActivity implements EmpaDataDelegate, EmpaStatusDelegate {
+    final MethodChannel channel;
+    final private EmpaDeviceManager _manager;
+    Map<String, EmpaticaDevice> discoveredDevices = new HashMap<>();
 
 
     private int samplingRate = 10; // default 10 Hz.
-    EmpaDeviceManager manager;
 
     public EmpaticaE4DeviceManagerMethodCallHandler(
             Context context) {
