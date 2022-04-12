@@ -1,10 +1,20 @@
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+
 group 'dk.cachet.empatica_e4link'
 version '1.0'
 
 buildscript {
     repositories {
+        mavenLocal()
         google()
-        mavenCentral()
+        jcenter()
+        maven {
+            url 'https://maven.google.com' // Google's Maven repository
+        }
+        flatDir {
+            dirs 'libs'
+        }
     }
 
     dependencies {
@@ -12,30 +22,83 @@ buildscript {
     }
 }
 
+String localMavenPath = project.mkdir("build").absolutePath
+
 rootProject.allprojects {
     repositories {
         google()
-        mavenCentral()
+        jcenter()
+        flatDir {
+            dirs 'libs'
+        }
+        maven { url "file://$localMavenPath" }
     }
 }
 
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 31
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+    compileSdkVersion 30
+    defaultConfig {
+        minSdk 27
     }
 
-    defaultConfig {
-        minSdkVersion 19
+}
+
+dependencies {
+    api 'com.squareup.okhttp:okhttp:2.7.5'
+    api 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'org.jetbrains:annotations:15.0'
+}
+
+task useAar {
+    File file = project.file('libs')
+    String aarPath = localMavenPath
+    if (file.exists() && file.isDirectory()) {
+        file.listFiles().each { item ->
+            String groupId = "com.empatica.empalink"
+            String aarName = item.name.split('-')[0], aarVersion = "1.0.0" //change version number if Empalink aar file changes
+            String intoString = "$aarPath/${groupId.replace('.','/')}/$aarName"
+            project.copy {
+                from item.path
+                into "$intoString/$aarVersion"
+            }
+
+            project.file("$intoString/$aarVersion/$aarName-${aarVersion}.pom").write(createPom(groupId, aarName, aarVersion))
+
+            project.file("$intoString/maven-metadata.xml").write(createMetadata(groupId, aarName, aarVersion))
+            dependencies {
+                implementation "$groupId:$aarName:$aarVersion"
+            }
+        }
     }
 }
-dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.empatica.empalink:E4link:1.0.0@aar'
-    implementation 'com.squareup.okhttp:okhttp:2.7.5'
+
+static String createMetadata(String groupId, String artifactId, String version) {
+    return """<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>$groupId</groupId>
+  <artifactId>$artifactId</artifactId>
+  <versioning>
+    <release>$version</release>
+    <versions>
+      <version>$version</version>
+    </versions>
+    <lastUpdated>${new Date().format('yyyyMMdd')}000000</lastUpdated>
+  </versioning>
+</metadata>
+"""
+}
+
+static String createPom(String groupId, String artifactId, String version) {
+    return """<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>$groupId</groupId>
+  <artifactId>$artifactId</artifactId>
+  <version>$version</version>
+  <packaging>aar</packaging>
+</project>
+"""
 }
