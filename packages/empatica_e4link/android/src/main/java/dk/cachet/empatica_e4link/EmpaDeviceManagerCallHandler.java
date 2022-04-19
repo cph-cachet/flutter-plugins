@@ -18,12 +18,12 @@ import com.empatica.empalink.delegate.EmpaStatusDelegate;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.flutter.plugin.common.MethodChannel.*;
+import io.flutter.plugin.common.MethodChannel;
 
 public class EmpaDeviceManagerCallHandler extends EmpaDeviceManager {
     final MethodChannel channel;
     final private EmpaDeviceManager empaticaManager;
-    private EmpaDataDelegateCallHandler dataDelegate = new EmpaDataDelegateCallHandler();
+    private EmpaDataDelegateStreamHandler dataDelegate = new EmpaDataDelegateStreamHandler();
     private EmpaStatusDelegateCallHandler statusDelegate = new EmpaStatusDelegateCallHandler();
 
     Map<String, EmpaticaDevice> discoveredDevices = new HashMap<>();
