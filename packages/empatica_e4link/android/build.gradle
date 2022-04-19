@@ -49,4 +49,5 @@ dependencies {
     api 'com.squareup.okhttp:okhttp:2.7.5'
     api 'androidx.appcompat:appcompat:1.2.0'
     implementation 'org.jetbrains:annotations:15.0'
+    implementation 'com.empatica.empalink:E4Link:1.0.0'
 }
