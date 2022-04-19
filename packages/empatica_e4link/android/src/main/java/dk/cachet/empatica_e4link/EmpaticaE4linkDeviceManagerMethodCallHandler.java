@@ -25,4 +25,88 @@ public class EmpaticaE4DeviceManagerMethodCallHandler extends EmpaDeviceManager 
     final private EmpaDeviceManager empaticaManager;
     Map<String, EmpaticaDevice> discoveredDevices = new HashMap<>();
 
+    public EmpaticaE4DeviceManagerMethodCallHandler(Context context, EmpaDataDelegate dataDelegate, EmpaStatusDelegate statusDelegate, MethodChannel channel) {
+        super(context, dataDelegate, statusDelegate);
+
+        this.channel = channel;
+
+        this.empaticaManager = new EmpaDeviceManager(context, this, this);
+    }
+
+    
+
+    @Override
+    public void didReceiveGSR(float gsr, double timestamp) {
+
+    }
+
+    @Override
+    public void didReceiveBVP(float bvp, double timestamp) {
+
+    }
+
+    @Override
+    public void didReceiveIBI(float ibi, double timestamp) {
+
+    }
+
+    @Override
+    public void didReceiveTemperature(float t, double timestamp) {
+
+    }
+
+    @Override
+    public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
+
+    }
+
+    @Override
+    public void didReceiveBatteryLevel(float level, double timestamp) {
+
+    }
+
+    @Override
+    public void didReceiveTag(double timestamp) {
+
+    }
+
+    @Override
+    public void didUpdateStatus(EmpaStatus status) {
+
+    }
+
+    @Override
+    public void didEstablishConnection() {
+
+    }
+
+    @Override
+    public void didUpdateSensorStatus(int status, EmpaSensorType type) {
+
+    }
+
+    @Override
+    public void didDiscoverDevice(EmpaticaDevice device, String deviceLabel, int rssi, boolean allowed) {
+
+    }
+
+    @Override
+    public void didFailedScanning(int errorCode) {
+
+    }
+
+    @Override
+    public void didRequestEnableBluetooth() {
+
+    }
+
+    @Override
+    public void bluetoothStateChanged() {
+
+    }
+
+    @Override
+    public void didUpdateOnWristStatus(int status) {
+
+    }
 }
