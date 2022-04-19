@@ -6,15 +6,20 @@
  */
 package dk.cachet.empatica_e4link;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 
+import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
 import com.empatica.empalink.EmpaticaDevice;
+import com.empatica.empalink.config.EmpaSensorStatus;
 import com.empatica.empalink.config.EmpaSensorType;
 import com.empatica.empalink.config.EmpaStatus;
 import com.empatica.empalink.delegate.EmpaDataDelegate;
 import com.empatica.empalink.delegate.EmpaStatusDelegate;
 
+import java.net.HttpCookie;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +38,35 @@ public class EmpaticaE4DeviceManagerMethodCallHandler extends EmpaDeviceManager 
         this.empaticaManager = new EmpaDeviceManager(context, this, this);
     }
 
-    
+    public void connectDevice(EmpaticaDevice device) throws ConnectionNotAllowedException {
+        empaticaManager.connectDevice(device);
+    }
+
+    public void stopScanning() {
+        empaticaManager.stopScanning();
+    }
+
+    private void setDiscoveredDevices(Map<String, EmpaticaDevice> discoveredDevices) {
+        this.discoveredDevices = discoveredDevices;
+    }
+
+    public void authenticateWithAPIKey(String key) {
+        empaticaManager.authenticateWithAPIKey(key);
+    }
+
+    public void authenticateWithConnectUser() {
+        super.authenticateWithConnectUser();
+    }
+
+    public void startScanning() {
+        empaticaManager.prepareScanning();
+        empaticaManager.startScanning();
+        setDiscoveredDevices(new HashMap<>());
+    }
+
+    public BluetoothDevice getActiveDevice() {
+        return empaticaManager.getActiveDevice();
+    }
 
     @Override
     public void didReceiveGSR(float gsr, double timestamp) {
@@ -106,7 +139,7 @@ public class EmpaticaE4DeviceManagerMethodCallHandler extends EmpaDeviceManager 
     }
 
     @Override
-    public void didUpdateOnWristStatus(int status) {
-
+    public void didUpdateOnWristStatus(@EmpaSensorStatus int status) {
+        channel.invokeMethod("didUpdateSensorStatus", status);
     }
 }
