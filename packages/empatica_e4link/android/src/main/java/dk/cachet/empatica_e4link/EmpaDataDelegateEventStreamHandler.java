@@ -7,10 +7,10 @@ import java.util.HashMap;
 import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 
-public class EmpaDataDelegateStreamHandler implements StreamHandler, EmpaDataDelegate {
+public class EmpaDataDelegateEventStreamHandler implements StreamHandler, EmpaDataDelegate {
     MainThreadEventSink eventSink;
 
-    EmpaDataDelegateStreamHandler() {
+    EmpaDataDelegateEventStreamHandler() {
     }
 
     @Override
@@ -39,7 +39,7 @@ public class EmpaDataDelegateStreamHandler implements StreamHandler, EmpaDataDel
 
     @Override
     public void didReceiveBVP(float bvp, double timestamp) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveBVP");
             map.put("bvp", bvp);
@@ -50,7 +50,7 @@ public class EmpaDataDelegateStreamHandler implements StreamHandler, EmpaDataDel
 
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveIBI");
             map.put("ibi", ibi);
@@ -61,7 +61,7 @@ public class EmpaDataDelegateStreamHandler implements StreamHandler, EmpaDataDel
 
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveTemperature");
             map.put("temperature", t);
@@ -72,7 +72,7 @@ public class EmpaDataDelegateStreamHandler implements StreamHandler, EmpaDataDel
 
     @Override
     public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveAcceleration");
             map.put("x", x);
@@ -85,7 +85,7 @@ public class EmpaDataDelegateStreamHandler implements StreamHandler, EmpaDataDel
 
     @Override
     public void didReceiveBatteryLevel(float level, double timestamp) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveBatteryLevel");
             map.put("batteryLevel", level);
@@ -96,7 +96,7 @@ public class EmpaDataDelegateStreamHandler implements StreamHandler, EmpaDataDel
 
     @Override
     public void didReceiveTag(double timestamp) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveTag");
             map.put("timestamp", timestamp);

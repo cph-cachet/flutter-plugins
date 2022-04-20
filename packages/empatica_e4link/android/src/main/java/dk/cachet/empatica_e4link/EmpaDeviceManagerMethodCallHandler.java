@@ -9,6 +9,8 @@ package dk.cachet.empatica_e4link;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
 import com.empatica.empalink.EmpaticaDevice;
@@ -18,17 +20,27 @@ import com.empatica.empalink.delegate.EmpaStatusDelegate;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 
-public class EmpaDeviceManagerCallHandler extends EmpaDeviceManager {
+public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implements MethodCallHandler {
     final MethodChannel channel;
     final private EmpaDeviceManager empaticaManager;
-    private EmpaDataDelegateStreamHandler dataDelegate = new EmpaDataDelegateStreamHandler();
-    private EmpaStatusDelegateCallHandler statusDelegate = new EmpaStatusDelegateCallHandler();
+    private EmpaDataDelegateEventStreamHandler dataDelegate = new EmpaDataDelegateEventStreamHandler();
+    private EmpaStatusDelegateEventStreamHandler statusDelegate = new EmpaStatusDelegateEventStreamHandler();
 
     Map<String, EmpaticaDevice> discoveredDevices = new HashMap<>();
 
-    public EmpaDeviceManagerCallHandler(Context context, EmpaDataDelegate dataDelegate, EmpaStatusDelegate statusDelegate, MethodChannel channel) {
+
+
+    @Override
+    public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
+
+    }
+
+
+    public EmpaDeviceManagerMethodCallHandler(Context context, EmpaDataDelegate dataDelegate, EmpaStatusDelegate statusDelegate, MethodChannel channel) {
         super(context, dataDelegate, statusDelegate);
 
         this.channel = channel;
@@ -65,4 +77,5 @@ public class EmpaDeviceManagerCallHandler extends EmpaDeviceManager {
     public BluetoothDevice getActiveDevice() {
         return empaticaManager.getActiveDevice();
     }
+
 }

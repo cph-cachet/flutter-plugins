@@ -12,11 +12,12 @@ import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 
 
-public class EmpaStatusDelegateCallHandler implements StreamHandler, EmpaStatusDelegate {
+public class EmpaStatusDelegateEventStreamHandler implements StreamHandler, EmpaStatusDelegate {
     MainThreadEventSink eventSink;
 
-    EmpaStatusDelegateCallHandler() {
+    EmpaStatusDelegateEventStreamHandler() {
     }
+
 
     @Override
     public void onListen(Object o, EventSink events) {
@@ -29,6 +30,8 @@ public class EmpaStatusDelegateCallHandler implements StreamHandler, EmpaStatusD
         eventSink.endOfStream();
         this.eventSink = null;
     }
+
+
 
     @Override
     public void didUpdateStatus(EmpaStatus status) {
