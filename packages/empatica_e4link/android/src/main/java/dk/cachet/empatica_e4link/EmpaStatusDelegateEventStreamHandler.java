@@ -22,7 +22,9 @@ public class EmpaStatusDelegateEventStreamHandler implements StreamHandler, Empa
     @Override
     public void onListen(Object o, EventSink events) {
         this.eventSink = new MainThreadEventSink(events);
-        eventSink.success("listen");
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("type", "Listen");
+        eventSink.success(map);
     }
 
     @Override
@@ -32,10 +34,9 @@ public class EmpaStatusDelegateEventStreamHandler implements StreamHandler, Empa
     }
 
 
-
     @Override
     public void didUpdateStatus(EmpaStatus status) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateStatus");
             map.put("status", status);
@@ -45,12 +46,16 @@ public class EmpaStatusDelegateEventStreamHandler implements StreamHandler, Empa
 
     @Override
     public void didEstablishConnection() {
-
+        if (eventSink != null) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("type", "EstablishConnection");
+            eventSink.success(map);
+        }
     }
 
     @Override
     public void didUpdateSensorStatus(@EmpaSensorStatus int status, EmpaSensorType type) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateSensorStatus");
             map.put("status", status);
@@ -62,7 +67,7 @@ public class EmpaStatusDelegateEventStreamHandler implements StreamHandler, Empa
     @Override
     public void didDiscoverDevice(EmpaticaDevice device, String deviceLabel, int rssi, boolean allowed) {
         if (!allowed) return;
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "DiscoverDevice");
             map.put("device", device);
@@ -74,7 +79,7 @@ public class EmpaStatusDelegateEventStreamHandler implements StreamHandler, Empa
 
     @Override
     public void didFailedScanning(int errorCode) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "FailedScanning");
             map.put("errorCode", errorCode);
@@ -84,17 +89,25 @@ public class EmpaStatusDelegateEventStreamHandler implements StreamHandler, Empa
 
     @Override
     public void didRequestEnableBluetooth() {
-
+        if (eventSink != null) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("type", "RequestEnableBluetooth");
+            eventSink.success(map);
+        }
     }
 
     @Override
     public void bluetoothStateChanged() {
-
+        if (eventSink != null) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("type", "bluetoothStateChanged");
+            eventSink.success(map);
+        }
     }
 
     @Override
     public void didUpdateOnWristStatus(int status) {
-        if(eventSink != null) {
+        if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateOnWristStatus");
             map.put("status", status);
