@@ -42,28 +42,35 @@ public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implem
         @EmpaDeviceManagerMethodNames String methodName = call.method;
         switch (methodName) {
             case "authenticateWithAPIKey":
+                empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
                 final String key = call.argument("key");
                 authenticateWithAPIKey(key);
+                result.success(null);
             case "authenticateWithConnectUser":
+                empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
                 authenticateWithConnectUser();
+                result.success(null);
             case "connectDevice":
+                final EmpaticaDevice device = call.argument("device");
                 try {
-                    empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
-                    final EmpaticaDevice device = call.argument("device");
                     connectDevice(device);
+                    result.success(null);
                 } catch (ConnectionNotAllowedException e) {
                     result.error("ConnectionNotAllowedException", "Connection not allowed.", e);
                 }
                 break;
             case "startScanning":
                 startScanning();
+                result.success(null);
                 break;
             case "stopScanning":
                 stopScanning();
+                result.success(null);
                 break;
             case "setDiscoveredDevices":
                 final HashMap<String, EmpaticaDevice> discoveredDevices = call.argument("discoveredDevices");
                 setDiscoveredDevices(discoveredDevices);
+                result.success(null);
                 break;
             case "getActiveDevice":
                 result.success(getActiveDevice());
@@ -97,7 +104,6 @@ public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implem
     }
 
     /**
-     *
      * @param device the device to connect to
      * @throws ConnectionNotAllowedException indicates that Connection is not allowed, ie. because of failed API
      */
