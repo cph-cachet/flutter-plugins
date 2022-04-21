@@ -22,31 +22,61 @@ import java.util.Map;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 
 public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implements MethodCallHandler {
     final MethodChannel channel;
-    final private EmpaDeviceManager empaticaManager;
-    private EmpaDataDelegateEventStreamHandler dataDelegate = new EmpaDataDelegateEventStreamHandler();
-    private EmpaStatusDelegateEventStreamHandler statusDelegate = new EmpaStatusDelegateEventStreamHandler();
+    private EmpaDeviceManager empaticaManager;
+    private final EmpaDataDelegateEventStreamHandler dataDelegate = new EmpaDataDelegateEventStreamHandler();
+    private final EmpaStatusDelegateEventStreamHandler statusDelegate = new EmpaStatusDelegateEventStreamHandler();
+    private Context context;
 
     Map<String, EmpaticaDevice> discoveredDevices = new HashMap<>();
 
 
-
     @Override
-    public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
+    public void onMethodCall(@NonNull MethodCall call, @NonNull Result rawResult) {
+        Result result = new MainThreadResult(rawResult);
 
+        switch (call.method) {
+            case "connectDevice":
+                try {
+                    empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
+                    final EmpaticaDevice device = call.argument("device");
+                    connectDevice(device);
+                } catch (ConnectionNotAllowedException e) {
+                    result.error("ConnectionNotAllowedException", "Connection not allowed.", e);
+                }
+                break;
+            case "startScanning":
+                startScanning();
+                break;
+            case "stopScanning":
+                stopScanning();
+                break;
+            case "setDiscoveredDevices":
+                final HashMap<String, EmpaticaDevice> discoveredDevices = call.argument("discoveredDevices");
+                setDiscoveredDevices(discoveredDevices);
+                break;
+            case "getActiveDevice":
+                result.success(getActiveDevice());
+                break;
+            default:
+                result.notImplemented();
+        }
     }
 
 
     public EmpaDeviceManagerMethodCallHandler(Context context, EmpaDataDelegate dataDelegate, EmpaStatusDelegate statusDelegate, MethodChannel channel) {
         super(context, dataDelegate, statusDelegate);
 
+        this.context = context;
         this.channel = channel;
 
         this.empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
     }
+
 
     public void connectDevice(EmpaticaDevice device) throws ConnectionNotAllowedException {
         empaticaManager.connectDevice(device);
@@ -58,14 +88,6 @@ public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implem
 
     private void setDiscoveredDevices(Map<String, EmpaticaDevice> discoveredDevices) {
         this.discoveredDevices = discoveredDevices;
-    }
-
-    public void authenticateWithAPIKey(String key) {
-        empaticaManager.authenticateWithAPIKey(key);
-    }
-
-    public void authenticateWithConnectUser() {
-        super.authenticateWithConnectUser();
     }
 
     public void startScanning() {
