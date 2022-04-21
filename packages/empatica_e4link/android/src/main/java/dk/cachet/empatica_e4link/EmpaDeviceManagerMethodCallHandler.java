@@ -39,7 +39,13 @@ public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implem
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result rawResult) {
         Result result = new MainThreadResult(rawResult);
 
-        switch (call.method) {
+        @EmpaDeviceManagerMethodNames String methodName = call.method;
+        switch (methodName) {
+            case "authenticateWithAPIKey":
+                final String key = call.argument("key");
+                authenticateWithAPIKey(key);
+            case "authenticateWithConnectUser":
+                authenticateWithConnectUser();
             case "connectDevice":
                 try {
                     empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
@@ -77,15 +83,38 @@ public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implem
         this.empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
     }
 
+    @Override
+    public void authenticateWithConnectUser() {
+        empaticaManager.authenticateWithConnectUser();
+    }
 
+    /**
+     * @param key the key to authenticate with
+     */
+    @Override
+    public void authenticateWithAPIKey(String key) {
+        empaticaManager.authenticateWithAPIKey(key);
+    }
+
+    /**
+     *
+     * @param device the device to connect to
+     * @throws ConnectionNotAllowedException indicates that Connection is not allowed, ie. because of failed API
+     */
     public void connectDevice(EmpaticaDevice device) throws ConnectionNotAllowedException {
         empaticaManager.connectDevice(device);
     }
 
+    /**
+     * stop the scanning process started by startScanning()
+     */
     public void stopScanning() {
         empaticaManager.stopScanning();
     }
 
+    /**
+     * @param discoveredDevices the discovered devices by startScanning()
+     */
     private void setDiscoveredDevices(Map<String, EmpaticaDevice> discoveredDevices) {
         this.discoveredDevices = discoveredDevices;
     }
