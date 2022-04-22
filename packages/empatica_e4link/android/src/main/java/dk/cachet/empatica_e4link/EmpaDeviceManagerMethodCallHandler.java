@@ -20,6 +20,7 @@ import com.empatica.empalink.delegate.EmpaStatusDelegate;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.flutter.Log;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -30,7 +31,7 @@ public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implem
     private EmpaDeviceManager empaticaManager;
     private final EmpaDataDelegateEventStreamHandler dataDelegate = new EmpaDataDelegateEventStreamHandler();
     private final EmpaStatusDelegateEventStreamHandler statusDelegate = new EmpaStatusDelegateEventStreamHandler();
-    private Context context;
+    private final Context context;
 
     Map<String, EmpaticaDevice> discoveredDevices = new HashMap<>();
 
@@ -45,6 +46,7 @@ public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implem
                 empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
                 final String key = call.argument("key");
                 authenticateWithAPIKey(key);
+                Log.d("EmpaticaE4Link", "authenticateWithAPIKey");
                 result.success(null);
             case "authenticateWithConnectUser":
                 empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
