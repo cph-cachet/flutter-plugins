@@ -29,7 +29,7 @@ flutter:
     platforms:
       android:
         package: dk.cachet.empatica_e4link
-        pluginClass: EmpaticaE4linkPlugin
+        pluginClass: EmpaticaFlutterPlugin
       ios:
         pluginClass: EmpaticaE4linkPlugin
 
