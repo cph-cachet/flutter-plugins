@@ -78,7 +78,17 @@ class HealthFactory {
     for (var i = 0; i < weights.length; i++) {
       final bmiValue = weights[i].value.toDouble() / (h * h);
       final x = HealthDataPoint(
-          bmiValue, dataType, unit, weights[i].dateFrom, weights[i].dateTo, _platformType, _deviceId!, '', '');
+        '',
+        bmiValue,
+        dataType,
+        unit,
+        weights[i].dateFrom,
+        weights[i].dateTo,
+        _platformType,
+        _deviceId!,
+        '',
+        '',
+      );
 
       bmiHealthPoints.add(x);
     }
@@ -138,12 +148,14 @@ class HealthFactory {
     final fetchedDataPoints = await _channel.invokeMethod('getDataWithLimit', args);
     if (fetchedDataPoints != null) {
       return fetchedDataPoints.map<HealthDataPoint>((e) {
+        final String uuid = e['uuid'];
         final num value = e['value'];
         final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
         final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
         final String sourceId = e["source_id"];
         final String sourceName = e["source_name"];
         return HealthDataPoint(
+          uuid,
           value,
           dataType,
           unit,
@@ -193,12 +205,14 @@ class HealthFactory {
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
     if (fetchedDataPoints != null) {
       return fetchedDataPoints.map<HealthDataPoint>((e) {
+        final String uuid = e['uuid'];
         final num value = e['value'];
         final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
         final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
         final String sourceId = e["source_id"];
         final String sourceName = e["source_name"];
         return HealthDataPoint(
+          uuid,
           value,
           dataType,
           unit,

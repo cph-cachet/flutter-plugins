@@ -3,6 +3,7 @@ part of health;
 /// A [HealthDataPoint] object corresponds to a data point captures from
 /// GoogleFit or Apple HealthKit
 class HealthDataPoint {
+  String _uuid;
   num _value;
   HealthDataType _type;
   HealthDataUnit _unit;
@@ -14,15 +15,17 @@ class HealthDataPoint {
   String _sourceName;
 
   HealthDataPoint(
-      this._value,
-      this._type,
-      this._unit,
-      this._dateFrom,
-      this._dateTo,
-      this._platform,
-      this._deviceId,
-      this._sourceId,
-      this._sourceName) {
+    this._uuid,
+    this._value,
+    this._type,
+    this._unit,
+    this._dateFrom,
+    this._dateTo,
+    this._platform,
+    this._deviceId,
+    this._sourceId,
+    this._sourceName,
+  ) {
     // set the value to minutes rather than the category
     // returned by the native API
     if (type == HealthDataType.MINDFULNESS ||
@@ -40,15 +43,13 @@ class HealthDataPoint {
 
   /// Converts a json object to the [HealthDataPoint]
   factory HealthDataPoint.fromJson(json) => HealthDataPoint(
+      json['uuid'] ?? '',
       json['value'],
-      HealthDataTypeJsonValue.keys.toList()[
-          HealthDataTypeJsonValue.values.toList().indexOf(json['data_type'])],
-      HealthDataUnitJsonValue.keys.toList()[
-          HealthDataUnitJsonValue.values.toList().indexOf(json['unit'])],
+      HealthDataTypeJsonValue.keys.toList()[HealthDataTypeJsonValue.values.toList().indexOf(json['data_type'])],
+      HealthDataUnitJsonValue.keys.toList()[HealthDataUnitJsonValue.values.toList().indexOf(json['unit'])],
       DateTime.parse(json['date_from']),
       DateTime.parse(json['date_to']),
-      PlatformTypeJsonValue.keys.toList()[
-          PlatformTypeJsonValue.values.toList().indexOf(json['platform_type'])],
+      PlatformTypeJsonValue.keys.toList()[PlatformTypeJsonValue.values.toList().indexOf(json['platform_type'])],
       json['platform_type'],
       json['source_id'],
       json['source_name']);
@@ -76,6 +77,9 @@ class HealthDataPoint {
       'platform: $platform'
       'sourceId: $sourceId,'
       'sourceName: $sourceName,';
+
+  /// Get the identifier of the data point
+  String get uuid => _uuid;
 
   /// Get the quantity value of the data point
   num get value => _value;
