@@ -25,8 +25,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _connectToAPI() async {
-    await deviceManager
-        .authenticateWithAPIKey("apiKeyGoesHere");
+    await deviceManager.testTheChannel();
   }
 
   @override

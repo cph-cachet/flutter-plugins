@@ -42,6 +42,10 @@ public class EmpaDeviceManagerMethodCallHandler extends EmpaDeviceManager implem
 
         @EmpaDeviceManagerMethodNames String methodName = call.method;
         switch (methodName) {
+            case "testTheChannel":
+                Log.d("EmpaDeviceManagerMethodCallHandler", "testTheChannel");
+                result.success("Hello from the EmpaDeviceManagerMethodCallHandler");
+                break;
             case "authenticateWithAPIKey":
                 empaticaManager = new EmpaDeviceManager(context, dataDelegate, statusDelegate);
                 final String key = call.argument("key");

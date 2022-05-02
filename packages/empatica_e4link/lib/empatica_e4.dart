@@ -12,7 +12,7 @@ class EmpaDeviceManager {
   static const String EmpaDataDelegateEventChannelName =
       "empatica.io/empatica_dataDelegate";
 
-  final MethodChannel _empaDeviceManagerMethodChannel =
+  static MethodChannel _empaDeviceManagerMethodChannel =
       const MethodChannel(EmpaDeviceManagerMethodChannelName);
   final EventChannel _empaStatusDelegateEventChannel =
       const EventChannel(EmpaStatusDelegateEventChannelName);
@@ -25,5 +25,9 @@ class EmpaDeviceManager {
     _empaDeviceManagerMethodChannel.invokeMethod('authenticateWithAPIKey', {
       'key': key,
     });
+  }
+  
+  Future<void> testTheChannel() async {
+    _empaDeviceManagerMethodChannel.invokeMethod('testTheChannel');
   }
 }
