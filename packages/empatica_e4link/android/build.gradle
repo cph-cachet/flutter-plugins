@@ -91,6 +91,7 @@ task useAar {
             dependencies {
                 implementation "${aarInfo[0]}:${aarInfo[1]}:${aarInfo[2]}"
             }
+            println("Done useAar")
         }
     }
 }
