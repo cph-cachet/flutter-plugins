@@ -9,15 +9,18 @@ class EmpaticaPlugin {
       'empatica.io/empatica_methodChannel';
   static const String empaticaStatusEventChannelName =
       'empatica.io/empatica_statusEventChannel';
+  static const String empaticaDataEventChannelName =
+      'empatica.io/empatica_dataEventChannel';
 
   final MethodChannel _methodChannel =
       const MethodChannel(empaticaMethodChannelName);
   final EventChannel _statusEventChannel =
       const EventChannel(empaticaStatusEventChannelName);
+  final EventChannel _dataEventChannel =
+      const EventChannel(empaticaDataEventChannelName);
 
   Stream<dynamic>? _statusStream;
-
-  
+  Stream<dynamic>? _dataStream;
 
   Future<void> testTheChannel() async {
     await _methodChannel.invokeMethod('testTheChannel');
@@ -48,9 +51,11 @@ class EmpaticaPlugin {
 
   Stream<dynamic>? get statusEvents {
     _statusStream = _statusEventChannel.receiveBroadcastStream();
-    _statusStream?.listen((event) {
-      print('status event: $event');
-    });
     return _statusStream;
+  }
+
+  Stream<dynamic>? get dataEvents {
+    _dataStream = _dataEventChannel.receiveBroadcastStream();
+    return _dataStream;
   }
 }
