@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -18,6 +17,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   EmpaticaPlugin deviceManager = EmpaticaPlugin();
 
+  String _status = 'INITIAL';
+
   @override
   void initState() {
     super.initState();
@@ -25,9 +26,22 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _connectToAPI() async {
+    deviceManager.statusEvents?.listen((event) {
+      print(event);
+      if (event.containsKey('status')) {
+        setState(() {
+          _status = event['status'];
+        });
+      }
+    });
 
-    await deviceManager
-        .authenticateWithAPIKey('apiKeyGoesHere');
+    if (_status == 'INITIAL') {
+      await deviceManager
+          .authenticateWithAPIKey('apiKeyGoesHere');
+    }
+    if (_status == 'READY') {
+      await deviceManager.startScanning();
+    }
   }
 
   @override
@@ -37,8 +51,8 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: const Center(
-          child: Text('Running on: empatica i guess\n'),
+        body: Center(
+          child: Text('Status: $_status\n'),
         ),
       ),
     );
