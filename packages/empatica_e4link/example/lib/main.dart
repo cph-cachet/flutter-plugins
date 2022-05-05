@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
-import 'package:empatica_e4link/empatica_e4.dart';
+import 'package:empatica_e4link/empatica.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +15,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  EmpaDeviceManager deviceManager = EmpaDeviceManager();
+  EmpaticaPlugin deviceManager = EmpaticaPlugin();
 
   @override
   void initState() {
@@ -25,7 +24,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _connectToAPI() async {
-    await deviceManager.testTheChannel();
+    await deviceManager
+        .authenticateWithAPIKey('apiKeyGoesHere');
   }
 
   @override
@@ -36,7 +36,7 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: const Center(
-          child: Text('Running on: nothing\n'),
+          child: Text('Running on: empatica i guess\n'),
         ),
       ),
     );

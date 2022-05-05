@@ -1,54 +1,105 @@
 package dk.cachet.empatica_e4link;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import io.flutter.Log;
+import com.empatica.empalink.ConnectionNotAllowedException;
+
+import java.util.HashMap;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.EventChannel;
+import io.flutter.plugin.common.EventChannel.EventSink;
+import io.flutter.plugin.common.EventChannel.StreamHandler;
+import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 
-public class EmpaticaFlutterPlugin implements FlutterPlugin {
+public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler, StreamHandler {
+    static final String methodChannelName = "empatica.io/empatica_methodChannel";
+    static final String statusEventChannelName =
+            "empatica.io/empatica_statusEventChannel";
+    MainThreadEventSink eventSink;
+    private MethodChannel methodChannel;
+    private EventChannel eventChannel;
+    private Context context;
+    private final String TAG = "EmpaticaPlugin";
+    private EmpaticaHandler _handler;
 
-    // Channel naming
-    public static final String EmpaDeviceManagerMethodChannelName = "empatica.io/empatica_deviceManager";
-    public static final String EmpaStatusDelegateEventChannelName = "empatica.io/empatica_statusDelegate";
-    public static final String EmpaDataDelegateEventChannelName = "empatica.io/empatica_dataDelegate";
-
-    /// The MethodChannel and EventChannels that will the communication between
-    /// Flutter and native Android
-    private MethodChannel channel;
-    // private Context context;
-    private MethodChannel empaDeviceManagerMethodChannel;
-    private EventChannel empaStatusDelegateEventChannel;
-    private EventChannel empaDataDelegateEventChannel;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        Log.d("EmpaticaE4Link", "onAttachedToEngine");
-        // this.context = binding.getApplicationContext();
-        final EmpaStatusDelegateEventStreamHandler empaStatusDelegateEventStreamHandler = new EmpaStatusDelegateEventStreamHandler();
-        final EmpaDataDelegateEventStreamHandler empaDataDelegateStreamHandler = new EmpaDataDelegateEventStreamHandler();
-        final EmpaDeviceManagerMethodCallHandler empaDeviceManagerCallHandler = new EmpaDeviceManagerMethodCallHandler(
-                binding.getApplicationContext(), empaDataDelegateStreamHandler, empaStatusDelegateEventStreamHandler, channel);
+        methodChannel = new MethodChannel(binding.getBinaryMessenger(), methodChannelName);
+        methodChannel.setMethodCallHandler(this);
 
-        empaDeviceManagerMethodChannel = new MethodChannel(binding.getBinaryMessenger(),
-                EmpaDeviceManagerMethodChannelName);
-        empaDeviceManagerMethodChannel.setMethodCallHandler(empaDeviceManagerCallHandler);
+        eventChannel = new EventChannel(binding.getBinaryMessenger(), statusEventChannelName);
+        eventChannel.setStreamHandler(this);
 
-        empaStatusDelegateEventChannel = new EventChannel(binding.getBinaryMessenger(),
-                EmpaStatusDelegateEventChannelName);
-        empaStatusDelegateEventChannel.setStreamHandler(empaStatusDelegateEventStreamHandler);
+        context = binding.getApplicationContext();
 
-        empaDataDelegateEventChannel = new EventChannel(binding.getBinaryMessenger(), EmpaDataDelegateEventChannelName);
-        empaDataDelegateEventChannel.setStreamHandler(empaDataDelegateStreamHandler);
+        _handler = new EmpaticaHandler(methodChannel, context);
     }
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        empaDeviceManagerMethodChannel.setMethodCallHandler(null);
-        empaStatusDelegateEventChannel.setStreamHandler(null);
-        empaDataDelegateEventChannel.setStreamHandler(null);
+        methodChannel.setMethodCallHandler(null);
+    }
+
+    @Override
+    public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
+        switch (call.method) {
+            case "testTheChannel":
+                Log.d(TAG, "onMethodCall: TestTheChannel");
+                result.success(null);
+                break;
+            case "authenticateWithAPIKey":
+                Log.d(TAG, "onMethodCall: authenticateWithAPIKey");
+                String key = call.argument("key");
+                _handler.authenticateWithAPIKey(key);
+                result.success(null);
+                break;
+            case "authenticateWithConnectUser":
+                Log.d(TAG, "onMethodCall: authenticateWithConnectUser");
+                _handler.authenticateWithConnectUser();
+                result.success(null);
+                break;
+            case "startScanning":
+                Log.d(TAG, "onMethodCall: startScanning");
+                _handler.startScanning();
+                result.success(null);
+                break;
+            case "stopScanning":
+                Log.d(TAG, "onMethodCall: stopScanning");
+                _handler.stopScanning();
+                result.success(null);
+                break;
+            case "connectDevice":
+                Log.d(TAG, "onMethodCall: connectDevice");
+                try {
+                    _handler.connectDevice(call.argument("serialNumber"));
+                    result.success(null);
+                } catch (ConnectionNotAllowedException e) {
+                    e.printStackTrace();
+                    result.error("connectionNotAllowedException", e.getMessage(), e.fillInStackTrace());
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onListen(Object arguments, EventSink events) {
+        this.eventSink = new MainThreadEventSink(events);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("type", "Listen");
+        Log.d(TAG, "onListen: listening");
+        eventSink.success(map);
+    }
+
+    @Override
+    public void onCancel(Object arguments) {
+        eventSink.endOfStream();
+        this.eventSink = null;
     }
 }
