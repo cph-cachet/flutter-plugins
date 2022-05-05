@@ -210,7 +210,7 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
         if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "DiscoverDevice");
-            map.put("device", device);
+            map.put("device", device.serialNumber);
             map.put("deviceLabel", deviceLabel);
             map.put("rssi", rssi);
             eventSink.success(map);
