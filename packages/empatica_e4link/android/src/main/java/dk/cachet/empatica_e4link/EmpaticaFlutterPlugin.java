@@ -39,7 +39,7 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
 
         context = binding.getApplicationContext();
 
-        _handler = new EmpaticaHandler(methodChannel, context);
+        _handler = new EmpaticaHandler(methodChannel, eventChannel, context);
     }
 
     @Override
@@ -91,6 +91,7 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     @Override
     public void onListen(Object arguments, EventSink events) {
         this.eventSink = new MainThreadEventSink(events);
+        _handler.eventSink = this.eventSink;
         HashMap<String, Object> map = new HashMap<>();
         map.put("type", "Listen");
         Log.d(TAG, "onListen: listening");

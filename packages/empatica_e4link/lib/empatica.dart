@@ -10,34 +10,47 @@ class EmpaticaPlugin {
   static const String empaticaStatusEventChannelName =
       'empatica.io/empatica_statusEventChannel';
 
-  static const MethodChannel _channel =
-      MethodChannel(empaticaMethodChannelName);
+  final MethodChannel _methodChannel =
+      const MethodChannel(empaticaMethodChannelName);
+  final EventChannel _statusEventChannel =
+      const EventChannel(empaticaStatusEventChannelName);
+
+  Stream<dynamic>? _statusStream;
+
+  
 
   Future<void> testTheChannel() async {
-    await _channel.invokeMethod('testTheChannel');
+    await _methodChannel.invokeMethod('testTheChannel');
   }
 
   Future<void> authenticateWithAPIKey(String key) async {
-    await _channel.invokeMethod('authenticateWithAPIKey', {'key': key});
+    await _methodChannel.invokeMethod('authenticateWithAPIKey', {'key': key});
   }
 
   Future<void> startScanning() async {
-    await _channel.invokeMethod('startScanning');
+    await _methodChannel.invokeMethod('startScanning');
   }
 
   Future<void> authenticateWithConnectUser() async {
-    await _channel.invokeMethod('authenticateWithConnectUser');
+    await _methodChannel.invokeMethod('authenticateWithConnectUser');
   }
 
   Future<void> stopScanning() async {
-    await _channel.invokeMethod('stopScanning');
+    await _methodChannel.invokeMethod('stopScanning');
   }
 
   Future<void> connectDevice(String serialNumber) async {
-    await _channel
+    await _methodChannel
         .invokeMethod('connectDevice', {'serialNumber': serialNumber});
   }
 
   // ------------    STREAM HANDLERS --------------------
 
+  Stream<dynamic>? get statusEvents {
+    _statusStream = _statusEventChannel.receiveBroadcastStream();
+    _statusStream?.listen((event) {
+      print('status event: $event');
+    });
+    return _statusStream;
+  }
 }
