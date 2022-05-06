@@ -26,22 +26,33 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _connectToAPI() async {
-    deviceManager.statusEvents?.listen((event) {
-      print(event);
-      if (event.containsKey('status')) {
-        setState(() {
-          _status = event['status'];
-        });
+    deviceManager.statusEvents?.listen((event) async {
+      switch (event['type']) {
+        case 'Listen':
+          await deviceManager
+              .authenticateWithAPIKey('apiKeyGoesHere');
+          break;
+        case 'UpdateStatus':
+          setState(() {
+            _status = event['status'];
+          });
+          switch (event['status']) {
+            case 'READY':
+              await deviceManager.startScanning();
+              break;
+            case 'DISCONNECTED':
+              await deviceManager.startScanning();
+              break;
+            default:
+          }
+
+          break;
+        case 'DiscoverDevice':
+          await deviceManager.connectDevice(event['device']);
+          break;
+        default:
       }
     });
-
-    if (_status == 'INITIAL') {
-      await deviceManager
-          .authenticateWithAPIKey('apiKeyGoesHere');
-    }
-    if (_status == 'READY') {
-      await deviceManager.startScanning();
-    }
   }
 
   @override

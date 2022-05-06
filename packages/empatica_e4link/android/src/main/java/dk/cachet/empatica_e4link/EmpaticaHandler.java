@@ -51,7 +51,7 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
         this.discoveredDevices = new HashMap<>();
     }
 
-    public void connectDevice(EmpaticaDevice serialNumber) throws ConnectionNotAllowedException {
+    public void connectDevice(String serialNumber) throws ConnectionNotAllowedException {
         this._handler.stopScanning();
         final EmpaticaDevice device = discoveredDevices.get(serialNumber);
 
@@ -213,6 +213,8 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
             map.put("device", device.serialNumber);
             map.put("deviceLabel", deviceLabel);
             map.put("rssi", rssi);
+            discoveredDevices.put(device.serialNumber, device);
+//            Log.d(TAG, "didDiscoverDevice: " + device + ". eventSink success.");
             eventSink.success(map);
         }
     }
