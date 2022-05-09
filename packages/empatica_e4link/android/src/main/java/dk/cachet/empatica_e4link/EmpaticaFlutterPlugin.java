@@ -19,12 +19,11 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 
 public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler, StreamHandler {
     static final String methodChannelName = "empatica.io/empatica_methodChannel";
-    static final String statusEventChannelName =
-            "empatica.io/empatica_statusEventChannel";
+    static final String eventSinkName =
+            "empatica.io/empatica_eventSink";
     MainThreadEventSink eventSink;
     private MethodChannel methodChannel;
     private EventChannel eventChannel;
-    private Context context;
     private final String TAG = "EmpaticaPlugin";
     private EmpaticaHandler _handler;
 
@@ -34,17 +33,18 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
         methodChannel = new MethodChannel(binding.getBinaryMessenger(), methodChannelName);
         methodChannel.setMethodCallHandler(this);
 
-        eventChannel = new EventChannel(binding.getBinaryMessenger(), statusEventChannelName);
+        eventChannel = new EventChannel(binding.getBinaryMessenger(), eventSinkName);
         eventChannel.setStreamHandler(this);
 
-        context = binding.getApplicationContext();
+        Context context = binding.getApplicationContext();
 
-        _handler = new EmpaticaHandler(methodChannel, eventChannel, context);
+        _handler = new EmpaticaHandler(context);
     }
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         methodChannel.setMethodCallHandler(null);
+        eventChannel.setStreamHandler(null);
     }
 
     @Override

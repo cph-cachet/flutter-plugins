@@ -14,21 +14,14 @@ import com.empatica.empalink.delegate.EmpaStatusDelegate;
 
 import java.util.HashMap;
 
-import io.flutter.plugin.common.EventChannel;
-import io.flutter.plugin.common.MethodChannel;
-
 public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
     private static final String TAG = "EmpaticaPlugin";
-    private final MethodChannel methodChannel;
-    private final EventChannel eventChannel;
     private final EmpaDeviceManager _handler;
 
     MainThreadEventSink eventSink;
     private HashMap<String, EmpaticaDevice> discoveredDevices;
 
-    EmpaticaHandler(MethodChannel methodChannel, EventChannel eventChannel, Context context) {
-        this.methodChannel = methodChannel;
-        this.eventChannel = eventChannel;
+    EmpaticaHandler(Context context) {
         this._handler = new EmpaDeviceManager(context, this, this);
     }
 

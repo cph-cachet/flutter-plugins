@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _connectToAPI() async {
-    deviceManager.statusEvents?.listen((event) async {
+    deviceManager.eventSink?.listen((event) async {
       switch (event['type']) {
         case 'Listen':
           await deviceManager
@@ -38,8 +38,6 @@ class _MyAppState extends State<MyApp> {
           });
           switch (event['status']) {
             case 'READY':
-              await deviceManager.startScanning();
-              break;
             case 'DISCONNECTED':
               await deviceManager.startScanning();
               break;
