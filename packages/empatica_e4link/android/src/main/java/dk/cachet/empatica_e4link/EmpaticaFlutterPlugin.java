@@ -21,7 +21,7 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     static final String methodChannelName = "empatica.io/empatica_methodChannel";
     static final String eventSinkName =
             "empatica.io/empatica_eventSink";
-    MainThreadEventSink eventSink;
+    EventSink eventSink;
     private MethodChannel methodChannel;
     private EventChannel eventChannel;
     private final String TAG = "EmpaticaPlugin";

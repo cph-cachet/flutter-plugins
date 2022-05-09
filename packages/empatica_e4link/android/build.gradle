@@ -65,7 +65,7 @@ task useAar {
             String[] aarInfo = aarName.split("-")
             String md5 = getFileMD5(item)
             String sha1 = getFileSha1(item)
-            println("aar: " + aarInfo + " file sha1:" + sha1 + " md5:" + md5)
+//            println("aar: " + aarInfo + " file sha1:" + sha1 + " md5:" + md5)
             String fromStr = item.path
             String intoStr = aarPath + "/" + aarInfo[0].replace(".", "/") + "/" + aarInfo[1] + "/" + aarInfo[2]
             String newName = aarInfo[1] + "-" + aarInfo[2] + ".aar"
@@ -91,7 +91,6 @@ task useAar {
             dependencies {
                 implementation "${aarInfo[0]}:${aarInfo[1]}:${aarInfo[2]}"
             }
-            println("Done useAar")
         }
     }
 }
