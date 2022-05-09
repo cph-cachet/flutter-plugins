@@ -1,7 +1,6 @@
 package dk.cachet.empatica_e4link;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
@@ -14,11 +13,13 @@ import com.empatica.empalink.delegate.EmpaStatusDelegate;
 
 import java.util.HashMap;
 
+import io.flutter.plugin.common.EventChannel.EventSink;
+
 public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
     private static final String TAG = "EmpaticaPlugin";
     private final EmpaDeviceManager _handler;
 
-    MainThreadEventSink eventSink;
+    EventSink eventSink;
     private HashMap<String, EmpaticaDevice> discoveredDevices;
 
     EmpaticaHandler(Context context) {
@@ -57,7 +58,6 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
 
     @Override
     public void didReceiveGSR(float gsr, double timestamp) {
-        Log.d(TAG, "didReceiveGSR: " + gsr);
         if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveGSR");
@@ -69,7 +69,6 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
 
     @Override
     public void didReceiveBVP(float bvp, double timestamp) {
-        Log.d(TAG, "didReceiveBVP: " + bvp);
         if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveBVP");
@@ -81,7 +80,6 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
 
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
-        Log.d(TAG, "didReceiveIBI: " + ibi);
         if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveIBI");
@@ -93,7 +91,6 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
 
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
-        Log.d(TAG, "didReceiveTemperature: " + t);
         if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveTemperature");
@@ -149,7 +146,6 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
      */
     @Override
     public void didUpdateStatus(EmpaStatus status) {
-        Log.d(TAG, "didUpdateStatus: " + status);
         if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateStatus");
@@ -178,7 +174,6 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
      */
     @Override
     public void didUpdateSensorStatus(@EmpaSensorStatus int status, EmpaSensorType type) {
-        Log.d(TAG, "didUpdateSensorStatus: " + status);
         if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateSensorStatus");
@@ -198,7 +193,6 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
      */
     @Override
     public void didDiscoverDevice(EmpaticaDevice device, String deviceLabel, int rssi, boolean allowed) {
-        Log.d(TAG, "didDiscoverDevice: " + device);
         if (!allowed) return;
         if (eventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
