@@ -1,6 +1,7 @@
 package dk.cachet.empatica_e4link;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
@@ -22,8 +23,9 @@ public class EmpaticaHandler implements EmpaDataDelegate, EmpaStatusDelegate {
     EventSink eventSink;
     private HashMap<String, EmpaticaDevice> discoveredDevices;
 
-    EmpaticaHandler(Context context) {
-        this._handler = new EmpaDeviceManager(context, this, this);
+    EmpaticaHandler(EmpaDataDelegate empaDataDelegate, EmpaStatusDelegate empaStatusDelegate, Context context) {
+        Log.d(TAG, "EmpaticaHandler: ");
+        this._handler = new EmpaDeviceManager(context, empaDataDelegate, empaStatusDelegate);
     }
 
     public void authenticateWithAPIKey(String key) {
