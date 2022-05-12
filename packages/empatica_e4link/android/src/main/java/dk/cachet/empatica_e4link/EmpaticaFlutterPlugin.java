@@ -7,53 +7,55 @@ import androidx.annotation.NonNull;
 
 import com.empatica.empalink.ConnectionNotAllowedException;
 
-import java.util.HashMap;
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.EventChannel;
-import io.flutter.plugin.common.EventChannel.EventSink;
-import io.flutter.plugin.common.EventChannel.StreamHandler;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 
-public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler, StreamHandler {
+public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler {
     static final String methodChannelName = "empatica.io/empatica_methodChannel";
-    static final String eventSinkName =
-            "empatica.io/empatica_eventSink";
-    EventSink eventSink;
+    static final String dataEventSinkName =
+            "empatica.io/empatica_dataEventSink";
+    static final String statusEventSinkName =
+            "empatica.io/empatica_statusEventSink";
     private MethodChannel methodChannel;
-    private EventChannel eventChannel;
+    private EventChannel statusEventChannel;
+    private EventChannel dataEventChannel;
     private final String TAG = "EmpaticaPlugin";
     private EmpaticaHandler _handler;
 
-
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        Log.d(TAG, "onAttachedToEngine: ");
+        final EmpaStatusEventStreamHandler empaStatusEventStreamHandler = new EmpaStatusEventStreamHandler();
+        final EmpaDataEventStreamHandler empaDataEventStreamHandler = new EmpaDataEventStreamHandler();
+
+
         methodChannel = new MethodChannel(binding.getBinaryMessenger(), methodChannelName);
         methodChannel.setMethodCallHandler(this);
 
-        eventChannel = new EventChannel(binding.getBinaryMessenger(), eventSinkName);
-        eventChannel.setStreamHandler(this);
+        dataEventChannel = new EventChannel(binding.getBinaryMessenger(), dataEventSinkName);
+        dataEventChannel.setStreamHandler(empaDataEventStreamHandler);
+
+        statusEventChannel = new EventChannel(binding.getBinaryMessenger(), statusEventSinkName);
+        statusEventChannel.setStreamHandler(empaStatusEventStreamHandler);
 
         Context context = binding.getApplicationContext();
 
-        _handler = new EmpaticaHandler(context);
+        _handler = new EmpaticaHandler(empaDataEventStreamHandler, empaStatusEventStreamHandler, context);
     }
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         methodChannel.setMethodCallHandler(null);
-        eventChannel.setStreamHandler(null);
+        dataEventChannel.setStreamHandler(null);
+        statusEventChannel.setStreamHandler(null);
     }
 
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
         switch (call.method) {
-            case "testTheChannel":
-                Log.d(TAG, "onMethodCall: TestTheChannel");
-                result.success(null);
-                break;
             case "authenticateWithAPIKey":
                 Log.d(TAG, "onMethodCall: authenticateWithAPIKey");
                 String key = call.argument("key");
@@ -86,21 +88,5 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
                 }
                 break;
         }
-    }
-
-    @Override
-    public void onListen(Object arguments, EventSink events) {
-        this.eventSink = new MainThreadEventSink(events);
-        _handler.eventSink = this.eventSink;
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("type", "Listen");
-        Log.d(TAG, "onListen: listening");
-        eventSink.success(map);
-    }
-
-    @Override
-    public void onCancel(Object arguments) {
-        eventSink.endOfStream();
-        this.eventSink = null;
     }
 }
