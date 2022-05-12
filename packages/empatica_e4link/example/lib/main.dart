@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _connectToAPI() async {
-    deviceManager.eventSink?.listen((event) async {
+    deviceManager.statusEventSink?.listen((event) async {
       if (kDebugMode) {
         print(event);
       }
@@ -56,12 +56,25 @@ class _MyAppState extends State<MyApp> {
             case 'DISCONNECTED':
               await deviceManager.startScanning();
               break;
+            case 'CONNECTED':
+              _listenToData();
+              break;
             default:
           }
           break;
         case 'DiscoverDevice':
           await deviceManager.connectDevice(event['device']);
           break;
+      }
+    });
+  }
+
+  void _listenToData() {
+    deviceManager.dataEventSink?.listen((event) {
+      if (kDebugMode) {
+        print(event);
+      }
+      switch (event['type']) {
         case 'ReceiveBVP':
           setState(() {
             _bvp = event['bvp'].toString();

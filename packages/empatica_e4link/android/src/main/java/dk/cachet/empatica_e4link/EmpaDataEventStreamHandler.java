@@ -1,7 +1,5 @@
 package dk.cachet.empatica_e4link;
 
-import android.util.Log;
-
 import com.empatica.empalink.config.EmpaSensorStatus;
 import com.empatica.empalink.delegate.EmpaDataDelegate;
 
@@ -12,7 +10,7 @@ import io.flutter.plugin.common.EventChannel.StreamHandler;
 
 public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelegate {
     private MainThreadEventSink dataEventSink;
-    private static final String TAG = "EmpaticaPlugin/dataEventStream";
+    private static final String TAG = "cachet.empatica.io/dataEventStream";
 
     EmpaDataEventStreamHandler() {
     }
@@ -20,7 +18,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     @Override
     public void didReceiveGSR(float gsr, double timestamp) {
-        Log.d(TAG, "didReceiveGSR: " + gsr);
+//        Log.d(TAG, "didReceiveGSR: " + gsr);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveGSR");
@@ -32,7 +30,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     @Override
     public void didReceiveBVP(float bvp, double timestamp) {
-        Log.d(TAG, "didReceiveBVP: " + bvp);
+//        Log.d(TAG, "didReceiveBVP: " + bvp);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveBVP");
@@ -44,7 +42,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
-        Log.d(TAG, "didReceiveIBI: " + ibi);
+//        Log.d(TAG, "didReceiveIBI: " + ibi);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveIBI");
@@ -56,7 +54,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
-        Log.d(TAG, "didReceiveTemperature: " + t);
+//        Log.d(TAG, "didReceiveTemperature: " + t);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveTemperature");
@@ -68,6 +66,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     @Override
     public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
+//        Log.d(TAG, "didReceiveAcceleration: " + x + y + z);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveAcceleration");
@@ -81,6 +80,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     @Override
     public void didReceiveBatteryLevel(float level, double timestamp) {
+//        Log.d(TAG, "didReceiveBatteryLevel: " + level);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveBatteryLevel");
@@ -92,6 +92,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     @Override
     public void didReceiveTag(double timestamp) {
+//        Log.d(TAG, "didReceiveTag: " + timestamp);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveTag");
@@ -104,6 +105,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
      * @param status on wrist status has been updated
      */
     public void didUpdateOnWristStatus(@EmpaSensorStatus int status) {
+//        Log.d(TAG, "didUpdateOnWristStatus: " + status);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateOnWristStatus");
@@ -119,7 +121,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
         HashMap<String, Object> map = new HashMap<>();
         map.put("type", "Listen");
         map.put("stream", "data");
-        Log.d(TAG, "onListen: listening");
+//        Log.d(TAG, "onListen: listening");
         dataEventSink.success(map);
     }
 
