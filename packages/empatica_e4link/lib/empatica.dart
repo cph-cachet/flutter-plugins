@@ -5,16 +5,18 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class EmpaticaPlugin {
-  static const String empaticaMethodChannelName =
-      'empatica.io/empatica_methodChannel';
-  static const String empaticaEventSinkName =
+  static const String methodChannelName = 'empatica.io/empatica_methodChannel';
+  static const String statusEventSinkName =
       "empatica.io/empatica_statusEventSink";
+  static const String dataEventSinkName = "empatica.io/empatica_dataEventSink";
 
-  final MethodChannel _methodChannel =
-      const MethodChannel(empaticaMethodChannelName);
-  final EventChannel _eventChannel = const EventChannel(empaticaEventSinkName);
+  final MethodChannel _methodChannel = const MethodChannel(methodChannelName);
+  final EventChannel _statusEventChannel =
+      const EventChannel(statusEventSinkName);
+  final EventChannel _dataEventChannel = const EventChannel(dataEventSinkName);
 
-  Stream<dynamic>? _eventSink;
+  Stream<dynamic>? _statusEventSink;
+  Stream<dynamic>? _dataEventSink;
 
   Future<void> testTheChannel() async {
     await _methodChannel.invokeMethod('testTheChannel');
@@ -43,8 +45,13 @@ class EmpaticaPlugin {
 
   // ------------    STREAM HANDLERS --------------------
 
-  Stream<dynamic>? get eventSink {
-    _eventSink = _eventChannel.receiveBroadcastStream();
-    return _eventSink;
+  Stream<dynamic>? get statusEventSink {
+    _statusEventSink = _statusEventChannel.receiveBroadcastStream();
+    return _statusEventSink;
+  }
+
+  Stream<dynamic>? get dataEventSink {
+    _dataEventSink = _dataEventChannel.receiveBroadcastStream();
+    return _dataEventSink;
   }
 }

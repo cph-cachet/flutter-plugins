@@ -9,12 +9,12 @@ import com.empatica.empalink.EmpaticaDevice;
 
 import java.util.HashMap;
 
-public class EmpaticaHandler{
-    private static final String TAG = "EmpaticaPlugin";
+public class EmpaticaMethodHandler {
+    private static final String TAG = "cachet.empatica.io/empaticaMethodHandler";
     private final EmpaDeviceManager _handler;
     EmpaStatusEventStreamHandler empaStatusEventStreamHandler;
 
-    EmpaticaHandler(EmpaDataEventStreamHandler empaDataDelegate, EmpaStatusEventStreamHandler empaStatusDelegate, Context context) {
+    EmpaticaMethodHandler(EmpaDataEventStreamHandler empaDataDelegate, EmpaStatusEventStreamHandler empaStatusDelegate, Context context) {
         empaStatusEventStreamHandler = empaStatusDelegate;
         Log.d(TAG, "EmpaticaHandler: ");
         this._handler = new EmpaDeviceManager(context, empaDataDelegate, empaStatusDelegate);

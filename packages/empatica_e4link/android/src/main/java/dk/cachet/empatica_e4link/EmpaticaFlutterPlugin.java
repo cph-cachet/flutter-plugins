@@ -22,12 +22,11 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler {
     private MethodChannel methodChannel;
     EventChannel statusEventChannel;
     EventChannel dataEventChannel;
-    private final String TAG = "EmpaticaPlugin";
-    private EmpaticaHandler _handler;
+    private final String TAG = "cachet.empatica.io/empaticaFlutterPlugin";
+    private EmpaticaMethodHandler _handler;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        Log.d(TAG, "onAttachedToEngine: ");
         final EmpaStatusEventStreamHandler empaStatusEventStreamHandler = new EmpaStatusEventStreamHandler();
         final EmpaDataEventStreamHandler empaDataEventStreamHandler = new EmpaDataEventStreamHandler();
 
@@ -35,12 +34,15 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler {
         methodChannel = new MethodChannel(binding.getBinaryMessenger(), methodChannelName);
         methodChannel.setMethodCallHandler(this);
 
+        dataEventChannel = new EventChannel(binding.getBinaryMessenger(), dataEventSinkName);
+        dataEventChannel.setStreamHandler(empaDataEventStreamHandler);
+
         statusEventChannel = new EventChannel(binding.getBinaryMessenger(), statusEventSinkName);
         statusEventChannel.setStreamHandler(empaStatusEventStreamHandler);
 
         Context context = binding.getApplicationContext();
 
-        _handler = new EmpaticaHandler(empaDataEventStreamHandler, empaStatusEventStreamHandler, context);
+        _handler = new EmpaticaMethodHandler(empaDataEventStreamHandler, empaStatusEventStreamHandler, context);
     }
 
     @Override

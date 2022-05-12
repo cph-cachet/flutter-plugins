@@ -1,7 +1,5 @@
 package dk.cachet.empatica_e4link;
 
-import android.util.Log;
-
 import com.empatica.empalink.EmpaticaDevice;
 import com.empatica.empalink.config.EmpaSensorStatus;
 import com.empatica.empalink.config.EmpaSensorType;
@@ -14,7 +12,7 @@ import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 
 public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDelegate {
-    private static final String TAG = "EmpaticaPlugin/statusEventStream";
+    private static final String TAG = "cachet.empatica.io/statusEventStream";
     private MainThreadEventSink statusEventSink;
     public HashMap<String, EmpaticaDevice> discoveredDevices;
 
@@ -32,7 +30,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void didUpdateStatus(EmpaStatus status) {
-        Log.d(TAG, "didUpdateStatus: " + status);
+//        Log.d(TAG, "didUpdateStatus: " + status);
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateStatus");
@@ -46,6 +44,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void didEstablishConnection() {
+//        Log.d(TAG, "didEstablishConnection: ");
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "EstablishConnection");
@@ -61,7 +60,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void didUpdateSensorStatus(@EmpaSensorStatus int status, EmpaSensorType type) {
-        Log.d(TAG, "didUpdateSensorStatus: " + status);
+//        Log.d(TAG, "didUpdateSensorStatus: " + status + type);
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateSensorStatus");
@@ -81,7 +80,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void didDiscoverDevice(EmpaticaDevice device, String deviceLabel, int rssi, boolean allowed) {
-        Log.d(TAG, "didDiscoverDevice: " + device);
+//        Log.d(TAG, "didDiscoverDevice: " + device);
         if (!allowed) return;
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
@@ -90,7 +89,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
             map.put("deviceLabel", deviceLabel);
             map.put("rssi", rssi);
             discoveredDevices.put(device.serialNumber, device);
-//            Log.d(TAG, "didDiscoverDevice: " + device + ". eventSink success.");
+////            Log.d(TAG, "didDiscoverDevice: " + device + ". eventSink success.");
             statusEventSink.success(map);
         }
     }
@@ -102,6 +101,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void didFailedScanning(int errorCode) {
+//        Log.d(TAG, "didFailedScanning: " + errorCode);
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "FailedScanning");
@@ -115,6 +115,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void didRequestEnableBluetooth() {
+//        Log.d(TAG, "didRequestEnableBluetooth: ");
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "RequestEnableBluetooth");
@@ -127,6 +128,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void bluetoothStateChanged() {
+//        Log.d(TAG, "bluetoothStateChanged: ");
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "bluetoothStateChanged");
@@ -139,6 +141,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void didUpdateOnWristStatus(@EmpaSensorStatus int status) {
+//        Log.d(TAG, "didUpdateOnWristStatus: " + status);
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateOnWristStatus");
@@ -153,7 +156,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
         HashMap<String, Object> map = new HashMap<>();
         map.put("type", "Listen");
         map.put("stream", "status");
-        Log.d(TAG, "onListen: listening");
+//        Log.d(TAG, "onListen: listening");
         statusEventSink.success(map);
     }
 
