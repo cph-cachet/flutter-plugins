@@ -10,15 +10,17 @@ import io.flutter.plugin.common.EventChannel.StreamHandler;
 
 public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelegate {
     private MainThreadEventSink dataEventSink;
-    private static final String TAG = "cachet.empatica.io/dataEventStream";
 
     EmpaDataEventStreamHandler() {
     }
 
-
+    /**
+     * This method is invoked when a new GSR value is available
+     * @param gsr Galvanic Skin Response
+     * @param timestamp the timestamp of the occurrence of the event in UNIX time
+     */
     @Override
     public void didReceiveGSR(float gsr, double timestamp) {
-//        Log.d(TAG, "didReceiveGSR: " + gsr);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveGSR");
@@ -28,9 +30,13 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
         }
     }
 
+    /**
+     * This method is invoked when a new BVP value is available
+     * @param bvp Blood Volume Pulse
+     * @param timestamp the timestamp of the occurrence of the event in UNIX time
+     */
     @Override
     public void didReceiveBVP(float bvp, double timestamp) {
-//        Log.d(TAG, "didReceiveBVP: " + bvp);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveBVP");
@@ -40,9 +46,13 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
         }
     }
 
+    /**
+     * This method is invoked when a new interbeat interval (IBI) value is available. You can compute the heart rate as (60 / ibi).
+     * @param ibi Interbeat Interval
+     * @param timestamp the timestamp of the occurrence of the event in UNIX time
+     */
     @Override
     public void didReceiveIBI(float ibi, double timestamp) {
-//        Log.d(TAG, "didReceiveIBI: " + ibi);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveIBI");
@@ -52,9 +62,13 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
         }
     }
 
+    /**
+     * This method is invoked when a new temperature value is available
+     * @param t temperature
+     * @param timestamp the timestamp of the occurrence of the event in UNIX time
+     */
     @Override
     public void didReceiveTemperature(float t, double timestamp) {
-//        Log.d(TAG, "didReceiveTemperature: " + t);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveTemperature");
@@ -64,9 +78,15 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
         }
     }
 
+    /**
+     * This method is invoked when a new acceleration value is available
+     * @param x component of the acceleration
+     * @param y component of the acceleration
+     * @param z component of the acceleration
+     * @param timestamp the timestamp of the occurrence of the event in UNIX time
+     */
     @Override
     public void didReceiveAcceleration(int x, int y, int z, double timestamp) {
-//        Log.d(TAG, "didReceiveAcceleration: " + x + y + z);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveAcceleration");
@@ -78,9 +98,13 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
         }
     }
 
+    /**
+     * This method is invoked when a new battery level value is available
+     * @param level battery level in decimal value. 1 = 100%
+     * @param timestamp the timestamp of the occurrence of the event in UNIX time
+     */
     @Override
     public void didReceiveBatteryLevel(float level, double timestamp) {
-//        Log.d(TAG, "didReceiveBatteryLevel: " + level);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveBatteryLevel");
@@ -90,9 +114,12 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
         }
     }
 
+    /**
+     * This method is invoked when the button on the watch is pressed.
+     * @param timestamp the timestamp of the occurrence of the event in UNIX time
+     */
     @Override
     public void didReceiveTag(double timestamp) {
-//        Log.d(TAG, "didReceiveTag: " + timestamp);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveTag");
@@ -102,10 +129,10 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
     }
 
     /**
-     * @param status on wrist status has been updated
+     * This method is here because the SDK internally expect it to be in the DataDelegate. This will (probably) never be called. This is an error on the side of Empatica.
+     * It has been implemented just in case.
      */
     public void didUpdateOnWristStatus(@EmpaSensorStatus int status) {
-//        Log.d(TAG, "didUpdateOnWristStatus: " + status);
         if (dataEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateOnWristStatus");
@@ -121,7 +148,6 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
         HashMap<String, Object> map = new HashMap<>();
         map.put("type", "Listen");
         map.put("stream", "data");
-//        Log.d(TAG, "onListen: listening");
         dataEventSink.success(map);
     }
 

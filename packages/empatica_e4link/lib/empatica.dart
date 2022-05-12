@@ -18,10 +18,6 @@ class EmpaticaPlugin {
   Stream<dynamic>? _statusEventSink;
   Stream<dynamic>? _dataEventSink;
 
-  Future<void> testTheChannel() async {
-    await _methodChannel.invokeMethod('testTheChannel');
-  }
-
   Future<void> authenticateWithAPIKey(String key) async {
     await _methodChannel.invokeMethod('authenticateWithAPIKey', {'key': key});
   }
@@ -41,6 +37,10 @@ class EmpaticaPlugin {
   Future<void> connectDevice(String serialNumber) async {
     await _methodChannel
         .invokeMethod('connectDevice', {'serialNumber': serialNumber});
+  }
+
+  Future<void> disconnect() async {
+    await _methodChannel.invokeMethod('disconnect');
   }
 
   // ------------    STREAM HANDLERS --------------------
