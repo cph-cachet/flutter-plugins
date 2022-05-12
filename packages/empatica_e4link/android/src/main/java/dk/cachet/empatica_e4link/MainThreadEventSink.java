@@ -6,8 +6,8 @@ import android.os.Looper;
 import io.flutter.plugin.common.EventChannel.EventSink;
 
 public class MainThreadEventSink implements EventSink {
-    private EventSink eventSink;
-    private Handler handler;
+    private final EventSink eventSink;
+    private final Handler handler;
 
     MainThreadEventSink(EventSink eventSink) {
         this.eventSink = eventSink;
@@ -26,6 +26,6 @@ public class MainThreadEventSink implements EventSink {
 
     @Override
     public void endOfStream() {
-        handler.post(() -> eventSink.endOfStream());
+        handler.post(eventSink::endOfStream);
     }
 }
