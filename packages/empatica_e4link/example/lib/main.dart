@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -38,7 +39,9 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _connectToAPI() async {
     deviceManager.eventSink?.listen((event) async {
-      print(event);
+      if (kDebugMode) {
+        print(event);
+      }
       switch (event['type']) {
         case 'Listen':
           await deviceManager
@@ -64,7 +67,7 @@ class _MyAppState extends State<MyApp> {
             _bvp = event['bvp'].toString();
           });
           break;
-        case 'ReceieveIBI':
+        case 'ReceiveIBI':
           setState(() {
             _ibi = event['ibi'].toString();
           });
