@@ -2,6 +2,7 @@ package dk.cachet.empatica_e4link;
 
 import android.util.Log;
 
+import com.empatica.empalink.config.EmpaSensorStatus;
 import com.empatica.empalink.delegate.EmpaDataDelegate;
 
 import java.util.HashMap;
@@ -95,6 +96,18 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "ReceiveTag");
             map.put("timestamp", timestamp);
+            dataEventSink.success(map);
+        }
+    }
+
+    /**
+     * @param status on wrist status has been updated
+     */
+    public void didUpdateOnWristStatus(@EmpaSensorStatus int status) {
+        if (dataEventSink != null) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("type", "UpdateOnWristStatus");
+            map.put("status", status);
             dataEventSink.success(map);
         }
     }

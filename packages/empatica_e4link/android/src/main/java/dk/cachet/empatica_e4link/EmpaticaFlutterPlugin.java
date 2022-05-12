@@ -20,8 +20,8 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler {
     static final String statusEventSinkName =
             "empatica.io/empatica_statusEventSink";
     private MethodChannel methodChannel;
-    private EventChannel statusEventChannel;
-    private EventChannel dataEventChannel;
+    EventChannel statusEventChannel;
+    EventChannel dataEventChannel;
     private final String TAG = "EmpaticaPlugin";
     private EmpaticaHandler _handler;
 
@@ -34,9 +34,6 @@ public class EmpaticaFlutterPlugin implements FlutterPlugin, MethodCallHandler {
 
         methodChannel = new MethodChannel(binding.getBinaryMessenger(), methodChannelName);
         methodChannel.setMethodCallHandler(this);
-
-        dataEventChannel = new EventChannel(binding.getBinaryMessenger(), dataEventSinkName);
-        dataEventChannel.setStreamHandler(empaDataEventStreamHandler);
 
         statusEventChannel = new EventChannel(binding.getBinaryMessenger(), statusEventSinkName);
         statusEventChannel.setStreamHandler(empaStatusEventStreamHandler);
