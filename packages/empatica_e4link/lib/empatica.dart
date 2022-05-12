@@ -18,6 +18,10 @@ class EmpaticaPlugin {
   Stream<dynamic>? _statusEventSink;
   Stream<dynamic>? _dataEventSink;
 
+
+  // ------------    METHOD HANDLERS --------------------
+
+
   Future<void> authenticateWithAPIKey(String key) async {
     await _methodChannel.invokeMethod('authenticateWithAPIKey', {'key': key});
   }
