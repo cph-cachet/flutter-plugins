@@ -7,7 +7,8 @@ import 'package:flutter/services.dart';
 class EmpaticaPlugin {
   static const String empaticaMethodChannelName =
       'empatica.io/empatica_methodChannel';
-  static const String empaticaEventSinkName = 'empatica.io/empatica_eventSink';
+  static const String empaticaEventSinkName =
+      "empatica.io/empatica_statusEventSink";
 
   final MethodChannel _methodChannel =
       const MethodChannel(empaticaMethodChannelName);
