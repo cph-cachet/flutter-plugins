@@ -196,13 +196,33 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         print("Successfully called writeData with value of \(value) and type of \(type)")
         
         let sample: HKObject
-      
-        if (unitLookUp(key: type) == HKUnit.init(from: "")) {
-          sample = HKCategorySample(type: dataTypeLookUp(key: type) as! HKCategoryType, value: Int(value), start: dateFrom, end: dateTo)
-        } else {
-          let quantity = HKQuantity(unit: unitLookUp(key: type), doubleValue: value)
-          
-          sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateTo)
+        
+        if(type == WORKOUT) {
+            if(value > 0) {
+                // may require ACTIVE_ENERGY_BURNED WRITE permission if calories are used in HKWorkoutBuilder
+                let calorieQuantity = HKQuantity(unit: .kilocalorie(), doubleValue: value)
+                sample = HKWorkout(
+                    activityType: .other, // TODO: should be possible to change the activity from the Flutter side
+                    start: dateFrom,
+                    end: dateTo,
+                    workoutEvents: nil,
+                    totalEnergyBurned: calorieQuantity,
+                    totalDistance: nil,
+                    device: nil,
+                    metadata: nil
+                )
+            }
+            else {
+                sample =  HKWorkout(activityType: .other, start: dateFrom, end: dateTo)
+            }
+        }
+        else {
+            if (unitLookUp(key: type) == HKUnit.init(from: "")) {
+                sample = HKCategorySample(type: dataTypeLookUp(key: type) as! HKCategoryType, value: Int(value), start: dateFrom, end: dateTo)
+            } else {
+              let quantity = HKQuantity(unit: unitLookUp(key: type), doubleValue: value)
+              sample = HKQuantitySample(type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom, end: dateTo)
+            }
         }
         
         HKHealthStore().save(sample, withCompletion: { (success, error) in
