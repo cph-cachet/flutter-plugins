@@ -16,7 +16,8 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     /**
      * This method is invoked when a new GSR value is available
-     * @param gsr Galvanic Skin Response
+     *
+     * @param gsr       Galvanic Skin Response
      * @param timestamp the timestamp of the occurrence of the event in UNIX time
      */
     @Override
@@ -32,7 +33,8 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     /**
      * This method is invoked when a new BVP value is available
-     * @param bvp Blood Volume Pulse
+     *
+     * @param bvp       Blood Volume Pulse
      * @param timestamp the timestamp of the occurrence of the event in UNIX time
      */
     @Override
@@ -47,8 +49,10 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
     }
 
     /**
-     * This method is invoked when a new interbeat interval (IBI) value is available. You can compute the heart rate as (60 / ibi).
-     * @param ibi Interbeat Interval
+     * This method is invoked when a new interbeat interval (IBI) value is
+     * available. You can compute the heart rate as (60 / ibi).
+     *
+     * @param ibi       Interbeat Interval
      * @param timestamp the timestamp of the occurrence of the event in UNIX time
      */
     @Override
@@ -64,7 +68,8 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     /**
      * This method is invoked when a new temperature value is available
-     * @param t temperature
+     *
+     * @param t         temperature
      * @param timestamp the timestamp of the occurrence of the event in UNIX time
      */
     @Override
@@ -80,9 +85,10 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     /**
      * This method is invoked when a new acceleration value is available
-     * @param x component of the acceleration
-     * @param y component of the acceleration
-     * @param z component of the acceleration
+     *
+     * @param x         component of the acceleration
+     * @param y         component of the acceleration
+     * @param z         component of the acceleration
      * @param timestamp the timestamp of the occurrence of the event in UNIX time
      */
     @Override
@@ -100,7 +106,8 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     /**
      * This method is invoked when a new battery level value is available
-     * @param level battery level in decimal value. 1 = 100%
+     *
+     * @param level     battery level in decimal value. 1 = 100%
      * @param timestamp the timestamp of the occurrence of the event in UNIX time
      */
     @Override
@@ -116,6 +123,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
 
     /**
      * This method is invoked when the button on the watch is pressed.
+     *
      * @param timestamp the timestamp of the occurrence of the event in UNIX time
      */
     @Override
@@ -129,8 +137,11 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
     }
 
     /**
-     * This method is here because the SDK internally expect it to be in the DataDelegate. This will (probably) never be called. This is an error on the side of Empatica.
-     * It has been implemented just in case.
+     * This method will be called whenever the wristband is taken off and on.
+     *
+     * The intellisense is not correct, it is supposed to be here.
+     * 
+     * @param status on wrist status has been updated.
      */
     public void didUpdateOnWristStatus(@EmpaSensorStatus int status) {
         if (dataEventSink != null) {
@@ -140,7 +151,6 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
             dataEventSink.success(map);
         }
     }
-
 
     @Override
     public void onListen(Object arguments, EventSink events) {

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -18,7 +17,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   EmpaticaPlugin deviceManager = EmpaticaPlugin();
 
-  String _status = 'INITIAL';
   String _bvp = '';
   String _gsr = '';
   String _ibi = '';
@@ -28,8 +26,8 @@ class _MyAppState extends State<MyApp> {
   int? _y;
   int? _z;
   String _tag = '';
-  String _sensorStatus = '';
-  int? _onWristStatusStatus;
+  int _sensorStatus = -1;
+  int? _onWristStatus;
 
   @override
   void initState() {
@@ -39,31 +37,26 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _connectToAPI() async {
     deviceManager.statusEventSink?.listen((event) async {
-      if (kDebugMode) {
-        print(event);
-      }
-      switch (event['type']) {
-        case 'Listen':
+      switch (event.runtimeType) {
+        case Listen:
           await deviceManager
               .authenticateWithAPIKey('apiKeyGoesHere');
           break;
-        case 'UpdateStatus':
-          setState(() {
-            _status = event['status'];
-          });
-          switch (event['status']) {
-            case 'READY':
-            case 'DISCONNECTED':
-              await deviceManager.startScanning();
-              break;
-            case 'CONNECTED':
+        case UpdateStatus:
+          switch ((event as UpdateStatus).status) {
+            case EmpaStatus.connected:
               _listenToData();
               break;
             default:
           }
           break;
-        case 'DiscoverDevice':
-          await deviceManager.connectDevice(event['device']);
+        case DiscoverDevice:
+          await deviceManager.connectDevice((event as DiscoverDevice).device);
+          break;
+        case UpdateSensorStatus:
+          setState(() {
+            _sensorStatus = (event as UpdateSensorStatus).status;
+          });
           break;
       }
     });
@@ -71,58 +64,50 @@ class _MyAppState extends State<MyApp> {
 
   void _listenToData() {
     deviceManager.dataEventSink?.listen((event) {
-      if (kDebugMode) {
-        print(event);
-      }
-      switch (event['type']) {
-        case 'ReceiveBVP':
+      switch (event.runtimeType) {
+        case ReceieveBVP:
           setState(() {
-            _bvp = event['bvp'].toString();
+            _bvp = (event as ReceieveBVP).bvp.toString();
           });
           break;
-        case 'ReceiveIBI':
+        case ReceiveGSR:
           setState(() {
-            _ibi = event['ibi'].toString();
+            _gsr = (event as ReceiveGSR).gsr.toString();
           });
           break;
-        case 'ReceiveGSR':
+        case ReceiveIBI:
           setState(() {
-            _gsr = event['gsr'].toString();
+            _ibi = (event as ReceiveIBI).ibi.toString();
           });
           break;
-        case 'ReceiveBatteryLevel':
+        case ReceieveBatteryLevel:
           setState(() {
-            _battery = event['batteryLevel'].toString();
+            _battery = (event as ReceieveBatteryLevel).batteryLevel.toString();
           });
           break;
-        case 'ReceiveTemperature':
+        case ReceiveTemperature:
           setState(() {
-            _temperature = event['temperature'].toString();
+            _temperature = (event as ReceiveTemperature).temperature.toString();
           });
           break;
-        case 'ReceiveTag':
+        case ReceiveAcceleration:
           setState(() {
-            _tag = event['timestamp'].toString();
+            (event as ReceiveAcceleration);
+            _x = event.x;
+            _y = event.y;
+            _z = event.z;
           });
           break;
-        case 'ReceiveAcceleration':
+        case ReceiveTag:
           setState(() {
-            _x = event['x'];
-            _y = event['y'];
-            _z = event['z'];
+            _tag = (event as ReceiveTag).timestamp.toString();
           });
           break;
-        case 'UpdateSensorStatus':
+        case UpdateOnWristStatus:
           setState(() {
-            _sensorStatus = event['sensorStatus'];
+            _onWristStatus = (event as UpdateOnWristStatus).status;
           });
           break;
-        case 'UpdateOnWristStatus':
-          setState(() {
-            _onWristStatusStatus = event['status'];
-          });
-          break;
-        default:
       }
     });
   }
@@ -136,7 +121,16 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Center(
           child: Text(
-              'Status: $_status\nBVP: $_bvp\nGSR: $_gsr\nIBI: $_ibi\nBattery: $_battery\nTemperature: $_temperature\nX: $_x\nY: $_y\nZ: $_z\nTag: $_tag\nSensorStatus: $_sensorStatus\nOnWristStatus: $_onWristStatusStatus'),
+              'Status: ${deviceManager.status}\nBVP: $_bvp\nGSR: $_gsr\nIBI: $_ibi\nBattery: $_battery\nTemperature: $_temperature\nX: $_x\nY: $_y\nZ: $_z\nTag: $_tag\nSensorStatus: $_sensorStatus\nOnWristStatus: $_onWristStatus'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            deviceManager.status == EmpaStatus.connected
+                ? deviceManager.disconnect()
+                : deviceManager.startScanning();
+          },
+          tooltip: 'Connect and disconnect',
+          child: const Icon(Icons.bluetooth),
         ),
       ),
     );

@@ -25,13 +25,15 @@ public class EmpaManagerMethodCallHandler implements MethodCallHandler {
      * @param empaStatusDelegate An empatica status delegate
      * @param context            your application context
      */
-    EmpaManagerMethodCallHandler(EmpaDataEventStreamHandler empaDataDelegate, EmpaStatusEventStreamHandler empaStatusDelegate, Context context) {
+    EmpaManagerMethodCallHandler(EmpaDataEventStreamHandler empaDataDelegate,
+            EmpaStatusEventStreamHandler empaStatusDelegate, Context context) {
         empaStatusEventStreamHandler = empaStatusDelegate;
         this._handler = new EmpaDeviceManager(context, empaDataDelegate, empaStatusDelegate);
     }
 
     /**
-     * Authenticates this Device Manager with the Empatica Backend. An Internet connection is required.
+     * Authenticates this Device Manager with the Empatica Backend. An Internet
+     * connection is required.
      *
      * @param key the api key
      */
@@ -67,7 +69,8 @@ public class EmpaManagerMethodCallHandler implements MethodCallHandler {
      * Connects to an Empatica device
      *
      * @param serialNumber the serial number of the device to connect to
-     * @throws ConnectionNotAllowedException if connection to device is not allowed (e.g. blacklisted device)
+     * @throws ConnectionNotAllowedException if connection to device is not allowed
+     *                                       (e.g. blacklisted device)
      */
     public void connectDevice(String serialNumber) throws ConnectionNotAllowedException {
         this._handler.stopScanning();
