@@ -1,20 +1,22 @@
 part of empaticae4;
 
-enum EmpaStatus {
-  initial,
-  ready,
-  disconnected,
-  connecting,
-  connected,
-  disconnecting,
-  discovering,
-}
-
 enum EmpaSensorType {
   bvp,
   gsr,
   acc,
   temp,
+}
+
+enum StatusType {
+  updateStatus,
+  establishConnection,
+  updateSensorStatus,
+  discoverDevice,
+  failedScanning,
+  requestEnableBluetooth,
+  bluetoothStateChanged,
+  updateOnWristStatus,
+  listen,
 }
 
 class EmpaticaStatusEvent {
@@ -24,23 +26,21 @@ class EmpaticaStatusEvent {
     final String type = map['type'];
     switch (type) {
       case 'Listen':
-        return RegisterListenerEvent();
+        return Listen.fromMap(map);
       case 'UpdateStatus':
-        return UpdateStatusEvent.fromMap(map);
+        return UpdateStatus.fromMap(map);
       case 'EstablishConnection':
-        return EstablishConnectionEvent();
+        return EstablishConnection.fromMap(map);
       case 'UpdateSensorStatus':
-        return UpdateSensorStatusEvent.fromMap(map);
+        return UpdateSensorStatus.fromMap(map);
       case 'DiscoverDevice':
-        return DiscoverDeviceEvent.fromMap(map);
+        return DiscoverDevice.fromMap(map);
       case 'FailedScanning':
-        return FailedScanningEvent.fromMap(map);
+        return FailedScanning.fromMap(map);
       case 'RequestEnableBluetooth':
-        return RequestEnableBluetoothEvent();
+        return RequestEnableBluetooth.fromMap(map);
       case 'bluetoothStateChanged':
-        return BluetoothStateChangedEvent();
-      case 'UpdateOnWristStatus':
-        return UpdateOnWristStatus.fromMap(map);
+        return BluetoothStateChanged.fromMap(map);
       default:
         return EmpaticaStatusEvent();
     }
@@ -50,110 +50,140 @@ class EmpaticaStatusEvent {
   String toString() => '$runtimeType';
 }
 
-class UpdateOnWristStatus extends EmpaticaStatusEvent {
+
+enum EmpaStatus {
+  initial,
+  connected,
+  conncecting,
+  disconnected,
+  disconnecting,
+  discovering,
+  ready,
+  unknown,
+}
+
+class StatusFactory {
+  EmpaStatus status;
+
+  StatusFactory(this.status);
+  factory StatusFactory.fromString(String type) {
+    switch (type.toLowerCase()) {
+      case 'connected':
+        return StatusFactory(EmpaStatus.connected);
+      case 'connecting':
+        return StatusFactory(EmpaStatus.conncecting);
+      case 'disconnected':
+        return StatusFactory(EmpaStatus.disconnected);
+      case 'disconnecting':
+        return StatusFactory(EmpaStatus.disconnecting);
+      case 'discovering':
+        return StatusFactory(EmpaStatus.discovering);
+      case 'ready':
+        return StatusFactory(EmpaStatus.ready);
+      default:
+        return StatusFactory(EmpaStatus.unknown);
+    }
+  }
+}
+
+class UpdateStatus extends EmpaticaStatusEvent {
+  final EmpaStatus status;
+  String type;
+
+  UpdateStatus(this.type, this.status);
+
+  factory UpdateStatus.fromMap(Map<dynamic, dynamic> map) {
+    final String type = map['type'];
+    final EmpaStatus status = StatusFactory.fromString(map['status']).status;
+    return UpdateStatus(type, status);
+  }
+}
+
+class EstablishConnection extends EmpaticaStatusEvent {
+  String type;
+
+  EstablishConnection(this.type);
+
+  factory EstablishConnection.fromMap(Map<dynamic, dynamic> map) {
+    final String type = map['type'];
+    return EstablishConnection(type);
+  }
+}
+
+class UpdateSensorStatus extends EmpaticaStatusEvent {
+  final String sensorType;
   final int status;
+  String type;
 
-  UpdateOnWristStatus(this.status);
+  UpdateSensorStatus(this.type, this.sensorType, this.status);
 
-  factory UpdateOnWristStatus.fromMap(Map<dynamic, dynamic> map) {
-    return UpdateOnWristStatus(map['status']);
+  factory UpdateSensorStatus.fromMap(Map<dynamic, dynamic> map) {
+    final String type = map['type'];
+    final String sensorType = map['empaSensorType'];
+    final int status = map['status'];
+    return UpdateSensorStatus(type, sensorType, status);
   }
 }
 
-class BluetoothStateChangedEvent extends EmpaticaStatusEvent {
-  BluetoothStateChangedEvent();
+class DiscoverDevice extends EmpaticaStatusEvent {
+  final String device;
+  final String label;
+  final int rssi;
+  String type;
 
-  @override
-  String toString() {
-    return 'BluetoothStateChangedEvent';
+  DiscoverDevice(this.type, this.device, this.label, this.rssi);
+
+  factory DiscoverDevice.fromMap(Map<dynamic, dynamic> map) {
+    final String type = map['type'];
+    final String device = map['device'];
+    final String label = map['deviceLabel'];
+    final int rssi = map['rssi'];
+    return DiscoverDevice(type, device, label, rssi);
   }
 }
 
-class RequestEnableBluetoothEvent extends EmpaticaStatusEvent {
-  RequestEnableBluetoothEvent();
+class FailedScanning extends EmpaticaStatusEvent {
+  final dynamic errorCode;
+  String type;
 
-  @override
-  String toString() {
-    return 'RequestEnableBluetoothEvent';
+  FailedScanning(this.type, this.errorCode);
+
+  factory FailedScanning.fromMap(Map<dynamic, dynamic> map) {
+    final String type = map['type'];
+    final dynamic errorCode = map['errorCode'];
+    return FailedScanning(type, errorCode);
   }
 }
 
-class FailedScanningEvent extends EmpaticaStatusEvent {
-  int errorCode;
+class RequestEnableBluetooth extends EmpaticaStatusEvent {
+  String type;
 
-  FailedScanningEvent(this.errorCode);
-  factory FailedScanningEvent.fromMap(Map<dynamic, dynamic> map) {
-    return FailedScanningEvent(map['errorCode']);
-  }
+  RequestEnableBluetooth(this.type);
 
-  @override
-  String toString() {
-    return 'FailedScanningEvent{errorCode: $errorCode}';
+  factory RequestEnableBluetooth.fromMap(Map<dynamic, dynamic> map) {
+    final String type = map['type'];
+    return RequestEnableBluetooth(type);
   }
 }
 
-class DiscoverDeviceEvent extends EmpaticaStatusEvent {
-  String? deviceId;
-  String? deviceLabel;
-  String? rssi;
+class BluetoothStateChanged extends EmpaticaStatusEvent {
+  String type;
 
-  DiscoverDeviceEvent(this.deviceId, this.deviceLabel, this.rssi);
-  factory DiscoverDeviceEvent.fromMap(Map<dynamic, dynamic> map) {
-    final String deviceId = map['deviceId'];
-    final String deviceLabel = map['deviceLabel'];
-    final String rssi = map['rssi'];
-    return DiscoverDeviceEvent(deviceId, deviceLabel, rssi);
-  }
+  BluetoothStateChanged(this.type);
 
-  @override
-  String toString() {
-    return 'DiscoverDeviceEvent{deviceId: $deviceId, deviceLabel: $deviceLabel, rssi: $rssi}';
+  factory BluetoothStateChanged.fromMap(Map<dynamic, dynamic> map) {
+    final String type = map['type'];
+    return BluetoothStateChanged(type);
   }
 }
 
-class EstablishConnectionEvent extends EmpaticaStatusEvent {
-  EstablishConnectionEvent();
+class Listen extends EmpaticaStatusEvent {
+  String type;
 
-  @override
-  String toString() {
-    return 'EstablishConnectionEvent';
+  Listen(this.type);
+
+  factory Listen.fromMap(Map<dynamic, dynamic> map) {
+    final String type = map['type'];
+    return Listen(type);
   }
-}
-
-class UpdateStatusEvent extends EmpaticaStatusEvent {
-  final EmpaStatus? status;
-
-  UpdateStatusEvent(this.status);
-  factory UpdateStatusEvent.fromMap(Map<dynamic, dynamic> map) {
-    return UpdateStatusEvent(EmpaStatus.values[map['status']]);
-  }
-
-  @override
-  String toString() {
-    return 'UpdateStatusEvent{status: $status}';
-  }
-}
-
-class UpdateSensorStatusEvent extends EmpaticaStatusEvent {
-  final EmpaSensorType type;
-  final int status;
-
-  UpdateSensorStatusEvent(this.type, this.status);
-  factory UpdateSensorStatusEvent.fromMap(Map<dynamic, dynamic> map) {
-    return UpdateSensorStatusEvent(map['sensor'], map['status']);
-  }
-
-  @override
-  String toString() {
-    return 'UpdateSensorStatusEvent{sensor: $type, status: $status}';
-  }
-}
-
-/// Called when an event listener is registered to the eSense device.
-class RegisterListenerEvent extends EmpaticaStatusEvent {
-  /// Was registration successful?
-  RegisterListenerEvent() : super();
-
-  @override
-  String toString() => '$runtimeType - success';
 }

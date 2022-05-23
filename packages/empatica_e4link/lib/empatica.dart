@@ -4,6 +4,9 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
+part 'empatica_status_events.dart';
+part 'empatica_data_events.dart';
+
 class EmpaticaPlugin {
   static const String methodChannelName = 'empatica.io/empatica_methodChannel';
   static const String statusEventSinkName =
@@ -15,12 +18,12 @@ class EmpaticaPlugin {
       const EventChannel(statusEventSinkName);
   final EventChannel _dataEventChannel = const EventChannel(dataEventSinkName);
 
-  Stream<dynamic>? _statusEventSink;
-  Stream<dynamic>? _dataEventSink;
+  Stream<EmpaticaStatusEvent>? _statusEventSink;
+  Stream<EmpaticaDataEvent>? _dataEventSink;
 
-
+  /// The [EmpaStatus] of the device. For example, ready, connected, disconnected, etc.
+  EmpaStatus status = EmpaStatus.initial;
   // ------------    METHOD HANDLERS --------------------
-
 
   Future<void> authenticateWithAPIKey(String key) async {
     await _methodChannel.invokeMethod('authenticateWithAPIKey', {'key': key});
@@ -49,13 +52,23 @@ class EmpaticaPlugin {
 
   // ------------    STREAM HANDLERS --------------------
 
-  Stream<dynamic>? get statusEventSink {
-    _statusEventSink = _statusEventChannel.receiveBroadcastStream();
+  Stream<EmpaticaStatusEvent>? get statusEventSink {
+    _statusEventSink = _statusEventChannel
+        .receiveBroadcastStream()
+        .map((event) => EmpaticaStatusEvent.fromMap(event));
+
+    _statusEventSink?.listen((event) {
+      if (event.runtimeType == UpdateStatus) {
+        status = (event as UpdateStatus).status;
+      }
+    });
     return _statusEventSink;
   }
 
-  Stream<dynamic>? get dataEventSink {
-    _dataEventSink = _dataEventChannel.receiveBroadcastStream();
+  Stream<EmpaticaDataEvent>? get dataEventSink {
+    _dataEventSink = _dataEventChannel
+        .receiveBroadcastStream()
+        .map((event) => EmpaticaDataEvent.fromMap(event));
     return _dataEventSink;
   }
 }

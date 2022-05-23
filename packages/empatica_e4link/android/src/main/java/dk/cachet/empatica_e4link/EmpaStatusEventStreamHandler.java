@@ -1,5 +1,7 @@
 package dk.cachet.empatica_e4link;
 
+import android.util.Log;
+
 import com.empatica.empalink.EmpaticaDevice;
 import com.empatica.empalink.config.EmpaSensorStatus;
 import com.empatica.empalink.config.EmpaSensorType;
@@ -18,9 +20,11 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
     EmpaStatusEventStreamHandler() {
     }
 
-    /* -----------------------------------
-        EmpaticaEventListener callbacks
-     ------------------------------------- */
+    /*
+     * -----------------------------------
+     * EmpaticaEventListener callbacks
+     * -------------------------------------
+     */
 
     /**
      * Called when the status of the device updates
@@ -50,8 +54,10 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
     }
 
     /**
-     * Called when the sensor updates its status (wearer takes it off for example)
+     * Called when the sensor updates its status
      *
+     * This method has never been called to my knowledge...
+     * 
      * @param status of whether the wristband is on the wrist or not
      * @param type   an enum of the different measurable conditions
      */
@@ -61,7 +67,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "UpdateSensorStatus");
             map.put("status", status);
-            map.put("empaSensorType", type);
+            map.put("empaSensorType", type.toString());
             statusEventSink.success(map);
         }
     }
@@ -76,7 +82,8 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
      */
     @Override
     public void didDiscoverDevice(EmpaticaDevice device, String deviceLabel, int rssi, boolean allowed) {
-        if (!allowed) return;
+        if (!allowed)
+            return;
         if (statusEventSink != null) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "DiscoverDevice");
@@ -128,7 +135,15 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
     }
 
     /**
-     * @param status on wrist status has been updated
+     * This method is here because the StatusDelegate interface implements the
+     * method.
+     * Therefore build errors will happen without it. It is however expected to be
+     * in the DataDelegate
+     * in the native C code which is also where it will be called from.
+     * This will (probably) never be called from this context. This is an error on
+     * the
+     * side of Empatica.
+     * It has been implemented as the other methods just in case.
      */
     @Override
     public void didUpdateOnWristStatus(@EmpaSensorStatus int status) {
