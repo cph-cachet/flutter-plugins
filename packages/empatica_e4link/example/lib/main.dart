@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 
 import 'package:empatica_e4link/empatica.dart';
 
@@ -32,22 +31,33 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _connectToAPI();
+    _listenToStatus();
   }
 
-  Future<void> _connectToAPI() async {
+  void _listenToStatus() {
     deviceManager.statusEventSink?.listen((event) async {
       switch (event.runtimeType) {
         case Listen:
+
+          // if we are now listening to the status event sink
+          // connect to the api
+          // also could use authenticate with connect
           await deviceManager
               .authenticateWithAPIKey('apiKeyGoesHere');
           break;
         case UpdateStatus:
+
+          //the status of the device manager
           switch ((event as UpdateStatus).status) {
             case EmpaStatus.connected:
+            // when it's connected to the device
+            // start streaming data
               _listenToData();
               break;
             default:
+              setState(() {
+                deviceManager.status = event.status;
+              });
           }
           break;
         case DiscoverDevice:
@@ -65,6 +75,7 @@ class _MyAppState extends State<MyApp> {
   void _listenToData() {
     deviceManager.dataEventSink?.listen((event) {
       switch (event.runtimeType) {
+        // update each data point with the appropriate data
         case ReceieveBVP:
           setState(() {
             _bvp = (event as ReceieveBVP).bvp.toString();
@@ -99,6 +110,7 @@ class _MyAppState extends State<MyApp> {
           });
           break;
         case ReceiveTag:
+        //just a timestamp as a double in unix time
           setState(() {
             _tag = (event as ReceiveTag).timestamp.toString();
           });
