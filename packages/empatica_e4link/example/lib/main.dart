@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 import 'package:empatica_e4link/empatica.dart';
+
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,6 +34,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    Permission.locationWhenInUse.request();
     _listenToStatus();
   }
 
@@ -50,8 +54,8 @@ class _MyAppState extends State<MyApp> {
           //the status of the device manager
           switch ((event as UpdateStatus).status) {
             case EmpaStatus.connected:
-            // when it's connected to the device
-            // start streaming data
+              // when it's connected to the device
+              // start streaming data
               _listenToData();
               break;
             default:
@@ -110,7 +114,7 @@ class _MyAppState extends State<MyApp> {
           });
           break;
         case ReceiveTag:
-        //just a timestamp as a double in unix time
+          //just a timestamp as a double in unix time
           setState(() {
             _tag = (event as ReceiveTag).timestamp.toString();
           });
@@ -123,6 +127,8 @@ class _MyAppState extends State<MyApp> {
       }
     });
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
