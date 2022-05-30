@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:empatica_e4link/empatica.dart';
 
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_background/flutter_background.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,10 +33,22 @@ class _MyAppState extends State<MyApp> {
   int? _onWristStatus;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
     Permission.locationWhenInUse.request();
+
     _listenToStatus();
+    const androidConfig = FlutterBackgroundAndroidConfig(
+      notificationTitle: "flutter_background example app",
+      notificationText:
+          "Background notification for keeping the example app running in the background",
+      notificationImportance: AndroidNotificationImportance.Default,
+      notificationIcon: AndroidResource(
+          name: 'background_icon',
+          defType: 'drawable'), // Default is ic_launcher from folder mipmap
+    );
+    bool success =
+        await FlutterBackground.initialize(androidConfig: androidConfig);
   }
 
   void _listenToStatus() {
