@@ -18,6 +18,7 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler: ^9.2.0
+  flutter_background: ^1.1.0
 
   empatica_e4link:
     # When depending on this package from a real application you should use:
