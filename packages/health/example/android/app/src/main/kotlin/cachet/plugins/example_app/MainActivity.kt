@@ -1,4 +1,4 @@
-package cachet.plugins.health_example
+package cachet.plugins.example_app
 
 import android.os.Bundle
 
