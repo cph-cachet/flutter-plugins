@@ -45,7 +45,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | SLEEP_AWAKE                 | MINUTES                 | yes     | yes         |                                                             |
 | WATER                       | LITER                   | yes     | yes         | On Android water requires a 3rd party app to be registered. |
 | EXERCISE_TIME               | MINUTES                 | yes     |             |                                                             |
-| WORKOUT                     | NO_UNIT                 | yes     |             |                                                             |
+| WORKOUT                     | NO_UNIT                 | yes     | yes         |                                                             |
 | HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
 | LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
 | IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
@@ -103,7 +103,7 @@ Certificate fingerprints:
      Version: 3
 ```
 
-Follow the instructions at https://console.developers.google.com/flows/enableapi?apiid=fitness for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
+Follow the instructions at https://developers.google.com/fit/android/get-api-key for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
 
 The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`.
 
@@ -115,6 +115,13 @@ To set it add the following line to your `AndroidManifest.xml` file.
 
 ```
 <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+```
+
+Additionally, for Workouts: If the distance of a workout is requested then the location permissions below are needed.
+
+```
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 ```
 
 There's a `debug`, `main` and `profile` version which are chosen depending on how you start your app. In general, it's sufficient to add permission only to the `main` version.
@@ -151,8 +158,6 @@ Below is a simplified flow of how to use the plugin.
   // define the types to get
   var types = [
     HealthDataType.STEPS,
-    HealthDataType.WEIGHT,
-    HealthDataType.HEIGHT,
     HealthDataType.BLOOD_GLUCOSE,
   ];
 
