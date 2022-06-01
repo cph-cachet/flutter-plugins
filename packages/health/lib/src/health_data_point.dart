@@ -54,10 +54,10 @@ class HealthDataPoint {
 
     return HealthDataPoint(
         healthValue,
-        HealthDataTypeJsonValue.keys.toList()[
-            HealthDataTypeJsonValue.values.toList().indexOf(json['data_type'])],
-        HealthDataUnitJsonValue.keys.toList()[
-            HealthDataUnitJsonValue.values.toList().indexOf(json['unit'])],
+        HealthDataType.values.firstWhere(
+            (element) => element.typeToString() == json['data_type']),
+        HealthDataUnit.values
+            .firstWhere((element) => element.typeToString() == json['unit']),
         DateTime.parse(json['date_from']),
         DateTime.parse(json['date_to']),
         PlatformTypeJsonValue.keys.toList()[PlatformTypeJsonValue.values
@@ -71,8 +71,8 @@ class HealthDataPoint {
   /// Converts the [HealthDataPoint] to a json object
   Map<String, dynamic> toJson() => {
         'value': value.toJson(),
-        'data_type': HealthDataTypeJsonValue[type],
-        'unit': HealthDataUnitJsonValue[unit],
+        'data_type': type.typeToString(),
+        'unit': type.typeToString(),
         'date_from': dateFrom.toIso8601String(),
         'date_to': dateTo.toIso8601String(),
         'platform_type': PlatformTypeJsonValue[platform],
@@ -82,16 +82,16 @@ class HealthDataPoint {
       };
 
   @override
-  String toString() => '${this.runtimeType} - '
-      'value: ${value.toString()}, '
-      'unit: $unit, '
-      'dateFrom: $dateFrom, '
-      'dateTo: $dateTo, '
-      'dataType: $type, '
-      'platform: $platform, '
-      'deviceId: $deviceId, '
-      'sourceId: $sourceId, '
-      'sourceName: $sourceName';
+  String toString() => """${this.runtimeType} - 
+    value: ${value.toString()},
+    unit: $unit,
+    dateFrom: $dateFrom,
+    dateTo: $dateTo,
+    dataType: $type,
+    platform: $platform,
+    deviceId: $deviceId,
+    sourceId: $sourceId,
+    sourceName: $sourceName""";
 
   // / The quantity value of the data point
   HealthValue get value => _value;
@@ -112,10 +112,10 @@ class HealthDataPoint {
   PlatformType get platform => _platform;
 
   /// The data point type as a string
-  String get typeString => _enumToString(_type);
+  String get typeString => _type.typeToString();
 
   /// The data point unit as a string
-  String get unitString => _enumToString(_unit);
+  String get unitString => _unit.typeToString();
 
   /// The id of the device from which the data point was fetched.
   String get deviceId => _deviceId;
@@ -141,5 +141,6 @@ class HealthDataPoint {
   }
 
   @override
-  int get hashCode => toJson().hashCode;
+  int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type, platform,
+      deviceId, sourceId, sourceName);
 }
