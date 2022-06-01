@@ -223,7 +223,7 @@ class HealthFactory {
     Map<String, dynamic> args = {
       'value': value,
       'dataTypeKey': type.typeToString(),
-      'dataUnitKey': type.typeToString(),
+      'dataUnitKey': unit.typeToString(),
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch
     };
@@ -442,17 +442,17 @@ class HealthFactory {
   /// - [start] The start time of the workout
   /// - [end] The end time of the workout
   /// - [totalEnergyBurned] The total energy burned during the workout
-  /// - [totalEnergyBurnedUnit] The UNIT used to measure [totalEnergyBurned] *ONLY FOR IOS*
+  /// - [totalEnergyBurnedUnit] The UNIT used to measure [totalEnergyBurned] *ONLY FOR IOS* Default value is KILOCALORIE.
   /// - [totalDistance] The total distance traveled during the workout
-  /// - [totalDistanceUnit]  The UNIT used to measure [totalDistance] *ONLY FOR IOS*
+  /// - [totalDistanceUnit] The UNIT used to measure [totalDistance] *ONLY FOR IOS* Default value is METER.
   Future<bool> writeWorkoutData(
     HealthWorkoutActivityType activityType,
     DateTime start,
     DateTime end, {
     int? totalEnergyBurned,
-    HealthDataUnit? totalEnergyBurnedUnit,
+    HealthDataUnit totalEnergyBurnedUnit = HealthDataUnit.KILOCALORIE,
     int? totalDistance,
-    HealthDataUnit? totalDistanceUnit,
+    HealthDataUnit totalDistanceUnit = HealthDataUnit.METER,
   }) async {
     final args = <String, dynamic>{
       'activityType': activityType.typeToString(),

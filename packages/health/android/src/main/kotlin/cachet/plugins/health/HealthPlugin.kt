@@ -479,13 +479,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     if (totalEnergyBurned != null) {
       sessionInsertRequestBuilder.addDataSet(energyDataSet!!)
     }
-
     val insertRequest = sessionInsertRequestBuilder.build()
-    val fitnessOptions = FitnessOptions.builder()
-      .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_WRITE)
-      .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_WRITE)
+
+    val fitnessOptionsBuilder = FitnessOptions.builder()
       .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_WRITE)
-      .build()
+    if (totalDistance != null) {
+      fitnessOptionsBuilder.addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_WRITE)
+    }
+    if (totalEnergyBurned != null) {
+      fitnessOptionsBuilder.addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_WRITE)
+    }
+    val fitnessOptions = fitnessOptionsBuilder.build()
 
     try {
       val googleSignInAccount =
