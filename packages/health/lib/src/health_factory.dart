@@ -194,6 +194,9 @@ class HealthFactory {
     DateTime endTime, {
     HealthDataUnit? unit,
   }) async {
+    if (type == HealthDataType.WORKOUT)
+      throw ArgumentError(
+          "Adding workouts should be done using the writeWorkoutData method.");
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
     if ([

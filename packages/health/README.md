@@ -7,7 +7,7 @@ The plugin supports:
 - handling permissions to access health data using the `hasPermissions`, `requestAuthorization`, `revokePermissions` methods.
 - reading health data using the `getHealthDataFromTypes` method.
 - writing health data using the `writeHealthData` method.
-- writing workouts on iOS using the `writeWorkout` method.
+- writing workouts on iOS (Apple Health) & Android (Google Fit) using the `writeWorkout` method.
 - writing audiograms on iOS using the `writeAudiogram` method.
 - accessing total step counts using the `getTotalStepsInInterval` method.
 - cleaning up dublicate data points via the `removeDuplicates` method.

@@ -158,9 +158,9 @@ class _HealthAppState extends State<HealthApp> {
     success &= await health.writeWorkoutData(
       HealthWorkoutActivityType.RUNNING, earlier, now,
       // The following are optional parameters
-      // and the units are functional on iOS ONLY!
+      // and the UNITS are functional on iOS ONLY!
       totalEnergyBurned: 230,
-      totalEnergyBurnedUnit: HealthDataUnit.LARGE_CALORIE,
+      totalEnergyBurnedUnit: HealthDataUnit.KILOCALORIE,
       totalDistance: 1234,
       totalDistanceUnit: HealthDataUnit.FOOT,
     );
