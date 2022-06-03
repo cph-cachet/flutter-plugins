@@ -39,25 +39,22 @@ class _HealthAppState extends State<HealthApp> {
 
     // define the types to get
     final types = [
-      // HealthDataType.STEPS,
-      // HealthDataType.WEIGHT,
-      // HealthDataType.HEIGHT,
-      // HealthDataType.BLOOD_GLUCOSE,
-      // Uncomment these 2 lines on iOS - only available on iOS
-      // HealthDataType.HIGH_HEART_RATE_EVENT,
+      HealthDataType.STEPS,
+      HealthDataType.WEIGHT,
+      HealthDataType.HEIGHT,
+      HealthDataType.BLOOD_GLUCOSE,
       HealthDataType.WORKOUT,
-      // HealthDataType.DISTANCE_WALKING_RUNNING,
+      // Uncomment these lines on iOS - only available on iOS
       // HealthDataType.AUDIOGRAM
     ];
 
     // with coresponsing permissions
     final permissions = [
-      // HealthDataAccess.READ,
-      // HealthDataAccess.READ,
-      // HealthDataAccess.READ,
-      // HealthDataAccess.READ,
       HealthDataAccess.READ,
-      // HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
       // HealthDataAccess.READ,
     ];
 
