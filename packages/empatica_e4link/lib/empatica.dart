@@ -10,8 +10,8 @@ part 'empatica_data_events.dart';
 class EmpaticaPlugin {
   static const String methodChannelName = 'empatica.io/empatica_methodChannel';
   static const String statusEventSinkName =
-      "empatica.io/empatica_statusEventSink";
-  static const String dataEventSinkName = "empatica.io/empatica_dataEventSink";
+      'empatica.io/empatica_statusEventSink';
+  static const String dataEventSinkName = 'empatica.io/empatica_dataEventSink';
 
   final MethodChannel _methodChannel = const MethodChannel(methodChannelName);
   final EventChannel _statusEventChannel =

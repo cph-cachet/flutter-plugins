@@ -32,25 +32,26 @@ class _MyAppState extends State<MyApp> {
   int? _onWristStatus;
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
     Permission.locationWhenInUse.request();
 
     _listenToStatus();
-    const androidConfig = FlutterBackgroundAndroidConfig(
-      notificationTitle: "flutter_background example app",
-      notificationText:
-          "Background notification for keeping the example app running in the background",
-      notificationImportance: AndroidNotificationImportance.Default,
-      notificationIcon: AndroidResource(
-          name: 'background_icon',
-          defType: 'drawable'), // Default is ic_launcher from folder mipmap
-    );
-    await FlutterBackground.initialize(androidConfig: androidConfig);
   }
 
   void _listenToStatus() {
     deviceManager.statusEventSink?.listen((event) async {
+      const androidConfig = FlutterBackgroundAndroidConfig(
+        notificationTitle: "flutter_background example app",
+        notificationText:
+            "Background notification for keeping the example app running in the background",
+        notificationImportance: AndroidNotificationImportance.Default,
+        notificationIcon: AndroidResource(
+            name: 'background_icon',
+            defType: 'drawable'), // Default is ic_launcher from folder mipmap
+      );
+      await FlutterBackground.initialize(androidConfig: androidConfig);
+
       switch (event.runtimeType) {
         case Listen:
 

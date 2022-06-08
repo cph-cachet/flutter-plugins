@@ -50,11 +50,10 @@ class EmpaticaStatusEvent {
   String toString() => '$runtimeType';
 }
 
-
 enum EmpaStatus {
   initial,
   connected,
-  conncecting,
+  connecting,
   disconnected,
   disconnecting,
   discovering,
@@ -71,7 +70,7 @@ class StatusFactory {
       case 'connected':
         return StatusFactory(EmpaStatus.connected);
       case 'connecting':
-        return StatusFactory(EmpaStatus.conncecting);
+        return StatusFactory(EmpaStatus.connecting);
       case 'disconnected':
         return StatusFactory(EmpaStatus.disconnected);
       case 'disconnecting':
