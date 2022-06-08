@@ -25,13 +25,30 @@ class EmpaticaPlugin {
   EmpaStatus status = EmpaStatus.initial;
   // ------------    METHOD HANDLERS --------------------
 
-
   /// Initiates a connection to the Empatica backend using an API key given by Empatica.
   ///
   /// The [EmpaStatus.ready] status will be thrown on the [statusEventSink] when
   /// the authentication is accepted.
   Future<void> authenticateWithAPIKey(String key) async {
     await _methodChannel.invokeMethod('authenticateWithAPIKey', {'key': key});
+  }
+
+  /// Connect with Empatica connect user. Unknown how this works exactly.
+  Future<void> authenticateWithConnectUser() async {
+    await _methodChannel.invokeMethod('authenticateWithConnectUser');
+  }
+
+  /// Used to configure the cookies to be used for authentication with Empatica Connect
+  Future<void> configureCookie(String uri, String cookie) async {
+    await _methodChannel.invokeMethod('configureCookie', {
+      'uri': uri,
+      'cookie': cookie,
+    });
+  }
+
+  /// Get the HTTP cookie from this session
+  Future<String> getSessionIdCookie() async {
+    return await _methodChannel.invokeMethod('getSessionIdCookie');
   }
 
   /// Starts scanning for Empatica devices once the [EmpaStatus.ready] is thrown.
@@ -41,11 +58,6 @@ class EmpaticaPlugin {
   /// along with a label with the MAC address and the RSSI connection strength.
   Future<void> startScanning() async {
     await _methodChannel.invokeMethod('startScanning');
-  }
-
-  /// Connect with Empatica connect user. Unknown how this works exactly.
-  Future<void> authenticateWithConnectUser() async {
-    await _methodChannel.invokeMethod('authenticateWithConnectUser');
   }
 
   /// Stops the scanning for devices started by [startScanning]. Suitably call this whenever one has connected
@@ -61,6 +73,27 @@ class EmpaticaPlugin {
         .invokeMethod('connectDevice', {'serialNumber': serialNumber});
   }
 
+  /// Returns the hardware MAC address of the currently connected device
+  Future<String> getActiveDevice() async {
+    return await _methodChannel.invokeMethod('getActiveDevice');
+  }
+
+  /// Sends the EmpaStatus DISCONNECTED on the status stream.
+  Future<void> notifyDisconnected() async {
+    await _methodChannel.invokeMethod('notifyDisconnected');
+  }
+
+  /// Cleans the Android context
+  Future<void> cleanUp() async {
+    await _methodChannel.invokeMethod('cleanUp');
+  }
+
+  /// Cancels the connection. Same as disconnect but also makes sure the EmpaStatus DISCONNECTED is sent on the Status stream.
+  Future<void> cancelConnection() async {
+    await _methodChannel.invokeMethod('cancelConnection');
+  }
+
+  /// Disconnects from the currently active Empatica device
   Future<void> disconnect() async {
     await _methodChannel.invokeMethod('disconnect');
   }

@@ -173,7 +173,9 @@ class _MyAppState extends State<MyApp> {
 //log the battery level for research
 
 Future<String> get _localPath async {
-  final directory = await getApplicationDocumentsDirectory();
+  final directory = await getExternalStorageDirectory();
+
+  print(directory!.path);
 
   return directory.path;
 }
