@@ -18,8 +18,6 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler: ^9.2.0
-  path_provider: ^2.0.10
-  battery_plus:
   flutter_background: ^1.1.0
 
   empatica_e4link:

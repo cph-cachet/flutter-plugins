@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 
 import 'package:empatica_e4link/empatica.dart';
 
 import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter_background/flutter_background.dart';
 
 void main() {
@@ -49,8 +46,7 @@ class _MyAppState extends State<MyApp> {
           name: 'background_icon',
           defType: 'drawable'), // Default is ic_launcher from folder mipmap
     );
-    bool success =
-        await FlutterBackground.initialize(androidConfig: androidConfig);
+    await FlutterBackground.initialize(androidConfig: androidConfig);
   }
 
   void _listenToStatus() {
@@ -113,8 +109,6 @@ class _MyAppState extends State<MyApp> {
         case ReceieveBatteryLevel:
           setState(() {
             _battery = (event as ReceieveBatteryLevel).batteryLevel.toString();
-            writeBattery(event.batteryLevel);
-            readBattery();
           });
           break;
         case ReceiveTemperature:
@@ -167,63 +161,5 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
-  }
-}
-
-//log the battery level for research
-
-Future<String> get _localPath async {
-  final directory = await getExternalStorageDirectory();
-
-  print(directory!.path);
-
-  return directory.path;
-}
-
-Future<File> get _localPhoneBatteryFile async {
-  final path = await _localPath;
-  return File('$path/phoneBattery.txt');
-}
-
-Future<File> get _localWatchBatteryFile async {
-  final path = await _localPath;
-  return File('$path/watchBattery.txt');
-}
-
-Future<void> writeBattery(double watchbattery) async {
-  final phonefile = await _localPhoneBatteryFile;
-  final watchfile = await _localWatchBatteryFile;
-
-  final watchobj = {
-    'battery': watchbattery,
-    'time': DateTime.now().toString(),
-  };
-
-  final phoneobj = {
-    'battery': await Battery().batteryLevel,
-    'time': DateTime.now().toString(),
-  };
-
-  // Write the file
-  var phonesink = phonefile.openWrite(mode: FileMode.append);
-  var watchsink = watchfile.openWrite(mode: FileMode.append);
-  phonesink.write(phoneobj);
-  phonesink.close();
-  watchsink.write(watchobj);
-  watchsink.close();
-}
-
-Future<void> readBattery() async {
-  try {
-    final file = await _localPhoneBatteryFile;
-    final watchfile = await _localWatchBatteryFile;
-
-    // Read the file
-    final contents = await file.readAsString();
-    final watchcontents = await watchfile.readAsString();
-    print('phone $contents');
-    print('watch $watchcontents');
-  } catch (e) {
-    // If encountering an error, return ''
   }
 }
