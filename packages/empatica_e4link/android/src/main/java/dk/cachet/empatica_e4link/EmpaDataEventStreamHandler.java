@@ -140,7 +140,7 @@ public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelega
      * This method will be called whenever the wristband is taken off and on.
      *
      * The intellisense is not correct, it is supposed to be here.
-     * 
+     *
      * @param status on wrist status has been updated.
      */
     public void didUpdateOnWristStatus(@EmpaSensorStatus int status) {

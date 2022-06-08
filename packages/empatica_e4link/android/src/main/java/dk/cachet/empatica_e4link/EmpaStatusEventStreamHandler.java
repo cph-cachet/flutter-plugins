@@ -1,7 +1,5 @@
 package dk.cachet.empatica_e4link;
 
-import android.util.Log;
-
 import com.empatica.empalink.EmpaticaDevice;
 import com.empatica.empalink.config.EmpaSensorStatus;
 import com.empatica.empalink.config.EmpaSensorType;
