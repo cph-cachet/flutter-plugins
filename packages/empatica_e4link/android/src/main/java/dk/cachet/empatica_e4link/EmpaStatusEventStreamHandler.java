@@ -86,6 +86,7 @@ public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDe
             HashMap<String, Object> map = new HashMap<>();
             map.put("type", "DiscoverDevice");
             map.put("device", device.serialNumber);
+            map.put("name", device.name);
             map.put("deviceLabel", deviceLabel);
             map.put("rssi", rssi);
             discoveredDevices.put(device.serialNumber, device);
