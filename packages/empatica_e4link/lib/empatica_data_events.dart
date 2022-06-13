@@ -7,7 +7,7 @@ class EmpaticaDataEvent {
     final String type = map['type'];
     switch (type) {
       case 'ReceiveBVP':
-        return ReceieveBVP.fromMap(map);
+        return ReceiveBVP.fromMap(map);
       case 'ReceiveGSR':
         return ReceiveGSR.fromMap(map);
       case 'ReceiveIBI':
@@ -31,16 +31,16 @@ class EmpaticaDataEvent {
   String toString() => '$runtimeType';
 }
 
-class ReceieveBVP extends EmpaticaDataEvent {
+class ReceiveBVP extends EmpaticaDataEvent {
   final double bvp;
   final double timestamp;
 
-  ReceieveBVP(this.timestamp, this.bvp);
+  ReceiveBVP(this.timestamp, this.bvp);
 
-  factory ReceieveBVP.fromMap(Map<dynamic, dynamic> map) {
+  factory ReceiveBVP.fromMap(Map<dynamic, dynamic> map) {
     final double timestamp = map['timestamp'];
     final double bvp = map['bvp'];
-    return ReceieveBVP(timestamp, bvp);
+    return ReceiveBVP(timestamp, bvp);
   }
 
   @override

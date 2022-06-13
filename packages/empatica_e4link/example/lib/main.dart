@@ -58,8 +58,7 @@ class _MyAppState extends State<MyApp> {
           // if we are now listening to the status event sink
           // connect to the api
           // also could use authenticate with connect
-          await deviceManager
-              .authenticateWithAPIKey('apiKeyGoesHere');
+          await deviceManager.authenticateWithAPIKey('');
           break;
         case UpdateStatus:
 
@@ -92,9 +91,9 @@ class _MyAppState extends State<MyApp> {
     deviceManager.dataEventSink?.listen((event) {
       switch (event.runtimeType) {
         // update each data point with the appropriate data
-        case ReceieveBVP:
+        case ReceiveBVP:
           setState(() {
-            _bvp = (event as ReceieveBVP).bvp.toString();
+            _bvp = (event as ReceiveBVP).bvp.toString();
           });
           break;
         case ReceiveGSR:
