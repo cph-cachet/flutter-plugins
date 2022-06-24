@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:permission_handler/permission_handler.dart';
-
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(HealthApp());
 
@@ -60,7 +59,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(days: 5));
+    final yesterday = now.subtract(Duration(days: 1));
     // requesting access to the data types before reading them
     // note that strictly speaking, the [permissions] are not
     // needed, since we only want READ access.
@@ -133,11 +132,10 @@ class _HealthAppState extends State<HealthApp> {
       HealthDataAccess.READ_WRITE,
       // HealthDataAccess.READ_WRITE,
     ];
-    late bool perm;
     bool? hasPermissions =
         await HealthFactory.hasPermissions(types, permissions: rights);
     if (hasPermissions == false) {
-      perm = await health.requestAuthorization(types, permissions: permissions);
+      await health.requestAuthorization(types, permissions: permissions);
     }
 
     // Store a count of steps taken

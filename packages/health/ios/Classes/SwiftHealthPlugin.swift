@@ -55,6 +55,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_MILD = "HEADACHE_MILD"
     let HEADACHE_MODERATE = "HEADACHE_MODERATE"
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
+    let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -488,13 +489,51 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 
             default:
-                DispatchQueue.main.async {
-                    result(nil)
+                if #available(iOS 14.0, *), let ecgSamples = samplesOrNil as? [HKElectrocardiogram] {
+                    let dictionaries = ecgSamples.map(fetchEcgMeasurements)
+                    DispatchQueue.main.async {
+                        result(dictionaries)
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        result(nil)
+                    }
                 }
             }
         }
         
         HKHealthStore().execute(query)
+    }
+    
+    @available(iOS 14.0, *)
+    private func fetchEcgMeasurements(_ sample: HKElectrocardiogram) -> NSDictionary {
+        let semaphore = DispatchSemaphore(value: 0)
+        var results = [NSDictionary]()
+        let voltageQuery = HKElectrocardiogramQuery(sample) { query, result in
+            switch (result) {
+            case let .measurement(measurement):
+                if let voltageQuentity = measurement.quantity(for: .appleWatchSimilarToLeadI) {
+                    let voltage = voltageQuentity.doubleValue(for: HKUnit.volt())
+                    let timeSinceSampleStart = measurement.timeSinceSampleStart
+                    results.append(["voltage": voltage, "timeSinceSampleStart": timeSinceSampleStart])
+                }
+            case .done:
+                semaphore.signal()
+                print("Done")
+            case let .error(error):
+                print(error)
+            }
+        }
+        HKHealthStore().execute(voltageQuery)
+        semaphore.wait()
+        return [
+            "uuid": "\(sample.uuid)",
+            "values": results,
+            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+            "source_id": sample.sourceRevision.source.bundleIdentifier,
+            "source_name": sample.sourceRevision.source.name
+        ]
     }
     
     func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -750,6 +789,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         if #available(iOS 14.0, *) {
+            dataTypesDict[ELECTROCARDIOGRAM] = HKSampleType.electrocardiogramType()
+            
             unitDict[VOLT] = HKUnit.volt()
             unitDict[INCHES_OF_MERCURY] = HKUnit.inchesOfMercury()
             

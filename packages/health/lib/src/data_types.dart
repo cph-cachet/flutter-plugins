@@ -47,6 +47,7 @@ enum HealthDataType {
   LOW_HEART_RATE_EVENT,
   IRREGULAR_HEART_RATE_EVENT,
   ELECTRODERMAL_ACTIVITY,
+  ELECTROCARDIOGRAM,
 }
 
 enum HealthDataAccess {
@@ -98,6 +99,7 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.HEADACHE_MODERATE,
   HealthDataType.HEADACHE_SEVERE,
   HealthDataType.HEADACHE_UNSPECIFIED,
+  HealthDataType.ELECTROCARDIOGRAM,
 ];
 
 /// List of data types available on Android
@@ -172,11 +174,12 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECOND,
+  HealthDataType.ELECTROCARDIOGRAM: HealthDataUnit.VOLT,
 };
 
 const PlatformTypeJsonValue = {
   PlatformType.IOS: 'ios',
-  PlatformType.ANDROID: 'android'
+  PlatformType.ANDROID: 'android',
 };
 
 /// List of all [HealthDataUnit]s.

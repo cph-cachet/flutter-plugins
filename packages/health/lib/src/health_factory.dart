@@ -364,6 +364,8 @@ class HealthFactory {
         value = AudiogramHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.WORKOUT) {
         value = WorkoutHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.ELECTROCARDIOGRAM) {
+        value = ElectrocardiogramHealthValue.fromJson(e['values']);
       } else {
         value = NumericHealthValue(e['value']);
       }

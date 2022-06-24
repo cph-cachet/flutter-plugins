@@ -180,6 +180,67 @@ class WorkoutHealthValue extends HealthValue {
       totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
 }
 
+/// A [HealthValue] object for ECGs
+///
+/// Parameters:
+/// * [values] - an array of [ElectrocardiogramVoltageValue]
+class ElectrocardiogramHealthValue extends HealthValue {
+  final List<ElectrocardiogramVoltageValue> _values;
+
+  ElectrocardiogramHealthValue(this._values);
+
+  List<ElectrocardiogramVoltageValue> get values => _values;
+
+  factory ElectrocardiogramHealthValue.fromJson(json) =>
+      ElectrocardiogramHealthValue(
+        (json as List)
+            .map((e) => ElectrocardiogramVoltageValue.fromJson(e))
+            .toList(growable: false),
+      );
+
+  Map<String, dynamic> toJson() =>
+      {'values': values.map((e) => e.toJson()).toList(growable: false)};
+
+  @override
+  bool operator ==(Object o) =>
+      o is ElectrocardiogramHealthValue && this._values == o.values;
+
+  @override
+  int get hashCode => values.hashCode;
+
+  @override
+  String toString() => '${_values.length} values';
+}
+
+/// Single voltage value belonging to a [ElectrocardiogramHealthValue]
+class ElectrocardiogramVoltageValue extends HealthValue {
+  final num voltage;
+  final num timeSinceSampleStart;
+
+  ElectrocardiogramVoltageValue(this.voltage, this.timeSinceSampleStart);
+
+  factory ElectrocardiogramVoltageValue.fromJson(json) =>
+      ElectrocardiogramVoltageValue(
+          json['voltage'], json['timeSinceSampleStart']);
+
+  Map<String, dynamic> toJson() => {
+        'voltage': voltage.toString(),
+        'timeSinceSampleStart': timeSinceSampleStart.toString(),
+      };
+
+  @override
+  bool operator ==(Object o) =>
+      o is ElectrocardiogramVoltageValue &&
+      voltage == o.voltage &&
+      timeSinceSampleStart == o.timeSinceSampleStart;
+
+  @override
+  int get hashCode => Object.hash(voltage, timeSinceSampleStart);
+
+  @override
+  String toString() => voltage.toString();
+}
+
 abstract class HealthValue {
   Map<String, dynamic> toJson();
 }
