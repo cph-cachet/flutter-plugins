@@ -16,7 +16,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 
-public class EmpaManagerMethodCallHandler implements MethodCallHandler {
+class EmpaManagerMethodCallHandler implements MethodCallHandler {
     private final EmpaDeviceManager _handler;
     EmpaStatusEventStreamHandler empaStatusEventStreamHandler;
 
@@ -41,31 +41,6 @@ public class EmpaManagerMethodCallHandler implements MethodCallHandler {
      */
     void authenticateWithAPIKey(String key) {
         this._handler.authenticateWithAPIKey(key);
-    }
-
-    /**
-     * NOT TESTED
-     * (Probably) Use [configureCookie] after logging in to the Empatica connect
-     * website and
-     * then use this method to log in to the Empatica backend using Empatica
-     * Connect.
-     */
-    void authenticateWithConnectUser() {
-        this._handler.authenticateWithConnectUser();
-    }
-
-    /**
-     * NOT TESTED
-     * This method is (probably) used to set the [authenticateWithConnectUser]
-     * credentials. You log in to the Empatica Connect system and gather the http
-     * cookie and URI. After this call [authenticateWithConnectUser] to gain access
-     * via Empatica connect.
-     *
-     * @param uri
-     * @param httpCookie
-     */
-    void configureCookie(URI uri, HttpCookie httpCookie) {
-        this._handler.configureCookie(uri, httpCookie);
     }
 
     /**
@@ -156,16 +131,6 @@ public class EmpaManagerMethodCallHandler implements MethodCallHandler {
                 authenticateWithAPIKey(key);
                 result.success(null);
                 break;
-            case "authenticateWithConnectUser":
-                authenticateWithConnectUser();
-                result.success(null);
-                break;
-            case "configureCookie":
-                // gonna throw a type exception.
-                URI uri = call.argument("uri");
-                HttpCookie httpCookie = call.argument("httpCookie");
-                configureCookie(uri, httpCookie);
-                result.success(null);
             case "getSessionIdCookie":
                 result.success(getSessionIdCookie());
                 break;

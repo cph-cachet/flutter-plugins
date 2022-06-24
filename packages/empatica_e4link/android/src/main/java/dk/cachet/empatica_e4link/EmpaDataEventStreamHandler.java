@@ -8,7 +8,7 @@ import java.util.HashMap;
 import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 
-public class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelegate {
+class EmpaDataEventStreamHandler implements StreamHandler, EmpaDataDelegate {
     private MainThreadEventSink dataEventSink;
 
     EmpaDataEventStreamHandler() {

@@ -33,19 +33,6 @@ class EmpaticaPlugin {
     await _methodChannel.invokeMethod('authenticateWithAPIKey', {'key': key});
   }
 
-  /// Connect with Empatica connect user. Unknown how this works exactly.
-  Future<void> authenticateWithConnectUser() async {
-    await _methodChannel.invokeMethod('authenticateWithConnectUser');
-  }
-
-  /// Used to configure the cookies to be used for authentication with Empatica Connect
-  Future<void> configureCookie(String uri, String cookie) async {
-    await _methodChannel.invokeMethod('configureCookie', {
-      'uri': uri,
-      'cookie': cookie,
-    });
-  }
-
   /// Get the HTTP cookie from this session
   Future<String> getSessionIdCookie() async {
     return await _methodChannel.invokeMethod('getSessionIdCookie');

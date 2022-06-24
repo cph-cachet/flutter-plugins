@@ -5,7 +5,7 @@ import android.os.Looper;
 
 import io.flutter.plugin.common.EventChannel.EventSink;
 
-public class MainThreadEventSink implements EventSink {
+class MainThreadEventSink implements EventSink {
     private final EventSink eventSink;
     private final Handler handler;
 

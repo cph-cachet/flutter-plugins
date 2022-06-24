@@ -11,7 +11,7 @@ import java.util.HashMap;
 import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 
-public class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDelegate {
+class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDelegate {
     private MainThreadEventSink statusEventSink;
     public HashMap<String, EmpaticaDevice> discoveredDevices;
 
