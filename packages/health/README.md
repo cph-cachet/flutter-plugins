@@ -17,7 +17,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 ## Data Types
 
 | **Data Type**               | **Unit**                | **iOS** | **Android** | **Comments**                                                |
-| --------------------------- | ----------------------- | ------- | ----------- | ----------------------------------------------------------- |
+|-----------------------------|-------------------------| ------- | ----------- |-------------------------------------------------------------|
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes         |                                                             |
 | BASAL_ENERGY_BURNED         | CALORIES                | yes     |             |                                                             |
 | BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes         |                                                             |
@@ -56,6 +56,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | HEADACHE_SEVERE             | MINUTES                 | yes     |             |                                                             |
 | HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |             |                                                             |
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |             |                                                             |
+| ELECTROCARDIOGRAM           | VOLT                    | yes     |             | Requires Apple Watch                                        |
 
 ## Setup
 
@@ -192,7 +193,7 @@ Below is a simplified flow of how to use the plugin.
 A `HealthDataPoint` object contains the following data fields:
 
 ```dart
-HealthValue value; // NumericHealthValue, AudiogramHealthValue, WorkoutHealthValue
+HealthValue value; // NumericHealthValue, AudiogramHealthValue, WorkoutHealthValue, ElectrocardiogramHealthValue
 HealthDataType type;
 HealthDataUnit unit;
 DateTime dateFrom;
