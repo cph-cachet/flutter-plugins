@@ -1,5 +1,8 @@
-## 4.0.0
+## 4.1.0
+- update of `device_info_plus: ^4.0.0`
+- upgraded to Dart 2.17 and Flutter 3.0
 
+## 4.0.0
 - Large refactor of the `HealthDataPoint` value into generic `HealthValue` and added `NumericHealthValue`, `AudiogramHealthValue` and `WorkoutHealthValue`
 - Added support for Audiograms with `writeAudiogram` and in `getHealthDataFromTypes`
 - Added support for Workouts with `writeWorkout` and in `getHealthDataFromTypes`
@@ -13,22 +16,18 @@
 - removed `requestPermissions` as it was essentially a duplicate of `requestAuthorization`
 
 ## 3.4.4
-
 - Fix of [#500](https://github.com/cph-cachet/flutter-plugins/issues/500).
 - Added Headache-types to HealthDataTypes on iOS
 
 ## 3.4.3
-
 - fix of [#401](https://github.com/cph-cachet/flutter-plugins/issues/401).
 
 ## 3.4.2
-
 - Resolved concurrent issues with native threads [PR#483](https://github.com/cph-cachet/flutter-plugins/pull/483).
 - Healthkit CategorySample [PR#485](https://github.com/cph-cachet/flutter-plugins/pull/485).
 - update of API documentation.
 
 ## 3.4.0
-
 - Add sleep in bed to android [PR#457](https://github.com/cph-cachet/flutter-plugins/pull/457).
 - Add the android.permission.ACTIVITY_RECOGNITION setup to the README [PR#458](https://github.com/cph-cachet/flutter-plugins/pull/458).
 - Fixed (regression) issues with metric and permissions [PR#462](https://github.com/cph-cachet/flutter-plugins/pull/462).
@@ -37,7 +36,6 @@
 - update of API documentation.
 
 ## 3.3.1
-
 - DISTANCE_DELTA is for Android, not iOS [PR#428](https://github.com/cph-cachet/flutter-plugins/pull/428).
 - added missing READ_ACCESS [PR#454](https://github.com/cph-cachet/flutter-plugins/pull/454).
 
