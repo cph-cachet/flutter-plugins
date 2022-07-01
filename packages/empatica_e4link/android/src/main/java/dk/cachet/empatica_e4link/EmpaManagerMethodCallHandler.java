@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.empatica.empalink.ConnectionNotAllowedException;
 import com.empatica.empalink.EmpaDeviceManager;
 import com.empatica.empalink.EmpaticaDevice;
+import com.empatica.empalink.config.EmpaStatus;
 
 import java.net.HttpCookie;
 import java.net.URI;
@@ -28,7 +29,7 @@ class EmpaManagerMethodCallHandler implements MethodCallHandler {
      * @param context            your application context
      */
     EmpaManagerMethodCallHandler(EmpaDataEventStreamHandler empaDataDelegate,
-            EmpaStatusEventStreamHandler empaStatusDelegate, Context context) {
+                                 EmpaStatusEventStreamHandler empaStatusDelegate, Context context) {
         empaStatusEventStreamHandler = empaStatusDelegate;
         this._handler = new EmpaDeviceManager(context, empaDataDelegate, empaStatusDelegate);
     }
@@ -52,11 +53,18 @@ class EmpaManagerMethodCallHandler implements MethodCallHandler {
 
     /**
      * Starts scanning for Empatica devices
+     * Throws a DISCOVERING status on the status event sink because Empatica does not
      */
     void startScanning() {
         this._handler.prepareScanning();
         this._handler.startScanning();
         empaStatusEventStreamHandler.discoveredDevices = new HashMap<>();
+        if (empaStatusEventStreamHandler.statusEventSink != null) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("type", "UpdateStatus");
+            map.put("status", EmpaStatus.DISCOVERING.toString());
+            empaStatusEventStreamHandler.statusEventSink.success(map);
+        }
     }
 
     /**

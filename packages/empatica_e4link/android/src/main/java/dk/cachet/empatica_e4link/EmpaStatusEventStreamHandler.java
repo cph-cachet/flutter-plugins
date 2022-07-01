@@ -12,7 +12,7 @@ import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 
 class EmpaStatusEventStreamHandler implements StreamHandler, EmpaStatusDelegate {
-    private MainThreadEventSink statusEventSink;
+    MainThreadEventSink statusEventSink;
     public HashMap<String, EmpaticaDevice> discoveredDevices;
 
     EmpaStatusEventStreamHandler() {
