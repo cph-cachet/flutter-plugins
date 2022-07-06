@@ -1,3 +1,6 @@
+## 4.1.1
+- fix of [#572](https://github.com/cph-cachet/flutter-plugins/issues/572).
+
 ## 4.1.0
 - update of `device_info_plus: ^4.0.0`
 - upgraded to Dart 2.17 and Flutter 3.0

@@ -307,7 +307,7 @@ class HealthFactory {
       DateTime startTime, DateTime endTime, HealthDataType dataType) async {
     // Ask for device ID only once
     _deviceId ??= _platformType == PlatformType.ANDROID
-        ? (await _deviceInfo.androidInfo).androidId
+        ? (await _deviceInfo.androidInfo).id
         : (await _deviceInfo.iosInfo).identifierForVendor;
 
     // If not implemented on platform, throw an exception
@@ -338,7 +338,7 @@ class HealthFactory {
       final mesg = <String, dynamic>{
         "dataType": dataType,
         "dataPoints": fetchedDataPoints,
-        "deviceId": _deviceId!,
+        "deviceId": '$_deviceId',
       };
       const thresHold = 100;
       // If the no. of data points are larger than the threshold,
