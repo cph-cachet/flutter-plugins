@@ -1,4 +1,4 @@
-# empatica_e4link
+# Empatica Flutter plugin
 
 Flutter plugin for the [Empatica E4](http://e4.empatica.com/e4-wristband)
 wristband on Android. iOS coming soon.
@@ -122,3 +122,10 @@ The possible data events are
 
  * Lars K.B. Refsgaard, Technical University of Denmark
  <!-- * The iOS implementation uses the [eSense iOS Library](https://github.com/tetujin/ESense). -->
+
+## Contributing
+
+### Android
+
+The Gradle task useAar in ./android has to be run for the Empatica SDK to be
+modeled and used in the Android code.
