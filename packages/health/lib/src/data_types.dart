@@ -22,6 +22,7 @@ enum HealthDataType {
   HEIGHT,
   RESTING_HEART_RATE,
   RESPIRATORY_RATE,
+  PERIPHERAL_PERFUSION_INDEX,
   STEPS,
   WAIST_CIRCUMFERENCE,
   WALKING_HEART_RATE,
@@ -82,6 +83,8 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.IRREGULAR_HEART_RATE_EVENT,
   HealthDataType.LOW_HEART_RATE_EVENT,
   HealthDataType.RESTING_HEART_RATE,
+  HealthDataType.RESPIRATORY_RATE,
+  HealthDataType.PERIPHERAL_PERFUSION_INDEX,
   HealthDataType.STEPS,
   HealthDataType.WAIST_CIRCUMFERENCE,
   HealthDataType.WALKING_HEART_RATE,
@@ -145,6 +148,8 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.ELECTRODERMAL_ACTIVITY: HealthDataUnit.SIEMEN,
   HealthDataType.FORCED_EXPIRATORY_VOLUME: HealthDataUnit.LITER,
   HealthDataType.HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
+  HealthDataType.RESPIRATORY_RATE: HealthDataUnit.RESPIRATIONS_PER_MINUTE,
+  HealthDataType.PERIPHERAL_PERFUSION_INDEX: HealthDataUnit.PERCENT,
   HealthDataType.HEIGHT: HealthDataUnit.METER,
   HealthDataType.RESTING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
   HealthDataType.STEPS: HealthDataUnit.COUNT,
@@ -258,6 +263,7 @@ enum HealthDataUnit {
 
   // Other units
   BEATS_PER_MINUTE,
+  RESPIRATIONS_PER_MINUTE,
   MILLIGRAM_PER_DECILITER,
   UNKNOWN_UNIT,
   NO_UNIT,
