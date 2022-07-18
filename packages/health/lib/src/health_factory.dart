@@ -165,6 +165,7 @@ class HealthFactory {
           weights[i].dateTo,
           _platformType,
           _deviceId!,
+          null,
           '',
           '');
 
@@ -353,7 +354,8 @@ class HealthFactory {
   }
 
   static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
-    final dataType = message["dataType"];
+    print(message);
+    final dataType  =message["dataType"];
     final dataPoints = message["dataPoints"];
     final device = message["deviceId"];
     final unit = _dataTypeToUnit[dataType]!;
@@ -370,6 +372,7 @@ class HealthFactory {
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
+      final String deviceModel = e["device_model"];
       final String sourceName = e["source_name"];
       return HealthDataPoint(
         value,
@@ -379,6 +382,7 @@ class HealthFactory {
         to,
         _platformType,
         device,
+        deviceModel,
         sourceId,
         sourceName,
       );

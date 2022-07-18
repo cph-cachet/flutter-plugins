@@ -398,13 +398,14 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "device_model" : sample.device?.model
                     ]
                 }
                 DispatchQueue.main.async {
                     result(dictionaries)
                 }
-                
+
             case var (samplesCategory as [HKCategorySample]) as Any:
                 if (dataTypeKey == self.SLEEP_IN_BED) {
                     samplesCategory = samplesCategory.filter { $0.value == 0 }
@@ -437,34 +438,36 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "device_model" : sample.device?.model
                     ]
                 }
                 DispatchQueue.main.async {
                     result(categories)
                 }
-                
+
             case let (samplesWorkout as [HKWorkout]) as Any:
-                
+
                 let dictionaries = samplesWorkout.map { sample -> NSDictionary in
                     return [
                         "uuid": "\(sample.uuid)",
                         "workoutActivityType": workoutActivityTypeMap.first(where: {$0.value == sample.workoutActivityType})?.key,
-                        "totalEnergyBurned": sample.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie()),
-                        "totalEnergyBurnedUnit": "KILOCALORIE",
+                        "totalEnergyBurned": sample.totalEnergyBurned?.doubleValue(for: HKUnit.largeCalorie()),
+                        "totalEnergyBurnedUnit": "LARGE_CALORIE",
                         "totalDistance": sample.totalDistance?.doubleValue(for: HKUnit.meter()),
                         "totalDistanceUnit": "METER",
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "device_model" : sample.device?.model
                     ]
                 }
-                
+
                 DispatchQueue.main.async {
                     result(dictionaries)
                 }
-                
+
             case let (samplesAudiogram as [HKAudiogramSample]) as Any:
                 let dictionaries = samplesAudiogram.map { sample -> NSDictionary in
                     var frequencies = [Double]()
@@ -483,39 +486,40 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "device_model" : sample.device?.model
                     ]
                 }
                 DispatchQueue.main.async {
                     result(dictionaries)
                 }
-                
+
             default:
                 DispatchQueue.main.async {
                     result(nil)
                 }
             }
         }
-        
+
         HKHealthStore().execute(query)
     }
-    
+
     func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? NSDictionary
         let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
         let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
-        
+
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
-        
+
         let sampleType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
-        
+
         let query = HKStatisticsQuery(quantityType: sampleType,
                                       quantitySamplePredicate: predicate,
                                       options: .cumulativeSum) { query, queryResult, error in
-            
+
             guard let queryResult = queryResult else {
                 let error = error! as NSError
                 print("Error getting total steps in interval \(error.localizedDescription)")

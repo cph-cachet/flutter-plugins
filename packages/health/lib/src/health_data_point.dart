@@ -10,6 +10,7 @@ class HealthDataPoint {
   DateTime _dateTo;
   PlatformType _platform;
   String _deviceId;
+  String? _deviceModel;
   String _sourceId;
   String _sourceName;
 
@@ -21,6 +22,7 @@ class HealthDataPoint {
       this._dateTo,
       this._platform,
       this._deviceId,
+      this._deviceModel,
       this._sourceId,
       this._sourceName) {
     // set the value to minutes rather than the category
@@ -64,6 +66,7 @@ class HealthDataPoint {
             .toList()
             .indexOf(json['platform_type'])],
         json['device_id'],
+        json['device_model'],
         json['source_id'],
         json['source_name']);
   }
@@ -77,6 +80,7 @@ class HealthDataPoint {
         'date_to': dateTo.toIso8601String(),
         'platform_type': PlatformTypeJsonValue[platform],
         'device_id': deviceId,
+        'device_model' : deviceModel,
         'source_id': sourceId,
         'source_name': sourceName
       };
@@ -90,6 +94,7 @@ class HealthDataPoint {
     dataType: $type,
     platform: $platform,
     deviceId: $deviceId,
+    deviceModel: $deviceModel,
     sourceId: $sourceId,
     sourceName: $sourceName""";
 
@@ -120,6 +125,9 @@ class HealthDataPoint {
   /// The id of the device from which the data point was fetched.
   String get deviceId => _deviceId;
 
+  /// The model of the device from which the data point was fetched.
+  String? get deviceModel => _deviceModel;
+
   /// The id of the source from which the data point was fetched.
   String get sourceId => _sourceId;
 
@@ -136,11 +144,12 @@ class HealthDataPoint {
         this.type == o.type &&
         this.platform == o.platform &&
         this.deviceId == o.deviceId &&
+        this.deviceModel == o.deviceModel &&
         this.sourceId == o.sourceId &&
         this.sourceName == o.sourceName;
   }
 
   @override
   int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type, platform,
-      deviceId, sourceId, sourceName);
+      deviceId, deviceModel, sourceId, sourceName);
 }
