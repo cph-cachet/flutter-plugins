@@ -372,7 +372,7 @@ class HealthFactory {
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
-      final String deviceModel = e["device_model"];
+      final String? deviceModel = e["device_model"];
       final String sourceName = e["source_name"];
       return HealthDataPoint(
         value,
