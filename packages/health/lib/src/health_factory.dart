@@ -355,7 +355,7 @@ class HealthFactory {
 
   static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
     print(message);
-    final dataType  =message["dataType"];
+    final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
     final device = message["deviceId"];
     final unit = _dataTypeToUnit[dataType]!;
