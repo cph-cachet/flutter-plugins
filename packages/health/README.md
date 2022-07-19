@@ -198,9 +198,10 @@ HealthDataUnit unit;
 DateTime dateFrom;
 DateTime dateTo;
 PlatformType platform;
-String uuid, deviceId;
+String deviceId;
 String sourceId;
 String sourceName;
+String deviceModel;
 ```
 
 A `HealthData` object can be serialized to JSON with the `toJson()` method.
