@@ -71,7 +71,7 @@ class HealthFactory {
   /// Revoke permissions obtained earlier.
   ///
   /// Not supported on iOS and method does nothing.
-  static Future<void> revokePermissions() async {
+  static Future<bool> revokePermissions() async {
     return await _channel.invokeMethod('revokePermissions');
   }
 
@@ -111,9 +111,12 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
-    final bool? isAuthorized = await _channel.invokeMethod(
+    final dynamic? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
-    return isAuthorized ?? false;
+
+    log(isAuthorized.toString());
+
+    return isAuthorized != null;
   }
 
   static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
