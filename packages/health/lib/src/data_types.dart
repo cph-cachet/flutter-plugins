@@ -3,6 +3,7 @@ part of health;
 /// List of all available data types.
 enum HealthDataType {
   ACTIVE_ENERGY_BURNED,
+  AUDIOGRAM,
   BASAL_ENERGY_BURNED,
   BLOOD_GLUCOSE,
   BLOOD_OXYGEN,
@@ -57,6 +58,7 @@ enum HealthDataAccess {
 /// List of data types available on iOS
 const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.AUDIOGRAM,
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
   HealthDataType.BLOOD_OXYGEN,
@@ -118,115 +120,58 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.SLEEP_ASLEEP,
   HealthDataType.SLEEP_IN_BED,
   HealthDataType.WATER,
+  HealthDataType.WORKOUT,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
 const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
-  HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataUnit.CALORIES,
-  HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.CALORIES,
+  HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataUnit.KILOCALORIE,
+  HealthDataType.AUDIOGRAM: HealthDataUnit.DECIBEL_HEARING_LEVEL,
+  HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.KILOCALORIE,
   HealthDataType.BLOOD_GLUCOSE: HealthDataUnit.MILLIGRAM_PER_DECILITER,
-  HealthDataType.BLOOD_OXYGEN: HealthDataUnit.PERCENTAGE,
+  HealthDataType.BLOOD_OXYGEN: HealthDataUnit.PERCENT,
   HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
   HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
-  HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENTAGE,
+  HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENT,
   HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
-  HealthDataType.DIETARY_CARBS_CONSUMED: HealthDataUnit.GRAMS,
-  HealthDataType.DIETARY_ENERGY_CONSUMED: HealthDataUnit.CALORIES,
-  HealthDataType.DIETARY_FATS_CONSUMED: HealthDataUnit.GRAMS,
-  HealthDataType.DIETARY_PROTEIN_CONSUMED: HealthDataUnit.GRAMS,
-  HealthDataType.ELECTRODERMAL_ACTIVITY: HealthDataUnit.SIEMENS,
+  HealthDataType.DIETARY_CARBS_CONSUMED: HealthDataUnit.GRAM,
+  HealthDataType.DIETARY_ENERGY_CONSUMED: HealthDataUnit.KILOCALORIE,
+  HealthDataType.DIETARY_FATS_CONSUMED: HealthDataUnit.GRAM,
+  HealthDataType.DIETARY_PROTEIN_CONSUMED: HealthDataUnit.GRAM,
+  HealthDataType.ELECTRODERMAL_ACTIVITY: HealthDataUnit.SIEMEN,
   HealthDataType.FORCED_EXPIRATORY_VOLUME: HealthDataUnit.LITER,
   HealthDataType.HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
-  HealthDataType.HEIGHT: HealthDataUnit.METERS,
+  HealthDataType.HEIGHT: HealthDataUnit.METER,
   HealthDataType.RESTING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
   HealthDataType.STEPS: HealthDataUnit.COUNT,
-  HealthDataType.WAIST_CIRCUMFERENCE: HealthDataUnit.METERS,
+  HealthDataType.WAIST_CIRCUMFERENCE: HealthDataUnit.METER,
   HealthDataType.WALKING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
-  HealthDataType.WEIGHT: HealthDataUnit.KILOGRAMS,
-  HealthDataType.DISTANCE_WALKING_RUNNING: HealthDataUnit.METERS,
+  HealthDataType.WEIGHT: HealthDataUnit.KILOGRAM,
+  HealthDataType.DISTANCE_WALKING_RUNNING: HealthDataUnit.METER,
   HealthDataType.FLIGHTS_CLIMBED: HealthDataUnit.COUNT,
-  HealthDataType.MOVE_MINUTES: HealthDataUnit.MINUTES,
-  HealthDataType.DISTANCE_DELTA: HealthDataUnit.METERS,
+  HealthDataType.MOVE_MINUTES: HealthDataUnit.MINUTE,
+  HealthDataType.DISTANCE_DELTA: HealthDataUnit.METER,
 
   HealthDataType.WATER: HealthDataUnit.LITER,
-  HealthDataType.SLEEP_IN_BED: HealthDataUnit.MINUTES,
-  HealthDataType.SLEEP_ASLEEP: HealthDataUnit.MINUTES,
-  HealthDataType.SLEEP_AWAKE: HealthDataUnit.MINUTES,
-  HealthDataType.MINDFULNESS: HealthDataUnit.MINUTES,
-  HealthDataType.EXERCISE_TIME: HealthDataUnit.MINUTES,
-  HealthDataType.WORKOUT: HealthDataUnit.MINUTES,
+  HealthDataType.SLEEP_IN_BED: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_ASLEEP: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_AWAKE: HealthDataUnit.MINUTE,
+  HealthDataType.MINDFULNESS: HealthDataUnit.MINUTE,
+  HealthDataType.EXERCISE_TIME: HealthDataUnit.MINUTE,
+  HealthDataType.WORKOUT: HealthDataUnit.NO_UNIT,
 
-  HealthDataType.HEADACHE_NOT_PRESENT: HealthDataUnit.MINUTES,
-  HealthDataType.HEADACHE_MILD: HealthDataUnit.MINUTES,
-  HealthDataType.HEADACHE_MODERATE: HealthDataUnit.MINUTES,
-  HealthDataType.HEADACHE_SEVERE: HealthDataUnit.MINUTES,
-  HealthDataType.HEADACHE_UNSPECIFIED: HealthDataUnit.MINUTES,
+  HealthDataType.HEADACHE_NOT_PRESENT: HealthDataUnit.MINUTE,
+  HealthDataType.HEADACHE_MILD: HealthDataUnit.MINUTE,
+  HealthDataType.HEADACHE_MODERATE: HealthDataUnit.MINUTE,
+  HealthDataType.HEADACHE_SEVERE: HealthDataUnit.MINUTE,
+  HealthDataType.HEADACHE_UNSPECIFIED: HealthDataUnit.MINUTE,
 
   // Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
-  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
-};
-
-const HealthDataTypeJsonValue = {
-  HealthDataType.ACTIVE_ENERGY_BURNED: 'active_energy_burned',
-  HealthDataType.BASAL_ENERGY_BURNED: 'basal_energy_burned',
-  HealthDataType.BLOOD_GLUCOSE: 'blood_glucose',
-  HealthDataType.BLOOD_OXYGEN: 'blood_oxygen',
-  HealthDataType.BLOOD_PRESSURE_DIASTOLIC: 'blood_pressure_diastolic',
-  HealthDataType.BLOOD_PRESSURE_SYSTOLIC: 'blood_pressure_systolic',
-  HealthDataType.BODY_FAT_PERCENTAGE: 'body_fat_percentage',
-  HealthDataType.BODY_MASS_INDEX: 'body_mass_index',
-  HealthDataType.BODY_TEMPERATURE: 'body_temperature',
-  HealthDataType.HEART_RATE: 'heart_rate',
-  HealthDataType.HEART_RATE_VARIABILITY_SDNN: 'heart_rate_variability_sdnn',
-  HealthDataType.HEIGHT: 'height',
-  HealthDataType.RESTING_HEART_RATE: 'resting_heart_rate',
-  HealthDataType.STEPS: 'steps',
-  HealthDataType.WAIST_CIRCUMFERENCE: 'waist_circumference',
-  HealthDataType.WALKING_HEART_RATE: 'walking_heart_rate',
-  HealthDataType.WEIGHT: 'weight',
-  HealthDataType.DISTANCE_WALKING_RUNNING: 'distance_walking_running',
-  HealthDataType.FLIGHTS_CLIMBED: 'flights_climbed',
-  HealthDataType.MOVE_MINUTES: 'move_minutes',
-  HealthDataType.DISTANCE_DELTA: 'distance_delta',
-  HealthDataType.MINDFULNESS: 'mindfulness',
-  HealthDataType.WATER: 'water',
-  HealthDataType.SLEEP_IN_BED: 'sleep_in_bed',
-  HealthDataType.SLEEP_ASLEEP: 'sleep_asleep',
-  HealthDataType.SLEEP_AWAKE: 'sleep_awake',
-  HealthDataType.HIGH_HEART_RATE_EVENT: 'high_heart_rate_event',
-  HealthDataType.LOW_HEART_RATE_EVENT: 'low_heart_rate_event',
-  HealthDataType.IRREGULAR_HEART_RATE_EVENT: 'irregular_heart_rate_event',
-  HealthDataType.ELECTRODERMAL_ACTIVITY: 'electrodermal_activity',
-  HealthDataType.EXERCISE_TIME: 'exercise_time',
-  HealthDataType.WORKOUT: 'workout',
-  HealthDataType.HEADACHE_NOT_PRESENT: 'headache_not_present',
-  HealthDataType.HEADACHE_MILD: 'headache_mild',
-  HealthDataType.HEADACHE_MODERATE: 'headache_moderate',
-  HealthDataType.HEADACHE_SEVERE: 'headache_severe',
-  HealthDataType.HEADACHE_UNSPECIFIED: 'headache_unspecified',
-};
-
-const HealthDataUnitJsonValue = {
-  HealthDataUnit.BEATS_PER_MINUTE: 'beats_per_minute',
-  HealthDataUnit.CALORIES: 'calories',
-  HealthDataUnit.COUNT: 'count',
-  HealthDataUnit.DEGREE_CELSIUS: 'degree_celsius',
-  HealthDataUnit.KILOGRAMS: 'kilograms',
-  HealthDataUnit.GRAMS: 'grams',
-  HealthDataUnit.METERS: 'meters',
-  HealthDataUnit.MILLIGRAM_PER_DECILITER: 'milligram_per_deciliter',
-  HealthDataUnit.MILLIMETER_OF_MERCURY: 'millimeter_of_mercury',
-  HealthDataUnit.MILLISECONDS: 'milliseconds',
-  HealthDataUnit.MINUTES: 'minutes',
-  HealthDataUnit.NO_UNIT: 'no_unit',
-  HealthDataUnit.PERCENTAGE: 'percentage',
-  HealthDataUnit.SIEMENS: 'siemens',
-  HealthDataUnit.UNKNOWN_UNIT: 'unknown_unit',
-  HealthDataUnit.LITER: 'liter',
+  HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECOND,
 };
 
 const PlatformTypeJsonValue = {
@@ -234,22 +179,230 @@ const PlatformTypeJsonValue = {
   PlatformType.ANDROID: 'android'
 };
 
-/// List of all [HealthDataPoint] units.
+/// List of all [HealthDataUnit]s.
 enum HealthDataUnit {
-  BEATS_PER_MINUTE,
-  CALORIES,
-  COUNT,
-  DEGREE_CELSIUS,
-  GRAMS,
-  KILOGRAMS,
-  METERS,
-  MILLIGRAM_PER_DECILITER,
-  MILLIMETER_OF_MERCURY,
-  MILLISECONDS,
-  MINUTES,
-  NO_UNIT,
-  PERCENTAGE,
-  SIEMENS,
-  UNKNOWN_UNIT,
+  // Mass units
+  GRAM,
+  KILOGRAM,
+  OUNCE,
+  POUND,
+  STONE,
+  // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
+  // MOLE_UNIT_WITH_PREFIX_MOLAR_MASS, // requires molar mass & prefix input - not supported yet
+
+  // Length units
+  METER,
+  INCH,
+  FOOT,
+  YARD,
+  MILE,
+
+  // Volume units
   LITER,
+  MILLILITER,
+  FLUID_OUNCE_US,
+  FLUID_OUNCE_IMPERIAL,
+  CUP_US,
+  CUP_IMPERIAL,
+  PINT_US,
+  PINT_IMPERIAL,
+
+  // Pressure units
+  PASCAL,
+  MILLIMETER_OF_MERCURY,
+  INCHES_OF_MERCURY,
+  CENTIMETER_OF_WATER,
+  ATMOSPHERE,
+  DECIBEL_A_WEIGHTED_SOUND_PRESSURE_LEVEL,
+
+  // Time units
+  SECOND,
+  MILLISECOND,
+  MINUTE,
+  HOUR,
+  DAY,
+
+  // Energy units
+  JOULE,
+  KILOCALORIE,
+  LARGE_CALORIE,
+  SMALL_CALORIE,
+
+  // Temperature units
+  DEGREE_CELSIUS,
+  DEGREE_FAHRENHEIT,
+  KELVIN,
+
+  // Hearing units
+  DECIBEL_HEARING_LEVEL,
+
+  // Frequency units
+  HERTZ,
+
+  // Electrical conductance units
+  SIEMEN,
+
+  // Potential units
+  VOLT,
+
+  // Pharmacology units
+  INTERNATIONAL_UNIT,
+
+  // Scalar units
+  COUNT,
+  PERCENT,
+
+  // Other units
+  BEATS_PER_MINUTE,
+  MILLIGRAM_PER_DECILITER,
+  UNKNOWN_UNIT,
+  NO_UNIT,
+}
+
+/// List of [HealthWorkoutActivityType]s.
+/// Commented for which platform they are supported
+enum HealthWorkoutActivityType {
+  // Both
+  ARCHERY,
+  BADMINTON,
+  BASEBALL,
+  BASKETBALL,
+  BIKING, // This also entails the iOS version where it is called CYCLING
+  BOXING,
+  CRICKET,
+  CURLING,
+  ELLIPTICAL,
+  FENCING,
+  AMERICAN_FOOTBALL,
+  AUSTRALIAN_FOOTBALL,
+  SOCCER,
+  GOLF,
+  GYMNASTICS,
+  HANDBALL,
+  HIGH_INTENSITY_INTERVAL_TRAINING,
+  HIKING,
+  HOCKEY,
+  SKATING,
+  JUMP_ROPE,
+  KICKBOXING,
+  MARTIAL_ARTS,
+  PILATES,
+  RACQUETBALL,
+  ROWING,
+  RUGBY,
+  RUNNING,
+  SAILING,
+  CROSS_COUNTRY_SKIING,
+  DOWNHILL_SKIING,
+  SNOWBOARDING,
+  SOFTBALL,
+  SQUASH,
+  STAIR_CLIMBING,
+  SWIMMING,
+  TABLE_TENNIS,
+  TENNIS,
+  VOLLEYBALL,
+  WALKING,
+  WATER_POLO,
+  YOGA,
+
+  // iOS only
+  BOWLING,
+  CROSS_TRAINING,
+  TRACK_AND_FIELD,
+  DISC_SPORTS,
+  LACROSSE,
+  PREPARATION_AND_RECOVERY,
+  FLEXIBILITY,
+  COOLDOWN,
+  WHEELCHAIR_WALK_PACE,
+  WHEELCHAIR_RUN_PACE,
+  HAND_CYCLING,
+  CORE_TRAINING,
+  FUNCTIONAL_STRENGTH_TRAINING,
+  TRADITIONAL_STRENGTH_TRAINING,
+  MIXED_CARDIO,
+  STAIRS,
+  STEP_TRAINING,
+  FITNESS_GAMING,
+  BARRE,
+  CARDIO_DANCE,
+  SOCIAL_DANCE,
+  MIND_AND_BODY,
+  PICKLEBALL,
+  CLIMBING,
+  EQUESTRIAN_SPORTS,
+  FISHING,
+  HUNTING,
+  PLAY,
+  SNOW_SPORTS,
+  PADDLE_SPORTS,
+  SURFING_SPORTS,
+  WATER_FITNESS,
+  WATER_SPORTS,
+  TAI_CHI,
+  WRESTLING,
+
+  // Android only
+  AEROBICS,
+  BIATHLON,
+  CALISTHENICS,
+  CIRCUIT_TRAINING,
+  CROSS_FIT,
+  DANCING,
+  DIVING,
+  ELEVATOR,
+  ERGOMETER,
+  ESCALATOR,
+  FRISBEE_DISC,
+  GARDENING,
+  GUIDED_BREATHING,
+  HORSEBACK_RIDING,
+  HOUSEWORK,
+  INTERVAL_TRAINING,
+  IN_VEHICLE,
+  KAYAKING,
+  KETTLEBELL_TRAINING,
+  KICK_SCOOTER,
+  KITE_SURFING,
+  MEDITATION,
+  MIXED_MARTIAL_ARTS,
+  P90X,
+  PARAGLIDING,
+  POLO,
+  ROCK_CLIMBING, // on iOS this is the same as CLIMBING
+  RUNNING_JOGGING, // on iOS this is the same as RUNNING
+  RUNNING_SAND, // on iOS this is the same as RUNNING
+  RUNNING_TREADMILL, // on iOS this is the same as RUNNING
+  SCUBA_DIVING,
+  SKATING_CROSS, // on iOS this is the same as SKATING
+  SKATING_INDOOR, // on iOS this is the same as SKATING
+  SKATING_INLINE, // on iOS this is the same as SKATING
+  SKIING_BACK_COUNTRY,
+  SKIING_KITE,
+  SKIING_ROLLER,
+  SLEDDING,
+  STAIR_CLIMBING_MACHINE,
+  STANDUP_PADDLEBOARDING,
+  STILL,
+  STRENGTH_TRAINING,
+  SURFING,
+  SWIMMING_OPEN_WATER,
+  SWIMMING_POOL,
+  TEAM_SPORTS,
+  TILTING,
+  VOLLEYBALL_BEACH,
+  VOLLEYBALL_INDOOR,
+  WAKEBOARDING,
+  WALKING_FITNESS,
+  WALKING_NORDIC,
+  WALKING_STROLLER,
+  WALKING_TREADMILL,
+  WEIGHTLIFTING,
+  WHEELCHAIR,
+  WINDSURFING,
+  ZUMBA,
+
+  //
+  OTHER,
 }

@@ -1,3 +1,7 @@
+## 2.2.0
+- upgrade of `permission_handler: ^10.0.0`
+- Upgraded to Dart 2.17 and Flutter 3.0
+
 ## 2.1.0
 - upgrade of `permission_handler: ^9.2.0`
 - [PR#503](https://github.com/cph-cachet/flutter-plugins/pull/503)

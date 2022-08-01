@@ -10,6 +10,7 @@ On **Android** add the audio recording permission to `AndroidManifest.xml`:
 ```
 
 On **iOS** enable the following:
+
 * Capabilities > Background Modes > _Audio, AirPlay and Picture in Picture_
 * In the Runner Xcode project edit the `Info.plist` file. Add an entry for _'Privacy - Microphone Usage Description'_
 
