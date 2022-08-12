@@ -277,6 +277,43 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             
         let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
+        
+        var consumedFoods: Array<HKCorrelation> = []
+        
+        for food in foodList {
+            var iterationFood = food
+            
+            var consumedSamples: Set<HKSample> = []
+            
+            let timestamp = iterationFood.removeValue(forKey: "timestamp") as! NSNumber
+            let date = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
+            
+            for (key, value) in iterationFood {
+                let dataType = dataTypeLookUp(key: key) as! HKQuantityType
+                let dataTypeUnit = unitLookUp(key: key)
+                if let access = nutrientAccess[key] {
+                    if (access == true) {
+                        let sample = HKQuantitySample(
+                            type: dataType,
+                            quantity: HKQuantity(unit: dataTypeUnit, doubleValue: value as! Double),
+                            start: date,
+                            end: date)
+                        
+                        consumedSamples.insert(sample)
+                    }
+                } else {
+                  NSLog("Unknown nutrient or nutrient access")
+                }
+            }
+            
+            if (!consumedSamples.isEmpty) {
+                let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
+
+                let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
+                
+                consumedFoods.append(foodCorrelation)
+            }
+        }
                 
         let query = HKCorrelationQuery(type: HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!, predicate: HKCorrelationQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: []), samplePredicates: nil)
         {
@@ -297,41 +334,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                                 NSLog("Error Deleting, Sample: \(err.localizedDescription)")
                             }
                         })
-                    }
-                }
-                
-                var consumedFoods: Array<HKCorrelation> = []
-                
-                for food in foodList {
-                    var iterationFood = food
-                    
-                    var consumedSamples: Set<HKSample> = []
-                    
-                    let timestamp = iterationFood.removeValue(forKey: "timestamp") as! NSNumber
-                    let date = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
-                    
-                    for (key, value) in iterationFood {
-                        if let access = nutrientAccess[key] {
-                            if (access == true) {
-                                let sample = HKQuantitySample(
-                                    type: self.dataTypeLookUp(key: key) as! HKQuantityType,
-                                    quantity: HKQuantity(unit: self.unitLookUp(key: key), doubleValue: value as! Double),
-                                    start: date,
-                                    end: date)
-                                
-                                consumedSamples.insert(sample)
-                            }
-                        } else {
-                          NSLog("Unknown nutrient or nutrient access")
-                        }
-                    }
-                    
-                    if (!consumedSamples.isEmpty) {
-                        let foodType: HKCorrelationType = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
-
-                        let foodCorrelation: HKCorrelation = HKCorrelation(type: foodType, start: date, end: date, objects: consumedSamples)
-                        
-                        consumedFoods.append(foodCorrelation)
                     }
                 }
                 
