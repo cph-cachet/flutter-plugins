@@ -489,15 +489,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dataType = dataTypeLookUp(key: dataTypeKey)
         let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
+        
+        let unit = unitLookUp(key: dataTypeKey)
 
         let query =  HKSampleQuery(sampleType: dataType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) {
             x, samplesOrNil, error in
 
             switch samplesOrNil {
             case let (samples as [HKQuantitySample]) as Any:
-                
                 let dictionaries = samples.map { sample -> NSDictionary in
-                    let unit = self.unitLookUp(key: dataTypeKey)
                     return [
                         "uuid": "\(sample.uuid)",
                         "value": sample.quantity.doubleValue(for: unit),
