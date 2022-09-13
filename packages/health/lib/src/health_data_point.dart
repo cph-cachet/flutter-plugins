@@ -14,17 +14,8 @@ class HealthDataPoint {
   String _sourceId;
   String _sourceName;
 
-  HealthDataPoint(
-      this._value,
-      this._type,
-      this._unit,
-      this._dateFrom,
-      this._dateTo,
-      this._platform,
-      this._deviceId,
-      this._deviceModel,
-      this._sourceId,
-      this._sourceName) {
+  HealthDataPoint(this._value, this._type, this._unit, this._dateFrom, this._dateTo, this._platform, this._deviceId,
+      this._deviceModel, this._sourceId, this._sourceName) {
     // set the value to minutes rather than the category
     // returned by the native API
     if (type == HealthDataType.MINDFULNESS ||
@@ -50,21 +41,19 @@ class HealthDataPoint {
     HealthValue healthValue;
     if (json['data_type'] == 'audiogram') {
       healthValue = AudiogramHealthValue.fromJson(json['value']);
+    } else if (json['data_type'] == 'WORKOUT') {
+      healthValue = WorkoutHealthValue.fromJson(json['value']);
     } else {
       healthValue = NumericHealthValue.fromJson(json['value']);
     }
 
     return HealthDataPoint(
         healthValue,
-        HealthDataType.values.firstWhere(
-            (element) => element.typeToString() == json['data_type']),
-        HealthDataUnit.values
-            .firstWhere((element) => element.typeToString() == json['unit']),
+        HealthDataType.values.firstWhere((element) => element.typeToString() == json['data_type']),
+        HealthDataUnit.values.firstWhere((element) => element.typeToString() == json['unit']),
         DateTime.parse(json['date_from']),
         DateTime.parse(json['date_to']),
-        PlatformTypeJsonValue.keys.toList()[PlatformTypeJsonValue.values
-            .toList()
-            .indexOf(json['platform_type'])],
+        PlatformTypeJsonValue.keys.toList()[PlatformTypeJsonValue.values.toList().indexOf(json['platform_type'])],
         json['device_id'],
         json['device_model'],
         json['source_id'],
@@ -80,7 +69,7 @@ class HealthDataPoint {
         'date_to': dateTo.toIso8601String(),
         'platform_type': PlatformTypeJsonValue[platform],
         'device_id': deviceId,
-        'device_model' : deviceModel,
+        'device_model': deviceModel,
         'source_id': sourceId,
         'source_name': sourceName
       };
@@ -150,6 +139,6 @@ class HealthDataPoint {
   }
 
   @override
-  int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type, platform,
-      deviceId, deviceModel, sourceId, sourceName);
+  int get hashCode =>
+      Object.hash(value, unit, dateFrom, dateTo, type, platform, deviceId, deviceModel, sourceId, sourceName);
 }

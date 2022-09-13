@@ -46,8 +46,7 @@ class AudiogramHealthValue extends HealthValue {
   List<num> _leftEarSensitivities;
   List<num> _rightEarSensitivities;
 
-  AudiogramHealthValue(this._frequencies, this._leftEarSensitivities,
-      this._rightEarSensitivities);
+  AudiogramHealthValue(this._frequencies, this._leftEarSensitivities, this._rightEarSensitivities);
 
   List<num> get frequencies => _frequencies;
   List<num> get leftEarSensitivities => _leftEarSensitivities;
@@ -61,9 +60,7 @@ class AudiogramHealthValue extends HealthValue {
   }
 
   factory AudiogramHealthValue.fromJson(json) {
-    return AudiogramHealthValue(
-        List<num>.from(json['frequencies']),
-        List<num>.from(json['leftEarSensitivities']),
+    return AudiogramHealthValue(List<num>.from(json['frequencies']), List<num>.from(json['leftEarSensitivities']),
         List<num>.from(json['rightEarSensitivities']));
   }
 
@@ -82,8 +79,7 @@ class AudiogramHealthValue extends HealthValue {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(frequencies, leftEarSensitivities, rightEarSensitivities);
+  int get hashCode => Object.hash(frequencies, leftEarSensitivities, rightEarSensitivities);
 }
 
 /// A [HealthValue] object for workouts
@@ -101,12 +97,8 @@ class WorkoutHealthValue extends HealthValue {
   int? _totalDistance;
   HealthDataUnit? _totalDistanceUnit;
 
-  WorkoutHealthValue(
-      this._workoutActivityType,
-      this._totalEnergyBurned,
-      this._totalEnergyBurnedUnit,
-      this._totalDistance,
-      this._totalDistanceUnit);
+  WorkoutHealthValue(this._workoutActivityType, this._totalEnergyBurned, this._totalEnergyBurnedUnit,
+      this._totalDistance, this._totalDistanceUnit);
 
   /// The type of the workout.
   HealthWorkoutActivityType get workoutActivityType => _workoutActivityType;
@@ -129,40 +121,33 @@ class WorkoutHealthValue extends HealthValue {
 
   factory WorkoutHealthValue.fromJson(json) {
     return WorkoutHealthValue(
-        HealthWorkoutActivityType.values.firstWhere(
-            (element) => element.typeToString() == json['workoutActivityType']),
-        json['totalEnergyBurned'] != null
-            ? (json['totalEnergyBurned'] as double).toInt()
-            : null,
+        HealthWorkoutActivityType.values.firstWhere((element) => element.typeToString() == json['workoutActivityType']),
+        json['totalEnergyBurned'] != null ? json['totalEnergyBurned'] as int : null,
         json['totalEnergyBurnedUnit'] != null
-            ? HealthDataUnit.values.firstWhere((element) =>
-                element.typeToString() == json['totalEnergyBurnedUnit'])
+            ? HealthDataUnit.values.firstWhere((element) => element.typeToString() == json['totalEnergyBurnedUnit'])
             : null,
-        json['totalDistance'] != null
-            ? (json['totalDistance'] as double).toInt()
-            : null,
+        json['totalDistance'] != null ? json['totalDistance'] as int : null,
         json['totalDistanceUnit'] != null
-            ? HealthDataUnit.values.firstWhere((element) =>
-                element.typeToString() == json['totalDistanceUnit'])
+            ? HealthDataUnit.values.firstWhere((element) => element.typeToString() == json['totalDistanceUnit'])
             : null);
   }
 
   @override
   Map<String, dynamic> toJson() => {
-        'workoutActivityType': _workoutActivityType.toString(),
+        'workoutActivityType': _workoutActivityType.typeToString(),
         'totalEnergyBurned': _totalEnergyBurned,
-        'totalEnergyBurnedUnit': _totalEnergyBurnedUnit?.toString(),
+        'totalEnergyBurnedUnit': _totalEnergyBurnedUnit?.typeToString(),
         'totalDistance': _totalDistance,
-        'totalDistanceUnit': _totalDistanceUnit?.toString(),
+        'totalDistanceUnit': _totalDistanceUnit?.typeToString(),
       };
 
   @override
   String toString() {
-    return """workoutActivityType: ${workoutActivityType.toString()},
+    return """workoutActivityType: ${workoutActivityType.typeToString()},
     totalEnergyBurned: $totalEnergyBurned,
-    totalEnergyBurnedUnit: ${totalEnergyBurnedUnit?.toString()},
+    totalEnergyBurnedUnit: ${totalEnergyBurnedUnit?.typeToString()},
     totalDistance: $totalDistance,
-    totalDistanceUnit: ${totalDistanceUnit?.toString()}""";
+    totalDistanceUnit: ${totalDistanceUnit?.typeToString()}""";
   }
 
   @override
@@ -176,8 +161,8 @@ class WorkoutHealthValue extends HealthValue {
   }
 
   @override
-  int get hashCode => Object.hash(workoutActivityType, totalEnergyBurned,
-      totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
+  int get hashCode =>
+      Object.hash(workoutActivityType, totalEnergyBurned, totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
 }
 
 abstract class HealthValue {
