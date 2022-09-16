@@ -48,6 +48,8 @@ class HealthDataPoint {
     HealthValue healthValue;
     if (json['data_type'] == 'audiogram') {
       healthValue = AudiogramHealthValue.fromJson(json['value']);
+    } else if (json['data_type'] == 'WORKOUT') {
+      healthValue = WorkoutHealthValue.fromJson(json['value']);
     } else {
       healthValue = NumericHealthValue.fromJson(json['value']);
     }
