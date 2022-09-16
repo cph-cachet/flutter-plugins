@@ -122,11 +122,11 @@ class WorkoutHealthValue extends HealthValue {
   factory WorkoutHealthValue.fromJson(json) {
     return WorkoutHealthValue(
         HealthWorkoutActivityType.values.firstWhere((element) => element.typeToString() == json['workoutActivityType']),
-        json['totalEnergyBurned'] != null ? json['totalEnergyBurned'] as int : null,
+        json['totalEnergyBurned'] != null ? (json['totalEnergyBurned'] as num).toInt() : null,
         json['totalEnergyBurnedUnit'] != null
             ? HealthDataUnit.values.firstWhere((element) => element.typeToString() == json['totalEnergyBurnedUnit'])
             : null,
-        json['totalDistance'] != null ? json['totalDistance'] as int : null,
+        json['totalDistance'] != null ? (json['totalDistance'] as num).toInt() : null,
         json['totalDistanceUnit'] != null
             ? HealthDataUnit.values.firstWhere((element) => element.typeToString() == json['totalDistanceUnit'])
             : null);
