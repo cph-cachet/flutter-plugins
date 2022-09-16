@@ -824,6 +824,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     mResult?.success(isGranted)
   }
 
+  private fun checkIfHealthDataAvailable(call: MethodCall, result: Result) {
+    result.success(true)
+  }
+
   /// Called when the "requestAuthorization" is invoked from Flutter
   private fun requestAuthorization(call: MethodCall, result: Result) {
     if (activity == null) {
@@ -934,6 +938,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   /// Handle calls from the MethodChannel
   override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
+      "checkIfHealthDataAvailable" -> checkIfHealthDataAvailable(call, result)
       "requestAuthorization" -> requestAuthorization(call, result)
       "getData" -> getData(call, result)
       "writeData" -> writeData(call, result)

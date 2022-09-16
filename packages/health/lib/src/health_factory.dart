@@ -4,6 +4,8 @@ part of health;
 ///
 /// The plugin supports:
 ///
+///  * checking if health-related functionalities are available, using the
+///    [checkIfHealthDataAvailable] method.
 ///  * handling permissions to access health data using the [hasPermissions],
 ///    [requestAuthorization], [revokePermissions] methods.
 ///  * reading health data using the [getHealthDataFromTypes] method.
@@ -23,6 +25,18 @@ class HealthFactory {
       _platformType == PlatformType.ANDROID
           ? _dataTypeKeysAndroid.contains(dataType)
           : _dataTypeKeysIOS.contains(dataType);
+
+  /// Determines if health-related functionalities are available on the device.
+  ///
+  /// On Android, this always returns true.
+  ///
+  /// On iOS/iPadOS, the returned value is the result
+  /// of calling "isHealthDataAvailable()", which means
+  /// it would be true for iOS and false for iPadOS, at
+  /// the time of writing.
+  Future<bool?> checkIfHealthDataAvailable() async {
+    return await _channel.invokeMethod('checkIfHealthDataAvailable');
+  }
 
   /// Determines if the data types have been granted with the specified access rights.
   ///
