@@ -46,7 +46,7 @@ class HealthDataPoint {
   /// Converts a json object to the [HealthDataPoint]
   factory HealthDataPoint.fromJson(json) {
     HealthValue healthValue;
-    if (json['data_type'] == 'audiogram') {
+    if (json['data_type'] == 'AUDIOGRAM') {
       healthValue = AudiogramHealthValue.fromJson(json['value']);
     } else if (json['data_type'] == 'WORKOUT') {
       healthValue = WorkoutHealthValue.fromJson(json['value']);
