@@ -166,7 +166,8 @@ class HealthFactory {
           _platformType,
           _deviceId!,
           '',
-          '');
+          '',
+          []);
 
       bmiHealthPoints.add(x);
     }
@@ -371,6 +372,8 @@ class HealthFactory {
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
       final String sourceName = e["source_name"];
+      final List<Object?> sleepStages = Platform.isAndroid ?
+                                                    e['sleep_stages'] : [];
       return HealthDataPoint(
         value,
         dataType,
@@ -381,6 +384,7 @@ class HealthFactory {
         device,
         sourceId,
         sourceName,
+        sleepStages,
       );
     }).toList();
 

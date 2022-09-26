@@ -580,7 +580,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             android.Manifest.permission.ACCESS_FINE_LOCATION
           ) == PackageManager.PERMISSION_GRANTED
         ) {
-          // Request permission with distance data. 
+          // Request permission with distance data.
           // Google Fit requires this when we query for distance data
           // as it is restricted data
           if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
@@ -592,7 +592,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             )
           }
           readRequestBuilder.read(DataType.TYPE_DISTANCE_DELTA)
-        } 
+        }
         readRequest = readRequestBuilder.build()
         Fitness.getSessionsClient(activity!!.applicationContext, googleSignInAccount)
           .readSession(readRequest)
@@ -646,16 +646,37 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         // Return sleep time in Minutes if requested ASLEEP data
         if (type == SLEEP_ASLEEP) {
-          healthData.add(
-            hashMapOf(
-              "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
-              "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-              "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-              "unit" to "MINUTES",
-              "source_name" to session.appPackageName,
-              "source_id" to session.identifier
+          for (dataSet in response.getDataSet(session)) {
+            val sleepStages: MutableList<Map<String, Any?>> = mutableListOf()
+
+            for (dataPoint in dataSet.dataPoints) {
+              val sleepStageOrdinal = dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt()
+              val sleepStage = SLEEP_STAGES[sleepStageOrdinal]
+              // add sleep stages data
+              val durationMillis = dataPoint.getEndTime(TimeUnit.MILLISECONDS) -
+                                              dataPoint.getStartTime(TimeUnit.MILLISECONDS)
+              val duration = TimeUnit.MILLISECONDS.toMinutes(durationMillis)
+              sleepStages.add(
+                hashMapOf(
+                  "sleep_stage" to sleepStage,
+                  "duration_minutes" to duration
+                )
+              )
+            }
+
+            healthData.add(
+              hashMapOf(
+                "value" to session.getEndTime(TimeUnit.MINUTES) -
+                                  session.getStartTime(TimeUnit.MINUTES),
+                "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                "unit" to "MINUTES",
+                "source_name" to session.appPackageName,
+                "source_id" to session.identifier,
+                "sleep_stages" to sleepStages
+              )
             )
-          )
+          }
         }
 
         if (type == SLEEP_IN_BED) {
@@ -967,3 +988,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     activity = null
   }
 }
+
+/**
+ * Names for the {@code SleepStages} values.
+ */
+val SLEEP_STAGES = arrayOf(
+  "Unused",
+  "Awake (during sleep)",
+  "Sleep",
+  "Out-of-bed",
+  "Light sleep",
+  "Deep sleep",
+  "REM sleep"
+)

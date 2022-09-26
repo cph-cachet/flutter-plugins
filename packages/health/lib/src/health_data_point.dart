@@ -12,6 +12,7 @@ class HealthDataPoint {
   String _deviceId;
   String _sourceId;
   String _sourceName;
+  List<Object?> _sleepStages;
 
   HealthDataPoint(
       this._value,
@@ -22,7 +23,8 @@ class HealthDataPoint {
       this._platform,
       this._deviceId,
       this._sourceId,
-      this._sourceName) {
+      this._sourceName,
+      this._sleepStages) {
     // set the value to minutes rather than the category
     // returned by the native API
     if (type == HealthDataType.MINDFULNESS ||
@@ -65,7 +67,8 @@ class HealthDataPoint {
             .indexOf(json['platform_type'])],
         json['device_id'],
         json['source_id'],
-        json['source_name']);
+        json['source_name'],
+        json['sleep_stages']);
   }
 
   /// Converts the [HealthDataPoint] to a json object
@@ -78,7 +81,8 @@ class HealthDataPoint {
         'platform_type': PlatformTypeJsonValue[platform],
         'device_id': deviceId,
         'source_id': sourceId,
-        'source_name': sourceName
+        'source_name': sourceName,
+        'sleep_stages': sleepStages
       };
 
   @override
@@ -91,7 +95,8 @@ class HealthDataPoint {
     platform: $platform,
     deviceId: $deviceId,
     sourceId: $sourceId,
-    sourceName: $sourceName""";
+    sourceName: $sourceName,
+    sleepStages: $sleepStages""";
 
   // / The quantity value of the data point
   HealthValue get value => _value;
@@ -126,6 +131,9 @@ class HealthDataPoint {
   /// The name of the source from which the data point was fetched.
   String get sourceName => _sourceName;
 
+  /// The name of the sleep stages from which the data point was fetched.
+  List<Object?> get sleepStages => _sleepStages;
+
   @override
   bool operator ==(Object o) {
     return o is HealthDataPoint &&
@@ -137,10 +145,11 @@ class HealthDataPoint {
         this.platform == o.platform &&
         this.deviceId == o.deviceId &&
         this.sourceId == o.sourceId &&
-        this.sourceName == o.sourceName;
+        this.sourceName == o.sourceName &&
+        this.sleepStages == o.sleepStages;
   }
 
   @override
   int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type, platform,
-      deviceId, sourceId, sourceName);
+      deviceId, sourceId, sourceName, sleepStages);
 }
