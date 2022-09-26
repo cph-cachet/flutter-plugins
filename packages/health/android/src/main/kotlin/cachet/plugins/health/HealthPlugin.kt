@@ -553,6 +553,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       DataType.TYPE_SLEEP_SEGMENT -> {
         // request to the sessions for sleep data
         val request = SessionReadRequest.Builder()
+          .read(DataType.TYPE_SLEEP_SEGMENT)
           .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
           .enableServerQueries()
           .readSessionsFromAllApps()
