@@ -14,7 +14,8 @@ public class PermissionManager {
 
     private HashMap<String, String> userDataMap;
 
-    private static String[] permissions = new String[]{
+    private static String[] permissions = new String[] {
+            Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.RECEIVE_BOOT_COMPLETED,
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_ADMIN,
@@ -25,7 +26,6 @@ public class PermissionManager {
     };
 
     private Activity activity;
-
 
     public PermissionManager(Activity activity, HashMap<String, String> userDataMap) {
         Log.d("PermissionActivity", userDataMap.toString());
@@ -55,7 +55,6 @@ public class PermissionManager {
         int res = activity.checkCallingOrSelfPermission(permission);
         return (res == PackageManager.PERMISSION_GRANTED);
     }
-
 
     private void checkDelayed() {
         Handler handler = new Handler();

@@ -62,11 +62,13 @@ class _MovisensAppState extends State<MovisensApp> {
   }
 
   void startListening() {
-    //address = '88:6B:0F:82:1D:33';// move4
+    // address = '88:6B:0F:82:1D:33'; // move4
+    address = '88:6B:0F:CD:EC:AE'; // ECG move4 - with name SN 03348
 
-    address = '88:6B:0F:CD:E7:F2'; // ECG4
+    // address = '88:6B:0F:CD:E7:F2'; // ECG4
 
-    name = 'Sensor 02655';
+    // name = 'Sensor 03348';
+    name = 'MOVISENS Sensor 03348';
     weight = 100;
     height = 180;
     age = 25;

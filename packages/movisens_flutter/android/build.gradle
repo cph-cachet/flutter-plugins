@@ -2,13 +2,14 @@ group 'dk.cachet.movisens_flutter'
 version '1.0'
 
 buildscript {
+    ext.kotlin_version = '1.6.10'
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath 'com.android.tools.build:gradle:7.1.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -16,7 +17,7 @@ buildscript {
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven { url "https://jitpack.io" }
     }
 }
@@ -43,8 +44,13 @@ dependencies {
    // implementation 'com.github.cph-cachet:movisenslibrary:df97c6293b'
 
     //FINAL-Version that removes foreground service  notification on app kill ---7sept2019
-    implementation 'com.github.cph-cachet:movisenslibrary:637731e54a'
+//    implementation 'com.github.cph-cachet:movisenslibrary:637731e54a'
+//    implementation 'com.github.cph-cachet:movisenslibrary'
+//    implementation 'com.github.cph-cachet:movisenslibrary'
 
-    //implementation project(':movisenslibrary')
+//    includeBuild "/Users/madsvedelsaabychristensen/Development/CACHET/movisenslibrary"
+
+    implementation project(':movisenslibrary')
+    implementation 'androidx.appcompat:appcompat:1.5.1'
     // implementation files('libs/flutter.jar')
 }

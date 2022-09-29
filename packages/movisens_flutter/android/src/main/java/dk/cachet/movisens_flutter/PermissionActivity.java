@@ -16,7 +16,8 @@ public class PermissionActivity extends AppCompatActivity {
 
     private HashMap<String, String> userDataMap;
 
-    private static String[] permissions = new String[]{
+    private static String[] permissions = new String[] {
+            Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.RECEIVE_BOOT_COMPLETED,
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_ADMIN,
@@ -25,7 +26,6 @@ public class PermissionActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +37,7 @@ public class PermissionActivity extends AppCompatActivity {
             requestPermissions(permissions, 0);
             checkDelayed();
         } else {
-//            Log.d("appFlow", "Inside Activity_permission and starting Main activity");
+            // Log.d("appFlow", "Inside Activity_permission and starting Main activity");
             startService();
         }
     }
@@ -59,7 +59,6 @@ public class PermissionActivity extends AppCompatActivity {
         int res = checkCallingOrSelfPermission(permission);
         return (res == PackageManager.PERMISSION_GRANTED);
     }
-
 
     private void checkDelayed() {
         Handler handler = new Handler();

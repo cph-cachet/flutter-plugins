@@ -1,1 +1,5 @@
 rootProject.name = 'movisens_flutter'
+
+include 'app'
+include 'movisenslibrary'
+project(':movisenslibrary').projectDir = new File('/Users/madsvedelsaabychristensen/Development/CACHET/movisenslibrary')
