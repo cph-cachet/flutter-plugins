@@ -76,6 +76,10 @@ enum HealthDataType {
   LOW_HEART_RATE_EVENT,
   IRREGULAR_HEART_RATE_EVENT,
   ELECTRODERMAL_ACTIVITY,
+
+  //Specific to Health Connect App (weight is already there)
+  NUTRITION,
+  BODYFAT,
 }
 
 enum HealthDataAccess {

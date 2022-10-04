@@ -1,5 +1,7 @@
 part of health;
 
+enum AndroidDataSource { HealthConnect, GoogleFit }
+
 /// Main class for the Plugin.
 ///
 /// The plugin supports:
@@ -45,22 +47,37 @@ class HealthFactory {
   ///   with a READ or READ_WRITE access.
   ///
   ///   On Android, this function returns true or false, depending on whether the specified access right has been granted.
-  static Future<bool?> hasPermissions(List<HealthDataType> types, {List<HealthDataAccess>? permissions}) async {
+  static Future<bool?> hasPermissions(List<HealthDataType> types, bool isDataFromHealthConnect,
+      {List<HealthDataAccess>? permissions}) async {
     if (permissions != null && permissions.length != types.length)
       throw ArgumentError("The lists of types and permissions must be of same length.");
-
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
         ? List<int>.filled(types.length, HealthDataAccess.READ.index, growable: true)
         : permissions.map((permission) => permission.index).toList();
 
-    /// On Android, if BMI is requested, then also ask for weight and height
-    if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+    if (isDataFromHealthConnect && _platformType == PlatformType.ANDROID) {
+      try {
+        var value = await _channel.invokeMethod('hasPermissionsHealthConnect', {
+          "types": mTypes.map((type) => _enumToString(type)).toList(),
+          "permissions": mPermissions,
+        });
+        print(value);
+        // return false;
+        return value;
+      } on PlatformException catch (e) {
+        print(e);
+        return null;
+      }
+    } else {
+      /// On Android, if BMI is requested, then also ask for weight and height
+      if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
-    return await _channel.invokeMethod('hasPermissions', {
-      "types": mTypes.map((type) => _enumToString(type)).toList(),
-      "permissions": mPermissions,
-    });
+      return await _channel.invokeMethod('hasPermissions', {
+        "types": mTypes.map((type) => _enumToString(type)).toList(),
+        "permissions": mPermissions,
+      });
+    }
   }
 
   /// Request permissions.
@@ -195,9 +212,50 @@ class HealthFactory {
   ///   + It must be equal to or later than [startTime].
   ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
   ///
-  Future<bool> writeHealthData(double value, HealthDataType type, DateTime startTime, DateTime endTime,
-      {bool overwrite = false}) async {
+  Future<bool> writeHealthData(
+    HealthDataType type, {
+    DateTime? startTime,
+    DateTime? endTime,
+    double? value,
+    DateTime? currentTime,
+    HealthConnectNutrition? nutrition,
+    AndroidDataSource? androidDataSource,
+    bool overwrite = false,
+  }) async {
+    if (androidDataSource == AndroidDataSource.HealthConnect && type == HealthDataType.NUTRITION && nutrition == null)
+      throw ArgumentError("Nutrition shouldn't be null");
+    if (androidDataSource == AndroidDataSource.HealthConnect &&
+        (type != HealthDataType.NUTRITION && type != HealthDataType.WEIGHT && type != HealthDataType.BODYFAT))
+      throw ArgumentError("This datatype is not supported for HealthConnect yet");
+    if (androidDataSource == AndroidDataSource.HealthConnect && _platformType == PlatformType.ANDROID) {
+      if (type == HealthDataType.NUTRITION) {
+        if (nutrition?.startTime.compareTo(nutrition.endTime) == 0)
+          throw ArgumentError("startTime must be earlier than endTime");
+        if (nutrition?.startTime.isAfter(nutrition.endTime) ?? false)
+          throw ArgumentError("startTime must be earlier than endTime");
+        Map<String, dynamic> args = {
+          'value': nutrition?.toMap(),
+          'dataTypeKey': _enumToString(type),
+        };
+        bool? success = await _channel.invokeMethod('writeDataHealthConnect', args);
+        return success ?? false;
+      }
+      if (currentTime == null) throw ArgumentError("currentTime must be not null");
+      if (type == HealthDataType.WEIGHT || type == HealthDataType.BODYFAT) {
+        if (value == null) throw ArgumentError("value must be not null");
+      }
+      Map<String, dynamic> args = {
+        'value': value,
+        'dataTypeKey': _enumToString(type),
+        'currentTime': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(currentTime).toString(),
+      };
+      bool? success = await _channel.invokeMethod('writeDataHealthConnect', args);
+      return success ?? false;
+    }
+    if (startTime == null) throw ArgumentError("startTime must be not null");
+    if (endTime == null) throw ArgumentError("endTime must be not null");
     if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+
     Map<String, dynamic> args = {
       'value': value,
       'dataTypeKey': _enumToString(type),
@@ -252,6 +310,51 @@ class HealthFactory {
     };
     bool? success = await _channel.invokeMethod('deleteFoodData', args);
     return success ?? false;
+  }
+
+  Future<List<HealthConnectData>> getHealthConnectData(
+      DateTime startDate, DateTime endDate, HealthDataType type) async {
+    if (_platformType == PlatformType.ANDROID) {
+      if (startDate.isAfter(endDate)) throw ArgumentError("startTime must be equal or earlier than endTime");
+
+      if (startDate == endDate) {
+        throw ArgumentError("end time needs be after start time");
+      }
+
+      Map<String, dynamic> args = {
+        'dataTypeKey': _enumToString(type),
+        'startDate': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(startDate).toString(),
+        'endDate': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endDate).toString(),
+      };
+      var success = await _channel.invokeMethod('getHealthConnectData', args);
+      if (success.length > 0) {
+        if (type == HealthDataType.WEIGHT) {
+          return success.map<HealthConnectWeight>((e) {
+            return HealthConnectWeight.fromJson(e as Map<dynamic, dynamic>, type);
+          }).toList();
+        } else if (type == HealthDataType.BODYFAT) {
+          return success.map<HealthConnectBodyFat>((e) {
+            return HealthConnectBodyFat.fromJson(e as Map<dynamic, dynamic>, type);
+          }).toList();
+        } else if (type == HealthDataType.NUTRITION) {
+          return success.map<HealthConnectNutrition>((e) {
+            return HealthConnectNutrition.fromJson(e as Map<dynamic, dynamic>, type);
+          }).toList();
+        }
+      }
+      return [];
+    }
+    throw ArgumentError("This method will only work with Android.");
+  }
+
+  Future<bool> deleteHealthConnectData(HealthDataType type, String uID) async {
+    if (_platformType == PlatformType.ANDROID) {
+      if (uID.isEmpty) throw ArgumentError("uID must be not null");
+      Map<String, dynamic> args = {'dataTypeKey': _enumToString(type), 'uID': uID};
+      var success = await _channel.invokeMethod('deleteHealthConnectData', args);
+      return success ?? false;
+    }
+    throw ArgumentError("This method will only work with Android.");
   }
 
   /// Fetch a list of health data points based on [types].

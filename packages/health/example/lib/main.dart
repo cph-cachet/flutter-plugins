@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 
-void main() => runApp(HealthApp());
+void main() => runApp(MaterialApp(home: HealthApp()));
 
 class HealthApp extends StatefulWidget {
   @override
@@ -23,6 +25,7 @@ enum AppState {
 }
 
 class _HealthAppState extends State<HealthApp> {
+  AndroidDataSource androidDataSource = AndroidDataSource.HealthConnect;
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 10;
@@ -95,35 +98,210 @@ class _HealthAppState extends State<HealthApp> {
   }
 
   /// Add some random health data.
-  Future addData() async {
+  /*Future addData() async {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(minutes: 5));
 
     _nofSteps = Random().nextInt(10);
     final types = [HealthDataType.STEPS, HealthDataType.BLOOD_GLUCOSE];
     final rights = [HealthDataAccess.WRITE, HealthDataAccess.WRITE];
+
+    final typesHealthConnect = [
+      HealthDataType.BODYFAT,
+      HealthDataType.NUTRITION,
+      HealthDataType.WEIGHT
+    ];
+
+    final rightsHealthConnect = [
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+    ];
+
     final permissions = [
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE
     ];
-    bool? hasPermissions =
-        await HealthFactory.hasPermissions(types, permissions: rights);
-    if (hasPermissions == false) {
+
+    bool? hasPermissions = await HealthFactory.hasPermissions(
+        isDataFromHealthConnect ? typesHealthConnect : types,
+        isDataFromHealthConnect,
+        permissions: isDataFromHealthConnect ? rightsHealthConnect : rights);
+    if (hasPermissions == null) {
+      print("Health Connect not installed ");
+    }
+    if (hasPermissions == false && !isDataFromHealthConnect) {
       await health.requestAuthorization(types, permissions: permissions);
     }
 
-    _mgdl = Random().nextInt(10) * 1.0;
-    bool success = await health.writeHealthData(
-        _nofSteps.toDouble(), HealthDataType.STEPS, earlier, now);
+    if (!isDataFromHealthConnect) {
+      _mgdl = Random().nextInt(10) * 1.0;
+      bool success = await health.writeHealthData(
+          isDataFromHealthConnect, HealthDataType.STEPS,
+          value: _nofSteps.toDouble(), startTime: earlier, endTime: now);
 
-    if (success) {
-      success = await health.writeHealthData(
-          _mgdl, HealthDataType.BLOOD_GLUCOSE, now, now);
+      if (success) {
+        success = await health.writeHealthData(
+            isDataFromHealthConnect, HealthDataType.BLOOD_GLUCOSE,
+            value: _mgdl, startTime: now, endTime: now);
+      }
+
+      setState(() {
+        _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
+      });
+    } else {
+      bool success = await health.writeHealthData(
+          isDataFromHealthConnect, HealthDataType.WEIGHT,
+          value: 100.toDouble(), currentTime: now);
+
+      Fluttertoast.showToast(
+          msg: success ? "Data Added" : "Something went wrong",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      */ /*setState(() {
+        _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
+      });*/ /*
     }
+  }*/
 
-    setState(() {
-      _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
-    });
+  Future addWeightDataToHealthConnect() async {
+    final now = DateTime.now();
+    bool success = await health.writeHealthData(HealthDataType.WEIGHT,
+        androidDataSource: androidDataSource,
+        value: 100.toDouble(),
+        currentTime: now);
+
+    Fluttertoast.showToast(
+        msg: success ? "Data Added" : "Something went wrong",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0);
+    if (success) {
+      await Future.delayed(Duration(milliseconds: 700));
+      readWeightDataFromHealthConnect();
+    }
+  }
+
+  List<HealthConnectWeight> healthWeight = [];
+
+  Future readWeightDataFromHealthConnect() async {
+    var type = HealthDataType.WEIGHT;
+    final startTime = DateTime.now().subtract(Duration(minutes: 100));
+    final endTime = DateTime.now();
+    List<HealthConnectData> success =
+        await health.getHealthConnectData(startTime, endTime, type);
+    healthWeight = [];
+    healthWeight = success.cast<HealthConnectWeight>();
+    setState(() {});
+  }
+
+  Future deleteWeightDataFromHealthConnect(String uID) async {
+    var type = HealthDataType.WEIGHT;
+
+    bool success = await health.deleteHealthConnectData(type, uID);
+    if (success) {
+      healthWeight.removeWhere((element) => element.uID == uID);
+      setState(() {});
+    }
+  }
+
+  Future addBodyFatDataToHealthConnect() async {
+    final now = DateTime.now();
+    bool success = await health.writeHealthData(HealthDataType.BODYFAT,
+        androidDataSource: androidDataSource,
+        value: 22.toDouble(),
+        currentTime: now);
+
+    Fluttertoast.showToast(
+        msg: success ? "Data Added" : "Something went wrong",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0);
+    if (success) {
+      await Future.delayed(Duration(milliseconds: 700));
+      readBodyFatDataFromHealthConnect();
+    }
+  }
+
+  List<HealthConnectBodyFat> healthBodyFat = [];
+
+  Future readBodyFatDataFromHealthConnect() async {
+    var type = HealthDataType.BODYFAT;
+    final startTime = DateTime.now().subtract(Duration(minutes: 100));
+    final endTime = DateTime.now();
+    List<HealthConnectData> success =
+        await health.getHealthConnectData(startTime, endTime, type);
+    healthBodyFat = [];
+    healthBodyFat = success.cast<HealthConnectBodyFat>();
+    setState(() {});
+  }
+
+  Future deleteBodyDataFromHealthConnect(String uID) async {
+    var type = HealthDataType.BODYFAT;
+
+    bool success = await health.deleteHealthConnectData(type, uID);
+    if (success) {
+      healthBodyFat.removeWhere((element) => element.uID == uID);
+      setState(() {});
+    }
+  }
+
+  Future addNutritionDataToHealthConnect() async {
+    final startTime = DateTime.now().subtract(Duration(minutes: 30));
+    final endTime = DateTime.now();
+    bool success = await health.writeHealthData(HealthDataType.NUTRITION,
+        androidDataSource: androidDataSource,
+        nutrition: HealthConnectNutrition(startTime, endTime,
+            name: "Pixelapps BreakFast",
+            mealType: MealType.BREAKFAST,
+            biotin: Mass(1.5, type: Type.GRAMS),
+            energy: Energy(11, type: EType.KILOCALORIES)));
+
+    Fluttertoast.showToast(
+        msg: success ? "Data Added" : "Something went wrong",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0);
+    if (success) {
+      await Future.delayed(Duration(milliseconds: 700));
+      readNutritionDataFromHealthConnect();
+    }
+  }
+
+  List<HealthConnectNutrition> healthNutrition = [];
+
+  Future readNutritionDataFromHealthConnect() async {
+    var type = HealthDataType.NUTRITION;
+    final startTime = DateTime.now().subtract(Duration(minutes: 700));
+    final endTime = DateTime.now();
+    List<HealthConnectData> success =
+        await health.getHealthConnectData(startTime, endTime, type);
+    healthNutrition = [];
+    healthNutrition = success.cast<HealthConnectNutrition>();
+    setState(() {});
+  }
+
+  Future deleteNutritionDataFromHealthConnect(String uID) async {
+    var type = HealthDataType.NUTRITION;
+
+    bool success = await health.deleteHealthConnectData(type, uID);
+    if (success) {
+      healthNutrition.removeWhere((element) => element.uID == uID);
+      setState(() {});
+    }
   }
 
   /// Fetch steps from the health plugin and show them in the app.
@@ -238,9 +416,9 @@ class _HealthAppState extends State<HealthApp> {
     return MaterialApp(
       home: Scaffold(
           appBar: AppBar(
-            title: const Text('Health Example'),
+            title: const Text('Health'),
             actions: <Widget>[
-              IconButton(
+              /*IconButton(
                 icon: Icon(Icons.file_download),
                 onPressed: () {
                   fetchData();
@@ -257,11 +435,236 @@ class _HealthAppState extends State<HealthApp> {
                   fetchStepData();
                 },
                 icon: Icon(Icons.nordic_walking),
-              )
+              )*/
             ],
           ),
-          body: Center(
-            child: _content(),
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            addWeightDataToHealthConnect();
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text("Weight add to Health Connect")),
+                    ElevatedButton(
+                        onPressed: () {
+                          readWeightDataFromHealthConnect();
+                        },
+                        child: Text("Read Weight from Health Connect")),
+                    ListView.builder(
+                        itemCount: healthWeight.length,
+                        shrinkWrap: true,
+                        itemBuilder: (_, index) {
+                          HealthConnectWeight data = healthWeight[index];
+                          return ListTile(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                        "Are you sure you want delete entry?"),
+                                    actions: [
+                                      TextButton(
+                                        child: Text("Delete"),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // dismiss dialog
+                                          deleteWeightDataFromHealthConnect(
+                                              data.uID);
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: Text("Cancel"),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // dismiss dialog
+                                        },
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            title: Text("Weight: ${data.weight}"),
+                            subtitle: Text(
+                                'DateTime ${data.zonedDateTime}\nuID ${data.uID}'),
+                          );
+                        }),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            addBodyFatDataToHealthConnect();
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text("BodyFat add to Health Connect")),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            readBodyFatDataFromHealthConnect();
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text("Read BodyFat from Health Connect")),
+                    ListView.builder(
+                        itemCount: healthBodyFat.length,
+                        shrinkWrap: true,
+                        itemBuilder: (_, index) {
+                          HealthConnectBodyFat data = healthBodyFat[index];
+                          return ListTile(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                        "Are you sure you want delete entry?"),
+                                    actions: [
+                                      TextButton(
+                                        child: Text("Delete"),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // dismiss dialog
+                                          deleteBodyDataFromHealthConnect(
+                                              data.uID);
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: Text("Cancel"),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // dismiss dialog
+                                        },
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            title: Text("BodyFat: ${data.bodyFat}%"),
+                            subtitle: Text(
+                                'DateTime ${data.zonedDateTime}\nuID ${data.uID}'),
+                          );
+                        }),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            addNutritionDataToHealthConnect();
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text("Nutrition add to Health Connect")),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            readNutritionDataFromHealthConnect();
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text("Read Nutrition from Health Connect")),
+                    ListView.builder(
+                        itemCount: healthNutrition.length,
+                        shrinkWrap: true,
+                        itemBuilder: (_, index) {
+                          HealthConnectNutrition data = healthNutrition[index];
+                          return ListTile(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                        "Are you sure you want delete entry?"),
+                                    actions: [
+                                      TextButton(
+                                        child: Text("Delete"),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // dismiss dialog
+                                          deleteNutritionDataFromHealthConnect(
+                                              data.uID ?? "");
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: Text("Cancel"),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // dismiss dialog
+                                        },
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            title: Text(
+                                "Name: ${data.name} MealType: ${getMealTypeAsString(data.mealType ?? MealType.UNKNOWN)}"),
+                            subtitle: Text(
+                                'DateTime ${data.startTime.toIso8601String()} - ${data.endTime.toIso8601String()}\nuID ${data.uID}\nbiotin : ${data.biotin?.getInGram} gram'),
+                          );
+                        }),
+                  ],
+                ),
+              ),
+              Platform.isAndroid
+                  ? Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        color: Colors.white,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Android Data from Health Connect"),
+                            Checkbox(
+                                value: androidDataSource ==
+                                        AndroidDataSource.HealthConnect
+                                    ? true
+                                    : false,
+                                onChanged: (value) {
+                                  if (value ?? false) {
+                                    androidDataSource =
+                                        AndroidDataSource.HealthConnect;
+                                  } else {
+                                    androidDataSource =
+                                        AndroidDataSource.GoogleFit;
+                                  }
+                                  setState(() {});
+                                }),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Container()
+            ],
           )),
     );
   }
