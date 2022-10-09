@@ -170,10 +170,8 @@ class _HealthAppState extends State<HealthApp> {
 
   Future addWeightDataToHealthConnect() async {
     final now = DateTime.now();
-    bool success = await health.writeHealthData(HealthDataType.WEIGHT,
-        androidDataSource: androidDataSource,
-        value: 100.toDouble(),
-        currentTime: now);
+    bool success = await health.writeHCData(HealthDataType.WEIGHT,
+        value: 82.toDouble(), currentTime: now);
 
     Fluttertoast.showToast(
         msg: success ? "Data Added" : "Something went wrong",
@@ -196,7 +194,7 @@ class _HealthAppState extends State<HealthApp> {
     final startTime = DateTime.now().subtract(Duration(minutes: 100));
     final endTime = DateTime.now();
     List<HealthConnectData> success =
-        await health.getHealthConnectData(startTime, endTime, type);
+        await health.getHCData(startTime, endTime, type);
     healthWeight = [];
     healthWeight = success.cast<HealthConnectWeight>();
     setState(() {});
@@ -205,7 +203,7 @@ class _HealthAppState extends State<HealthApp> {
   Future deleteWeightDataFromHealthConnect(String uID) async {
     var type = HealthDataType.WEIGHT;
 
-    bool success = await health.deleteHealthConnectData(type, uID);
+    bool success = await health.deleteHCData(type, uID);
     if (success) {
       healthWeight.removeWhere((element) => element.uID == uID);
       setState(() {});
@@ -214,10 +212,8 @@ class _HealthAppState extends State<HealthApp> {
 
   Future addBodyFatDataToHealthConnect() async {
     final now = DateTime.now();
-    bool success = await health.writeHealthData(HealthDataType.BODYFAT,
-        androidDataSource: androidDataSource,
-        value: 22.toDouble(),
-        currentTime: now);
+    bool success = await health.writeHCData(HealthDataType.BODYFAT,
+        value: 22.toDouble(), currentTime: now);
 
     Fluttertoast.showToast(
         msg: success ? "Data Added" : "Something went wrong",
@@ -240,7 +236,7 @@ class _HealthAppState extends State<HealthApp> {
     final startTime = DateTime.now().subtract(Duration(minutes: 100));
     final endTime = DateTime.now();
     List<HealthConnectData> success =
-        await health.getHealthConnectData(startTime, endTime, type);
+        await health.getHCData(startTime, endTime, type);
     healthBodyFat = [];
     healthBodyFat = success.cast<HealthConnectBodyFat>();
     setState(() {});
@@ -249,7 +245,7 @@ class _HealthAppState extends State<HealthApp> {
   Future deleteBodyDataFromHealthConnect(String uID) async {
     var type = HealthDataType.BODYFAT;
 
-    bool success = await health.deleteHealthConnectData(type, uID);
+    bool success = await health.deleteHCData(type, uID);
     if (success) {
       healthBodyFat.removeWhere((element) => element.uID == uID);
       setState(() {});
@@ -259,13 +255,12 @@ class _HealthAppState extends State<HealthApp> {
   Future addNutritionDataToHealthConnect() async {
     final startTime = DateTime.now().subtract(Duration(minutes: 30));
     final endTime = DateTime.now();
-    bool success = await health.writeHealthData(HealthDataType.NUTRITION,
-        androidDataSource: androidDataSource,
+    bool success = await health.writeHCNutrition(
         nutrition: HealthConnectNutrition(startTime, endTime,
             name: "Pixelapps BreakFast",
             mealType: MealType.BREAKFAST,
-            biotin: Mass(1.5, type: Type.GRAMS),
-            energy: Energy(11, type: EType.KILOCALORIES)));
+            biotin: Mass(0.07, type: Type.KILOGRAMS),
+            energy: Energy(1000, type: EType.CALORIES)));
 
     Fluttertoast.showToast(
         msg: success ? "Data Added" : "Something went wrong",
@@ -288,7 +283,7 @@ class _HealthAppState extends State<HealthApp> {
     final startTime = DateTime.now().subtract(Duration(minutes: 700));
     final endTime = DateTime.now();
     List<HealthConnectData> success =
-        await health.getHealthConnectData(startTime, endTime, type);
+        await health.getHCData(startTime, endTime, type);
     healthNutrition = [];
     healthNutrition = success.cast<HealthConnectNutrition>();
     setState(() {});
@@ -297,7 +292,7 @@ class _HealthAppState extends State<HealthApp> {
   Future deleteNutritionDataFromHealthConnect(String uID) async {
     var type = HealthDataType.NUTRITION;
 
-    bool success = await health.deleteHealthConnectData(type, uID);
+    bool success = await health.deleteHCData(type, uID);
     if (success) {
       healthNutrition.removeWhere((element) => element.uID == uID);
       setState(() {});
@@ -411,6 +406,73 @@ class _HealthAppState extends State<HealthApp> {
     return _contentNotFetched();
   }
 
+  requestHealthConnectPermission() async {
+    // define the types to get
+    final types = [
+      HealthDataType.WEIGHT,
+      HealthDataType.BODYFAT,
+      HealthDataType.NUTRITION,
+      HealthDataType.WEIGHT,
+      HealthDataType.BODYFAT,
+      HealthDataType.NUTRITION,
+    ];
+
+    // with coresponsing permissions
+    final permissions = [
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+    ];
+    bool requested =
+        await health.requestHCPermissions(types, permissions: permissions);
+    Fluttertoast.showToast(msg: "Access Already Granted $requested");
+    return requested;
+  }
+
+  hasHealthConnectPermission() async {
+    // define the types to get
+    final types = [
+      HealthDataType.WEIGHT,
+      HealthDataType.BODYFAT,
+      HealthDataType.NUTRITION,
+      HealthDataType.WEIGHT,
+      HealthDataType.BODYFAT,
+      HealthDataType.NUTRITION,
+    ];
+
+    // with coresponsing permissions
+    final permissions = [
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+    ];
+
+    bool hasPermission =
+        await health.hasHCPermissions(types, permissions: permissions);
+    if (hasPermission) {
+      Fluttertoast.showToast(msg: "Access Already Granted");
+    } else {
+      Fluttertoast.showToast(
+          msg: "Permission not granted. Please ask for permission");
+    }
+    return hasPermission;
+  }
+
+  checkAvailability() async {
+    bool isAvailable = await health.isHealthConnectAvailable();
+    if (isAvailable) {
+      Fluttertoast.showToast(msg: "Health Connect is Available");
+    } else {
+      Fluttertoast.showToast(msg: "Health Connect is Not Available");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -444,6 +506,42 @@ class _HealthAppState extends State<HealthApp> {
               SingleChildScrollView(
                 child: Column(
                   children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            checkAvailability();
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text("Check HealthConnect Availability")),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            hasHealthConnectPermission();
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text("Has Permission???")),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            requestHealthConnectPermission();
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text("Request Permission")),
                     ElevatedButton(
                         onPressed: () {
                           if (androidDataSource ==
@@ -496,7 +594,8 @@ class _HealthAppState extends State<HealthApp> {
                                 },
                               );
                             },
-                            title: Text("Weight: ${data.weight}"),
+                            title:
+                                Text("Weight: ${data.weight.getInKilograms}"),
                             subtitle: Text(
                                 'DateTime ${data.zonedDateTime}\nuID ${data.uID}'),
                           );
@@ -627,7 +726,7 @@ class _HealthAppState extends State<HealthApp> {
                             title: Text(
                                 "Name: ${data.name} MealType: ${getMealTypeAsString(data.mealType ?? MealType.UNKNOWN)}"),
                             subtitle: Text(
-                                'DateTime ${data.startTime.toIso8601String()} - ${data.endTime.toIso8601String()}\nuID ${data.uID}\nbiotin : ${data.biotin?.getInGram} gram'),
+                                'Energy: ${data.energy?.getInKilocalories} DateTime ${data.startTime.toIso8601String()} - ${data.endTime.toIso8601String()}\nuID ${data.uID}\nbiotin : ${data.biotin?.getInGram} gram'),
                           );
                         }),
                   ],

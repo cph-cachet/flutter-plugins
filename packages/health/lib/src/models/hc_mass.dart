@@ -1,8 +1,8 @@
 part of health;
 
 class Mass {
-  double value;
-  Type type;
+  final double value;
+  final Type type;
 
   Mass(this.value, {this.type = Type.GRAMS});
 

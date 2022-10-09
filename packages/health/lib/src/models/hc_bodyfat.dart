@@ -2,7 +2,7 @@ part of health;
 
 class HealthConnectBodyFat extends HealthConnectData {
   final String uID;
-  final String bodyFat;
+  final double bodyFat;
   final String zonedDateTime;
   final HealthDataType healthDataType;
 

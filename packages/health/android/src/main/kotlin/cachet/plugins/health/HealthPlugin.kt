@@ -10,9 +10,12 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.NonNull
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.impl.converters.records.toProto
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.*
+import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.NutritionRecord
+import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.WeightRecord
+
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
@@ -24,8 +27,8 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataDeleteRequest
-import com.google.android.gms.fitness.request.DataUpdateRequest
 import com.google.android.gms.fitness.request.DataReadRequest
+import com.google.android.gms.fitness.request.DataUpdateRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
 import com.google.android.gms.fitness.result.SessionReadResponse
@@ -54,9 +57,11 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
+const val HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE = 2222
 const val CHANNEL_NAME = "flutter_health"
 const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
 const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
@@ -187,6 +192,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 Log.d("FLUTTER_HEALTH", "Access Denied!")
                 mResult?.success(false)
             }
+        } else if (requestCode == HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE) {
+            when (resultCode) {
+                Activity.RESULT_OK -> {
+                    Log.d("FLUTTER_HEALTH", "Access Granted!123")
+                    mResult?.success(true)
+                }
+                Activity.RESULT_CANCELED -> {
+                    Log.d("FLUTTER_HEALTH", "Access Denied!123")
+                    mResult?.success(false)
+                }
+                Activity.RESULT_FIRST_USER -> {
+                    Log.d("FLUTTER_HEALTH", "Access Denied!!")
+                    mResult?.success(false)
+                }
+            }
         }
         return false
     }
@@ -301,7 +321,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         val fitnessOptions = typesBuilder.build()
         try {
-            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+            val googleSignInAccount =
+                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
             val request = DataDeleteRequest.Builder()
                 .addDataType(dataType)
@@ -340,7 +361,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         val fitnessOptions = typesBuilder.build()
         try {
-            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+            val googleSignInAccount =
+                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
             val request = DataDeleteRequest.Builder()
                 .addDataType(dataType)
@@ -369,10 +391,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             return
         }
 
-        val foodList = call.argument<List<HashMap<String, *>>>( "foodList")!!
+        val foodList = call.argument<List<HashMap<String, *>>>("foodList")!!
         val startTime = call.argument<Long>("startTime")!!
         val endTime = call.argument<Long>("endTime")!!
-        val overwrite = call.argument<Boolean>( "overwrite")!!
+        val overwrite = call.argument<Boolean>("overwrite")!!
 
         Log.i("FLUTTER_HEALTH::SUCCESS", "Successfully called writeFoodData")
 
@@ -397,7 +419,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             val timestamp = iterationFood["timestamp"] as Long
             iterationFood.remove("timestamp")
 
-            val builder = DataPoint.builder(dataSource).setTimestamp(timestamp, TimeUnit.MILLISECONDS)
+            val builder =
+                DataPoint.builder(dataSource).setTimestamp(timestamp, TimeUnit.MILLISECONDS)
 
             val nutrients = mutableMapOf<String, Float>()
 
@@ -416,7 +439,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         val fitnessOptions = typesBuilder.build()
         try {
-            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+            val googleSignInAccount =
+                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
             if (overwrite) {
                 val request = DataDeleteRequest.Builder()
@@ -429,14 +453,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     .addOnSuccessListener {
                         Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
                         if (!dataSet.isEmpty) {
-                            Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+                            Fitness.getHistoryClient(
+                                activity!!.applicationContext,
+                                googleSignInAccount
+                            )
                                 .insertData(dataSet)
                                 .addOnSuccessListener {
                                     Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
                                     result.success(true)
                                 }
                                 .addOnFailureListener { e ->
-                                    Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                                    Log.w(
+                                        "FLUTTER_HEALTH::ERROR",
+                                        "There was an error adding the DataSet",
+                                        e
+                                    )
                                     result.success(false)
                                 }
                         } else {
@@ -463,7 +494,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                             )
                             result.success(false)
                         }
-                } else  {
+                } else {
                     Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet was empty!")
                     result.success(true)
                 }
@@ -483,8 +514,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = call.argument<Long>("startTime")!!
         val endTime = call.argument<Long>("endTime")!!
-        val value = call.argument<Float>( "value")!!
-        val overwrite = call.argument<Boolean>( "overwrite")!!
+
+        val value = call.argument<Float>("value")!!
+        val overwrite = call.argument<Boolean>("overwrite")!!
 
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
@@ -515,12 +547,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val dataPoint: DataPoint = if (isNutrition) {
             val nutrientField = getNutrientField(type)
             val nutrients = mapOf(
-                    nutrientField to value
+                nutrientField to value
             )
             builder.setField(field, nutrients).build()
         } else {
             if (!isIntField(dataSource, field))
-                builder.setField(field, if (!isGlucose) value else (value/ MMOLL_2_MGDL).toFloat()).build() else
+                builder.setField(field, if (!isGlucose) value else (value / MMOLL_2_MGDL).toFloat())
+                    .build() else
                 builder.setField(field, value.toInt()).build()
         }
 
@@ -533,7 +566,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         val fitnessOptions = typesBuilder.build()
         try {
-            val googleSignInAccount = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+            val googleSignInAccount =
+                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
             if (overwrite) {
                 val request = DataUpdateRequest.Builder()
@@ -576,6 +610,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
         val type = call.argument<String>("dataTypeKey")!!
+
+        mResult = result
 
         var records = emptyList<Record>()
         when (type) {
@@ -803,6 +839,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val type = call.argument<String>("dataTypeKey")!!
         val startDate = call.argument<String>("startDate")!!
         val endDate = call.argument<String>("endDate")!!
+
+        mResult = result
+
         when (type) {
             WEIGHT -> {
                 val startDate = ZonedDateTime.parse(
@@ -829,11 +868,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         val zonedDateTime =
                             dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
                         val uid = it.metadata.uid
-                        val weight = it.weight
+                        val weight = it.weight.inGrams
                         return@mapIndexed hashMapOf(
                             "zonedDateTime" to formatter.format(zonedDateTime),
                             "uid" to uid,
-                            "weight" to "$weight "
+                            "weight" to weight
                         )
                     }
                     activity!!.runOnUiThread { result.success(healthData) }
@@ -868,7 +907,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         return@mapIndexed hashMapOf(
                             "zonedDateTime" to formatter.format(zonedDateTime),
                             "uid" to uid,
-                            "bodyFat" to "$bodyFat "
+                            "bodyFat" to bodyFat
                         )
                     }
                     activity!!.runOnUiThread { result.success(healthData) }
@@ -902,7 +941,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         val uid = it.metadata.uid
                         val hashMapData = hashMapOf<String, Any>(
                             "startDateTime" to startZonedDateTime.toEpochSecond(),
-                            "endDateTime" to  endZonedDateTime.toEpochSecond(),
+                            "endDateTime" to endZonedDateTime.toEpochSecond(),
                             "uid" to uid,
                         )
                         if (it.biotin != null) {
@@ -1059,6 +1098,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
         val type = call.argument<String>("dataTypeKey")!!
         val uID = call.argument<String>("uID")!!
+        mResult = result
         if (type == WEIGHT) {
             CoroutineScope(Dispatchers.Main).launch {
                 healthConnectClient.deleteRecords(
@@ -1352,36 +1392,26 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
         val permissionList = callToHealthConnectTypes(call)
-        /*val intent = healthConnectClient.permissionController.createRequestPermissionActivityContract()
-            .createIntent(activity!!.applicationContext, permissionList)
-
-        activity!!.startActivityForResult(intent,1111)*/
         mResult = result
-
-        checkAvailability()
-
-        if (availability.equals(HealthConnectAvailability.NOT_SUPPORTED)) {
-            mResult?.success(false)
-            return
-        }
 
         CoroutineScope(Dispatchers.Main).launch {
             mResult?.success(
                 healthConnectClient.permissionController.getGrantedPermissions(
                     permissionList.toSet()
-                ).toString()
+                ) == permissionList
             )
         }
     }
 
     private var availability = mutableStateOf(HealthConnectAvailability.NOT_SUPPORTED)
 
-    private fun checkAvailability() {
+    private fun isHealthConnectAvailable(call: MethodCall, result: Result) {
         availability.value = when {
             HealthConnectClient.isAvailable(activity!!.applicationContext) -> HealthConnectAvailability.INSTALLED
             isSupported() -> HealthConnectAvailability.NOT_INSTALLED
             else -> HealthConnectAvailability.NOT_SUPPORTED
         }
+        result.success(HealthConnectClient.isAvailable(activity!!.applicationContext))
     }
 
     @ChecksSdkIntAtLeast(api = MIN_SUPPORTED_SDK)
@@ -1422,10 +1452,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         /// Not granted? Ask for permission
         if (!isGranted && activity != null) {
             GoogleSignIn.requestPermissions(
-                    activity!!,
-                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(activity),
-                    optionsToRegister)
+                activity!!,
+                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                GoogleSignIn.getLastSignedInAccount(activity),
+                optionsToRegister
+            )
             Log.i("FLUTTER_HEALTH::SUCCESS", "Ask permission!")
         }
         /// Permission already granted
@@ -1434,6 +1465,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             mResult?.success(true)
         }
     }
+
+    private fun requestHealthConnectPermission(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+        mResult = result
+        val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
+        val permissionList = callToHealthConnectTypes(call)
+
+        val intent =
+            healthConnectClient.permissionController.createRequestPermissionActivityContract()
+                .createIntent(activity!!.applicationContext, permissionList)
+        activity!!.startActivityForResult(intent, HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE)
+    }
+
 
     private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
         val start = call.argument<Long>("startDate")!!
@@ -1527,6 +1574,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             "writeDataHealthConnect" -> writeDataHealthConnect(call, result)
             "getHealthConnectData" -> getHealthConnectData(call, result)
             "deleteHealthConnectData" -> deleteHealthConnectData(call, result)
+            "requestHealthConnectPermission" -> requestHealthConnectPermission(call, result)
+            "isHealthConnectAvailable" -> isHealthConnectAvailable(call, result)
             else -> result.notImplemented()
         }
     }

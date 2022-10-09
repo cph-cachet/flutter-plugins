@@ -1,8 +1,8 @@
 part of health;
 
 class Energy {
-  double value;
-  EType type;
+  final double value;
+  final EType type;
 
   Energy(this.value, {this.type = EType.CALORIES});
 
