@@ -50,6 +50,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   private var STEPS = "STEPS"
   private var AGGREGATE_STEP_COUNT = "AGGREGATE_STEP_COUNT"
   private var ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
+  private var BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
   private var HEART_RATE = "HEART_RATE"
   private var BODY_TEMPERATURE = "BODY_TEMPERATURE"
   private var BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
@@ -260,6 +261,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       STEPS -> DataType.TYPE_STEP_COUNT_DELTA
       AGGREGATE_STEP_COUNT -> DataType.AGGREGATE_STEP_COUNT_DELTA
       ACTIVE_ENERGY_BURNED -> DataType.TYPE_CALORIES_EXPENDED
+      BASAL_ENERGY_BURNED -> DataType.TYPE_BASAL_METABOLIC_RATE
       HEART_RATE -> DataType.TYPE_HEART_RATE_BPM
       BODY_TEMPERATURE -> HealthDataTypes.TYPE_BODY_TEMPERATURE
       BLOOD_PRESSURE_SYSTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
@@ -284,6 +286,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       WEIGHT -> Field.FIELD_WEIGHT
       STEPS -> Field.FIELD_STEPS
       ACTIVE_ENERGY_BURNED -> Field.FIELD_CALORIES
+      BASAL_ENERGY_BURNED -> Field.FIELD_CALORIES
       HEART_RATE -> Field.FIELD_BPM
       BODY_TEMPERATURE -> HealthFields.FIELD_BODY_TEMPERATURE
       BLOOD_PRESSURE_SYSTOLIC -> HealthFields.FIELD_BLOOD_PRESSURE_SYSTOLIC
@@ -597,6 +600,26 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         Fitness.getSessionsClient(activity!!.applicationContext, googleSignInAccount)
           .readSession(readRequest)
           .addOnSuccessListener(threadPoolExecutor!!, workoutDataHandler(type, result))
+          .addOnFailureListener(errHandler(result))
+      }
+      /*
+      BMR is not available to retrieve for every day (although it is reflected in Google Fit energy calcs for every single day)
+      Thus, a specific case is defined below for handling BMR, with "1" provided as startDate to the setTimeRange method.
+      We have also set a limit of "1" through setLimit, to only get the latest value.
+      Note:
+        According to Google documentation, since "the recorded BMR is instantaneous, the start time should not be set.".
+        However, startTime is oddly a required property. 
+      */
+      DataType.TYPE_BASAL_METABOLIC_RATE -> {
+        Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+          .readData(
+            DataReadRequest.Builder()
+              .read(dataType)
+              .setTimeRange(1, endTime, TimeUnit.MILLISECONDS)
+              .setLimit(1)
+              .build()
+          )
+          .addOnSuccessListener(threadPoolExecutor!!, dataHandler(dataType, field, result))
           .addOnFailureListener(errHandler(result))
       }
       else -> {

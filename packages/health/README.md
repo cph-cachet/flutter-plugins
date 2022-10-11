@@ -19,7 +19,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | **Data Type**               | **Unit**                | **iOS** | **Android** | **Comments**                                                |
 | --------------------------- | ----------------------- | ------- | ----------- | ----------------------------------------------------------- |
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes         |                                                             |
-| BASAL_ENERGY_BURNED         | CALORIES                | yes     |             |                                                             |
+| BASAL_ENERGY_BURNED         | CALORIES                | yes     | yes         |                                                             |
 | BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes         |                                                             |
 | BLOOD_OXYGEN                | PERCENTAGE              | yes     | yes         |                                                             |
 | BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes     | yes         |                                                             |
