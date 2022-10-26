@@ -990,7 +990,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                             hashMapData["iodine"] = it.iodine!!.inGrams
                         }
                         if (it.iron != null) {
-                            hashMapData["iodine"] = it.iron!!.inGrams
+                            hashMapData["iron"] = it.iron!!.inGrams
                         }
                         if (it.magnesium != null) {
                             hashMapData["magnesium"] = it.magnesium!!.inGrams
