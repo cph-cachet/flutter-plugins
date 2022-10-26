@@ -67,7 +67,7 @@ const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
 const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
 
 class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandler,
-    ActivityResultListener, Result, ActivityAware, FlutterPlugin {
+        ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     private var result: Result? = null
     private var handler: Handler? = null
     private var activity: Activity? = null
@@ -92,7 +92,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var SLEEP_AWAKE = "SLEEP_AWAKE"
     private var SLEEP_IN_BED = "SLEEP_IN_BED"
     private var NUTRITION = "NUTRITION"
-    private var BODYFAT = "BODYFAT"
+    //private var BODYFAT = "BODYFAT"
 
 
     private var DIETARY_ENERGY_CONSUMED = "DIETARY_ENERGY_CONSUMED"
@@ -167,19 +167,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     override fun success(p0: Any?) {
         handler?.post(
-            Runnable { result?.success(p0) })
+                Runnable { result?.success(p0) })
     }
 
     override fun notImplemented() {
         handler?.post(
-            Runnable { result?.notImplemented() })
+                Runnable { result?.notImplemented() })
     }
 
     override fun error(
-        errorCode: String, errorMessage: String?, errorDetails: Any?
+            errorCode: String, errorMessage: String?, errorDetails: Any?
     ) {
         handler?.post(
-            Runnable { result?.error(errorCode, errorMessage, errorDetails) })
+                Runnable { result?.error(errorCode, errorMessage, errorDetails) })
     }
 
 
@@ -322,23 +322,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount =
-                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+                    GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
             val request = DataDeleteRequest.Builder()
-                .addDataType(dataType)
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .build()
+                    .addDataType(dataType)
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .build()
 
             Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                .deleteData(request)
-                .addOnSuccessListener {
-                    Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
-                    result.success(true)
-                }
-                .addOnFailureListener { e ->
-                    Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
-                    result.success(false)
-                }
+                    .deleteData(request)
+                    .addOnSuccessListener {
+                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
+                        result.success(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
+                        result.success(false)
+                    }
         } catch (e3: Exception) {
             result.success(false)
         }
@@ -362,23 +362,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount =
-                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+                    GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
             val request = DataDeleteRequest.Builder()
-                .addDataType(dataType)
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .build()
+                    .addDataType(dataType)
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .build()
 
             Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                .deleteData(request)
-                .addOnSuccessListener {
-                    Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
-                    result.success(true)
-                }
-                .addOnFailureListener { e ->
-                    Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
-                    result.success(false)
-                }
+                    .deleteData(request)
+                    .addOnSuccessListener {
+                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
+                        result.success(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
+                        result.success(false)
+                    }
         } catch (e3: Exception) {
             result.success(false)
         }
@@ -405,11 +405,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
 
         val dataSource = DataSource.Builder()
-            .setDataType(dataType)
-            .setType(DataSource.TYPE_RAW)
-            .setDevice(Device.getLocalDevice(activity!!.applicationContext))
-            .setAppPackageName(activity!!.applicationContext)
-            .build()
+                .setDataType(dataType)
+                .setType(DataSource.TYPE_RAW)
+                .setDevice(Device.getLocalDevice(activity!!.applicationContext))
+                .setAppPackageName(activity!!.applicationContext)
+                .build()
 
         val dataSetBuilder = DataSet.builder(dataSource)
 
@@ -420,7 +420,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             iterationFood.remove("timestamp")
 
             val builder =
-                DataPoint.builder(dataSource).setTimestamp(timestamp, TimeUnit.MILLISECONDS)
+                    DataPoint.builder(dataSource).setTimestamp(timestamp, TimeUnit.MILLISECONDS)
 
             val nutrients = mutableMapOf<String, Float>()
 
@@ -440,60 +440,60 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount =
-                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+                    GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
             if (overwrite) {
                 val request = DataDeleteRequest.Builder()
-                    .addDataType(dataType)
-                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                    .build()
+                        .addDataType(dataType)
+                        .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                        .build()
 
                 Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                    .deleteData(request)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
-                        if (!dataSet.isEmpty) {
-                            Fitness.getHistoryClient(
-                                activity!!.applicationContext,
-                                googleSignInAccount
-                            )
-                                .insertData(dataSet)
-                                .addOnSuccessListener {
-                                    Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
-                                    result.success(true)
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.w(
-                                        "FLUTTER_HEALTH::ERROR",
-                                        "There was an error adding the DataSet",
-                                        e
-                                    )
-                                    result.success(false)
-                                }
-                        } else {
-                            Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet was empty!")
-                            result.success(true)
+                        .deleteData(request)
+                        .addOnSuccessListener {
+                            Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
+                            if (!dataSet.isEmpty) {
+                                Fitness.getHistoryClient(
+                                        activity!!.applicationContext,
+                                        googleSignInAccount
+                                )
+                                        .insertData(dataSet)
+                                        .addOnSuccessListener {
+                                            Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                                            result.success(true)
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.w(
+                                                    "FLUTTER_HEALTH::ERROR",
+                                                    "There was an error adding the DataSet",
+                                                    e
+                                            )
+                                            result.success(false)
+                                        }
+                            } else {
+                                Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet was empty!")
+                                result.success(true)
+                            }
                         }
-                    }
-                    .addOnFailureListener { e ->
-                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
-                    }
+                        .addOnFailureListener { e ->
+                            Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
+                        }
             } else {
                 if (!dataSet.isEmpty) {
                     Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                        .insertData(dataSet)
-                        .addOnSuccessListener {
-                            Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
-                            result.success(true)
-                        }
-                        .addOnFailureListener { e ->
-                            Log.w(
-                                "FLUTTER_HEALTH::ERROR",
-                                "There was an error adding the DataSet",
-                                e
-                            )
-                            result.success(false)
-                        }
+                            .insertData(dataSet)
+                            .addOnSuccessListener {
+                                Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                                result.success(true)
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(
+                                        "FLUTTER_HEALTH::ERROR",
+                                        "There was an error adding the DataSet",
+                                        e
+                                )
+                                result.success(false)
+                            }
                 } else {
                     Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet was empty!")
                     result.success(true)
@@ -526,18 +526,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
 
         val dataSource = DataSource.Builder()
-            .setDataType(dataType)
-            .setType(DataSource.TYPE_RAW)
-            .setDevice(Device.getLocalDevice(activity!!.applicationContext))
-            .setAppPackageName(activity!!.applicationContext)
-            .build()
+                .setDataType(dataType)
+                .setType(DataSource.TYPE_RAW)
+                .setDevice(Device.getLocalDevice(activity!!.applicationContext))
+                .setAppPackageName(activity!!.applicationContext)
+                .build()
 
         val builder = if (startTime == endTime)
             DataPoint.builder(dataSource)
-                .setTimestamp(startTime, TimeUnit.MILLISECONDS)
+                    .setTimestamp(startTime, TimeUnit.MILLISECONDS)
         else
             DataPoint.builder(dataSource)
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
 
         // Conversion is needed because glucose is stored as mmoll in Google Fit;
         // while mgdl is used for glucose in this plugin.
@@ -547,19 +547,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val dataPoint: DataPoint = if (isNutrition) {
             val nutrientField = getNutrientField(type)
             val nutrients = mapOf(
-                nutrientField to value
+                    nutrientField to value
             )
             builder.setField(field, nutrients).build()
         } else {
             if (!isIntField(dataSource, field))
                 builder.setField(field, if (!isGlucose) value else (value / MMOLL_2_MGDL).toFloat())
-                    .build() else
+                        .build() else
                 builder.setField(field, value.toInt()).build()
         }
 
         val dataSet = DataSet.builder(dataSource)
-            .add(dataPoint)
-            .build()
+                .add(dataPoint)
+                .build()
 
         if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
             typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
@@ -567,35 +567,35 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount =
-                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+                    GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
             if (overwrite) {
                 val request = DataUpdateRequest.Builder()
-                    .setDataSet(dataSet)
-                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                    .build()
+                        .setDataSet(dataSet)
+                        .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                        .build()
 
                 Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                    .updateData(request)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
-                        result.success(true)
-                    }
-                    .addOnFailureListener { e ->
-                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
-                        result.success(false)
-                    }
+                        .updateData(request)
+                        .addOnSuccessListener {
+                            Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                            result.success(true)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                            result.success(false)
+                        }
             } else {
                 Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                    .insertData(dataSet)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
-                        result.success(true)
-                    }
-                    .addOnFailureListener { e ->
-                        Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
-                        result.success(false)
-                    }
+                        .insertData(dataSet)
+                        .addOnSuccessListener {
+                            Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+                            result.success(true)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
+                            result.success(false)
+                        }
             }
         } catch (e3: Exception) {
             result.success(false)
@@ -619,175 +619,175 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 val currentTime = call.argument<String>("currentTime")!!
                 val value = call.argument<Float>("value")!!
                 val time = ZonedDateTime.parse(
-                    currentTime,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        currentTime,
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val weight = WeightRecord(
-                    weight = Mass.kilograms(value.toDouble()),
-                    time = time.toInstant(),
-                    zoneOffset = time.offset
+                        weight = Mass.kilograms(value.toDouble()),
+                        time = time.toInstant(),
+                        zoneOffset = time.offset
                 )
                 records = listOf(weight)
             }
-            BODYFAT -> {
+            BODY_FAT_PERCENTAGE -> {
                 val currentTime = call.argument<String>("currentTime")!!
                 val value = call.argument<Float>("value")!!
                 val time = ZonedDateTime.parse(
-                    currentTime,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        currentTime,
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val bodyFatRecord = BodyFatRecord(
-                    Percentage(value.toDouble()),
-                    time = time.toInstant(),
-                    zoneOffset = time.offset
+                        Percentage(value.toDouble()),
+                        time = time.toInstant(),
+                        zoneOffset = time.offset
                 )
                 records = listOf(bodyFatRecord)
             }
             NUTRITION -> {
                 val value = call.argument<Map<String, Any>>("value")!!
                 val startTime = ZonedDateTime.parse(
-                    value["startTime"].toString(),
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        value["startTime"].toString(),
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val endTime = ZonedDateTime.parse(
-                    value["endTime"].toString(),
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        value["endTime"].toString(),
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val nutritionRecord = NutritionRecord(
-                    startTime = startTime.toInstant(),
-                    endTime = endTime.toInstant(),
-                    startZoneOffset = startTime.offset,
-                    endZoneOffset = endTime.offset,
-                    mealType = (if (value.contains("mealType")) {
-                        value.getValue("mealType").toString(); } else null),
-                    name = (if (value.contains("name")) {
-                        value.getValue("name").toString(); } else null),
-                    biotin = (if (value.contains("biotin")) {
-                        getMassFromMap((value.getValue("biotin") as Map<String, Any>))
-                    } else null),
-                    caffeine = (if (value.contains("caffeine")) {
-                        getMassFromMap(value.getValue("caffeine") as Map<String, Any>)
-                    } else null),
-                    calcium = (if (value.contains("calcium")) {
-                        getMassFromMap(value.getValue("calcium") as Map<String, Any>)
-                    } else null),
-                    chloride = (if (value.contains("chloride")) {
-                        getMassFromMap(value.getValue("chloride") as Map<String, Any>)
-                    } else null),
-                    cholesterol = (if (value.contains("cholesterol")) {
-                        getMassFromMap(value.getValue("cholesterol") as Map<String, Any>)
-                    } else null),
-                    chromium = (if (value.contains("chromium")) {
-                        getMassFromMap(value.getValue("chromium") as Map<String, Any>)
-                    } else null),
-                    copper = (if (value.contains("copper")) {
-                        getMassFromMap(value.getValue("copper") as Map<String, Any>)
-                    } else null),
-                    dietaryFiber = (if (value.contains("dietaryFiber")) {
-                        getMassFromMap(value.getValue("dietaryFiber") as Map<String, Any>)
-                    } else null),
-                    energy = (if (value.contains("energy")) {
-                        getEnergyFromMap(value.getValue("energy") as Map<String, Any>)
-                    } else null),
-                    energyFromFat = (if (value.contains("energyFromFat")) {
-                        getEnergyFromMap(value.getValue("energyFromFat") as Map<String, Any>)
-                    } else null),
-                    folate = (if (value.contains("folate")) {
-                        getMassFromMap(value.getValue("folate") as Map<String, Any>)
-                    } else null),
-                    folicAcid = (if (value.contains("folicAcid")) {
-                        getMassFromMap(value.getValue("folicAcid") as Map<String, Any>)
-                    } else null),
-                    iodine = (if (value.contains("iodine")) {
-                        getMassFromMap(value.getValue("iodine") as Map<String, Any>)
-                    } else null),
-                    iron = (if (value.contains("iron")) {
-                        getMassFromMap(value.getValue("iron") as Map<String, Any>)
-                    } else null),
-                    magnesium = (if (value.contains("magnesium")) {
-                        getMassFromMap(value.getValue("magnesium") as Map<String, Any>)
-                    } else null),
-                    manganese = (if (value.contains("manganese")) {
-                        getMassFromMap(value.getValue("manganese") as Map<String, Any>)
-                    } else null),
-                    molybdenum = (if (value.contains("molybdenum")) {
-                        getMassFromMap(value.getValue("molybdenum") as Map<String, Any>)
-                    } else null),
-                    monounsaturatedFat = (if (value.contains("monounsaturatedFat")) {
-                        getMassFromMap(value.getValue("monounsaturatedFat") as Map<String, Any>)
-                    } else null),
-                    niacin = (if (value.contains("niacin")) {
-                        getMassFromMap(value.getValue("niacin") as Map<String, Any>)
-                    } else null),
-                    pantothenicAcid = (if (value.contains("pantothenicAcid")) {
-                        getMassFromMap(value.getValue("pantothenicAcid") as Map<String, Any>)
-                    } else null),
-                    phosphorus = (if (value.contains("phosphorus")) {
-                        getMassFromMap(value.getValue("phosphorus") as Map<String, Any>)
-                    } else null),
-                    polyunsaturatedFat = (if (value.contains("polyunsaturatedFat")) {
-                        getMassFromMap(value.getValue("polyunsaturatedFat") as Map<String, Any>)
-                    } else null),
-                    potassium = (if (value.contains("potassium")) {
-                        getMassFromMap(value.getValue("potassium") as Map<String, Any>)
-                    } else null),
-                    protein = (if (value.contains("protein")) {
-                        getMassFromMap(value.getValue("protein") as Map<String, Any>)
-                    } else null),
-                    riboflavin = (if (value.contains("riboflavin")) {
-                        getMassFromMap(value.getValue("riboflavin") as Map<String, Any>)
-                    } else null),
-                    saturatedFat = (if (value.contains("saturatedFat")) {
-                        getMassFromMap(value.getValue("saturatedFat") as Map<String, Any>)
-                    } else null),
-                    selenium = (if (value.contains("selenium")) {
-                        getMassFromMap(value.getValue("selenium") as Map<String, Any>)
-                    } else null),
-                    sodium = (if (value.contains("sodium")) {
-                        getMassFromMap(value.getValue("sodium") as Map<String, Any>)
-                    } else null),
-                    sugar = (if (value.contains("sugar")) {
-                        getMassFromMap(value.getValue("sugar") as Map<String, Any>)
-                    } else null),
-                    thiamin = (if (value.contains("thiamin")) {
-                        getMassFromMap(value.getValue("thiamin") as Map<String, Any>)
-                    } else null),
-                    totalCarbohydrate = (if (value.contains("totalCarbohydrate")) {
-                        getMassFromMap(value.getValue("totalCarbohydrate") as Map<String, Any>)
-                    } else null),
-                    totalFat = (if (value.contains("totalFat")) {
-                        getMassFromMap(value.getValue("totalFat") as Map<String, Any>)
-                    } else null),
-                    transFat = (if (value.contains("transFat")) {
-                        getMassFromMap(value.getValue("transFat") as Map<String, Any>)
-                    } else null),
-                    unsaturatedFat = (if (value.contains("unsaturatedFat")) {
-                        getMassFromMap(value.getValue("unsaturatedFat") as Map<String, Any>)
-                    } else null),
-                    vitaminA = (if (value.contains("vitaminA")) {
-                        getMassFromMap(value.getValue("vitaminA") as Map<String, Any>)
-                    } else null),
-                    vitaminB6 = (if (value.contains("vitaminB6")) {
-                        getMassFromMap(value.getValue("vitaminB6") as Map<String, Any>)
-                    } else null),
-                    vitaminB12 = (if (value.contains("vitaminB12")) {
-                        getMassFromMap(value.getValue("vitaminB12") as Map<String, Any>)
-                    } else null),
-                    vitaminC = (if (value.contains("vitaminC")) {
-                        getMassFromMap(value.getValue("vitaminC") as Map<String, Any>)
-                    } else null),
-                    vitaminD = (if (value.contains("vitaminD")) {
-                        getMassFromMap(value.getValue("vitaminD") as Map<String, Any>)
-                    } else null),
-                    vitaminE = (if (value.contains("vitaminE")) {
-                        getMassFromMap(value.getValue("vitaminE") as Map<String, Any>)
-                    } else null),
-                    vitaminK = (if (value.contains("vitaminK")) {
-                        getMassFromMap(value.getValue("vitaminK") as Map<String, Any>)
-                    } else null),
-                    zinc = (if (value.contains("zinc")) {
-                        getMassFromMap(value.getValue("zinc") as Map<String, Any>)
-                    } else null),
+                        startTime = startTime.toInstant(),
+                        endTime = endTime.toInstant(),
+                        startZoneOffset = startTime.offset,
+                        endZoneOffset = endTime.offset,
+                        mealType = (if (value.contains("mealType")) {
+                            value.getValue("mealType").toString(); } else null),
+                        name = (if (value.contains("name")) {
+                            value.getValue("name").toString(); } else null),
+                        biotin = (if (value.contains("biotin")) {
+                            getMassFromMap((value.getValue("biotin") as Map<String, Any>))
+                        } else null),
+                        caffeine = (if (value.contains("caffeine")) {
+                            getMassFromMap(value.getValue("caffeine") as Map<String, Any>)
+                        } else null),
+                        calcium = (if (value.contains("calcium")) {
+                            getMassFromMap(value.getValue("calcium") as Map<String, Any>)
+                        } else null),
+                        chloride = (if (value.contains("chloride")) {
+                            getMassFromMap(value.getValue("chloride") as Map<String, Any>)
+                        } else null),
+                        cholesterol = (if (value.contains("cholesterol")) {
+                            getMassFromMap(value.getValue("cholesterol") as Map<String, Any>)
+                        } else null),
+                        chromium = (if (value.contains("chromium")) {
+                            getMassFromMap(value.getValue("chromium") as Map<String, Any>)
+                        } else null),
+                        copper = (if (value.contains("copper")) {
+                            getMassFromMap(value.getValue("copper") as Map<String, Any>)
+                        } else null),
+                        dietaryFiber = (if (value.contains("dietaryFiber")) {
+                            getMassFromMap(value.getValue("dietaryFiber") as Map<String, Any>)
+                        } else null),
+                        energy = (if (value.contains("energy")) {
+                            getEnergyFromMap(value.getValue("energy") as Map<String, Any>)
+                        } else null),
+                        energyFromFat = (if (value.contains("energyFromFat")) {
+                            getEnergyFromMap(value.getValue("energyFromFat") as Map<String, Any>)
+                        } else null),
+                        folate = (if (value.contains("folate")) {
+                            getMassFromMap(value.getValue("folate") as Map<String, Any>)
+                        } else null),
+                        folicAcid = (if (value.contains("folicAcid")) {
+                            getMassFromMap(value.getValue("folicAcid") as Map<String, Any>)
+                        } else null),
+                        iodine = (if (value.contains("iodine")) {
+                            getMassFromMap(value.getValue("iodine") as Map<String, Any>)
+                        } else null),
+                        iron = (if (value.contains("iron")) {
+                            getMassFromMap(value.getValue("iron") as Map<String, Any>)
+                        } else null),
+                        magnesium = (if (value.contains("magnesium")) {
+                            getMassFromMap(value.getValue("magnesium") as Map<String, Any>)
+                        } else null),
+                        manganese = (if (value.contains("manganese")) {
+                            getMassFromMap(value.getValue("manganese") as Map<String, Any>)
+                        } else null),
+                        molybdenum = (if (value.contains("molybdenum")) {
+                            getMassFromMap(value.getValue("molybdenum") as Map<String, Any>)
+                        } else null),
+                        monounsaturatedFat = (if (value.contains("monounsaturatedFat")) {
+                            getMassFromMap(value.getValue("monounsaturatedFat") as Map<String, Any>)
+                        } else null),
+                        niacin = (if (value.contains("niacin")) {
+                            getMassFromMap(value.getValue("niacin") as Map<String, Any>)
+                        } else null),
+                        pantothenicAcid = (if (value.contains("pantothenicAcid")) {
+                            getMassFromMap(value.getValue("pantothenicAcid") as Map<String, Any>)
+                        } else null),
+                        phosphorus = (if (value.contains("phosphorus")) {
+                            getMassFromMap(value.getValue("phosphorus") as Map<String, Any>)
+                        } else null),
+                        polyunsaturatedFat = (if (value.contains("polyunsaturatedFat")) {
+                            getMassFromMap(value.getValue("polyunsaturatedFat") as Map<String, Any>)
+                        } else null),
+                        potassium = (if (value.contains("potassium")) {
+                            getMassFromMap(value.getValue("potassium") as Map<String, Any>)
+                        } else null),
+                        protein = (if (value.contains("protein")) {
+                            getMassFromMap(value.getValue("protein") as Map<String, Any>)
+                        } else null),
+                        riboflavin = (if (value.contains("riboflavin")) {
+                            getMassFromMap(value.getValue("riboflavin") as Map<String, Any>)
+                        } else null),
+                        saturatedFat = (if (value.contains("saturatedFat")) {
+                            getMassFromMap(value.getValue("saturatedFat") as Map<String, Any>)
+                        } else null),
+                        selenium = (if (value.contains("selenium")) {
+                            getMassFromMap(value.getValue("selenium") as Map<String, Any>)
+                        } else null),
+                        sodium = (if (value.contains("sodium")) {
+                            getMassFromMap(value.getValue("sodium") as Map<String, Any>)
+                        } else null),
+                        sugar = (if (value.contains("sugar")) {
+                            getMassFromMap(value.getValue("sugar") as Map<String, Any>)
+                        } else null),
+                        thiamin = (if (value.contains("thiamin")) {
+                            getMassFromMap(value.getValue("thiamin") as Map<String, Any>)
+                        } else null),
+                        totalCarbohydrate = (if (value.contains("totalCarbohydrate")) {
+                            getMassFromMap(value.getValue("totalCarbohydrate") as Map<String, Any>)
+                        } else null),
+                        totalFat = (if (value.contains("totalFat")) {
+                            getMassFromMap(value.getValue("totalFat") as Map<String, Any>)
+                        } else null),
+                        transFat = (if (value.contains("transFat")) {
+                            getMassFromMap(value.getValue("transFat") as Map<String, Any>)
+                        } else null),
+                        unsaturatedFat = (if (value.contains("unsaturatedFat")) {
+                            getMassFromMap(value.getValue("unsaturatedFat") as Map<String, Any>)
+                        } else null),
+                        vitaminA = (if (value.contains("vitaminA")) {
+                            getMassFromMap(value.getValue("vitaminA") as Map<String, Any>)
+                        } else null),
+                        vitaminB6 = (if (value.contains("vitaminB6")) {
+                            getMassFromMap(value.getValue("vitaminB6") as Map<String, Any>)
+                        } else null),
+                        vitaminB12 = (if (value.contains("vitaminB12")) {
+                            getMassFromMap(value.getValue("vitaminB12") as Map<String, Any>)
+                        } else null),
+                        vitaminC = (if (value.contains("vitaminC")) {
+                            getMassFromMap(value.getValue("vitaminC") as Map<String, Any>)
+                        } else null),
+                        vitaminD = (if (value.contains("vitaminD")) {
+                            getMassFromMap(value.getValue("vitaminD") as Map<String, Any>)
+                        } else null),
+                        vitaminE = (if (value.contains("vitaminE")) {
+                            getMassFromMap(value.getValue("vitaminE") as Map<String, Any>)
+                        } else null),
+                        vitaminK = (if (value.contains("vitaminK")) {
+                            getMassFromMap(value.getValue("vitaminK") as Map<String, Any>)
+                        } else null),
+                        zinc = (if (value.contains("zinc")) {
+                            getMassFromMap(value.getValue("zinc") as Map<String, Any>)
+                        } else null),
                 )
                 records = listOf(nutritionRecord)
             }
@@ -845,19 +845,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         when (type) {
             WEIGHT -> {
                 val startDate = ZonedDateTime.parse(
-                    startDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        startDate,
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val endDate = ZonedDateTime.parse(
-                    endDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        endDate,
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val request = ReadRecordsRequest(
-                    recordType = WeightRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(
-                        startDate.toInstant(),
-                        endDate.toInstant()
-                    )
+                        recordType = WeightRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(
+                                startDate.toInstant(),
+                                endDate.toInstant()
+                        )
                 )
                 CoroutineScope(Dispatchers.Main).launch {
                     val response = healthConnectClient.readRecords(request)
@@ -866,33 +866,34 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     val healthData = dataList.mapIndexed { _, it ->
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         val zonedDateTime =
-                            dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
+                                dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
                         val uid = it.metadata.uid
                         val weight = it.weight.inGrams
                         return@mapIndexed hashMapOf(
-                            "zonedDateTime" to formatter.format(zonedDateTime),
-                            "uid" to uid,
-                            "weight" to weight
+                                //"zonedDateTime" to formatter.format(zonedDateTime),
+                                "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
+                                "uid" to uid,
+                                "weight" to weight
                         )
                     }
                     activity!!.runOnUiThread { result.success(healthData) }
                 }
             }
-            BODYFAT -> {
+            BODY_FAT_PERCENTAGE -> {
                 val startDate = ZonedDateTime.parse(
-                    startDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        startDate,
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val endDate = ZonedDateTime.parse(
-                    endDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        endDate,
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val request = ReadRecordsRequest(
-                    recordType = BodyFatRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(
-                        startDate.toInstant(),
-                        endDate.toInstant()
-                    )
+                        recordType = BodyFatRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(
+                                startDate.toInstant(),
+                                endDate.toInstant()
+                        )
                 )
                 CoroutineScope(Dispatchers.Main).launch {
                     val response = healthConnectClient.readRecords(request)
@@ -901,13 +902,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     val healthData = dataList.mapIndexed { _, it ->
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         val zonedDateTime =
-                            dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
+                                dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
                         val uid = it.metadata.uid
                         val bodyFat = it.percentage.value
                         return@mapIndexed hashMapOf(
-                            "zonedDateTime" to formatter.format(zonedDateTime),
-                            "uid" to uid,
-                            "bodyFat" to bodyFat
+                                "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
+                                //"zonedDateTime" to formatter.format(zonedDateTime),
+                                "uid" to uid,
+                                "bodyFat" to bodyFat
                         )
                     }
                     activity!!.runOnUiThread { result.success(healthData) }
@@ -915,19 +917,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             }
             NUTRITION -> {
                 val startDate = ZonedDateTime.parse(
-                    startDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        startDate,
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val endDate = ZonedDateTime.parse(
-                    endDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+                        endDate,
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val request = ReadRecordsRequest(
-                    recordType = NutritionRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(
-                        startDate.toInstant(),
-                        endDate.toInstant()
-                    ),
+                        recordType = NutritionRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(
+                                startDate.toInstant(),
+                                endDate.toInstant()
+                        ),
                 )
                 CoroutineScope(Dispatchers.Main).launch {
                     val response = healthConnectClient.readRecords(request)
@@ -935,14 +937,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     val healthData = dataList.mapIndexed { _, it ->
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         val startZonedDateTime =
-                            dateTimeWithOffsetOrDefault(it.startTime, it.startZoneOffset)
+                                dateTimeWithOffsetOrDefault(it.startTime, it.startZoneOffset)
                         val endZonedDateTime =
-                            dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
+                                dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
                         val uid = it.metadata.uid
                         val hashMapData = hashMapOf<String, Any>(
-                            "startDateTime" to startZonedDateTime.toEpochSecond(),
-                            "endDateTime" to endZonedDateTime.toEpochSecond(),
-                            "uid" to uid,
+                                "startDateTime" to startZonedDateTime.toInstant().toEpochMilli(),
+                                "endDateTime" to endZonedDateTime.toInstant().toEpochMilli(),
+                                "uid" to uid,
                         )
                         if (it.biotin != null) {
                             //hashMapData["biotin"] = "${it.biotin!!.inGrams} grams"
@@ -961,7 +963,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         }
                         if (it.energyFromFat != null) {
                             hashMapData["energyFromFat"] =
-                                it.energyFromFat!!.inCalories
+                                    it.energyFromFat!!.inCalories
                         }
                         if (it.chloride != null) {
                             hashMapData["chloride"] = it.chloride!!.inGrams
@@ -1013,7 +1015,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         }
                         if (it.polyunsaturatedFat != null) {
                             hashMapData["polyunsaturatedFat"] =
-                                it.polyunsaturatedFat!!.inGrams
+                                    it.polyunsaturatedFat!!.inGrams
                         }
                         if (it.potassium != null) {
                             hashMapData["potassium"] = it.potassium!!.inGrams
@@ -1041,7 +1043,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         }
                         if (it.totalCarbohydrate != null) {
                             hashMapData["totalCarbohydrate"] =
-                                it.totalCarbohydrate!!.inGrams
+                                    it.totalCarbohydrate!!.inGrams
                         }
                         if (it.totalFat != null) {
                             hashMapData["totalFat"] = it.totalFat!!.inGrams
@@ -1102,27 +1104,27 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         if (type == WEIGHT) {
             CoroutineScope(Dispatchers.Main).launch {
                 healthConnectClient.deleteRecords(
-                    WeightRecord::class,
-                    uidsList = listOf(uID),
-                    clientRecordIdsList = emptyList()
+                        WeightRecord::class,
+                        uidsList = listOf(uID),
+                        clientRecordIdsList = emptyList()
                 )
                 result.success(true)
             }
-        } else if (type == BODYFAT) {
+        } else if (type == BODY_FAT_PERCENTAGE) {
             CoroutineScope(Dispatchers.Main).launch {
                 healthConnectClient.deleteRecords(
-                    BodyFatRecord::class,
-                    uidsList = listOf(uID),
-                    clientRecordIdsList = emptyList()
+                        BodyFatRecord::class,
+                        uidsList = listOf(uID),
+                        clientRecordIdsList = emptyList()
                 )
                 result.success(true)
             }
         } else if (type == NUTRITION) {
             CoroutineScope(Dispatchers.Main).launch {
                 healthConnectClient.deleteRecords(
-                    NutritionRecord::class,
-                    uidsList = listOf(uID),
-                    clientRecordIdsList = emptyList()
+                        NutritionRecord::class,
+                        uidsList = listOf(uID),
+                        clientRecordIdsList = emptyList()
                 )
                 result.success(true)
             }
@@ -1130,12 +1132,109 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     }
 
-    private fun dateTimeWithOffsetOrDefault(time: Instant, offset: ZoneOffset?): ZonedDateTime =
-        if (offset != null) {
-            ZonedDateTime.ofInstant(time, offset)
-        } else {
-            ZonedDateTime.ofInstant(time, ZoneId.systemDefault())
+    private fun deleteHealthConnectDataByDateRange(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
         }
+        val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
+        val type = call.argument<String>("dataTypeKey")!!
+        val startTime = call.argument<String>("startTime")!!
+        val endTime = call.argument<String>("endTime")!!
+        mResult = result
+
+        if (type == WEIGHT) {
+            val startDate = ZonedDateTime.parse(
+                    startTime,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+            )
+            val endDate = ZonedDateTime.parse(
+                    endTime,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+            )
+            val request = ReadRecordsRequest(
+                    recordType = WeightRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(
+                            startDate.toInstant(),
+                            endDate.toInstant()
+                    )
+            )
+            CoroutineScope(Dispatchers.Main).launch {
+                val response = healthConnectClient.readRecords(request)
+                val dataList: List<WeightRecord> = response.records;
+
+                val uIdList = dataList.map { it.metadata.uid }.toList();
+                healthConnectClient.deleteRecords(
+                        WeightRecord::class,
+                        uidsList = uIdList,
+                        clientRecordIdsList = emptyList()
+                )
+                result.success(true)
+            }
+        } else if (type == BODY_FAT_PERCENTAGE) {
+            val startDate = ZonedDateTime.parse(
+                    startTime,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+            )
+            val endDate = ZonedDateTime.parse(
+                    endTime,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+            )
+            val request = ReadRecordsRequest(
+                    recordType = BodyFatRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(
+                            startDate.toInstant(),
+                            endDate.toInstant()
+                    )
+            )
+            CoroutineScope(Dispatchers.Main).launch {
+                val response = healthConnectClient.readRecords(request)
+                val dataList: List<BodyFatRecord> = response.records;
+                val uIdList = dataList.map { it.metadata.uid }.toList();
+                healthConnectClient.deleteRecords(
+                        BodyFatRecord::class,
+                        uidsList = uIdList,
+                        clientRecordIdsList = emptyList()
+                )
+                result.success(true)
+            }
+        } else if (type == NUTRITION) {
+            val startDate = ZonedDateTime.parse(
+                    startTime,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+            )
+            val endDate = ZonedDateTime.parse(
+                    endTime,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+            )
+            val request = ReadRecordsRequest(
+                    recordType = NutritionRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(
+                            startDate.toInstant(),
+                            endDate.toInstant()
+                    ),
+            )
+            CoroutineScope(Dispatchers.Main).launch {
+                val response = healthConnectClient.readRecords(request)
+                val dataList: List<NutritionRecord> = response.records;
+
+                val uIdList = dataList.map { it.metadata.uid }.toList();
+                healthConnectClient.deleteRecords(
+                        NutritionRecord::class,
+                        uidsList = uIdList,
+                        clientRecordIdsList = emptyList()
+                )
+                result.success(true)
+            }
+        }
+    }
+
+    private fun dateTimeWithOffsetOrDefault(time: Instant, offset: ZoneOffset?): ZonedDateTime =
+            if (offset != null) {
+                ZonedDateTime.ofInstant(time, offset)
+            } else {
+                ZonedDateTime.ofInstant(time, ZoneId.systemDefault())
+            }
 
     private fun getData(call: MethodCall, result: Result) {
         if (activity == null) {
@@ -1157,52 +1256,52 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         val fitnessOptions = typesBuilder.build()
         val googleSignInAccount =
-            GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+                GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
 
         if (dataType != DataType.TYPE_SLEEP_SEGMENT) {
             Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
-                .readData(
-                    DataReadRequest.Builder()
-                        .read(dataType)
-                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                        .build()
-                )
-                .addOnSuccessListener(threadPoolExecutor!!, dataHandler(dataType, field, result))
-                .addOnFailureListener(errHandler(result))
+                    .readData(
+                            DataReadRequest.Builder()
+                                    .read(dataType)
+                                    .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                                    .build()
+                    )
+                    .addOnSuccessListener(threadPoolExecutor!!, dataHandler(dataType, field, result))
+                    .addOnFailureListener(errHandler(result))
         } else {
             // request to the sessions for sleep data
             val request = SessionReadRequest.Builder()
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .enableServerQueries()
-                .readSessionsFromAllApps()
-                .includeSleepSessions()
-                .build()
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .enableServerQueries()
+                    .readSessionsFromAllApps()
+                    .includeSleepSessions()
+                    .build()
             Fitness.getSessionsClient(activity!!.applicationContext, googleSignInAccount)
-                .readSession(request)
-                .addOnSuccessListener(threadPoolExecutor!!, sleepDataHandler(type, result))
-                .addOnFailureListener(errHandler(result))
+                    .readSession(request)
+                    .addOnSuccessListener(threadPoolExecutor!!, sleepDataHandler(type, result))
+                    .addOnFailureListener(errHandler(result))
         }
 
     }
 
     private fun dataHandler(dataType: DataType, field: Field, result: Result) =
-        OnSuccessListener { response: DataReadResponse ->
-            /// Fetch all data points for the specified DataType
-            val dataSet = response.getDataSet(dataType)
-            /// For each data point, extract the contents and send them to Flutter, along with date and unit.
-            val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
-                return@mapIndexed hashMapOf(
-                    "value" to getHealthDataValue(dataPoint, field),
-                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                    "source_name" to (dataPoint.originalDataSource.appPackageName
-                        ?: (dataPoint.originalDataSource.device?.model
-                            ?: "")),
-                    "source_id" to dataPoint.originalDataSource.streamIdentifier
-                )
+            OnSuccessListener { response: DataReadResponse ->
+                /// Fetch all data points for the specified DataType
+                val dataSet = response.getDataSet(dataType)
+                /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+                val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
+                    return@mapIndexed hashMapOf(
+                            "value" to getHealthDataValue(dataPoint, field),
+                            "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                            "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                            "source_name" to (dataPoint.originalDataSource.appPackageName
+                                    ?: (dataPoint.originalDataSource.device?.model
+                                            ?: "")),
+                            "source_id" to dataPoint.originalDataSource.streamIdentifier
+                    )
+                }
+                activity!!.runOnUiThread { result.success(healthData) }
             }
-            activity!!.runOnUiThread { result.success(healthData) }
-        }
 
     private fun errHandler(result: Result) = OnFailureListener { exception ->
         activity!!.runOnUiThread { result.success(null) }
@@ -1211,97 +1310,97 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     private fun sleepDataHandler(type: String, result: Result) =
-        OnSuccessListener { response: SessionReadResponse ->
-            val healthData: MutableList<Map<String, Any?>> = mutableListOf()
-            for (session in response.sessions) {
+            OnSuccessListener { response: SessionReadResponse ->
+                val healthData: MutableList<Map<String, Any?>> = mutableListOf()
+                for (session in response.sessions) {
 
-                // Return sleep time in Minutes if requested ASLEEP data
-                if (type == SLEEP_ASLEEP) {
-                    healthData.add(
-                        hashMapOf(
-                            "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
-                                TimeUnit.MINUTES
-                            ),
-                            "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                            "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                            "unit" to "MINUTES",
-                            "source_name" to session.appPackageName,
-                            "source_id" to session.identifier
+                    // Return sleep time in Minutes if requested ASLEEP data
+                    if (type == SLEEP_ASLEEP) {
+                        healthData.add(
+                                hashMapOf(
+                                        "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
+                                                TimeUnit.MINUTES
+                                        ),
+                                        "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                                        "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                                        "unit" to "MINUTES",
+                                        "source_name" to session.appPackageName,
+                                        "source_id" to session.identifier
+                                )
                         )
-                    )
-                }
+                    }
 
-                if (type == SLEEP_IN_BED) {
-                    val dataSets = response.getDataSet(session)
+                    if (type == SLEEP_IN_BED) {
+                        val dataSets = response.getDataSet(session)
 
-                    // If the sleep session has finer granularity sub-components, extract them:
-                    if (dataSets.isNotEmpty()) {
+                        // If the sleep session has finer granularity sub-components, extract them:
+                        if (dataSets.isNotEmpty()) {
+                            for (dataSet in dataSets) {
+                                for (dataPoint in dataSet.dataPoints) {
+                                    // searching OUT OF BED data
+                                    if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE)
+                                                    .asInt() != 3
+                                    ) {
+                                        healthData.add(
+                                                hashMapOf(
+                                                        "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
+                                                                TimeUnit.MINUTES
+                                                        ),
+                                                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                                        "unit" to "MINUTES",
+                                                        "source_name" to (dataPoint.originalDataSource.appPackageName
+                                                                ?: (dataPoint.originalDataSource.device?.model
+                                                                        ?: "unknown")),
+                                                        "source_id" to dataPoint.originalDataSource.streamIdentifier
+                                                )
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            healthData.add(
+                                    hashMapOf(
+                                            "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
+                                                    TimeUnit.MINUTES
+                                            ),
+                                            "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                                            "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                                            "unit" to "MINUTES",
+                                            "source_name" to session.appPackageName,
+                                            "source_id" to session.identifier
+                                    )
+                            )
+                        }
+                    }
+
+                    if (type == SLEEP_AWAKE) {
+                        val dataSets = response.getDataSet(session)
                         for (dataSet in dataSets) {
                             for (dataPoint in dataSet.dataPoints) {
-                                // searching OUT OF BED data
-                                if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE)
-                                        .asInt() != 3
-                                ) {
+                                // searching SLEEP AWAKE data
+                                if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1) {
                                     healthData.add(
-                                        hashMapOf(
-                                            "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
-                                                TimeUnit.MINUTES
-                                            ),
-                                            "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                                            "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                            "unit" to "MINUTES",
-                                            "source_name" to (dataPoint.originalDataSource.appPackageName
-                                                ?: (dataPoint.originalDataSource.device?.model
-                                                    ?: "unknown")),
-                                            "source_id" to dataPoint.originalDataSource.streamIdentifier
-                                        )
+                                            hashMapOf(
+                                                    "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
+                                                            TimeUnit.MINUTES
+                                                    ),
+                                                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                                    "unit" to "MINUTES",
+                                                    "source_name" to (dataPoint.originalDataSource.appPackageName
+                                                            ?: (dataPoint.originalDataSource.device?.model
+                                                                    ?: "unknown")),
+                                                    "source_id" to dataPoint.originalDataSource.streamIdentifier
+                                            )
                                     )
                                 }
                             }
                         }
-                    } else {
-                        healthData.add(
-                            hashMapOf(
-                                "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
-                                    TimeUnit.MINUTES
-                                ),
-                                "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                                "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                                "unit" to "MINUTES",
-                                "source_name" to session.appPackageName,
-                                "source_id" to session.identifier
-                            )
-                        )
                     }
                 }
-
-                if (type == SLEEP_AWAKE) {
-                    val dataSets = response.getDataSet(session)
-                    for (dataSet in dataSets) {
-                        for (dataPoint in dataSet.dataPoints) {
-                            // searching SLEEP AWAKE data
-                            if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1) {
-                                healthData.add(
-                                    hashMapOf(
-                                        "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
-                                            TimeUnit.MINUTES
-                                        ),
-                                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                        "unit" to "MINUTES",
-                                        "source_name" to (dataPoint.originalDataSource.appPackageName
-                                            ?: (dataPoint.originalDataSource.device?.model
-                                                ?: "unknown")),
-                                        "source_id" to dataPoint.originalDataSource.streamIdentifier
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
+                activity!!.runOnUiThread { result.success(healthData) }
             }
-            activity!!.runOnUiThread { result.success(healthData) }
-        }
 
 
     private fun callToHealthTypes(call: MethodCall): FitnessOptions {
@@ -1363,7 +1462,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 NUTRITION -> {
                     NutritionRecord::class
                 }
-                BODYFAT -> {
+                BODY_FAT_PERCENTAGE -> {
                     BodyFatRecord::class
                 }
                 else -> throw IllegalArgumentException("Unknown access type $access")
@@ -1396,9 +1495,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         CoroutineScope(Dispatchers.Main).launch {
             mResult?.success(
-                healthConnectClient.permissionController.getGrantedPermissions(
-                    permissionList.toSet()
-                ) == permissionList
+                    healthConnectClient.permissionController.getGrantedPermissions(
+                            permissionList.toSet()
+                    ) == permissionList
             )
         }
     }
@@ -1428,8 +1527,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         mResult = result
 
         val isGranted = GoogleSignIn.hasPermissions(
-            GoogleSignIn.getLastSignedInAccount(activity),
-            optionsToRegister
+                GoogleSignIn.getLastSignedInAccount(activity),
+                optionsToRegister
         )
 
         mResult?.success(isGranted)
@@ -1446,16 +1545,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         mResult = result
 
         val isGranted = GoogleSignIn.hasPermissions(
-            GoogleSignIn.getLastSignedInAccount(activity),
-            optionsToRegister
+                GoogleSignIn.getLastSignedInAccount(activity),
+                optionsToRegister
         )
         /// Not granted? Ask for permission
         if (!isGranted && activity != null) {
             GoogleSignIn.requestPermissions(
-                activity!!,
-                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                GoogleSignIn.getLastSignedInAccount(activity),
-                optionsToRegister
+                    activity!!,
+                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                    GoogleSignIn.getLastSignedInAccount(activity),
+                    optionsToRegister
             )
             Log.i("FLUTTER_HEALTH::SUCCESS", "Ask permission!")
         }
@@ -1476,8 +1575,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val permissionList = callToHealthConnectTypes(call)
 
         val intent =
-            healthConnectClient.permissionController.createRequestPermissionActivityContract()
-                .createIntent(activity!!.applicationContext, permissionList)
+                healthConnectClient.permissionController.createRequestPermissionActivityContract()
+                        .createIntent(activity!!.applicationContext, permissionList)
         activity!!.startActivityForResult(intent, HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE)
     }
 
@@ -1492,72 +1591,72 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val aggregatedDataType = keyToHealthDataType(AGGREGATE_STEP_COUNT)
 
         val fitnessOptions = FitnessOptions.builder()
-            .addDataType(stepsDataType)
-            .addDataType(aggregatedDataType)
-            .build()
+                .addDataType(stepsDataType)
+                .addDataType(aggregatedDataType)
+                .build()
         val gsa = GoogleSignIn.getAccountForExtension(activity, fitnessOptions)
 
         val ds = DataSource.Builder()
-            .setAppPackageName("com.google.android.gms")
-            .setDataType(stepsDataType)
-            .setType(DataSource.TYPE_DERIVED)
-            .setStreamName("estimated_steps")
-            .build()
+                .setAppPackageName("com.google.android.gms")
+                .setDataType(stepsDataType)
+                .setType(DataSource.TYPE_DERIVED)
+                .setStreamName("estimated_steps")
+                .build()
 
         val duration = (end - start).toInt()
 
         val request = DataReadRequest.Builder()
-            .aggregate(ds)
-            .bucketByTime(duration, TimeUnit.MILLISECONDS)
-            .setTimeRange(start, end, TimeUnit.MILLISECONDS)
-            .build()
+                .aggregate(ds)
+                .bucketByTime(duration, TimeUnit.MILLISECONDS)
+                .setTimeRange(start, end, TimeUnit.MILLISECONDS)
+                .build()
 
         Fitness.getHistoryClient(activity, gsa).readData(request)
-            .addOnFailureListener(errHandler(result))
-            .addOnSuccessListener(
-                threadPoolExecutor!!,
-                getStepsInRange(start, end, aggregatedDataType, result)
-            )
+                .addOnFailureListener(errHandler(result))
+                .addOnSuccessListener(
+                        threadPoolExecutor!!,
+                        getStepsInRange(start, end, aggregatedDataType, result)
+                )
 
     }
 
 
     private fun getStepsInRange(
-        start: Long,
-        end: Long,
-        aggregatedDataType: DataType,
-        result: Result
+            start: Long,
+            end: Long,
+            aggregatedDataType: DataType,
+            result: Result
     ) =
-        OnSuccessListener { response: DataReadResponse ->
+            OnSuccessListener { response: DataReadResponse ->
 
-            val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
-            for (bucket in response.buckets) {
-                val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
-                if (dp != null) {
-                    print(dp)
+                val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
+                for (bucket in response.buckets) {
+                    val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
+                    if (dp != null) {
+                        print(dp)
 
-                    val count = dp.getValue(aggregatedDataType.fields[0])
+                        val count = dp.getValue(aggregatedDataType.fields[0])
 
-                    val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
-                    val startDate = Date(startTime)
-                    val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
-                    Log.i(
-                        "FLUTTER_HEALTH::SUCCESS",
-                        "returning $count steps for $startDate - $endDate"
-                    )
-                    map[startTime] = count.asInt()
-                } else {
-                    val startDay = Date(start)
-                    val endDay = Date(end)
-                    Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
+                        val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
+                        val startDate = Date(startTime)
+                        val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
+                        Log.i(
+                                "FLUTTER_HEALTH::SUCCESS",
+                                "returning $count steps for $startDate - $endDate"
+                        )
+                        map[startTime] = count.asInt()
+                    } else {
+                        val startDay = Date(start)
+                        val endDay = Date(end)
+                        Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
+                    }
+                }
+
+                assert(map.size <= 1) { "getTotalStepsInInterval should return only one interval. Found: ${map.size}" }
+                activity!!.runOnUiThread {
+                    result.success(map.values.firstOrNull())
                 }
             }
-
-            assert(map.size <= 1) { "getTotalStepsInInterval should return only one interval. Found: ${map.size}" }
-            activity!!.runOnUiThread {
-                result.success(map.values.firstOrNull())
-            }
-        }
 
     /// Handle calls from the MethodChannel
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -1576,6 +1675,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             "deleteHealthConnectData" -> deleteHealthConnectData(call, result)
             "requestHealthConnectPermission" -> requestHealthConnectPermission(call, result)
             "isHealthConnectAvailable" -> isHealthConnectAvailable(call, result)
+            "deleteHealthConnectDataByDateRange" -> deleteHealthConnectDataByDateRange(call, result)
             else -> result.notImplemented()
         }
     }

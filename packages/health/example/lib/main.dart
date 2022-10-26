@@ -210,9 +210,25 @@ class _HealthAppState extends State<HealthApp> {
     }
   }
 
+  Future deleteHealthDataByDateRange(
+      HealthDataType type, DateTime startTime, DateTime endTime) async {
+    bool success =
+        await health.deleteHCDataByDateRange(type, startTime, endTime);
+    if (success) {
+      if (type == HealthDataType.WEIGHT) {
+        healthWeight.clear();
+      } else if (type == HealthDataType.BODY_FAT_PERCENTAGE) {
+        healthBodyFat.clear();
+      } else if (type == HealthDataType.NUTRITION) {
+        healthNutrition.clear();
+      }
+      setState(() {});
+    }
+  }
+
   Future addBodyFatDataToHealthConnect() async {
     final now = DateTime.now();
-    bool success = await health.writeHCData(HealthDataType.BODYFAT,
+    bool success = await health.writeHCData(HealthDataType.BODY_FAT_PERCENTAGE,
         value: 22.toDouble(), currentTime: now);
 
     Fluttertoast.showToast(
@@ -232,7 +248,7 @@ class _HealthAppState extends State<HealthApp> {
   List<HealthConnectBodyFat> healthBodyFat = [];
 
   Future readBodyFatDataFromHealthConnect() async {
-    var type = HealthDataType.BODYFAT;
+    var type = HealthDataType.BODY_FAT_PERCENTAGE;
     final startTime = DateTime.now().subtract(Duration(minutes: 100));
     final endTime = DateTime.now();
     List<HealthConnectData> success =
@@ -243,7 +259,7 @@ class _HealthAppState extends State<HealthApp> {
   }
 
   Future deleteBodyDataFromHealthConnect(String uID) async {
-    var type = HealthDataType.BODYFAT;
+    var type = HealthDataType.BODY_FAT_PERCENTAGE;
 
     bool success = await health.deleteHCData(type, uID);
     if (success) {
@@ -410,10 +426,10 @@ class _HealthAppState extends State<HealthApp> {
     // define the types to get
     final types = [
       HealthDataType.WEIGHT,
-      HealthDataType.BODYFAT,
+      HealthDataType.BODY_FAT_PERCENTAGE,
       HealthDataType.NUTRITION,
       HealthDataType.WEIGHT,
-      HealthDataType.BODYFAT,
+      HealthDataType.BODY_FAT_PERCENTAGE,
       HealthDataType.NUTRITION,
     ];
 
@@ -436,10 +452,10 @@ class _HealthAppState extends State<HealthApp> {
     // define the types to get
     final types = [
       HealthDataType.WEIGHT,
-      HealthDataType.BODYFAT,
+      HealthDataType.BODY_FAT_PERCENTAGE,
       HealthDataType.NUTRITION,
       HealthDataType.WEIGHT,
-      HealthDataType.BODYFAT,
+      HealthDataType.BODY_FAT_PERCENTAGE,
       HealthDataType.NUTRITION,
     ];
 
@@ -726,9 +742,66 @@ class _HealthAppState extends State<HealthApp> {
                             title: Text(
                                 "Name: ${data.name} MealType: ${getMealTypeAsString(data.mealType ?? MealType.UNKNOWN)}"),
                             subtitle: Text(
-                                'Energy: ${data.energy?.getInKilocalories} DateTime ${data.startTime.toIso8601String()} - ${data.endTime.toIso8601String()}\nuID ${data.uID}\nbiotin : ${data.biotin?.getInGram} gram'),
+                                'Energy: ${data.energy?.getInKilocalories} DateTime ${data.startTime} - ${data.endTime}\nuID ${data.uID}\nbiotin : ${data.biotin?.getInGram} gram'),
                           );
                         }),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            deleteHealthDataByDateRange(
+                                HealthDataType.WEIGHT,
+                                DateTime.now().subtract(Duration(hours: 5)),
+                                DateTime.now());
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text(
+                          "Delete Weight Data from\nHealth Connect using date range",
+                          textAlign: TextAlign.center,
+                        )),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            deleteHealthDataByDateRange(
+                                HealthDataType.BODY_FAT_PERCENTAGE,
+                                DateTime.now().subtract(Duration(hours: 5)),
+                                DateTime.now());
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text(
+                          "Delete BodyFat Data from\nHealth Connect using date range",
+                          textAlign: TextAlign.center,
+                        )),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (androidDataSource ==
+                              AndroidDataSource.HealthConnect) {
+                            deleteHealthDataByDateRange(
+                                HealthDataType.NUTRITION,
+                                DateTime.now().subtract(Duration(hours: 5)),
+                                DateTime.now());
+                            return;
+                          }
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Please mark bottom checkbox for Health Connect data");
+                        },
+                        child: Text(
+                          "Delete Nutrition Data from\nHealth Connect using date range",
+                          textAlign: TextAlign.center,
+                        )),
+                    const SizedBox(
+                      height: 100,
+                    )
                   ],
                 ),
               ),

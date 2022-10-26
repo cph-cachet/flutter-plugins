@@ -3,7 +3,7 @@ part of health;
 class HealthConnectBodyFat extends HealthConnectData {
   final String uID;
   final double bodyFat;
-  final String zonedDateTime;
+  final DateTime zonedDateTime;
   final HealthDataType healthDataType;
 
   HealthConnectBodyFat(
@@ -17,7 +17,8 @@ class HealthConnectBodyFat extends HealthConnectData {
       HealthConnectBodyFat(
           uID: json['uid'],
           bodyFat: json['bodyFat'],
-          zonedDateTime: json['zonedDateTime'],
+          zonedDateTime: DateTime.fromMillisecondsSinceEpoch(
+              (json['zonedDateTime'] as int)),
           healthDataType: healthDataType);
 
   /// Converts the [HealthDataPoint] to a json object

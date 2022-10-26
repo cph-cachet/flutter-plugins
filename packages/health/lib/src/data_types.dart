@@ -79,7 +79,7 @@ enum HealthDataType {
 
   //Specific to Health Connect App (weight is already there)
   NUTRITION,
-  BODYFAT,
+  //BODYFAT,
 }
 
 enum HealthDataAccess {

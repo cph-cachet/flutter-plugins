@@ -192,8 +192,8 @@ class HealthConnectNutrition extends HealthConnectData {
   factory HealthConnectNutrition.fromJson(
           Map<dynamic, dynamic> json, HealthDataType type) =>
       HealthConnectNutrition(
-        DateTime.fromMillisecondsSinceEpoch(json['startDateTime'] * 1000),
-        DateTime.fromMillisecondsSinceEpoch(json['endDateTime'] * 1000),
+        DateTime.fromMillisecondsSinceEpoch(json['startDateTime']),
+        DateTime.fromMillisecondsSinceEpoch(json['endDateTime']),
         uID: json['uid'],
         healthDataType: type,
         mealType:

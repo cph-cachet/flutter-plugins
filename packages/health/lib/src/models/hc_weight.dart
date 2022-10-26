@@ -3,7 +3,7 @@ part of health;
 class HealthConnectWeight extends HealthConnectData {
   final String uID;
   final Mass weight;
-  final String zonedDateTime;
+  final DateTime zonedDateTime;
   final HealthDataType healthDataType;
 
   HealthConnectWeight(
@@ -13,8 +13,10 @@ class HealthConnectWeight extends HealthConnectData {
   factory HealthConnectWeight.fromJson(json, HealthDataType healthDataType) =>
       HealthConnectWeight(
           json['uid'],
-          Mass(json['weight'],),
-          json['zonedDateTime'],
+          Mass(
+            json['weight'],
+          ),
+          DateTime.fromMillisecondsSinceEpoch((json['zonedDateTime'] as int)),
           healthDataType);
 
   /// Converts the [HealthDataPoint] to a json object
