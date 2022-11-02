@@ -1,3 +1,7 @@
+## 4.3.0
+
+- upgrade to `device_info_plus: ^8.0.0`
+
 ## 4.2.0
 
 - upgrade to `device_info_plus: ^7.0.0`
