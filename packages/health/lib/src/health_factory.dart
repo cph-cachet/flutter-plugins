@@ -533,22 +533,47 @@ class HealthFactory {
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [nutrition] - the health data's value in [HealthConnectNutrition]
+  /// * [listNutrition] - the health data's value in List[HealthConnectNutrition]
+  /// * [isOverWrite] - to overwrite old data. true/false
+  /// * [startTime] - Range startTime for Overwrite
+  /// * [endTime] - Range endTime for Overwrite
   Future<bool> writeHCNutrition({
-    required HealthConnectNutrition nutrition,
+    required List<HealthConnectNutrition> listNutrition,
+    bool isOverWrite = false,
+    DateTime? startTime,
+    DateTime? endTime,
   }) async {
     if (_platformType != PlatformType.ANDROID) {
       throw ArgumentError("This operation is not supported for $_platformType");
     }
+    if (listNutrition.isEmpty) throw ArgumentError("list must be not null");
 
-    if (nutrition.startTime.compareTo(nutrition.endTime) == 0)
-      throw ArgumentError("startTime must be earlier than endTime");
-    if (nutrition.startTime.isAfter(nutrition.endTime))
-      throw ArgumentError("startTime must be earlier than endTime");
+    if (isOverWrite) {
+      if (startTime == null) throw ArgumentError("startTime must be not null");
+      if (endTime == null) throw ArgumentError("endTime must be not null");
+      if (startTime.isAfter(endTime))
+        throw ArgumentError("startTime must be equal or earlier than endTime");
+    }
+
+    listNutrition.forEach((nutrition) {
+      if (nutrition.startTime.compareTo(nutrition.endTime) == 0)
+        throw ArgumentError("startTime must be earlier than endTime");
+      if (nutrition.startTime.isAfter(nutrition.endTime))
+        throw ArgumentError("startTime must be earlier than endTime");
+    });
     Map<String, dynamic> args = {
-      'value': nutrition.toMap(),
+      'value': listNutrition.map((e) => e.toMap()).toList(),
       'dataTypeKey': _enumToString(HealthDataType.NUTRITION),
+      'isOverWrite': isOverWrite,
     };
+    if (startTime != null && endTime != null) {
+      args.addAll({
+        "startTime":
+            DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(startTime).toString(),
+        "endTime":
+            DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endTime).toString(),
+      });
+    }
     bool? success = await _channel.invokeMethod('writeDataHealthConnect', args);
     return success ?? false;
   }
@@ -626,8 +651,10 @@ class HealthFactory {
         'endTime':
             DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endTime).toString(),
       };
-      var success =
-          await _channel.invokeMethod('deleteHealthConnectDataByDateRange', args);
+
+      var success = await _channel.invokeMethod(
+          'deleteHealthConnectDataByDateRange', args);
+
       return success ?? false;
     }
     throw ArgumentError("This method will only work with Android.");

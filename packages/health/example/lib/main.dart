@@ -272,11 +272,23 @@ class _HealthAppState extends State<HealthApp> {
     final startTime = DateTime.now().subtract(Duration(minutes: 30));
     final endTime = DateTime.now();
     bool success = await health.writeHCNutrition(
-        nutrition: HealthConnectNutrition(startTime, endTime,
-            name: "Pixelapps BreakFast",
-            mealType: MealType.BREAKFAST,
-            biotin: Mass(0.07, type: Type.KILOGRAMS),
-            energy: Energy(1000, type: EType.CALORIES)));
+        isOverWrite: true,
+        startTime: DateTime.now().subtract(
+          Duration(hours: 3),
+        ),
+        endTime: DateTime.now(),
+        listNutrition: [
+          HealthConnectNutrition(startTime, endTime,
+              name: "Pixelapps BreakFast",
+              mealType: MealType.BREAKFAST,
+              biotin: Mass(0.07, type: Type.KILOGRAMS),
+              energy: Energy(1000, type: EType.CALORIES)),
+          HealthConnectNutrition(startTime, endTime,
+              name: "Pixelapps BreakFast",
+              mealType: MealType.BREAKFAST,
+              biotin: Mass(0.08, type: Type.KILOGRAMS),
+              energy: Energy(100, type: EType.CALORIES)),
+        ]);
 
     Fluttertoast.showToast(
         msg: success ? "Data Added" : "Something went wrong",
