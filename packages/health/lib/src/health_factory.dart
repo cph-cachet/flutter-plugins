@@ -166,7 +166,18 @@ class HealthFactory {
           _platformType,
           _deviceId!,
           '',
-          '');
+          '',
+          '',
+          '',
+          Device(
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+          ));
 
       bmiHealthPoints.add(x);
     }
@@ -355,7 +366,7 @@ class HealthFactory {
   static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
     final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
-    final device = message["deviceId"];
+    final deviceId = message["deviceId"];
     final unit = _dataTypeToUnit[dataType]!;
     final list = dataPoints.map<HealthDataPoint>((e) {
       // Handling different [HealthValue] types
@@ -371,6 +382,10 @@ class HealthFactory {
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
       final String sourceName = e["source_name"];
+      final String sourceProductType = e["source_product_type"];
+      final String sourceOperatingSystemVersion =
+          e["source_operating_system_version"];
+      final Device device = Device.fromJson(e["device"]);
       return HealthDataPoint(
         value,
         dataType,
@@ -378,9 +393,12 @@ class HealthFactory {
         from,
         to,
         _platformType,
-        device,
+        deviceId,
         sourceId,
         sourceName,
+        sourceProductType,
+        sourceOperatingSystemVersion,
+        device,
       );
     }).toList();
 
