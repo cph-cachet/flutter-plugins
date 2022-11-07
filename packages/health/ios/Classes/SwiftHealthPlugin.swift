@@ -400,13 +400,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "source_operating_system_version": sample.sourceRevision.version,
                         "device": [
                             "udi_device_identifier": sample.device?.udiDeviceIdentifier,
-                            "firmware_version": sample.device?.firmwareVersion, 
+                            "firmware_version": sample.device?.firmwareVersion,
                             "hardware_version": sample.device?.hardwareVersion,
-                            "software_version": sample.device?.softwareVersion,
-                            "manufacturer": sample.device?.manufacturer, 
+                            "manufacturer": sample.device?.manufacturer,
                             "model": sample.device?.model,
-                            "name": sample.device?.name
+                            "name": sample.device?.name,
+                            "software_version": sample.device?.softwareVersion
                         ]
+
+
                     ]
                 }
                 DispatchQueue.main.async {
@@ -450,12 +452,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "source_operating_system_version": sample.sourceRevision.version,
                         "device": [
                             "udi_device_identifier": sample.device?.udiDeviceIdentifier,
-                            "firmware_version": sample.device?.firmwareVersion, 
+                            "firmware_version": sample.device?.firmwareVersion,
                             "hardware_version": sample.device?.hardwareVersion,
-                            "software_version": sample.device?.softwareVersion,
-                            "manufacturer": sample.device?.manufacturer, 
+                            "manufacturer": sample.device?.manufacturer,
                             "model": sample.device?.model,
-                            "name": sample.device?.name
+                            "name": sample.device?.name,
+                            "software_version": sample.device?.softwareVersion
                         ]
                     ]
                 }
@@ -481,12 +483,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "source_operating_system_version": sample.sourceRevision.version,
                         "device": [
                             "udi_device_identifier": sample.device?.udiDeviceIdentifier,
-                            "firmware_version": sample.device?.firmwareVersion, 
+                            "firmware_version": sample.device?.firmwareVersion,
                             "hardware_version": sample.device?.hardwareVersion,
-                            "software_version": sample.device?.softwareVersion,
-                            "manufacturer": sample.device?.manufacturer, 
+                            "manufacturer": sample.device?.manufacturer,
                             "model": sample.device?.model,
-                            "name": sample.device?.name
+                            "name": sample.device?.name,
+                            "software_version": sample.device?.softwareVersion
                         ]
                     ]
                 }
@@ -518,12 +520,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "source_operating_system_version": sample.sourceRevision.version,
                         "device": [
                             "udi_device_identifier": sample.device?.udiDeviceIdentifier,
-                            "firmware_version": sample.device?.firmwareVersion, 
+                            "firmware_version": sample.device?.firmwareVersion,
                             "hardware_version": sample.device?.hardwareVersion,
-                            "software_version": sample.device?.softwareVersion,
-                            "manufacturer": sample.device?.manufacturer, 
+                            "manufacturer": sample.device?.manufacturer,
                             "model": sample.device?.model,
-                            "name": sample.device?.name
+                            "name": sample.device?.name,
+                            "software_version": sample.device?.softwareVersion
                         ]
                     ]
                 }
