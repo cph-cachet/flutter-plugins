@@ -3,23 +3,21 @@ library activity_recognition;
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-part 'ar_domain.dart';
+part 'activity_recognition_domain.dart';
 
 /// Main entry to activity recognition API. Use as a singleton like
 ///
-///   `ActivityRecognition.instance`
+///   `ActivityRecognition()`
 ///
 class ActivityRecognition {
-  Stream<ActivityEvent>? _stream;
-
-  ActivityRecognition._();
-
-  static final ActivityRecognition _instance = ActivityRecognition._();
-
-  static ActivityRecognition get instance => _instance;
-
   static const EventChannel _eventChannel =
       const EventChannel('activity_recognition_flutter');
+  Stream<ActivityEvent>? _stream;
+  static ActivityRecognition _instance = ActivityRecognition._();
+  ActivityRecognition._();
+
+  /// Get the [ActivityRecognition] singleton.
+  factory ActivityRecognition() => _instance;
 
   /// Requests continuous [ActivityEvent] updates.
   ///
@@ -27,11 +25,11 @@ class ActivityRecognition {
   /// By default the foreground service is enabled, which allows the
   /// updates to be streamed while the app runs in the background.
   /// The programmer can choose to not enable to foreground service.
-  Stream<ActivityEvent> startStream({bool runForegroundService = true}) {
+  Stream<ActivityEvent> activityStream({bool runForegroundService = true}) {
     if (_stream == null) {
       _stream = _eventChannel
           .receiveBroadcastStream({"foreground": runForegroundService}).map(
-              (json) => ActivityEvent.fromJson(json));
+              (json) => ActivityEvent.fromString(json));
     }
     return _stream!;
   }

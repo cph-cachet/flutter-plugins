@@ -1,38 +1,54 @@
 package dk.cachet.esense_flutter;
 
+import androidx.annotation.NonNull;
+
 import android.Manifest;
 import io.flutter.plugin.common.*;
-import io.flutter.plugin.common.MethodChannel.*;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.*;
+
 
 /** EsenseFlutterPlugin */
-public class EsenseFlutterPlugin {
+public class EsenseFlutterPlugin implements FlutterPlugin {
 
+  // Channel naming
   public static final String ESenseManagerMethodChannelName = "esense.io/esense_manager";
   public static final String ESenseConnectionEventChannelName = "esense.io/esense_connection";
   public static final String ESenseEventEventChannelName = "esense.io/esense_events";
   public static final String ESenseSensorEventChannelName = "esense.io/esense_sensor";
 
-  /** Plugin registration. */
-  public static void registerWith(Registrar registrar) {
-    registrar.activity().requestPermissions(new String[]{
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-    }, 0);
+  /// The MethodChannel and EventChannels that will the communication between Flutter and native Android
+  private MethodChannel eSenseManagerMethodChannel;
+  private EventChannel eSenseConnectionEventChannel;
+  private EventChannel eSenseEventChannel;
+  private EventChannel eSenseSensorEventChannel;
 
-    final  ESenseConnectionEventStreamHandler eSenseConnectionEventStreamHandler = new ESenseConnectionEventStreamHandler(registrar);
-    final ESenseManagerMethodCallHandler eSenseManagerMethodCallHandler = new ESenseManagerMethodCallHandler(registrar,eSenseConnectionEventStreamHandler);
+  @Override
+  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    final ESenseConnectionEventStreamHandler eSenseConnectionEventStreamHandler = new ESenseConnectionEventStreamHandler();
+    final ESenseManagerMethodCallHandler eSenseManagerMethodCallHandler = new ESenseManagerMethodCallHandler(flutterPluginBinding.getApplicationContext(), eSenseConnectionEventStreamHandler);
 
-    final MethodChannel eSenseManagerMethodChannel = new MethodChannel(registrar.messenger(), ESenseManagerMethodChannelName);
+    eSenseManagerMethodChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), ESenseManagerMethodChannelName);
     eSenseManagerMethodChannel.setMethodCallHandler(eSenseManagerMethodCallHandler);
 
-    final EventChannel eSenseConnectionEventChannel = new EventChannel(registrar.messenger(), ESenseConnectionEventChannelName);
+    eSenseConnectionEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), ESenseConnectionEventChannelName);
     eSenseConnectionEventChannel.setStreamHandler(eSenseConnectionEventStreamHandler);
 
-    final EventChannel eSenseEventChannel = new EventChannel(registrar.messenger(), ESenseEventEventChannelName);
+    eSenseEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), ESenseEventEventChannelName);
     eSenseEventChannel.setStreamHandler(new ESenseEventStreamHandler(eSenseManagerMethodCallHandler));
 
-    final EventChannel eSenseSensorEventChannel = new EventChannel(registrar.messenger(), ESenseSensorEventChannelName);
+    eSenseSensorEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), ESenseSensorEventChannelName);
     eSenseSensorEventChannel.setStreamHandler(new ESenseSensorEventStreamHandler(eSenseManagerMethodCallHandler));
+  }
+
+  @Override
+  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+    eSenseManagerMethodChannel.setMethodCallHandler(null);
+    eSenseConnectionEventChannel.setStreamHandler(null);
+    eSenseEventChannel.setStreamHandler(null);
+    eSenseSensorEventChannel.setStreamHandler(null);
   }
 }

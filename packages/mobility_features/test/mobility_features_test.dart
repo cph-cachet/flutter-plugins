@@ -413,9 +413,9 @@ void main() async {
         print("STOPS");
         printList(event.stops);
         print("ALL PLACES");
-        printList(event.places!);
+        printList(event.places);
         print("SIGNIFICANT PLACES");
-        printList(event.significantPlaces!);
+        printList(event.significantPlaces);
         print(
             "TOTAL DURATION (STOPS): ${event.stops.map((p) => p.duration).reduce((a, b) => a + b)}");
       }, count: 283));

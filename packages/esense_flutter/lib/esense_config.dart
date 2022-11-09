@@ -8,5 +8,5 @@
 part of esense;
 
 class ESenseConfig {
-  Map<String, dynamic> toMap() => Map();
+  Map<String, dynamic> toMap() => {};
 }

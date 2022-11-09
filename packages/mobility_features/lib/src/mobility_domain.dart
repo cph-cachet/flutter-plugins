@@ -16,7 +16,6 @@ const String _LATITUDE = 'latitude',
 /// to serialize and deserialize an object
 abstract class _Serializable {
   Map<String, dynamic> toJson();
-
   _Serializable._fromJson(Map<String, dynamic> json);
 }
 

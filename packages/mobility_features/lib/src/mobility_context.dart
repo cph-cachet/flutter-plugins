@@ -1,20 +1,19 @@
 part of mobility_features;
 
 /// Daily mobility context.
-/// All Stops and Moves should be on the same date.
-/// Places are all places for which the duration
-/// on the given data is greater than 0
+///
+/// All Stops and Moves are on the same [date].
+/// [places] are all places for which the duration on the given date is greater than 0.
 class MobilityContext {
+  late DateTime _timestamp, _date;
   List<Stop> _stops;
-  List<Place>? _places, _significantPlaces;
+  List<Place> _places;
+  List<Move> _moves;
+  late List<Place> _significantPlaces;
   Place? _homePlace;
 
-  List<Move> _moves;
-  DateTime? _timestamp, _date;
   late _HourMatrix _hourMatrix;
 
-  /// Features
-  int? _numberOfPlaces;
   double? _locationVariance,
       _entropy,
       _normalizedEntropy,
@@ -23,83 +22,77 @@ class MobilityContext {
   List<MobilityContext>? contexts;
 
   /// Private constructor, cannot be instantiated from outside
-  MobilityContext._(this._stops, this._places, this._moves, this._date,
-      {this.contexts}) {
+  MobilityContext._(
+    this._stops,
+    this._places,
+    this._moves,
+    this._date, {
+    this.contexts,
+  }) {
     _timestamp = DateTime.now();
 
-    // If contexts array is null, init to empty array
+    // if contexts array is null, init to empty array
     contexts = contexts ?? [];
 
+    // compute all the features
     _significantPlaces =
-        _places!.where((p) => p.duration > Duration(minutes: 3)).toList();
-
-    // Compute all the features
-    _numberOfPlaces = _calculateNumberOfSignificantPlaces();
-
-    _hourMatrix = _HourMatrix.fromStops(_stops, _places!.length);
-
+        _places.where((p) => p.duration > Duration(minutes: 3)).toList();
+    _hourMatrix = _HourMatrix.fromStops(_stops, _places.length);
     _homePlace = _findHomePlaceToday();
-
     _homeStay = _calculateHomeStay();
-
     _locationVariance = _calculateLocationVariance();
-
     _entropy = _calculateEntropy();
-
     _normalizedEntropy = _calculateNormalizedEntropy();
-
     _distanceTravelled = _calculateDistanceTravelled();
   }
 
-  // Get the date of the context
-  DateTime? get date => _date;
+  // The date of this context.
+  DateTime get date => _date;
 
-  /// Get stops today
+  /// Timestamp at which the features were computed
+  DateTime get timestamp => _timestamp;
+
+  /// Stops today.
   List<Stop> get stops => _stops;
 
-  /// Get moves today
+  /// Moves today.
   List<Move> get moves => _moves;
 
-  /// Get places today
-  List<Place>? get places => _places;
+  /// Places today.
+  List<Place> get places => _places;
 
-  /// Get all the significant places (places with a minimum duration)
-  List<Place>? get significantPlaces => _significantPlaces;
+  /// All significant places, i.e. places with a minimum stay duration.
+  List<Place> get significantPlaces => _significantPlaces;
 
-  /// Get the timestamp at which the features were computed
-  DateTime? get timestamp => _timestamp;
+  /// Number of significant places visited today.
+  int get numberOfSignificantPlaces => _significantPlaces.length;
 
-  /// Get the home place cluster
+  /// Home place.
+  /// Returns null if home cannot be found from the available data.
   Place? get homePlace => _homePlace;
 
-  /// Number of Places today
-  int? get numberOfSignificantPlaces => _numberOfPlaces;
-
-  /// Home Stay Percentage today
-  /// A scalar between 0 and 1, i.e. from 0% to 100%
+  /// Home Stay Percentage today. A scalar between 0 and 1.
+  /// Returns null if cannot be calculated based on the available data.
   double? get homeStay => _homeStay;
 
-  /// Location Variance today
+  /// Location variance today.
   double? get locationVariance => _locationVariance;
 
-  /// Entropy
-  /// High entropy: Time is spent evenly among all places
-  /// Low  entropy: Time is mainly spent at a few of the places
+  /// Location entropy.
+  ///
+  ///  * High entropy: Time is spent evenly among all places
+  ///  * Low  entropy: Time is mainly spent at a few of the places
   double? get entropy => _entropy;
 
-  /// Normalized entropy,
-  /// a scalar between 0 and 1
+  /// Normalized location entropy. A scalar between 0 and 1.
   double? get normalizedEntropy => _normalizedEntropy;
 
-  /// Distance travelled today, in meters
+  /// Distance travelled today in meters.
   double? get distanceTravelled => _distanceTravelled;
 
-  /// Private number of places calculation
-  int _calculateNumberOfSignificantPlaces() => significantPlaces!.length;
-
   /// Private home stay calculation
-  double _calculateHomeStay() {
-    if (stops.isEmpty) return -1.0;
+  double? _calculateHomeStay() {
+    if (stops.isEmpty) return null;
 
     // Latest known sample time
     DateTime latestTime = _stops.last.departure;
@@ -108,10 +101,8 @@ class MobilityContext {
     int totalTime = latestTime.millisecondsSinceEpoch -
         latestTime.midnight.millisecondsSinceEpoch;
 
-    // Find todays home id, if no home exists today return -1.0
-    if (_hourMatrix.homePlaceId == -1) {
-      return -1.0;
-    }
+    // Find todays home id, if no home exists today return null
+    if (_hourMatrix.homePlaceId == -1) return null;
 
     int homeTime = stops
         .where((s) => s.placeId == _hourMatrix.homePlaceId)
@@ -121,20 +112,15 @@ class MobilityContext {
     return homeTime.toDouble() / totalTime.toDouble();
   }
 
-  Place? _findHomePlaceToday() {
-    int home = _hourMatrix.homePlaceId;
-    if (home == -1) {
-      return null;
-    }
-    return _places!.where((p) => p.id == _hourMatrix.homePlaceId).first;
-  }
+  Place? _findHomePlaceToday() => (_hourMatrix.homePlaceId == -1)
+      ? null
+      : _places.where((p) => p.id == _hourMatrix.homePlaceId).first;
 
   /// Location variance calculation
-  double _calculateLocationVariance() {
+  double? _calculateLocationVariance() {
     // Require at least 2 observations
-    if (_stops.length < 2) {
-      return 0.0;
-    }
+    if (_stops.length < 2) return 0.0;
+
     double latStd = Stats.fromData(_stops.map((s) => (s.geoLocation.latitude)))
         .standardDeviation as double;
 
@@ -143,18 +129,16 @@ class MobilityContext {
     return log(latStd * latStd + lonStd * lonStd + 1);
   }
 
-  double _calculateEntropy() {
-    // If no places were visited return -1.0
-    if (places!.isEmpty) {
-      return -1.0;
-    }
-    // The Entropy is zero when one outcome is certain to occur.
-    else if (places!.length == 1) {
-      return 0.0;
-    }
-    // Calculate time spent at different places
+  double? _calculateEntropy() {
+    // if no places were visited return null
+    if (places.isEmpty)
+      return null;
+    // the Entropy is zero when one outcome is certain to occur
+    else if (places.length == 1) return 0.0;
+
+    // calculate time spent at different places
     List<Duration> durations =
-        places!.map((p) => p.durationForDate(date)).toList();
+        places.map((p) => p.durationForDate(date)).toList();
 
     Duration totalTimeSpent = durations.fold(Duration(), (a, b) => a + b);
 
@@ -167,24 +151,19 @@ class MobilityContext {
   }
 
   /// Private normalized entropy calculation
-  double _calculateNormalizedEntropy() {
-    if (places!.length == 1) {
-      return 0.0;
-    }
-    return entropy! / log(places!.length);
-  }
+  double _calculateNormalizedEntropy() =>
+      (places.length == 1) ? 0.0 : entropy! / log(places.length);
 
   /// Private distance travelled calculation
-  double _calculateDistanceTravelled() {
-    return _moves.map((m) => (m.distance)).fold(0.0, (a, b) => a + b!);
-  }
+  double _calculateDistanceTravelled() =>
+      _moves.map((m) => (m.distance)).fold(0.0, (a, b) => a + b!);
 
   Map<String, dynamic> toJson() => {
-        "date": date!.toIso8601String(),
-        "computed_at": timestamp!.toIso8601String(),
+        "date": date.toIso8601String(),
+        "computed_at": timestamp.toIso8601String(),
         "num_of_stops": stops.length,
         "num_of_moves": moves.length,
-        "num_of_significant_places": significantPlaces!.length,
+        "num_of_significant_places": significantPlaces.length,
         "normalized_entropy": normalizedEntropy,
         "home_stay": homeStay,
         "distance_travelled": distanceTravelled,
