@@ -167,8 +167,6 @@ class HealthFactory {
           _deviceId!,
           '',
           '',
-          '',
-          '',
           Device(
             '',
             '',
@@ -382,10 +380,9 @@ class HealthFactory {
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
       final String sourceName = e["source_name"];
-      final String sourceProductType = e["source_product_type"];
-      final String sourceOperatingSystemVersion =
-          e["source_operating_system_version"];
-      final Device device = Device.fromJson(e["device"]);
+      final Device device = _platformType == PlatformType.IOS
+          ? Device.fromJson(e["device"])
+          : Device("", "", "", "", "", "", "");
       return HealthDataPoint(
         value,
         dataType,
@@ -396,8 +393,6 @@ class HealthFactory {
         deviceId,
         sourceId,
         sourceName,
-        sourceProductType,
-        sourceOperatingSystemVersion,
         device,
       );
     }).toList();

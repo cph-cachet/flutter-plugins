@@ -12,8 +12,6 @@ class HealthDataPoint {
   String _deviceId;
   String _sourceId;
   String _sourceName;
-  String _sourceProductType;
-  String _sourceOperatingSystemVersion;
   Device _device;
 
   HealthDataPoint(
@@ -26,8 +24,6 @@ class HealthDataPoint {
       this._deviceId,
       this._sourceId,
       this._sourceName,
-      this._sourceProductType,
-      this._sourceOperatingSystemVersion,
       this._device) {
     // set the value to minutes rather than the category
     // returned by the native API
@@ -72,8 +68,6 @@ class HealthDataPoint {
         json['device_id'],
         json['source_id'],
         json['source_name'],
-        json['source_product_type'],
-        json['source_operating_system_version'],
         Device.fromJson(json['device']));
   }
 
@@ -88,8 +82,6 @@ class HealthDataPoint {
         'device_id': deviceId,
         'source_id': sourceId,
         'source_name': sourceName,
-        'source_product_type': sourceProductType,
-        'source_operating_system_version': sourceOperatingSystemVersion,
         'device': device.toJson()
       };
 
@@ -104,8 +96,6 @@ class HealthDataPoint {
     deviceId: $deviceId,
     sourceId: $sourceId,
     sourceName: $sourceName,
-    sourceProductType: $sourceProductType,
-    sourceOperatingSystemVersion: $sourceOperatingSystemVersion,
     device: $device
     """;
 
@@ -142,12 +132,6 @@ class HealthDataPoint {
   /// The name of the source from which the data point was fetched.
   String get sourceName => _sourceName;
 
-  /// The product type of the source from which the data point was fetched.
-  String get sourceProductType => _sourceProductType;
-
-  /// The operating system version of the source from which the data point was fetched.
-  String get sourceOperatingSystemVersion => _sourceOperatingSystemVersion;
-
   /// The device from which the data point was fetched.
   Device get device => _device;
 
@@ -163,23 +147,10 @@ class HealthDataPoint {
         this.deviceId == o.deviceId &&
         this.sourceId == o.sourceId &&
         this.sourceName == o.sourceName &&
-        this.sourceProductType == o.sourceProductType &&
-        this.sourceOperatingSystemVersion == o.sourceOperatingSystemVersion &&
         this.device == o.device;
   }
 
   @override
-  int get hashCode => Object.hash(
-      value,
-      unit,
-      dateFrom,
-      dateTo,
-      type,
-      platform,
-      deviceId,
-      sourceId,
-      sourceName,
-      sourceProductType,
-      sourceOperatingSystemVersion,
-      device);
+  int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type, platform,
+      deviceId, sourceId, sourceName, device);
 }

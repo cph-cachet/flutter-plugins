@@ -396,8 +396,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "source_product_type": sample.sourceRevision.productType,
-                        "source_operating_system_version": sample.sourceRevision.version,
                         "device": [
                             "udi_device_identifier": sample.device?.udiDeviceIdentifier,
                             "firmware_version": sample.device?.firmwareVersion,
@@ -448,8 +446,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "source_product_type": sample.sourceRevision.productType,
-                        "source_operating_system_version": sample.sourceRevision.version,
                         "device": [
                             "udi_device_identifier": sample.device?.udiDeviceIdentifier,
                             "firmware_version": sample.device?.firmwareVersion,
@@ -479,8 +475,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "source_product_type": sample.sourceRevision.productType,
-                        "source_operating_system_version": sample.sourceRevision.version,
                         "device": [
                             "udi_device_identifier": sample.device?.udiDeviceIdentifier,
                             "firmware_version": sample.device?.firmwareVersion,
@@ -516,8 +510,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "source_product_type": sample.sourceRevision.productType,
-                        "source_operating_system_version": sample.sourceRevision.version,
                         "device": [
                             "udi_device_identifier": sample.device?.udiDeviceIdentifier,
                             "firmware_version": sample.device?.firmwareVersion,

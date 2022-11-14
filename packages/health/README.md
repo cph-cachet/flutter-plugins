@@ -199,7 +199,9 @@ DateTime dateFrom;
 DateTime dateTo;
 PlatformType platform;
 String uuid, deviceId;
-String sourceId, sourceName, sourceProductType, sourceOperatingSystemVersion;
+String sourceId, sourceName;
+
+// IOS only
 Device device; // uiDeviceIdentifier, firmwareVersion, hardwareVersion, softwareVersion, model, manufacturer, name
 ```
 
