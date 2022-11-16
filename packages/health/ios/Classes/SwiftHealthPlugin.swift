@@ -134,17 +134,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("getData")){
             getData(call: call, result: result)
         }
-		}
+        
+        /// Simple predicate
+        else if (call.method.elementsEqual("getDataWithLimit")){
+            getDataWithLimit(call: call, result: result)
+        }
         
         /// Handle getTotalStepsInInterval
         else if (call.method.elementsEqual("getTotalStepsInInterval")){
             getTotalStepsInInterval(call: call, result: result)
 		}
-
-        /// Simple predicate
-        else if (call.method.elementsEqual("getDataWithLimit")){
-            getDataWithLimit(call: call, result: result)
-        }
         
         /// Handle writeData
         else if (call.method.elementsEqual("writeData")){

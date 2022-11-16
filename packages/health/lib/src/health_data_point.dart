@@ -58,7 +58,7 @@ class HealthDataPoint {
     }
 
     return HealthDataPoint(
- 		json['uuid'] ?? '',
+ 		    json['uuid'] ?? '',
         healthValue,
         HealthDataType.values.firstWhere(
             (element) => element.typeToString() == json['data_type']),
