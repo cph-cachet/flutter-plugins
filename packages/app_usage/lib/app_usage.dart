@@ -90,14 +90,6 @@ class AppUsage {
       return toReturn;
 
 
-/*
-      Map<String, double> _map = Map<String, double>.from(usage);
-
-      /// Convert each entry in the map to an Application object
-      return _map.keys
-          .map((k) => AppUsageInfo(k, _map[k]!, startDate, endDate))
-          .where((a) => a.usage > Duration(seconds: 0))
-          .toList();*/
 
 
 
