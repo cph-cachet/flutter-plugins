@@ -1,10 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="dk.cachet.movisens_flutter_example">
-   <application
-        android:label="movisens_flutter_example"
+    package="com.example.example">
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <application android:label="example"
+        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <activity
-            android:name=".MainActivity"
+        <activity android:name=".MainActivity"
+            android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -14,100 +17,16 @@
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
                  to determine the Window background behind the Flutter UI. -->
-            <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
-            <!-- Displays an Android View that continues showing the launch screen
-                 Drawable until Flutter paints its first frame, then this splash
-                 screen fades out. A splash screen is useful to avoid any visual
-                 gap between the end of Android's launch screen and the painting of
-                 Flutter's first frame. -->
-            <meta-data
-              android:name="io.flutter.embedding.android.SplashScreenDrawable"
-              android:resource="@drawable/launch_background"
-              />
+            <meta-data android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
-        <activity android:name="dk.cachet.movisensflutter.PermissionActivity"
-                  android:theme="@style/Theme.AppCompat.Light"></activity>
-
-        <activity
-                android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothUser"
-                android:configChanges="orientation|keyboardHidden|keyboard"
-                android:exported="true"
-                android:label="@string/app_name"
-                android:launchMode="singleTop"
-                android:screenOrientation="portrait">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
-        </activity>
-
-        <activity
-                android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothDeviceScan"
-                android:configChanges="orientation|keyboardHidden|keyboard"
-                android:exported="true"
-                android:label="@string/app_name"
-                android:launchMode="singleTop"
-                android:screenOrientation="portrait">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
-        </activity>
-
-        <activity
-                android:name="de.kn.uni.smartact.movisenslibrary.screens.NoMeasurmentDialog"
-                android:configChanges="orientation|keyboardHidden|keyboard"
-                android:theme="@style/Theme.AppCompat.Light"
-                android:exported="true"
-                android:label="@string/app_name"
-                android:launchMode="singleTop"
-                android:screenOrientation="portrait">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
-        </activity>
-
-        <activity
-                android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothData"
-                android:configChanges="orientation|keyboardHidden|keyboard"
-                android:exported="true"
-                android:label="@string/app_name"
-                android:launchMode="singleTop"
-                android:screenOrientation="portrait">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart" />
-        </activity>
-
-        <activity
-                android:name="de.kn.uni.smartact.movisenslibrary.screens.view.Activity_BluetoothStart"
-                android:configChanges="orientation|keyboardHidden|keyboard"
-                android:exported="true"
-                android:label="@string/app_name"
-                android:launchMode="singleTop"
-                android:screenOrientation="portrait">
-        </activity>
-
-        <service android:enabled="true" android:name="de.kn.uni.smartact.movisenslibrary.bluetooth.MovisensService" android:exported="false"
-                 android:stopWithTask="false" />
-
-        <receiver android:name="de.kn.uni.smartact.movisenslibrary.reboot.RebootReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-
-
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
-        <meta-data
-            android:name="flutterEmbedding"
+        <meta-data android:name="flutterEmbedding"
             android:value="2" />
     </application>
 </manifest>
