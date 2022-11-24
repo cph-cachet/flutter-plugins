@@ -1,3 +1,9 @@
+/*
+ * Copyright 2022 Copenhagen Center for Health Technology (CACHET) at the
+ * Technical University of Denmark (DTU).
+ * Use of this source code is governed by a MIT-style license that can be
+ * found in the LICENSE file.
+ */
 part of movisens_flutter;
 
 /// A basic Movisens Event.
@@ -20,7 +26,8 @@ abstract class MovisensEvent {
   DateTime get time => _time;
 
   /// The ID of the device which emitted this event.
-  /// Typically uses a MAC address format.
+  /// Uses a MAC address format on Android.
+  /// Uses a UUID format on iOS. (This is generated and unique to the connection between this exact device AND this exact iPhone)
   String get deviceId => _deviceId;
 
   @override
@@ -29,7 +36,7 @@ abstract class MovisensEvent {
   }
 }
 
-/// A event of type [MovisensBluetoothCharacteristics.light].
+/// An event of type [MovisensBluetoothCharacteristics.light].
 ///
 /// Contains information about the ambient light.
 /// [clear] and [ir] values for ambient light
@@ -49,7 +56,10 @@ class LightEvent extends MovisensEvent {
   MovisensBluetoothCharacteristics type =
       MovisensBluetoothCharacteristics.light;
 
+  /// The [clear] value of the light
   int get clear => _clear;
+
+  /// The [ir] value of the light
   int get ir => _ir;
 
   @override
@@ -58,7 +68,7 @@ class LightEvent extends MovisensEvent {
   }
 }
 
-/// A event of type [MovisensBluetoothCharacteristics.lightRGB].
+/// An event of type [MovisensBluetoothCharacteristics.lightRGB].
 ///
 /// Contains information about the ambient light.
 /// [red], [green] and [blue] values for ambient light
@@ -80,8 +90,13 @@ class LightRGBEvent extends MovisensEvent {
   MovisensBluetoothCharacteristics type =
       MovisensBluetoothCharacteristics.lightRGB;
 
+  /// The [red] value of the RGB
   int get red => _red;
+
+  /// The [green] value of the RGB
   int get green => _green;
+
+  /// The [blue] value of the RGB
   int get blue => _blue;
 
   @override
@@ -90,7 +105,7 @@ class LightRGBEvent extends MovisensEvent {
   }
 }
 
-/// A event of type [MovisensBluetoothCharacteristics.sensorTemperature].
+/// An event of type [MovisensBluetoothCharacteristics.sensorTemperature].
 ///
 /// Temperature measured inside the sensor housing
 /// [sensorTemperature] is measured in Celsius with accuracy of 0.1 degrees
@@ -108,6 +123,7 @@ class SensorTemperatureEvent extends MovisensEvent {
   MovisensBluetoothCharacteristics type =
       MovisensBluetoothCharacteristics.sensorTemperature;
 
+  /// Temperature measured inside the sensor housing in Celsius
   double get sensorTemperature => _sensorTemperature;
 
   @override
@@ -116,7 +132,7 @@ class SensorTemperatureEvent extends MovisensEvent {
   }
 }
 
-/// A event of type [MovisensBluetoothCharacteristics.edaSclMean].
+/// An event of type [MovisensBluetoothCharacteristics.edaSclMean].
 ///
 /// The Mean Skin Conductance Level (SCL) value in micro Siemens.
 ///
@@ -146,6 +162,11 @@ class EdaSclMeanEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.hrMean]
+///
+/// Heart rate is the mean of the previous 60 seconds.
+///
+/// Read more at: https://docs.movisens.com/Algorithms/ecg_hr_hrv/#heart-rate-hr
 class HrMeanEvent extends MovisensEvent {
   late int _hrMean;
 
@@ -168,6 +189,9 @@ class HrMeanEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.hrvIsValid]
+///
+/// Indicates if HRV measurements are valid.
 class HrvIsValidEvent extends MovisensEvent {
   late bool _hrvIsValid;
 
@@ -181,7 +205,7 @@ class HrvIsValidEvent extends MovisensEvent {
   MovisensBluetoothCharacteristics type =
       MovisensBluetoothCharacteristics.hrvIsValid;
 
-  /// Indicates if HRV measurements is valid
+  /// Indicates if HRV measurements are valid.
   bool get hrvIsValid => _hrvIsValid;
 
   @override
@@ -190,6 +214,12 @@ class HrvIsValidEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.rmssd]
+///
+/// The Root Mean Square of Successive Differences of beat intervals.
+/// Measured in milliseconds.
+///
+/// Read more at: https://docs.movisens.com/Algorithms/ecg_hr_hrv/#hrv-parameter-rmssd-hrvrmssd
 class RmssdEvent extends MovisensEvent {
   late int _rmssd;
 
@@ -214,7 +244,11 @@ class RmssdEvent extends MovisensEvent {
   }
 }
 
-// TODO: What does the marker value mean?
+/// An event of type [MovisensBluetoothCharacteristics.tapMarker]
+///
+/// The value of a Tap Marker.
+///
+/// Not documented by Movisens. Speculated to correlate with time on the device.
 class TapMarkerEvent extends MovisensEvent {
   late int _tapMarkerValue;
 
@@ -228,6 +262,7 @@ class TapMarkerEvent extends MovisensEvent {
   MovisensBluetoothCharacteristics type =
       MovisensBluetoothCharacteristics.tapMarker;
 
+  /// Value of the tap marker
   int get tapMarkerValue => _tapMarkerValue;
 
   @override
@@ -236,6 +271,9 @@ class TapMarkerEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.charging]
+///
+/// Indicates if the sensor is currently charging.
 class ChargingEvent extends MovisensEvent {
   late bool _charging;
 
@@ -271,6 +309,13 @@ enum BodyPosition {
   notWorn
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.bodyPosition]
+///
+/// Indicates which position the user is in by enumerated values [BodyPosition].
+///
+/// Requires the [MovisensBluetoothCharacteristics.sensorLocation] to be set!
+///
+/// Read more at: https://docs.movisens.com/Algorithms/physical_activity/#body-position-bodyposition
 class BodyPositionEvent extends MovisensEvent {
   late BodyPosition _bodyPosition;
 
@@ -322,6 +367,16 @@ class BodyPositionEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.inclination]
+///
+/// Describes the inclination of the body axes at the sensor location against the vertical.
+/// Values for the x, y and z axises.
+///
+/// It calculates the mean inclinations of the three body axes from the acceleration signal
+/// and displays the value for each inclination in degrees.
+/// The values range from 0° to 180°.
+///
+/// Read more at: https://docs.movisens.com/Algorithms/physical_activity/#inclination-inclinsationdown-inclinationforward-inclinationright
 class InclinationEvent extends MovisensEvent {
   late int _x;
   late int _y;
@@ -354,6 +409,12 @@ class InclinationEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.met]
+///
+/// Measure of Metabolic Equivalent of Task (MET), indicates the energy expenditure.
+/// It is defined as the ratio of metabolic rate during a specific physical task to a reference metabolic rate.
+///
+/// Read more at: https://docs.movisens.com/Algorithms/energy_expenditure/#metabolic-equivalent-of-task-met
 class MetEvent extends MovisensEvent {
   late int _met;
 
@@ -377,6 +438,11 @@ class MetEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.metLevel]
+///
+/// Number of seconds the users MET value was at one of the MET levels (sedentary, light, moderate, vigorous).
+///
+/// Read more at: https://docs.movisens.com/Algorithms/energy_expenditure/#metabolic-equivalent-of-task-met
 class MetLevelEvent extends MovisensEvent {
   late int _sedentary;
   late int _light;
@@ -426,6 +492,13 @@ class MetLevelEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.movementAcceleration]
+///
+/// A measurement of physical activity metric that outputs values that have a very good correlation to the intensity of bodily movements.
+/// Measure in g (multiples of earth gravity (1g = 9,81 m/s2).)
+///
+/// Read more at: https://docs.movisens.com/Algorithms/physical_activity/#movement-acceleration-movementacceleration
+/// and: https://docs.movisens.com/Algorithms/physical_activity_metrics/#movement-acceleration-intensity-movementacceleration
 class MovementAccelerationEvent extends MovisensEvent {
   final double _lsb = 0.00390625;
 
@@ -443,7 +516,7 @@ class MovementAccelerationEvent extends MovisensEvent {
       MovisensBluetoothCharacteristics.movementAcceleration;
 
   /// Movement acceleration value.
-  /// Measured in grams (g)
+  /// Measured in g (multiples of earth gravity (1g = 9,81 m/s2).)
   double get movementAcceleration => _movementAcceleration;
 
   @override
@@ -452,6 +525,11 @@ class MovementAccelerationEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.steps]
+///
+/// A measurement of the number of steps taken in the last interval (1 minute).
+///
+/// Read more at: https://docs.movisens.com/Algorithms/physical_activity/#step-count-stepcount
 class StepsEvent extends MovisensEvent {
   late int _steps;
 
@@ -465,7 +543,7 @@ class StepsEvent extends MovisensEvent {
   MovisensBluetoothCharacteristics type =
       MovisensBluetoothCharacteristics.steps;
 
-  /// Number of Steps taken by the user
+  /// Number of steps taken by the user in last interval
   int get steps => _steps;
 
   @override
@@ -474,6 +552,10 @@ class StepsEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.respiratoryMovement]
+///
+/// Movisens documentation has not documented the value.
+/// Possibly: https://docs.movisens.com/Algorithms/ecg_hr_hrv/#ecg-derived-respiration-edr
 // TODO: Understand the return value of the respiratory movement - awaiting movisens response
 class RespiratoryMovementEvent extends MovisensEvent {
   late int _values;
@@ -507,6 +589,10 @@ enum CommandResult {
   notStoppedMeasurementOff
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.commandResult]
+///
+/// The response from the last usage of a write command on the device, such as [setEnableMeasurement()]
+/// Uses enumerated response values [CommandResult].
 class CommandResultEvent extends MovisensEvent {
   late CommandResult _commandResult;
 
@@ -552,6 +638,9 @@ class CommandResultEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.dataAvailable]
+///
+/// Indicates if data is stored and available on the device.
 class DataAvailableEvent extends MovisensEvent {
   late bool _dataAvailable;
 
@@ -574,6 +663,9 @@ class DataAvailableEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.measurementEnabled]
+///
+/// Indicates if a measurement is running on the device.
 class MeasurementEnabledEvent extends MovisensEvent {
   late bool _measurementEnabled;
 
@@ -609,6 +701,10 @@ enum MeasurementStatus {
   measuring
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.measurementStatus]
+///
+/// Indicates the status of the measurement on the device.
+/// Uses enumerated values [MeasurementStatus].
 class MeasurementStatusEvent extends MovisensEvent {
   late MeasurementStatus _measurementStatus;
 
@@ -660,6 +756,9 @@ class MeasurementStatusEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.storageLevel]
+///
+/// Indicates the storage level on the device in percentage.
 class StorageLevelEvent extends MovisensEvent {
   late int _storageLevel;
 
@@ -682,6 +781,10 @@ class StorageLevelEvent extends MovisensEvent {
   }
 }
 
+/// An event of type [MovisensBluetoothCharacteristics.skinTemperature]
+///
+/// A measurement of the mean skin temperature from the interval (1 minute).
+/// Measured in Celsius (C).
 class SkinTemperatureEvent extends MovisensEvent {
   final double _lsb = 0.01;
   late double _skinTemperature;

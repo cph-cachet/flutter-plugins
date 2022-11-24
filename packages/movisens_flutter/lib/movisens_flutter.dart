@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Copenhagen Center for Health Technology (CACHET) at the
+ * Copyright 2022 Copenhagen Center for Health Technology (CACHET) at the
  * Technical University of Denmark (DTU).
  * Use of this source code is governed by a MIT-style license that can be
  * found in the LICENSE file.
@@ -23,16 +23,3 @@ part 'movisens_event.dart';
 part 'movisens_characteristic.dart';
 
 final _log = Logger("MovisensFlutterLogger");
-
-// class MovisensFlutter {
-//   MovisensFlutter._({Level logLevel = Level.INFO}) {
-//     // Logger.root.level = Level.ALL;
-//     // Logger.root.onRecord.listen((record) {
-//     //   // ignore: avoid_print
-//     //   print('${record.level.name}: ${record.time}: ${record.message}');
-//     // });
-//     // setLogLevel(logLevel);
-//   }
-//   static final MovisensFlutter _instance = MovisensFlutter._();
-//   static MovisensFlutter get instance => _instance;
-// }

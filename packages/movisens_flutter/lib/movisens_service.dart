@@ -1,3 +1,9 @@
+/*
+ * Copyright 2022 Copenhagen Center for Health Technology (CACHET) at the
+ * Technical University of Denmark (DTU).
+ * Use of this source code is governed by a MIT-style license that can be
+ * found in the LICENSE file.
+ */
 part of movisens_flutter;
 
 /// Enumeration of the service types supported by Movisens devices
@@ -35,7 +41,6 @@ abstract class StreamingMovisensService extends MovisensService {
   late Stream<MovisensEvent> _events;
 
   /// A stream of all the [MovisensEvent]s emitted by the characteristics in this service.
-  /// TODO: Check buffering elements - avoid a memory leak
   Stream<MovisensEvent> get events => _events;
 
   /// Enables the notifying of ***every*** bluetooth characteristic in this service.
@@ -82,7 +87,7 @@ class AmbientService extends StreamingMovisensService {
     MovisensBluetoothCharacteristics.light,
     MovisensBluetoothCharacteristics.lightRGB,
     MovisensBluetoothCharacteristics.sensorTemperature
-  ]; // TODO: Handle buffered values?
+  ]; // TODO: Handle buffered values
 
   Stream<LightEvent>? _lightEvents;
   Stream<LightRGBEvent>? _lightRGBEvents;
@@ -152,7 +157,7 @@ class EdaService extends StreamingMovisensService {
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.edaSclMean
-  ]; // TODO: Handle buffered values?
+  ]; // TODO: Handle buffered values
 
   Stream<EdaSclMeanEvent>? _edaSclMeanEvents;
 
@@ -178,7 +183,6 @@ class EdaService extends StreamingMovisensService {
         nonNullStreams.add(_edaSclMeanEvents!);
       }
     }
-    // TODO: Should a single stream characteristic have a 'events' stream?
     _events = Rx.merge(nonNullStreams);
   }
 
@@ -200,7 +204,7 @@ class HrvService extends StreamingMovisensService {
     MovisensBluetoothCharacteristics.hrMean,
     MovisensBluetoothCharacteristics.hrvIsValid,
     MovisensBluetoothCharacteristics.rmssd
-  ]; // TODO: Handle buffered values?
+  ]; // TODO: Handle buffered values
 
   Stream<HrMeanEvent>? _hrMeanEvents;
   Stream<HrvIsValidEvent>? _hrvIsValidEvents;
@@ -269,7 +273,7 @@ class MarkerService extends StreamingMovisensService {
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.tapMarker
-  ]; // TODO: Handle buffered values?
+  ]; // TODO: Handle buffered values
 
   Stream<TapMarkerEvent>? _tapMarkerEvents;
 
@@ -296,7 +300,6 @@ class MarkerService extends StreamingMovisensService {
         nonNullStreams.add(_tapMarkerEvents!);
       }
     }
-    // TODO: Should a single stream characteristic have a 'events' stream?
     _events = Rx.merge(nonNullStreams);
   }
 
@@ -314,7 +317,7 @@ class BatteryService extends StreamingMovisensService {
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.charging
-  ]; // TODO: Handle buffered values? + Battery level?
+  ]; // TODO: Handle buffered values + Battery level
 
   Stream<ChargingEvent>? _chargingEvents;
 
@@ -341,7 +344,6 @@ class BatteryService extends StreamingMovisensService {
         nonNullStreams.add(_chargingEvents!);
       }
     }
-    // TODO: Should a single stream characteristic have a 'events' stream?
     _events = Rx.merge(nonNullStreams);
   }
 
@@ -382,9 +384,9 @@ class UserDataService extends MovisensService {
   BluetoothCharacteristic? _ageFloat;
   BluetoothCharacteristic? _sensorLocation;
 
-  /// Get the age of the user.
+  /// Get the age of the user in years.
+  /// Uses double format (e.g. 23.1 or 56.4 years old).
   /// Can be null if not set previously.
-  // TODO: find out what float value is - days, years?
   Future<double?> getAgeFloat() async {
     if (_ageFloat == null) {
       _log.warning("Age Float characteristic not found on device");
@@ -396,11 +398,10 @@ class UserDataService extends MovisensService {
     return ageFloat;
   }
 
-  /// Set the age of the user
-  // TODO: find out what float value is - days, years?
+  /// Set the age of the user in years.
+  /// Uses double format (e.g. 23.1 or 56.4 years old).
   Future<void> setAgeFloat(double ageFloat) async {
     if (_ageFloat == null) {
-      // TODO: Should this throw an exception instead?
       _log.warning("Age Float characteristic not found on device");
       return;
     }
@@ -412,10 +413,8 @@ class UserDataService extends MovisensService {
 
   /// Get the location of the sensor on the user.
   /// Can be null if not set previously.
-  // TODO: find out what float value is - days, years?
   Future<SensorLocation?> getSensorLocation() async {
     if (_sensorLocation == null) {
-      // TODO: Should this throw an exception instead?
       _log.warning("Sensor Location characteristic not found on device");
       return null;
     }
@@ -534,6 +533,8 @@ class UserDataService extends MovisensService {
 
 /// A movisens service containing Physical Activity data.
 ///
+/// Several of the characteristics require other data to be set, such as [sensorLocation], [age] or []
+///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.bodyPosition]
 /// * [MovisensBluetoothCharacteristics.inclination]
@@ -551,7 +552,7 @@ class PhysicalActivityService extends StreamingMovisensService {
     MovisensBluetoothCharacteristics.metLevel,
     MovisensBluetoothCharacteristics.movementAcceleration,
     MovisensBluetoothCharacteristics.steps
-  ]; // TODO: Handle buffered values?
+  ]; // TODO: Handle buffered values
 
   Stream<BodyPositionEvent>? _bodyPositionEvents;
   Stream<InclinationEvent>? _inclinationEvents;
@@ -656,7 +657,7 @@ class RespirationService extends StreamingMovisensService {
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.respiratoryMovement
-  ]; // TODO: Handle buffered values?
+  ]; // TODO: Handle buffered values
 
   Stream<RespiratoryMovementEvent>? _respiratoryMovementEvents;
 
@@ -683,7 +684,6 @@ class RespirationService extends StreamingMovisensService {
         nonNullStreams.add(_respiratoryMovementEvents!);
       }
     }
-    // TODO: Should a single stream characteristic have a 'events' stream?
     _events = Rx.merge(nonNullStreams);
   }
 
@@ -729,7 +729,7 @@ class SensorControlService extends StreamingMovisensService {
     MovisensBluetoothCharacteristics.timeZoneOffset
     // MovisensBluetoothCharacteristics.activatedBufferedCharacteristics, TODO: Missing documentation from movisens - request it
     // MovisensBluetoothCharacteristics.customData, TODO: Possibly support in future version
-  ]; // TODO: Handle buffered values?
+  ]; // TODO: Handle buffered values
 
   Stream<CommandResultEvent>? _commandResultEvents;
   Stream<DataAvailableEvent>? _dataAvailableEvents;
@@ -864,11 +864,9 @@ class SensorControlService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// Get the current time in milliseconds.
+  /// Get the current time in milliseconds since epoch.
   ///
   /// Time is in UTC.
-  // TODO: movisens documentation says unit is "mstime" - what is that?
-  // TODO: Figure out if it is int64 128 or what?
   Future<int?> getCurrentTimeMs() async {
     if (_currentTimeMs == null) {
       _log.warning("Current time ms characteristic not found on device");
@@ -880,11 +878,9 @@ class SensorControlService extends StreamingMovisensService {
     return currentTimeMs;
   }
 
-  /// Set the current time in milliseconds.
+  /// Set the current time in milliseconds since epoch.
   ///
   /// Time is in UTC.
-  // TODO: movisens documentation says unit is "mstime" - what is that?
-  // TODO: Figure out if it is int64 128 or what?
   Future<void> setCurrentTimeMs(int currentTimeMs) async {
     if (_currentTimeMs == null) {
       _log.warning("Current time MS characteristic not found on device");
@@ -960,8 +956,7 @@ class SensorControlService extends StreamingMovisensService {
     await _measurementEnabled!.write(byteList);
   }
 
-  // TODO: movisens documentation says unit is "mstime" - what is that?
-  // TODO: Figure out if it is int64 128 or what?
+  /// Get the measurement start time. Measured in milliseconds since epoch.
   Future<int?> getMeasurementStartTime() async {
     if (_measurementStartTime == null) {
       _log.warning("Measurement Start Time characteristic not found on device");
@@ -1086,8 +1081,7 @@ class SensorControlService extends StreamingMovisensService {
   }
 
   /// Get the time zone ID of the time zone.
-  // TODO: Figure out what "timezone" unit is?
-  // is it uin64 or what?
+  // TODO: Missing documentation from movisens - request it
   Future<int?> getTimeZoneId() async {
     if (_timeZoneId == null) {
       _log.warning("Time Zone Id characteristic not found on device");
@@ -1099,7 +1093,8 @@ class SensorControlService extends StreamingMovisensService {
     return timeZoneId;
   }
 
-  // TODO: Figure out what "timezone" unit is?
+  /// Set the time zone ID of the time zone.
+  // TODO: Missing documentation from movisens - request it
   Future<void> setTimeZoneId(int timeZoneId) async {
     if (_timeZoneId == null) {
       _log.warning("Time Zone Id characteristic not found on device");
@@ -1149,7 +1144,7 @@ class SkinTemperatureService extends StreamingMovisensService {
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.skinTemperature
-  ]; // TODO: Handle buffered values?
+  ]; // TODO: Handle buffered values
 
   Stream<SkinTemperatureEvent>? _skinTemperatureEvents;
   Stream<SkinTemperatureEvent>? get skinTemperatureEvents =>
@@ -1174,7 +1169,6 @@ class SkinTemperatureService extends StreamingMovisensService {
         nonNullStreams.add(_skinTemperatureEvents!);
       }
     }
-    // TODO: Should a single stream characteristic have a 'events' stream?
     _events = Rx.merge(nonNullStreams);
   }
 

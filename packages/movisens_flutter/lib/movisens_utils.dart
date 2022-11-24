@@ -1,3 +1,9 @@
+/*
+ * Copyright 2022 Copenhagen Center for Health Technology (CACHET) at the
+ * Technical University of Denmark (DTU).
+ * Use of this source code is governed by a MIT-style license that can be
+ * found in the LICENSE file.
+ */
 part of movisens_flutter;
 
 /// Map for Characteristics UUID and the corresponding [MovisensBluetoothCharacteristics] enum
@@ -140,7 +146,7 @@ Map<String, MovisensBluetoothCharacteristics>
       MovisensBluetoothCharacteristics.skinTemperatureWaiting,
   // "8d9fb9cb-861c-4328-b42d-075efe8fa19f": "Stop Measurement",
   // "8738ddd8-7937-43a0-848a-3a91b264e3b5": "Evaluation Expire Time",
-  // "f89edec4-d590-764d-530f-8fff5c181606": "Current Time", --- TODO: DEPRECATED - include?
+  // "f89edec4-d590-764d-530f-8fff5c181606": "Current Time", --- DEPRECATED
   // "de1d3039-69a3-4e4b-bfe2-6ffd4b46c8cb": "Disable Encryption",
   // "4d2ac3ec-5ae7-4d15-8f7c-3c1bd052c7a1": "Encryption Enabled",
   // "d18cbddc-270c-4e6c-a53f-528636034187": "Sensor Sealed",

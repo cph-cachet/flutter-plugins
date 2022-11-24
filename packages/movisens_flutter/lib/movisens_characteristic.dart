@@ -1,5 +1,12 @@
+/*
+ * Copyright 2022 Copenhagen Center for Health Technology (CACHET) at the
+ * Technical University of Denmark (DTU).
+ * Use of this source code is governed by a MIT-style license that can be
+ * found in the LICENSE file.
+ */
 part of movisens_flutter;
 
+/// Enumerated list of Bluetooth characteristics offered on Movisens devices.
 enum MovisensBluetoothCharacteristics {
   light,
   lightBuffered,
@@ -70,118 +77,3 @@ enum MovisensBluetoothCharacteristics {
   skinTemperatureBuffered,
   skinTemperatureWaiting
 }
-
-// abstract class MovisensCharacteristic {
-//   abstract String uuid;
-//   late BluetoothCharacteristic _bluetoothCharacteristic;
-//   MovisensBluetoothCharacteristics get name =>
-//       characteristicUUIDToMovisensBluetoothCharacteristics[uuid]!;
-//   // int bytesToValue(List<int> bytes);
-//   MovisensEvent _transform(List<int> bytes);
-// }
-
-// abstract class StreamingMovisensCharacteristic extends MovisensCharacteristic {
-//   // final StreamController<MovisensEvent> _streamController = StreamController();
-
-//   late Stream<MovisensEvent> _events;
-//   // Stream<MovisensEvent> get events => _bluetoothCharacteristic.value.
-
-//   StreamingMovisensCharacteristic(
-//       {required BluetoothCharacteristic characteristic}) {
-//     // _streamController.sink.
-//     _events = characteristic.value.map((event) => _transform(event));
-//     _bluetoothCharacteristic = characteristic;
-//     // _bluetoothCharacteristic.value.listen((event) {
-//     //   _characteristic.uuid.toString
-//     //   addEventToStream(event);
-//     // });
-//   }
-// }
-
-// class LightCharacteristic extends StreamingMovisensCharacteristic {
-//   @override
-//   String uuid = charToUuid[MovisensBluetoothCharacteristics.light]!;
-
-//   LightCharacteristic({required BluetoothCharacteristic characteristic})
-//       : super(characteristic: characteristic);
-
-//   @override
-//   LightEvent _transform(List<int> bytes) => LightEvent(bytes: bytes);
-// }
-
-// class LightRGBCharacteristic extends StreamingMovisensCharacteristic {
-//   @override
-//   String uuid = charToUuid[MovisensBluetoothCharacteristics.lightRGB]!;
-
-//   LightRGBCharacteristic({required BluetoothCharacteristic characteristic})
-//       : super(characteristic: characteristic);
-
-//   @override
-//   LightRGBEvent _transform(List<int> bytes) => LightEvent(bytes: bytes);
-// }
-
-// class LightCharacteristic extends StreamingMovisensCharacteristic {
-//   @override
-//   String uuid = charToUuid[MovisensBluetoothCharacteristics.light]!;
-
-//   LightCharacteristic({required BluetoothCharacteristic characteristic})
-//       : super(characteristic: characteristic);
-
-//   @override
-//   LightEvent _transform(List<int> bytes) => LightEvent(bytes: bytes);
-// }
-
-// class LightCharacteristic extends StreamingMovisensCharacteristic {
-//   @override
-//   String uuid = charToUuid[MovisensBluetoothCharacteristics.light]!;
-
-//   LightCharacteristic({required BluetoothCharacteristic characteristic})
-//       : super(characteristic: characteristic);
-
-//   @override
-//   LightEvent _transform(List<int> bytes) => LightEvent(bytes: bytes);
-// }
-
-// class LightCharacteristic extends StreamingMovisensCharacteristic {
-//   @override
-//   String uuid = charToUuid[MovisensBluetoothCharacteristics.light]!;
-
-//   LightCharacteristic({required BluetoothCharacteristic characteristic})
-//       : super(characteristic: characteristic);
-
-//   @override
-//   LightEvent _transform(List<int> bytes) => LightEvent(bytes: bytes);
-// }
-
-// class LightCharacteristic extends StreamingMovisensCharacteristic {
-//   @override
-//   String uuid = charToUuid[MovisensBluetoothCharacteristics.light]!;
-
-//   LightCharacteristic({required BluetoothCharacteristic characteristic})
-//       : super(characteristic: characteristic);
-
-//   @override
-//   LightEvent _transform(List<int> bytes) => LightEvent(bytes: bytes);
-// }
-
-// class LightCharacteristic extends StreamingMovisensCharacteristic {
-//   @override
-//   String uuid = charToUuid[MovisensBluetoothCharacteristics.light]!;
-
-//   LightCharacteristic({required BluetoothCharacteristic characteristic})
-//       : super(characteristic: characteristic);
-
-//   @override
-//   LightEvent _transform(List<int> bytes) => LightEvent(bytes: bytes);
-// }
-
-// class LightCharacteristic extends StreamingMovisensCharacteristic {
-//   @override
-//   String uuid = charToUuid[MovisensBluetoothCharacteristics.light]!;
-
-//   LightCharacteristic({required BluetoothCharacteristic characteristic})
-//       : super(characteristic: characteristic);
-
-//   @override
-//   LightEvent _transform(List<int> bytes) => LightEvent(bytes: bytes);
-// }

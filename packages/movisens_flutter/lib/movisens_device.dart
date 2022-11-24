@@ -1,3 +1,9 @@
+/*
+ * Copyright 2022 Copenhagen Center for Health Technology (CACHET) at the
+ * Technical University of Denmark (DTU).
+ * Use of this source code is governed by a MIT-style license that can be
+ * found in the LICENSE file.
+ */
 part of movisens_flutter;
 
 /// A representation of a Movisens device with services
@@ -5,7 +11,8 @@ part of movisens_flutter;
 /// It contains all the services that the movisens device provides
 /// and the methods for handling device connection.
 class MovisensDevice {
-  late String macAddress;
+  late String name;
+  late String id;
   BluetoothDevice? _bluetoothDevice;
 
   /// Is the phone and app connected to the movisens device
@@ -67,34 +74,33 @@ class MovisensDevice {
 
   /// A Movisens bluetooth device.
   ///
-  /// [macAddress] required to connect to a device.
-  MovisensDevice({required this.macAddress});
+  /// [name] required to connect to a device.
+  MovisensDevice({required this.name});
 
-  /// Connect to the movisens device using the [macAddress].
+  /// Connect to the movisens device using the [name].
   /// Automatically discovers services on device and stores them.
   Future<void> connect() async {
-    _log.info("Connecting to movisens device [$macAddress]");
+    _log.info("Connecting to movisens device using name: [$name]");
     FlutterBluePlus flutterBluePlus = FlutterBluePlus.instance;
     // Checking if already connected - skips the rest of connect if true
-    // TODO: If already connected - do we need to use `device.connect()` ?
-    await flutterBluePlus.connectedDevices.then((connectedDevices) async {
-      for (BluetoothDevice device in connectedDevices) {
-        if (device.id.id == macAddress) {
-          await device.connect();
-          _bluetoothDevice = device;
-          // Discover services
-          await _discoverAndSetup();
-          return;
-        }
+    // TODO: If already connected - can `device.connect()` be avoided?
+    List<BluetoothDevice> connectedDevices =
+        await flutterBluePlus.connectedDevices;
+    for (BluetoothDevice device in connectedDevices) {
+      if (device.name == name) {
+        await device.connect();
+        _bluetoothDevice = device;
+        // Discover services
+        await _discoverAndSetup();
+        return;
       }
-    });
+    }
 
     // (For android) Check if the device is bonded
-    // TODO: Sometimes pairing with the device can be necessary - consider implementing
     if (Platform.isAndroid) {
       List<BluetoothDevice> bondedDevices = await flutterBluePlus.bondedDevices;
       for (BluetoothDevice device in bondedDevices) {
-        if (device.id.id == macAddress) {
+        if (device.name == name) {
           await device.connect();
           _bluetoothDevice = device;
           // Discover services
@@ -105,35 +111,40 @@ class MovisensDevice {
     }
 
     // Scan for devices
-    flutterBluePlus.startScan(
-        timeout: const Duration(seconds: 10), macAddresses: [macAddress]);
+    flutterBluePlus.startScan(timeout: const Duration(seconds: 10));
     late StreamSubscription subscription;
     subscription = flutterBluePlus.scanResults.listen((scanResults) async {
-      for (ScanResult scanResult in scanResults) {
-        await scanResult.device.connect();
-        // clean up streams
+      // Select only 1 device to connect to
+      ScanResult? scanResult =
+          (scanResults.any((element) => element.device.name == name))
+              ? scanResults.firstWhere((element) => element.device.name == name)
+              : null;
+      // connect, stop scanning and clean streams
+      if (scanResult != null) {
         await flutterBluePlus.stopScan();
-        await subscription.cancel();
+        await scanResult.device.connect();
         _bluetoothDevice = scanResult.device;
         await _discoverAndSetup();
+        await subscription.cancel();
       }
     });
   }
 
   // Discovers services on device and instanciates them
   Future<void> _discoverAndSetup() async {
-    _log.info("Discovering services on movisens device [$macAddress]");
+    id = _bluetoothDevice!.id.id;
+    _log.info("Stored ID [$id] from movisens device [$name]");
+    _log.info("Discovering services on movisens device [$id]");
     // Discover services
     late List<BluetoothService> services;
-    await Future.delayed(const Duration(seconds: 1), () async {
-      services = await _bluetoothDevice!.discoverServices();
-    }); // TODO: Do we need the delay?
+    // Delay introduced as BluetoothDevice.connect could sometimes finish before the device was connected.
+    await Future.delayed(const Duration(milliseconds: 500));
+    services = await _bluetoothDevice!.discoverServices();
 
     // Setup services
     for (BluetoothService service in services) {
       String serviceUuid = service.uuid.toString();
       MovisensServiceTypes? serviceType = serviceUUIDToName[serviceUuid];
-      // TODO: Can this be done in a generic way?
       MovisensService? newService;
       switch (serviceType) {
         case MovisensServiceTypes.ambient:
@@ -168,12 +179,12 @@ class MovisensDevice {
           break;
         default:
           _log.warning(
-              "Service uuid $serviceUuid is not recognized on movisens device [$macAddress]");
+              "Service uuid $serviceUuid is not recognized on movisens device [$id]");
           break;
       }
       if (newService != null) {
         _log.info(
-            "Storing service: ${serviceType.toString()} on movisens device [$macAddress]");
+            "Storing service: ${serviceType.toString()} on movisens device [$id]");
         _services[serviceType!] = newService;
       }
     }
@@ -181,11 +192,12 @@ class MovisensDevice {
 
   /// Disconnect from the device.
   /// Clears device and services from memory.
+  ///
+  /// <mark>FlutterBluePlus can experience several bugs when trying to disconnect and connect again</mark>
   Future<void> disconnect() async {
-    // TODO: Disable notify for all services on device before?
     await _bluetoothDevice?.disconnect();
     _bluetoothDevice = null;
     _services.clear();
-    _log.info("Disconnected from movisens device [$macAddress]");
+    _log.info("Disconnected from movisens device [$id]");
   }
 }

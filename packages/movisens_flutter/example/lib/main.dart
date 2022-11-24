@@ -42,11 +42,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    device = MovisensDevice(macAddress: deviceMACAddress);
+    device = MovisensDevice(name: deviceName);
   }
 
-  // The MAC address of your device
-  String deviceMACAddress = "88:6B:0F:CD:EC:AE";
+  // The name of your device
+  // Due to iOS using generated UUIDs instead of MAC addresses,
+  // this is the only way to connect to the device
+  String deviceName = "xxx"; // Example: "MOVISENS Sensor 04421"
 
   void connect() async {
     await device.connect();
@@ -110,8 +112,9 @@ class _MyHomePageState extends State<MyHomePage> {
     String s = (ms != null) ? enumToReadableString(ms) : "null";
     print("Measurement status:: ${s}");
     print("Measurement enabled:: $me");
-    // Start a measurement that last 60 seconds or a indefinite one
-    await device.sensorControlService?.setStartMeasurement(60);
+    // Start a measurement that last 120 seconds or a indefinite one
+    // Certain data has a delay of 60 - 84 seconds, so preferably a measurement longer than that.
+    await device.sensorControlService?.setStartMeasurement(120);
     // await device.sensorControlService?.setMeasurementEnabled(true);
     // Delay 1 second for device to complete the task
     await Future.delayed(const Duration(seconds: 1));
@@ -171,6 +174,15 @@ class _MyHomePageState extends State<MyHomePage> {
     // Test storage level
     int? sl = await device.sensorControlService?.getStorageLevel();
     print('Storage level :: $sl');
+
+    // get age
+    double? age = await device.userDataService?.getAgeFloat();
+    print('Age:: $age');
+
+    // get sensor location
+    SensorLocation? sensorloc =
+        await device.userDataService?.getSensorLocation();
+    print('Sensor location:: $sensorloc');
   }
 
   void disconnect() async {
