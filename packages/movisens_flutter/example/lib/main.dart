@@ -1,134 +1,211 @@
-/*
- * Copyright 2019 Copenhagen Center for Health Technology (CACHET) at the
- * Technical University of Denmark (DTU).
- * Use of this source code is governed by a MIT-style license that can be
- * found in the LICENSE file.
- */
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:movisens_flutter/movisens_flutter.dart';
-import 'file_io.dart';
+import 'package:logging/logging.dart';
 
-ThemeData darkTheme = ThemeData(
-  // Define the default Brightness and Colors
-  brightness: Brightness.dark,
-  primaryColor: Colors.lightBlue[800],
-  accentColor: Colors.cyan[600],
-
-  // Define the default Font Family
-  fontFamily: 'Montserrat',
-
-  // Define the default TextTheme. Use this to specify the default
-  // text styling for headlines, titles, bodies of text, and more.
-  textTheme: TextTheme(
-    headline5: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-    headline6: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
-    bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
-  ),
-);
-
-void main() => runApp(MovisensApp());
-
-class MovisensApp extends StatefulWidget {
-  @override
-  _MovisensAppState createState() => _MovisensAppState();
+void main() {
+  // Recommended to use for testing of Movisens Flutter plugin.
+  // Level.ALL
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    print('${record.level.name}: ${record.time}: ${record.message}');
+  });
+  runApp(const MyApp());
 }
 
-class _MovisensAppState extends State<MovisensApp> {
-  Movisens? _movisens;
-  StreamSubscription<Map<String, dynamic>>? _subscription;
-  LogManager logManager = LogManager();
-  List<Map<String, dynamic>> movisensEvents = [];
-  String address = 'unknown', name = 'unknown';
-  int? weight, height, age;
-
-  @override
-  void initState() {
-    super.initState();
-    startListening();
-  }
-
-  void onData(Map<String, dynamic> event) {
-    print("Movisense event: $event");
-    setState(() {
-      movisensEvents.add(event);
-      logManager.writeLog('$event');
-    });
-  }
-
-  void stopListening() {
-    _subscription?.cancel();
-  }
-
-  void startListening() {
-    // address = '88:6B:0F:82:1D:33'; // move4
-    address = '88:6B:0F:CD:EC:AE'; // ECG move4 - with name SN 03348
-
-    // address = '88:6B:0F:CD:E7:F2'; // ECG4
-
-    // name = 'Sensor 03348';
-    name = 'MOVISENS Sensor 03348';
-    weight = 100;
-    height = 180;
-    age = 25;
-
-    UserData userData = UserData(
-      weight!,
-      height!,
-      Gender.male,
-      age!,
-      SensorLocation.chest,
-      address,
-      name,
-    );
-
-    _movisens = Movisens(userData);
-
-    try {
-      _subscription = _movisens!.movisensStream.listen(onData);
-    } on MovisensException catch (exception) {
-      print(exception);
-    }
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Movisens Log App',
-      theme: darkTheme,
-      home: Scaffold(
-        body: ListView.builder(
-            itemCount: this.movisensEvents.length,
-            itemBuilder: (context, index) => this._buildRow(index)),
+      title: 'Movisens Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: const MyHomePage(title: 'Movisens Flutter Demo Home Page'),
     );
   }
+}
 
-  _buildRow(int index) {
-    Map<String, dynamic> d = movisensEvents[index];
-    return new Container(
-        child: new ListTile(
-          leading: Icon(_getIcon(d)),
-          title: new Text(
-            d.toString(),
-            style: TextStyle(fontSize: 12),
-          ),
-        ),
-        decoration:
-            new BoxDecoration(border: new Border(bottom: new BorderSide())));
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  late MovisensDevice device;
+
+  @override
+  void initState() {
+    super.initState();
+    device = MovisensDevice(macAddress: deviceMACAddress);
   }
 
-  IconData _getIcon(Map<String, dynamic> d) {
-    if (d.containsKey("TapMarker")) return Icons.touch_app;
-    if (d.containsKey("MovementAcceleration")) return Icons.arrow_downward;
-    if (d.containsKey("BodyPosition")) return Icons.accessibility;
-    if (d.containsKey("Met")) return Icons.cached;
-    if (d.containsKey("StepCount")) return Icons.directions_walk;
-    if (d.containsKey("BatteryLevel")) return Icons.battery_charging_full;
-    if (d.containsKey("ConnectionStatus"))
-      return Icons.bluetooth_connected;
-    else
-      return Icons.device_unknown;
+  // The MAC address of your device
+  String deviceMACAddress = "88:6B:0F:CD:EC:AE";
+
+  void connect() async {
+    await device.connect();
+  }
+
+  void listen() async {
+    // Enable the device to emit all event for each service:
+    await device.ambientService?.enableNotify();
+    await device.edaService?.enableNotify();
+    await device.hrvService?.enableNotify();
+    await device.markerService?.enableNotify();
+    await device.batteryService?.enableNotify();
+    await device.physicalActivityService?.enableNotify();
+    await device.respirationService?.enableNotify();
+    await device.sensorControlService?.enableNotify();
+    await device.skinTemperatureService?.enableNotify();
+
+    // Listen to all characteristics
+    device.ambientService?.events.listen((event) {
+      print("all ambient events stream -- event : $event");
+    });
+    device.edaService?.events.listen((event) {
+      print("all eda events stream -- event : $event");
+    });
+    device.hrvService?.events.listen((event) {
+      print("all hrv events stream -- event : $event");
+    });
+    device.markerService?.events.listen((event) {
+      print("all marker events stream -- event : $event");
+    });
+    device.batteryService?.events.listen((event) {
+      print("all battery events stream -- event : $event");
+    });
+    device.physicalActivityService?.events.listen((event) {
+      print("all physical events stream -- event : $event");
+    });
+    device.respirationService?.events.listen((event) {
+      print("all respiration events stream -- event : $event");
+    });
+    device.sensorControlService?.events.listen((event) {
+      print("all sensor control events stream -- event : $event");
+    });
+    device.skinTemperatureService?.events.listen((event) {
+      print("all skin temp events stream -- event : $event");
+    });
+
+    // Or listen to individual characteristics:
+    device.ambientService?.sensorTemperatureEvents?.listen((event) {
+      print("Sensor temp listen : event: $event");
+    });
+    device.skinTemperatureService?.skinTemperatureEvents?.listen((event) {
+      print("Skin temp listen : event: $event");
+    });
+  }
+
+  void startMeasurement() async {
+    // Test start and stop of measurement
+    MeasurementStatus? ms =
+        await device.sensorControlService?.getMeasurementStatus();
+    bool? me = await device.sensorControlService?.getMeasurementEnabled();
+    String s = (ms != null) ? enumToReadableString(ms) : "null";
+    print("Measurement status:: ${s}");
+    print("Measurement enabled:: $me");
+    // Start a measurement that last 60 seconds or a indefinite one
+    await device.sensorControlService?.setStartMeasurement(60);
+    // await device.sensorControlService?.setMeasurementEnabled(true);
+    // Delay 1 second for device to complete the task
+    await Future.delayed(const Duration(seconds: 1));
+    ms = await device.sensorControlService?.getMeasurementStatus();
+    me = await device.sensorControlService?.getMeasurementEnabled();
+    s = (ms != null) ? enumToReadableString(ms) : "null";
+    print("Measurement status after start:: ${s}");
+    print("Measurement enabled after start:: $me");
+  }
+
+  void stopMeasurement() async {
+    await device.sensorControlService?.setMeasurementEnabled(false);
+    // Wait 2 seconds for device to complete task
+    await Future.delayed(const Duration(seconds: 2));
+    MeasurementStatus? ms =
+        await device.sensorControlService?.getMeasurementStatus();
+    bool? me = await device.sensorControlService?.getMeasurementEnabled();
+    String s = (ms != null) ? enumToReadableString(ms) : "null";
+    print("Measurement status after stop:: ${s}");
+    print("Measurement enabled after stop:: $me");
+  }
+
+  void deleteData() async {
+    // Test deletion of data
+    bool? da = await device.sensorControlService?.getDataAvailable();
+    print('Data available :: $da');
+    await device.sensorControlService?.setDeleteData(true);
+    // Delay 1 second for device to complete the task
+    await Future.delayed(const Duration(seconds: 1));
+    da = await device.sensorControlService?.getDataAvailable();
+    print('Data available after delete :: $da');
+  }
+
+  void action() async {
+    // Use the function calls that aren't streams
+
+    // Set and get current time MS
+    try {
+      int currentTimeMs = DateTime.now().millisecondsSinceEpoch;
+      await device.sensorControlService?.setCurrentTimeMs(currentTimeMs);
+    } catch (e) {
+      print('Error setting Current Time MS::  $e');
+    }
+    // Delay 1 second for device to complete the task
+    await Future.delayed(const Duration(seconds: 1));
+    try {
+      int? x = await device.sensorControlService?.getCurrentTimeMs();
+      print("Current time MS:: $x");
+    } catch (e) {
+      print('Error getting Current Time MS::  $e');
+    }
+
+    // Get status
+    int? sta = await device.sensorControlService?.getStatus();
+    print('Status:: $sta');
+
+    // Test storage level
+    int? sl = await device.sensorControlService?.getStorageLevel();
+    print('Storage level :: $sl');
+  }
+
+  void disconnect() async {
+    await device.disconnect();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'Use buttons below:',
+            ),
+            TextButton(onPressed: connect, child: const Text("Connect")),
+            TextButton(
+                onPressed: listen,
+                child: const Text("Listen to all device services")),
+            TextButton(
+                onPressed: startMeasurement,
+                child: const Text("Start Measurement")),
+            TextButton(
+                onPressed: stopMeasurement,
+                child: const Text("Stop Measurement")),
+            TextButton(onPressed: deleteData, child: const Text("Delete Data")),
+            TextButton(onPressed: action, child: const Text("Perform action")),
+            TextButton(onPressed: disconnect, child: const Text("Disconnect")),
+          ],
+        ),
+      ),
+    );
   }
 }
