@@ -3,17 +3,15 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
 
-/// Custom Exception for the plugin,
-/// thrown whenever the plugin is used on platforms other than Android
+/// Custom Exception for the plugin.
+/// Thrown whenever the plugin is used on platforms other than Android.
 class AppUsageException implements Exception {
   String _cause;
 
   AppUsageException(this._cause);
 
   @override
-  String toString() {
-    return _cause;
-  }
+  String toString() => _cause;
 }
 
 class AppUsageInfo {
@@ -63,7 +61,11 @@ class AppUsage {
   static const MethodChannel _methodChannel =
       const MethodChannel("app_usage.methodChannel");
 
-  static Future<List<AppUsageInfo>> getAppUsage(
+  static final AppUsage _instance = AppUsage._();
+  AppUsage._();
+  factory AppUsage() => _instance;
+
+  Future<List<AppUsageInfo>> getAppUsage(
     DateTime startDate,
     DateTime endDate,
   ) async {
@@ -94,7 +96,6 @@ class AppUsage {
 
       return result;
     }
-    throw new AppUsageException(
-        'AppUsage API exclusively available on Android!');
+    throw AppUsageException('AppUsage API is only available on Android');
   }
 }

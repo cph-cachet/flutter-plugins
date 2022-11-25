@@ -1,6 +1,6 @@
 name: app_usage
 description: App usage plugin for Android only
-version: 2.0.0
+version: 2.1.0
 homepage: https://github.com/cph-cachet/flutter-plugins/blob/master/packages/app_usage
 
 environment:
@@ -15,10 +15,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter.
 flutter:
   plugin:
     platforms:

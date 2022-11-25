@@ -18,13 +18,11 @@ class _MyAppState extends State<MyApp> {
 
   void getUsageStats() async {
     try {
-      DateTime endDate = new DateTime.now();
+      DateTime endDate = DateTime.now();
       DateTime startDate = endDate.subtract(Duration(hours: 1));
       List<AppUsageInfo> infoList =
-          await AppUsage.getAppUsage(startDate, endDate);
-      setState(() {
-        _infos = infoList;
-      });
+          await AppUsage().getAppUsage(startDate, endDate);
+      setState(() => _infos = infoList);
 
       for (var info in infoList) {
         print(info.toString());
