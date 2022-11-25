@@ -22,7 +22,12 @@ class AppUsageInfo {
   DateTime _startDate, _endDate, _lastForeground;
 
   AppUsageInfo(
-      String name, double usageInSeconds, this._startDate, this._endDate, this._lastForeground) {
+    String name,
+    double usageInSeconds,
+    this._startDate,
+    this._endDate,
+    this._lastForeground,
+  ) {
     List<String> tokens = name.split('.');
     _packageName = name;
     _appName = tokens.last;
@@ -59,8 +64,9 @@ class AppUsage {
       const MethodChannel("app_usage.methodChannel");
 
   static Future<List<AppUsageInfo>> getAppUsage(
-      DateTime startDate, DateTime endDate) async {
-
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
     if (Platform.isAndroid) {
       /// Convert dates to ms since epoch
       int end = endDate.millisecondsSinceEpoch;
@@ -72,27 +78,21 @@ class AppUsage {
       /// Get result and parse it as a Map of <String, List<double>>
       Map usage = await _methodChannel.invokeMethod('getUsage', interval);
 
-
-      // Convert everything to list of AppUsageInfo
-      List<AppUsageInfo>toReturn=[];
-      for(String key in usage.keys){
-        List<double>temp=List<double>.from(usage[key]);
-        if(temp[0]>0){
-          toReturn.add(AppUsageInfo(key,
+      // Convert to list of AppUsageInfo
+      List<AppUsageInfo> result = [];
+      for (String key in usage.keys) {
+        List<double> temp = List<double>.from(usage[key]);
+        if (temp[0] > 0) {
+          result.add(AppUsageInfo(
+              key,
               temp[0],
-              DateTime.fromMillisecondsSinceEpoch(temp[1].round()*1000),
-              DateTime.fromMillisecondsSinceEpoch(temp[2].round()*1000),
-              DateTime.fromMillisecondsSinceEpoch(temp[3].round()*1000)
-          ));
+              DateTime.fromMillisecondsSinceEpoch(temp[1].round() * 1000),
+              DateTime.fromMillisecondsSinceEpoch(temp[2].round() * 1000),
+              DateTime.fromMillisecondsSinceEpoch(temp[3].round() * 1000)));
         }
       }
 
-      return toReturn;
-
-
-
-
-
+      return result;
     }
     throw new AppUsageException(
         'AppUsage API exclusively available on Android!');

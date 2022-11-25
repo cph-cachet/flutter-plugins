@@ -20,7 +20,8 @@ class _MyAppState extends State<MyApp> {
     try {
       DateTime endDate = new DateTime.now();
       DateTime startDate = endDate.subtract(Duration(hours: 1));
-      List<AppUsageInfo> infoList = await AppUsage.getAppUsage(startDate, endDate);
+      List<AppUsageInfo> infoList =
+          await AppUsage.getAppUsage(startDate, endDate);
       setState(() {
         _infos = infoList;
       });
