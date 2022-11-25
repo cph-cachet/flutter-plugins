@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 /**
  * Created by User on 3/2/15.
@@ -34,17 +35,24 @@ public class Stats {
      * with the corresponding time in foreground in seconds for that application.
      */
     @SuppressWarnings("ResourceType")
-    public static HashMap<String, Double> getUsageMap(Context context, long start, long end) {
+    public static HashMap<String, List<Double>> getUsageMap(Context context, long start, long end) {
         UsageStatsManager manager = (UsageStatsManager) context.getSystemService("usagestats");
         Map<String, UsageStats> usageStatsMap = manager.queryAndAggregateUsageStats(start, end);
-        HashMap<String, Double> usageMap = new HashMap<>();
+        HashMap<String, List<Double>> usageMap = new HashMap<String, List<Double>>();
 
         for (String packageName : usageStatsMap.keySet()) {
             UsageStats us = usageStatsMap.get(packageName);
             try {
                 long timeMs = us.getTotalTimeInForeground();
                 Double timeSeconds = new Double(timeMs / 1000);
-                usageMap.put(packageName, timeSeconds);
+                long timeMsFirst = us.getFirstTimeStamp();
+                Double timeSecondsStart = new Double(timeMsFirst / 1000);
+                long timeMsStop = us.getLastTimeStamp();
+                Double timeSecondsStop = new Double(timeMsStop / 1000);
+                long timeMsLastUse = us.getLastTimeForegroundServiceUsed();
+                Double timeSecondsLastUse = new Double(timeMsLastUse / 1000);
+                List<Double> listT = Arrays.asList(timeSeconds, timeSecondsStart, timeSecondsStop,timeSecondsLastUse);
+                usageMap.put(packageName, listT);
             } catch (Exception e) {
                 Log.d(TAG, "Getting timeInForeground resulted in an exception");
             }
