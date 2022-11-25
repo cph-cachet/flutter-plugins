@@ -21,5 +21,3 @@ flutter:
       android:
         package: dk.cachet.app_usage
         pluginClass: AppUsagePlugin
-      ios:
-        pluginClass: AppUsagePlugin
