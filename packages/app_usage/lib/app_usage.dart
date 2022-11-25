@@ -3,17 +3,15 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
 
-/// Custom Exception for the plugin,
-/// thrown whenever the plugin is used on platforms other than Android
+/// Custom Exception for the plugin.
+/// Thrown whenever the plugin is used on platforms other than Android.
 class AppUsageException implements Exception {
   String _cause;
 
   AppUsageException(this._cause);
 
   @override
-  String toString() {
-    return _cause;
-  }
+  String toString() => _cause;
 }
 
 class AppUsageInfo {
@@ -22,7 +20,12 @@ class AppUsageInfo {
   DateTime _startDate, _endDate, _lastForeground;
 
   AppUsageInfo(
-      String name, double usageInSeconds, this._startDate, this._endDate, this._lastForeground) {
+    String name,
+    double usageInSeconds,
+    this._startDate,
+    this._endDate,
+    this._lastForeground,
+  ) {
     List<String> tokens = name.split('.');
     _packageName = name;
     _appName = tokens.last;
@@ -58,9 +61,14 @@ class AppUsage {
   static const MethodChannel _methodChannel =
       const MethodChannel("app_usage.methodChannel");
 
-  static Future<List<AppUsageInfo>> getAppUsage(
-      DateTime startDate, DateTime endDate) async {
+  static final AppUsage _instance = AppUsage._();
+  AppUsage._();
+  factory AppUsage() => _instance;
 
+  Future<List<AppUsageInfo>> getAppUsage(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
     if (Platform.isAndroid) {
       /// Convert dates to ms since epoch
       int end = endDate.millisecondsSinceEpoch;
@@ -72,29 +80,22 @@ class AppUsage {
       /// Get result and parse it as a Map of <String, List<double>>
       Map usage = await _methodChannel.invokeMethod('getUsage', interval);
 
-
-      // Convert everything to list of AppUsageInfo
-      List<AppUsageInfo>toReturn=[];
-      for(String key in usage.keys){
-        List<double>temp=List<double>.from(usage[key]);
-        if(temp[0]>0){
-          toReturn.add(AppUsageInfo(key,
+      // Convert to list of AppUsageInfo
+      List<AppUsageInfo> result = [];
+      for (String key in usage.keys) {
+        List<double> temp = List<double>.from(usage[key]);
+        if (temp[0] > 0) {
+          result.add(AppUsageInfo(
+              key,
               temp[0],
-              DateTime.fromMillisecondsSinceEpoch(temp[1].round()*1000),
-              DateTime.fromMillisecondsSinceEpoch(temp[2].round()*1000),
-              DateTime.fromMillisecondsSinceEpoch(temp[3].round()*1000)
-          ));
+              DateTime.fromMillisecondsSinceEpoch(temp[1].round() * 1000),
+              DateTime.fromMillisecondsSinceEpoch(temp[2].round() * 1000),
+              DateTime.fromMillisecondsSinceEpoch(temp[3].round() * 1000)));
         }
       }
 
-      return toReturn;
-
-
-
-
-
+      return result;
     }
-    throw new AppUsageException(
-        'AppUsage API exclusively available on Android!');
+    throw AppUsageException('AppUsage API is only available on Android');
   }
 }
