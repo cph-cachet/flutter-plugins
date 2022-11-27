@@ -1,4 +1,4 @@
-package cachet.plugins.example_app
+package com.metaflow.lumen_tng.app
 
 import android.os.Bundle
 

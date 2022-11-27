@@ -9,7 +9,7 @@ part of health;
 ///  * reading health data using the [getHealthDataFromTypes] method.
 ///  * writing health data using the [writeHealthData] method.
 ///  * accessing total step counts using the [getTotalStepsInInterval] method.
-///  * cleaning up dublicate data points via the [removeDuplicates] method.
+///  * cleaning up duplicate data points via the [removeDuplicates] method.
 class HealthFactory {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   String? _deviceId;
@@ -63,7 +63,7 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     return await _channel.invokeMethod('hasPermissions', {
-      "types": mTypes.map((type) => type.typeToString()).toList(),
+      "types": mTypes.map((type) => type.name).toList(),
       "permissions": mPermissions,
     });
   }
@@ -110,7 +110,7 @@ class HealthFactory {
     // on Android, if BMI is requested, then also ask for weight and height
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
-    List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
+    List<String> keys = mTypes.map((e) => e.name).toList();
     final bool? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
     return isAuthorized ?? false;
@@ -212,9 +212,7 @@ class HealthFactory {
 
     // Align values to type in cases where the type defines the value.
     // E.g. SLEEP_IN_BED should have value 0
-    if (type == HealthDataType.SLEEP_ASLEEP ||
-        type == HealthDataType.SLEEP_AWAKE ||
-        type == HealthDataType.SLEEP_IN_BED ||
+    if (type == HealthDataType.SLEEP ||
         type == HealthDataType.HEADACHE_NOT_PRESENT ||
         type == HealthDataType.HEADACHE_MILD ||
         type == HealthDataType.HEADACHE_MODERATE ||
@@ -225,8 +223,8 @@ class HealthFactory {
 
     Map<String, dynamic> args = {
       'value': value,
-      'dataTypeKey': type.typeToString(),
-      'dataUnitKey': unit.typeToString(),
+      'dataTypeKey': type.name,
+      'dataUnitKey': unit.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch
     };
@@ -272,7 +270,7 @@ class HealthFactory {
       'frequencies': frequencies,
       'leftEarSensitivities': leftEarSensitivities,
       'rightEarSensitivities': rightEarSensitivities,
-      'dataTypeKey': HealthDataType.AUDIOGRAM.typeToString(),
+      'dataTypeKey': HealthDataType.AUDIOGRAM.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
       'metadata': metadata,
@@ -328,8 +326,8 @@ class HealthFactory {
   Future<List<HealthDataPoint>> _dataQuery(
       DateTime startTime, DateTime endTime, HealthDataType dataType) async {
     final args = <String, dynamic>{
-      'dataTypeKey': dataType.typeToString(),
-      'dataUnitKey': _dataTypeToUnit[dataType]!.typeToString(),
+      'dataTypeKey': dataType.name,
+      'dataUnitKey': _dataTypeToUnit[dataType]!.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch
     };
@@ -364,6 +362,8 @@ class HealthFactory {
         value = AudiogramHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.WORKOUT) {
         value = WorkoutHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.SLEEP) {
+        value = RawValue.fromJson(e?.cast<String, dynamic>());
       } else {
         value = NumericHealthValue(e['value']);
       }
@@ -414,12 +414,8 @@ class HealthFactory {
 
   int _alignValue(HealthDataType type) {
     switch (type) {
-      case HealthDataType.SLEEP_IN_BED:
+      case HealthDataType.SLEEP:
         return 0;
-      case HealthDataType.SLEEP_ASLEEP:
-        return 1;
-      case HealthDataType.SLEEP_AWAKE:
-        return 2;
       case HealthDataType.HEADACHE_UNSPECIFIED:
         return 0;
       case HealthDataType.HEADACHE_NOT_PRESENT:
@@ -466,13 +462,13 @@ class HealthFactory {
           "Workout activity type $activityType is not supported on Android");
     }
     final args = <String, dynamic>{
-      'activityType': activityType.typeToString(),
+      'activityType': activityType.name,
       'startTime': start.millisecondsSinceEpoch,
       'endTime': end.millisecondsSinceEpoch,
       'totalEnergyBurned': totalEnergyBurned,
-      'totalEnergyBurnedUnit': _enumToString(totalEnergyBurnedUnit),
+      'totalEnergyBurnedUnit': totalEnergyBurnedUnit.name,
       'totalDistance': totalDistance,
-      'totalDistanceUnit': _enumToString(totalDistanceUnit),
+      'totalDistanceUnit': totalDistanceUnit.name,
     };
     final success = await _channel.invokeMethod('writeWorkoutData', args);
     return success ?? false;

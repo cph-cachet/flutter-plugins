@@ -35,6 +35,24 @@ class NumericHealthValue extends HealthValue {
   int get hashCode => numericValue.hashCode;
 }
 
+class RawValue extends HealthValue {
+
+  Map<String, dynamic>? rawValue;
+
+  RawValue(this.rawValue);
+
+  @override
+  String toString() {
+    return rawValue?.toString() ?? "";
+  }
+
+  factory RawValue.fromJson(json) {
+    return RawValue(json);
+  }
+
+  Map<String, dynamic> toJson() => rawValue ?? {};
+}
+
 /// A [HealthValue] object for audiograms
 ///
 /// Parameters:
@@ -130,20 +148,20 @@ class WorkoutHealthValue extends HealthValue {
   factory WorkoutHealthValue.fromJson(json) {
     return WorkoutHealthValue(
         HealthWorkoutActivityType.values.firstWhere(
-            (element) => element.typeToString() == json['workoutActivityType']),
+            (element) => element.name == json['workoutActivityType']),
         json['totalEnergyBurned'] != null
             ? (json['totalEnergyBurned'] as double).toInt()
             : null,
         json['totalEnergyBurnedUnit'] != null
             ? HealthDataUnit.values.firstWhere((element) =>
-                element.typeToString() == json['totalEnergyBurnedUnit'])
+                element.name == json['totalEnergyBurnedUnit'])
             : null,
         json['totalDistance'] != null
             ? (json['totalDistance'] as double).toInt()
             : null,
         json['totalDistanceUnit'] != null
             ? HealthDataUnit.values.firstWhere((element) =>
-                element.typeToString() == json['totalDistanceUnit'])
+                element.name == json['totalDistanceUnit'])
             : null);
   }
 

@@ -31,9 +31,20 @@ enum HealthDataType {
   DISTANCE_DELTA,
   MINDFULNESS,
   WATER,
-  SLEEP_IN_BED,
-  SLEEP_ASLEEP,
-  SLEEP_AWAKE,
+
+  /// Sleep granular data returned as integers, which can be mapped into this values on Android:
+  ///       val SLEEP_STAGE_NAMES = arrayOf(
+  //         "Unused",
+  //         "Awake (during sleep)",
+  //         "Sleep",
+  //         "Out-of-bed",
+  //         "Light sleep",
+  //         "Deep sleep",
+  //         "REM sleep"
+  //       )
+  /// and on iOS: TODO - find out what the values are on iOS
+  SLEEP,
+
   EXERCISE_TIME,
   WORKOUT,
   HEADACHE_NOT_PRESENT,
@@ -87,9 +98,7 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.FLIGHTS_CLIMBED,
   HealthDataType.DISTANCE_WALKING_RUNNING,
   HealthDataType.MINDFULNESS,
-  HealthDataType.SLEEP_IN_BED,
-  HealthDataType.SLEEP_AWAKE,
-  HealthDataType.SLEEP_ASLEEP,
+  HealthDataType.SLEEP,
   HealthDataType.WATER,
   HealthDataType.EXERCISE_TIME,
   HealthDataType.WORKOUT,
@@ -116,9 +125,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.WEIGHT,
   HealthDataType.MOVE_MINUTES,
   HealthDataType.DISTANCE_DELTA,
-  HealthDataType.SLEEP_AWAKE,
-  HealthDataType.SLEEP_ASLEEP,
-  HealthDataType.SLEEP_IN_BED,
+  HealthDataType.SLEEP,
   HealthDataType.WATER,
   HealthDataType.WORKOUT,
 ];
@@ -154,9 +161,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.DISTANCE_DELTA: HealthDataUnit.METER,
 
   HealthDataType.WATER: HealthDataUnit.LITER,
-  HealthDataType.SLEEP_IN_BED: HealthDataUnit.MINUTE,
-  HealthDataType.SLEEP_ASLEEP: HealthDataUnit.MINUTE,
-  HealthDataType.SLEEP_AWAKE: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP: HealthDataUnit.MINUTE,
   HealthDataType.MINDFULNESS: HealthDataUnit.MINUTE,
   HealthDataType.EXERCISE_TIME: HealthDataUnit.MINUTE,
   HealthDataType.WORKOUT: HealthDataUnit.NO_UNIT,

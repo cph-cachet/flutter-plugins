@@ -31,9 +31,7 @@ class HealthDataPoint {
         type == HealthDataType.HEADACHE_MILD ||
         type == HealthDataType.HEADACHE_MODERATE ||
         type == HealthDataType.HEADACHE_SEVERE ||
-        type == HealthDataType.SLEEP_IN_BED ||
-        type == HealthDataType.SLEEP_ASLEEP ||
-        type == HealthDataType.SLEEP_AWAKE) {
+        type == HealthDataType.SLEEP) {
       this._value = _convertMinutes();
     }
   }
@@ -43,36 +41,11 @@ class HealthDataPoint {
     return NumericHealthValue(ms / (1000 * 60));
   }
 
-  /// Converts a json object to the [HealthDataPoint]
-  factory HealthDataPoint.fromJson(json) {
-    HealthValue healthValue;
-    if (json['data_type'] == 'audiogram') {
-      healthValue = AudiogramHealthValue.fromJson(json['value']);
-    } else {
-      healthValue = NumericHealthValue.fromJson(json['value']);
-    }
-
-    return HealthDataPoint(
-        healthValue,
-        HealthDataType.values.firstWhere(
-            (element) => element.typeToString() == json['data_type']),
-        HealthDataUnit.values
-            .firstWhere((element) => element.typeToString() == json['unit']),
-        DateTime.parse(json['date_from']),
-        DateTime.parse(json['date_to']),
-        PlatformTypeJsonValue.keys.toList()[PlatformTypeJsonValue.values
-            .toList()
-            .indexOf(json['platform_type'])],
-        json['device_id'],
-        json['source_id'],
-        json['source_name']);
-  }
-
   /// Converts the [HealthDataPoint] to a json object
   Map<String, dynamic> toJson() => {
         'value': value.toJson(),
-        'data_type': type.typeToString(),
-        'unit': type.typeToString(),
+        'data_type': type.name,
+        'unit': type.name,
         'date_from': dateFrom.toIso8601String(),
         'date_to': dateTo.toIso8601String(),
         'platform_type': PlatformTypeJsonValue[platform],
@@ -112,10 +85,10 @@ class HealthDataPoint {
   PlatformType get platform => _platform;
 
   /// The data point type as a string
-  String get typeString => _type.typeToString();
+  String get typeString => _type.name;
 
   /// The data point unit as a string
-  String get unitString => _unit.typeToString();
+  String get unitString => _unit.name;
 
   /// The id of the device from which the data point was fetched.
   String get deviceId => _deviceId;

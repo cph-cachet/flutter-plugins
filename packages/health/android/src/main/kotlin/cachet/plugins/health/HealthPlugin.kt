@@ -28,7 +28,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import java.security.Permission
 import java.util.*
 import java.util.concurrent.*
 
@@ -59,9 +58,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   private var MOVE_MINUTES = "MOVE_MINUTES"
   private var DISTANCE_DELTA = "DISTANCE_DELTA"
   private var WATER = "WATER"
-  private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
-  private var SLEEP_AWAKE = "SLEEP_AWAKE"
-  private var SLEEP_IN_BED = "SLEEP_IN_BED"
+  private var SLEEP = "SLEEP"
   private var WORKOUT = "WORKOUT"
 
   val workoutTypeMap = mapOf(
@@ -168,7 +165,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     "OTHER" to FitnessActivities.OTHER,
   )
 
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+  override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
     channel?.setMethodCallHandler(this)
     threadPoolExecutor = Executors.newFixedThreadPool(4)
@@ -269,9 +266,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       MOVE_MINUTES -> DataType.TYPE_MOVE_MINUTES
       DISTANCE_DELTA -> DataType.TYPE_DISTANCE_DELTA
       WATER -> DataType.TYPE_HYDRATION
-      SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
-      SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
-      SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
+      SLEEP -> DataType.TYPE_SLEEP_SEGMENT
       WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
       else -> throw IllegalArgumentException("Unsupported dataType: $type")
     }
@@ -293,9 +288,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       MOVE_MINUTES -> Field.FIELD_DURATION
       DISTANCE_DELTA -> Field.FIELD_DISTANCE
       WATER -> Field.FIELD_VOLUME
-      SLEEP_ASLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
-      SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
-      SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
+      SLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
       WORKOUT -> Field.FIELD_ACTIVITY
       else -> throw IllegalArgumentException("Unsupported dataType: $type")
     }
@@ -562,7 +555,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
           .readSession(request)
           .addOnSuccessListener(threadPoolExecutor!!, sleepDataHandler(type, result))
           .addOnFailureListener(errHandler(result))
-
       }
       DataType.TYPE_ACTIVITY_SEGMENT -> {
         val readRequest: SessionReadRequest
@@ -580,7 +572,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             android.Manifest.permission.ACCESS_FINE_LOCATION
           ) == PackageManager.PERMISSION_GRANTED
         ) {
-          // Request permission with distance data. 
+          // Request permission with distance data.
           // Google Fit requires this when we query for distance data
           // as it is restricted data
           if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
@@ -592,7 +584,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             )
           }
           readRequestBuilder.read(DataType.TYPE_DISTANCE_DELTA)
-        } 
+        }
         readRequest = readRequestBuilder.build()
         Fitness.getSessionsClient(activity!!.applicationContext, googleSignInAccount)
           .readSession(readRequest)
@@ -641,90 +633,53 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
   private fun sleepDataHandler(type: String, result: Result) =
     OnSuccessListener { response: SessionReadResponse ->
+
+      // This array of sleep stages is for internal use. The values returnded as a response are actually integers,
+      // which represent the position in this array. The server (or any other consumer of the plugin needs to know
+      // what integers represent)
+      val SLEEP_STAGE_NAMES = arrayOf(
+        "Unused",
+        "Awake (during sleep)",
+        "Sleep",
+        "Out-of-bed",
+        "Light sleep",
+        "Deep sleep",
+        "REM sleep"
+      )
+
       val healthData: MutableList<Map<String, Any?>> = mutableListOf()
       for (session in response.sessions) {
-
-        // Return sleep time in Minutes if requested ASLEEP data
-        if (type == SLEEP_ASLEEP) {
+        if (type == SLEEP) {
           healthData.add(
             hashMapOf(
-              "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
+              // Total duration of sleep in minutes
+              "sleepSessionDuration" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
               "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
               "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
               "unit" to "MINUTES",
               "source_name" to session.appPackageName,
-              "source_id" to session.identifier
-            )
-          )
-        }
-
-        if (type == SLEEP_IN_BED) {
-          val dataSets = response.getDataSet(session)
-
-          // If the sleep session has finer granularity sub-components, extract them:
-          if (dataSets.isNotEmpty()) {
-            for (dataSet in dataSets) {
-              for (dataPoint in dataSet.dataPoints) {
-                // searching OUT OF BED data
-                if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE)
-                    .asInt() != 3
-                ) {
-                  healthData.add(
-                    hashMapOf(
-                      "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
-                        TimeUnit.MINUTES
-                      ),
-                      "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                      "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                      "unit" to "MINUTES",
-                      "source_name" to (dataPoint.originalDataSource.appPackageName
-                        ?: (dataPoint.originalDataSource.device?.model
-                          ?: "unknown")),
-                      "source_id" to dataPoint.originalDataSource.streamIdentifier
-                    )
+              "source_id" to session.identifier,
+              // If the sleep session has finer granularity sub-components, extract them:
+              "sleepStages" to response.getDataSet(session).map { dataSet ->
+                dataSet.dataPoints.map { point ->
+                  // Sleep stage stored as integer, in order.
+                  val sleepStageVal = point.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt()
+                  // Convert to readable string
+                  val sleepStage = SLEEP_STAGE_NAMES[sleepStageVal]
+                  val segmentStart = point.getStartTime(TimeUnit.MILLISECONDS)
+                  val segmentEnd = point.getEndTime(TimeUnit.MILLISECONDS)
+                  Log.i("HealthPlugin", "\t* Type $sleepStage between $segmentStart and $segmentEnd")
+                  hashMapOf(
+                    // Sleep stage stored as integer, in order.
+                    "sleepStage" to sleepStageVal,
+                    "date_from" to segmentStart,
+                    "date_to" to segmentEnd,
+                    "unit" to "MINUTES"
                   )
                 }
               }
-            }
-          } else {
-            healthData.add(
-              hashMapOf(
-                "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
-                  TimeUnit.MINUTES
-                ),
-                "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                "unit" to "MINUTES",
-                "source_name" to session.appPackageName,
-                "source_id" to session.identifier
-              )
             )
-          }
-        }
-
-        if (type == SLEEP_AWAKE) {
-          val dataSets = response.getDataSet(session)
-          for (dataSet in dataSets) {
-            for (dataPoint in dataSet.dataPoints) {
-              // searching SLEEP AWAKE data
-              if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1) {
-                healthData.add(
-                  hashMapOf(
-                    "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
-                      TimeUnit.MINUTES
-                    ),
-                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                    "unit" to "MINUTES",
-                    "source_name" to (dataPoint.originalDataSource.appPackageName
-                      ?: (dataPoint.originalDataSource.device?.model
-                        ?: "unknown")),
-                    "source_id" to dataPoint.originalDataSource.streamIdentifier
-                  )
-                )
-              }
-            }
-          }
+          )
         }
       }
       activity!!.runOnUiThread { result.success(healthData) }
@@ -789,7 +744,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         else -> throw IllegalArgumentException("Unknown access type $access")
       }
-      if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE || typeKey == SLEEP_IN_BED || typeKey == WORKOUT) {
+      if (typeKey == SLEEP || typeKey == WORKOUT) {
         typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
         when (access) {
           0 -> typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
