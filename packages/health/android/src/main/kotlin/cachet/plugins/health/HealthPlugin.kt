@@ -556,6 +556,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
           .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
           .enableServerQueries()
           .readSessionsFromAllApps()
+          .read(DataType.TYPE_SLEEP_SEGMENT)
           .includeSleepSessions()
           .build()
         Fitness.getSessionsClient(activity!!.applicationContext, googleSignInAccount)
@@ -642,33 +643,43 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   private fun sleepDataHandler(type: String, result: Result) =
     OnSuccessListener { response: SessionReadResponse ->
       val healthData: MutableList<Map<String, Any?>> = mutableListOf()
-      for (session in response.sessions) {
-
-        // Return sleep time in Minutes if requested ASLEEP data
+      for (session in response.getSessions()) {
         if (type == SLEEP_ASLEEP) {
-          healthData.add(
-            hashMapOf(
-              "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
-              "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-              "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-              "unit" to "MINUTES",
-              "source_name" to session.appPackageName,
-              "source_id" to session.identifier
-            )
-          )
-        }
-
-        if (type == SLEEP_IN_BED) {
           val dataSets = response.getDataSet(session)
-
           // If the sleep session has finer granularity sub-components, extract them:
           if (dataSets.isNotEmpty()) {
             for (dataSet in dataSets) {
               for (dataPoint in dataSet.dataPoints) {
-                // searching OUT OF BED data
+                // searching for SLEEP data
                 if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE)
-                    .asInt() != 3
+                                .asInt()  != 1 && dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE)
+                                .asInt()  != 3
                 ) {
+                  healthData.add(
+                          hashMapOf(
+                                  "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
+                                          TimeUnit.MINUTES
+                                  ),
+                                  "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                  "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                  "unit" to "MINUTES",
+                                  "source_name" to (dataPoint.originalDataSource.appPackageName
+                                          ?: (dataPoint.originalDataSource.device?.model
+                                                  ?: "unknown")),
+                                  "source_id" to dataPoint.originalDataSource.streamIdentifier
+                          )
+                  )
+                }
+              }
+            }
+          }
+        }
+
+        if (type == SLEEP_IN_BED) {
+          val dataSets = response.getDataSet(session)
+          if (dataSets.isNotEmpty()) {
+            for (dataSet in dataSets) {
+              for (dataPoint in dataSet.dataPoints) {
                   healthData.add(
                     hashMapOf(
                       "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
@@ -683,22 +694,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                       "source_id" to dataPoint.originalDataSource.streamIdentifier
                     )
                   )
-                }
               }
             }
-          } else {
-            healthData.add(
-              hashMapOf(
-                "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
-                  TimeUnit.MINUTES
-                ),
-                "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                "unit" to "MINUTES",
-                "source_name" to session.appPackageName,
-                "source_id" to session.identifier
-              )
-            )
           }
         }
 
@@ -707,7 +704,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
           for (dataSet in dataSets) {
             for (dataPoint in dataSet.dataPoints) {
               // searching SLEEP AWAKE data
-              if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1) {
+              if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1 ||
+                      dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 3) {
                 healthData.add(
                   hashMapOf(
                     "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
