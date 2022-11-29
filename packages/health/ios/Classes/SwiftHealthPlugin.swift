@@ -45,9 +45,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
     let WATER = "WATER"
     let MINDFULNESS = "MINDFULNESS"
-    let SLEEP_IN_BED = "SLEEP_IN_BED"
-    let SLEEP_ASLEEP = "SLEEP_ASLEEP"
-    let SLEEP_AWAKE = "SLEEP_AWAKE"
+    let SLEEP = "SLEEP"
     let EXERCISE_TIME = "EXERCISE_TIME"
     let WORKOUT = "WORKOUT"
     let HEADACHE_UNSPECIFIED = "HEADACHE_UNSPECIFIED"
@@ -403,15 +401,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 
             case var (samplesCategory as [HKCategorySample]) as Any:
-                if (dataTypeKey == self.SLEEP_IN_BED) {
-                    samplesCategory = samplesCategory.filter { $0.value == 0 }
-                }
-                if (dataTypeKey == self.SLEEP_ASLEEP) {
-                    samplesCategory = samplesCategory.filter { $0.value == 1 }
-                }
-                if (dataTypeKey == self.SLEEP_AWAKE) {
-                    samplesCategory = samplesCategory.filter { $0.value == 2 }
-                }
                 if (dataTypeKey == self.HEADACHE_UNSPECIFIED) {
                     samplesCategory = samplesCategory.filter { $0.value == 0 }
                 }
@@ -716,9 +705,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[FLIGHTS_CLIMBED] = HKSampleType.quantityType(forIdentifier: .flightsClimbed)!
             dataTypesDict[WATER] = HKSampleType.quantityType(forIdentifier: .dietaryWater)!
             dataTypesDict[MINDFULNESS] = HKSampleType.categoryType(forIdentifier: .mindfulSession)!
-            dataTypesDict[SLEEP_IN_BED] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
-            dataTypesDict[SLEEP_ASLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
-            dataTypesDict[SLEEP_AWAKE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
             dataTypesDict[WORKOUT] = HKSampleType.workoutType()
             

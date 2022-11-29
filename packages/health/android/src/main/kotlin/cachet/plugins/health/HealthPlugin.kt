@@ -634,19 +634,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   private fun sleepDataHandler(type: String, result: Result) =
     OnSuccessListener { response: SessionReadResponse ->
 
-      // This array of sleep stages is for internal use. The values returnded as a response are actually integers,
-      // which represent the position in this array. The server (or any other consumer of the plugin needs to know
-      // what integers represent)
-      val SLEEP_STAGE_NAMES = arrayOf(
-        "Unused",
-        "Awake (during sleep)",
-        "Sleep",
-        "Out-of-bed",
-        "Light sleep",
-        "Deep sleep",
-        "REM sleep"
-      )
-
       val healthData: MutableList<Map<String, Any?>> = mutableListOf()
       for (session in response.sessions) {
         if (type == SLEEP) {
@@ -664,14 +651,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 dataSet.dataPoints.map { point ->
                   // Sleep stage stored as integer, in order.
                   val sleepStageVal = point.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt()
-                  // Convert to readable string
-                  val sleepStage = SLEEP_STAGE_NAMES[sleepStageVal]
                   val segmentStart = point.getStartTime(TimeUnit.MILLISECONDS)
                   val segmentEnd = point.getEndTime(TimeUnit.MILLISECONDS)
-                  Log.i("HealthPlugin", "\t* Type $sleepStage between $segmentStart and $segmentEnd")
                   hashMapOf(
                     // Sleep stage stored as integer, in order.
-                    "sleepStage" to sleepStageVal,
+                    "value" to sleepStageVal,
                     "date_from" to segmentStart,
                     "date_to" to segmentEnd,
                     "unit" to "MINUTES"

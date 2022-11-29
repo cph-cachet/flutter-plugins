@@ -38,11 +38,11 @@ class _HealthAppState extends State<HealthApp> {
 
     // define the types to get
     final types = [
-      // HealthDataType.STEPS,
-      // HealthDataType.WEIGHT,
-      // HealthDataType.HEIGHT,
-      // HealthDataType.BLOOD_GLUCOSE,
-      // HealthDataType.WORKOUT,
+      HealthDataType.STEPS,
+      HealthDataType.WEIGHT,
+      HealthDataType.HEIGHT,
+      HealthDataType.BLOOD_GLUCOSE,
+      HealthDataType.WORKOUT,
       HealthDataType.SLEEP,
       // Uncomment these lines on iOS - only available on iOS
       // HealthDataType.AUDIOGRAM
@@ -51,17 +51,17 @@ class _HealthAppState extends State<HealthApp> {
     // with coresponsing permissions
     final permissions = [
       HealthDataAccess.READ,
-      // HealthDataAccess.READ,
-      // HealthDataAccess.READ,
-      // HealthDataAccess.READ,
-      // HealthDataAccess.READ,
-      // HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
       // HealthDataAccess.READ,
     ];
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(days: 5));
+    final yesterday = now.subtract(Duration(days: 30));
     // requesting access to the data types before reading them
     // note that strictly speaking, the [permissions] are not
     // needed, since we only want READ access.
@@ -80,8 +80,8 @@ class _HealthAppState extends State<HealthApp> {
       try {
         // fetch health data
         List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(yesterday, now, types);
-        // save all the new data points (only the first 100)
-        _healthDataList.addAll((healthData.length < 100) ? healthData : healthData.sublist(0, 100));
+        // save all the new data points (only the first 200)
+        _healthDataList.addAll((healthData.length < 200) ? healthData : healthData.sublist(0, 200));
       } catch (error) {
         print("Exception in getHealthDataFromTypes: $error");
       }
