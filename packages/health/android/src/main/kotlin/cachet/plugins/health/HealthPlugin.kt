@@ -691,6 +691,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         healthData.add(
           hashMapOf(
             "workoutActivityType" to workoutTypeMap.filterValues { it == session.activity }.keys.first(),
+            "androidNativeWorkoutActivityType" to session.activity,
+            "metadata" to session.description,
             "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
             "totalEnergyBurnedUnit" to "KILOCALORIE",
             "totalDistance" to if (totalDistance == 0.0) null else totalDistance,

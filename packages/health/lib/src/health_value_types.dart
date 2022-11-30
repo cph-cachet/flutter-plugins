@@ -114,20 +114,36 @@ class AudiogramHealthValue extends HealthValue {
 /// * [totalDistanceUnit] - the unit of the total distance
 class WorkoutHealthValue extends HealthValue {
   HealthWorkoutActivityType _workoutActivityType;
+  int? _iOSNativeWorkoutActivityType;
+  String? _androidNativeWorkoutActivityType;
   int? _totalEnergyBurned;
   HealthDataUnit? _totalEnergyBurnedUnit;
   int? _totalDistance;
   HealthDataUnit? _totalDistanceUnit;
+  String? _metadata;
 
   WorkoutHealthValue(
       this._workoutActivityType,
       this._totalEnergyBurned,
       this._totalEnergyBurnedUnit,
       this._totalDistance,
-      this._totalDistanceUnit);
+      this._totalDistanceUnit,
+      this._metadata,
+      this._iOSNativeWorkoutActivityType,
+      this._androidNativeWorkoutActivityType,
+      );
 
   /// The type of the workout.
   HealthWorkoutActivityType get workoutActivityType => _workoutActivityType;
+
+  /// Native workout activity type
+  int? get iOSNativeWorkoutActivityType => _iOSNativeWorkoutActivityType;
+
+  /// Native workout activity type
+  String? get androidNativeWorkoutActivityType => _androidNativeWorkoutActivityType;
+
+  /// Additional serialized metadata (optional).
+  String? get metadata => _metadata;
 
   /// The total energy burned during the workout.
   /// Might not be available for all workouts.
@@ -162,7 +178,11 @@ class WorkoutHealthValue extends HealthValue {
         json['totalDistanceUnit'] != null
             ? HealthDataUnit.values.firstWhere((element) =>
                 element.name == json['totalDistanceUnit'])
-            : null);
+            : null,
+        json['metadata'],
+        json['iOSNativeWorkoutActivityType'],
+        json['androidNativeWorkoutActivityType'],
+    );
   }
 
   @override
@@ -172,6 +192,9 @@ class WorkoutHealthValue extends HealthValue {
         'totalEnergyBurnedUnit': _totalEnergyBurnedUnit?.toString(),
         'totalDistance': _totalDistance,
         'totalDistanceUnit': _totalDistanceUnit?.toString(),
+        'iOSNativeWorkoutActivityType': _iOSNativeWorkoutActivityType,
+        'androidNativeWorkoutActivityType': _androidNativeWorkoutActivityType,
+        'metadata': _metadata,
       };
 
   @override
@@ -180,22 +203,36 @@ class WorkoutHealthValue extends HealthValue {
     totalEnergyBurned: $totalEnergyBurned,
     totalEnergyBurnedUnit: ${totalEnergyBurnedUnit?.toString()},
     totalDistance: $totalDistance,
+    metadata: $metadata,
+    iOSNativeWorkoutActivityType: $iOSNativeWorkoutActivityType,
+    androidNativeWorkoutActivityType: $androidNativeWorkoutActivityType,
     totalDistanceUnit: ${totalDistanceUnit?.toString()}""";
   }
 
   @override
-  bool operator ==(Object o) {
-    return o is WorkoutHealthValue &&
-        this.workoutActivityType == o.workoutActivityType &&
-        this.totalEnergyBurned == o.totalEnergyBurned &&
-        this.totalEnergyBurnedUnit == o.totalEnergyBurnedUnit &&
-        this.totalDistance == o.totalDistance &&
-        this.totalDistanceUnit == o.totalDistanceUnit;
-  }
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WorkoutHealthValue &&
+          runtimeType == other.runtimeType &&
+          _workoutActivityType == other._workoutActivityType &&
+          _iOSNativeWorkoutActivityType == other._iOSNativeWorkoutActivityType &&
+          _androidNativeWorkoutActivityType == other._androidNativeWorkoutActivityType &&
+          _totalEnergyBurned == other._totalEnergyBurned &&
+          _totalEnergyBurnedUnit == other._totalEnergyBurnedUnit &&
+          _totalDistance == other._totalDistance &&
+          _totalDistanceUnit == other._totalDistanceUnit &&
+          _metadata == other._metadata;
 
   @override
-  int get hashCode => Object.hash(workoutActivityType, totalEnergyBurned,
-      totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
+  int get hashCode =>
+      _workoutActivityType.hashCode ^
+      _iOSNativeWorkoutActivityType.hashCode ^
+      _androidNativeWorkoutActivityType.hashCode ^
+      _totalEnergyBurned.hashCode ^
+      _totalEnergyBurnedUnit.hashCode ^
+      _totalDistance.hashCode ^
+      _totalDistanceUnit.hashCode ^
+      _metadata.hashCode;
 }
 
 abstract class HealthValue {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -190,10 +191,21 @@ class _HealthAppState extends State<HealthApp> {
             );
           }
           if (p.value is WorkoutHealthValue) {
+            final item = p.value as WorkoutHealthValue;
+            final isAndroid = Platform.isAndroid;
             return ListTile(
-              title: Text(
-                  "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
-              trailing: Text('${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${p.typeString}: ${item.totalEnergyBurned} ${item.totalEnergyBurnedUnit?.name}",
+                  ),
+                  Text("Name: ${item.workoutActivityType.name}"),
+                  Text(
+                      "nativeWorkoutActivityType: ${isAndroid ? item.androidNativeWorkoutActivityType : item.iOSNativeWorkoutActivityType}"),
+                  Text("metadata: ${item.metadata}")
+                ],
+              ),
               subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
             );
           }
