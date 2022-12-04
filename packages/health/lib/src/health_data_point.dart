@@ -72,7 +72,7 @@ class HealthDataPoint {
   Map<String, dynamic> toJson() => {
         'value': value.toJson(),
         'data_type': type.typeToString(),
-        'unit': type.typeToString(),
+        'unit': unit.typeToString(),
         'date_from': dateFrom.toIso8601String(),
         'date_to': dateTo.toIso8601String(),
         'platform_type': PlatformTypeJsonValue[platform],
