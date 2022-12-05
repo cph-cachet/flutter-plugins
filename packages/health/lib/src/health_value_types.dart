@@ -180,6 +180,85 @@ class WorkoutHealthValue extends HealthValue {
       totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
 }
 
+/// A [HealthValue] object for ECGs
+///
+/// Parameters:
+/// * [voltageValues] - an array of [ElectrocardiogramVoltageValue]
+/// * [averageHeartRate] - the average heart rate during the ECG (in BPM)
+/// * [classification] - an [ElectrocardiogramClassification]
+class ElectrocardiogramHealthValue extends HealthValue {
+  List<ElectrocardiogramVoltageValue> voltageValues;
+  num? averageHeartRate;
+  ElectrocardiogramClassification classification;
+
+  ElectrocardiogramHealthValue({
+    required this.voltageValues,
+    required this.averageHeartRate,
+    required this.classification,
+  });
+
+  factory ElectrocardiogramHealthValue.fromJson(json) =>
+      ElectrocardiogramHealthValue(
+        voltageValues: (json['voltageValues'] as List)
+            .map((e) => ElectrocardiogramVoltageValue.fromJson(e))
+            .toList(),
+        averageHeartRate: json['averageHeartRate'],
+        classification: ElectrocardiogramClassification.values
+            .firstWhere((c) => c.value == json['classification']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'voltageValues':
+            voltageValues.map((e) => e.toJson()).toList(growable: false),
+        'averageHeartRate': averageHeartRate,
+        'classification': classification.value,
+      };
+
+  @override
+  bool operator ==(Object o) =>
+      o is ElectrocardiogramHealthValue &&
+      voltageValues == o.voltageValues &&
+      averageHeartRate == o.averageHeartRate &&
+      classification == o.classification;
+
+  @override
+  int get hashCode =>
+      Object.hash(voltageValues, averageHeartRate, classification);
+
+  @override
+  String toString() =>
+      '${voltageValues.length} values, $averageHeartRate BPM, $classification';
+}
+
+/// Single voltage value belonging to a [ElectrocardiogramHealthValue]
+class ElectrocardiogramVoltageValue extends HealthValue {
+  num voltage;
+  num timeSinceSampleStart;
+
+  ElectrocardiogramVoltageValue(this.voltage, this.timeSinceSampleStart);
+
+  factory ElectrocardiogramVoltageValue.fromJson(json) =>
+      ElectrocardiogramVoltageValue(
+          json['voltage'], json['timeSinceSampleStart']);
+
+  Map<String, dynamic> toJson() => {
+        'voltage': voltage,
+        'timeSinceSampleStart': timeSinceSampleStart,
+      };
+
+  @override
+  bool operator ==(Object o) =>
+      o is ElectrocardiogramVoltageValue &&
+      voltage == o.voltage &&
+      timeSinceSampleStart == o.timeSinceSampleStart;
+
+  @override
+  int get hashCode => Object.hash(voltage, timeSinceSampleStart);
+
+  @override
+  String toString() => voltage.toString();
+}
+
 abstract class HealthValue {
   Map<String, dynamic> toJson();
 }
