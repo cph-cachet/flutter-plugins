@@ -11,9 +11,11 @@ part of health;
 ///  * accessing total step counts using the [getTotalStepsInInterval] method.
 ///  * cleaning up duplicate data points via the [removeDuplicates] method.
 class HealthFactory {
+  static const EventChannel _logsChannel = const EventChannel('flutter_health_logs_channel');
   static const MethodChannel _channel = MethodChannel('flutter_health');
   String? _deviceId;
   final _deviceInfo = DeviceInfoPlugin();
+  HeathLogger? _logger;
 
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
@@ -23,6 +25,23 @@ class HealthFactory {
       _platformType == PlatformType.ANDROID
           ? _dataTypeKeysAndroid.contains(dataType)
           : _dataTypeKeysIOS.contains(dataType);
+
+  void setLogger(HeathLogger logger) {
+    if (_logger == null) {
+      _setLogsChannelListener();
+    }
+    _logger = logger;
+  }
+  void _setLogsChannelListener() {
+    _logsChannel.receiveBroadcastStream().listen(_onEvent, onError: _onError);
+  }
+  void _onEvent(Object? event) {
+    if (event == null) return;
+    _logger?.i(event.toString());
+  }
+  void _onError(Object error) {
+    _logger?.e(error.toString());
+  }
 
   /// Determines if the data types have been granted with the specified access rights.
   ///
@@ -49,6 +68,7 @@ class HealthFactory {
   ///   On Android, this function returns true or false, depending on whether the specified access right has been granted.
   static Future<bool?> hasPermissions(List<HealthDataType> types,
       {List<HealthDataAccess>? permissions}) async {
+
     if (permissions != null && permissions.length != types.length)
       throw ArgumentError(
           "The lists of types and permissions must be of same length.");
