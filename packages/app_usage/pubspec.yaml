@@ -1,6 +1,6 @@
 name: app_usage
 description: App usage plugin for Android only
-version: 2.1.0
+version: 2.1.1
 homepage: https://github.com/cph-cachet/flutter-plugins/blob/master/packages/app_usage
 
 environment:
