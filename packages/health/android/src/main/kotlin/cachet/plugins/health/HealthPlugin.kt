@@ -60,6 +60,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   private var WATER = "WATER"
   private var SLEEP = "SLEEP"
   private var WORKOUT = "WORKOUT"
+  private var TOTAL_NUTRIENTS = "TOTAL_NUTRIENTS"
 
   val workoutTypeMap = mapOf(
     "AEROBICS" to FitnessActivities.AEROBICS,
@@ -268,6 +269,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       WATER -> DataType.TYPE_HYDRATION
       SLEEP -> DataType.TYPE_SLEEP_SEGMENT
       WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
+      TOTAL_NUTRIENTS -> DataType.TYPE_NUTRITION
       else -> throw IllegalArgumentException("Unsupported dataType: $type")
     }
   }
@@ -290,6 +292,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       WATER -> Field.FIELD_VOLUME
       SLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
       WORKOUT -> Field.FIELD_ACTIVITY
+      TOTAL_NUTRIENTS -> Field.FIELD_NUTRIENTS
       else -> throw IllegalArgumentException("Unsupported dataType: $type")
     }
   }
@@ -310,6 +313,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       Field.FORMAT_FLOAT -> if (!isGlucose) value.asFloat() else value.asFloat() * MMOLL_2_MGDL
       Field.FORMAT_INT32 -> value.asInt()
       Field.FORMAT_STRING -> value.asString()
+      Field.FORMAT_MAP -> value.toString()
       else -> Log.e("Unsupported format:", value.format.toString())
     }
   }
@@ -556,6 +560,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
           .addOnSuccessListener(threadPoolExecutor!!, sleepDataHandler(type, result))
           .addOnFailureListener(errHandler(result))
       }
+      DataType.TYPE_NUTRITION -> {
+        Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+          .readData(
+            DataReadRequest.Builder()
+              .read(dataType)
+              .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+              .build()
+          )
+          .addOnSuccessListener(threadPoolExecutor!!, nutritionDataHandler(dataType, result))
+          .addOnFailureListener(errHandler(result))
+      }
       DataType.TYPE_ACTIVITY_SEGMENT -> {
         val readRequest: SessionReadRequest
         val readRequestBuilder = SessionReadRequest.Builder()
@@ -605,6 +620,27 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
   }
+
+  private fun nutritionDataHandler(dataType: DataType, result: Result) =
+    OnSuccessListener { response: DataReadResponse ->
+      /// Fetch all data points for the specified DataType
+      val dataSet = response.getDataSet(dataType)
+      /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+      val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
+        return@mapIndexed hashMapOf(
+          "nutrients" to getHealthDataValue(dataPoint, Field.FIELD_NUTRIENTS),
+          "food_item_name" to getHealthDataValue(dataPoint, Field.FIELD_FOOD_ITEM),
+          "meal_type" to getHealthDataValue(dataPoint, Field.FIELD_MEAL_TYPE),
+          "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+          "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+          "source_name" to (dataPoint.originalDataSource.appPackageName
+            ?: (dataPoint.originalDataSource.device?.model
+              ?: "")),
+          "source_id" to dataPoint.originalDataSource.streamIdentifier
+        )
+      }
+      activity!!.runOnUiThread { result.success(healthData) }
+    }
 
   private fun dataHandler(dataType: DataType, field: Field, result: Result) =
     OnSuccessListener { response: DataReadResponse ->

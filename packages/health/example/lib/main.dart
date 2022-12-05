@@ -39,12 +39,15 @@ class _HealthAppState extends State<HealthApp> {
 
     // define the types to get
     final types = [
-      HealthDataType.STEPS,
-      HealthDataType.WEIGHT,
-      HealthDataType.HEIGHT,
-      HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.WORKOUT,
-      HealthDataType.SLEEP,
+      // HealthDataType.TOTAL_NUTRIENTS,
+      HealthDataType.DIETARY_FATS_CONSUMED,
+      HealthDataType.DIETARY_PROTEIN_CONSUMED,
+      HealthDataType.DIETARY_ENERGY_CONSUMED,
+      // HealthDataType.WEIGHT,
+      // HealthDataType.HEIGHT,
+      // HealthDataType.BLOOD_GLUCOSE,
+      // HealthDataType.WORKOUT,
+      // HealthDataType.SLEEP,
       // Uncomment these lines on iOS - only available on iOS
       // HealthDataType.AUDIOGRAM
     ];
@@ -54,9 +57,9 @@ class _HealthAppState extends State<HealthApp> {
       HealthDataAccess.READ,
       HealthDataAccess.READ,
       HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
+      // HealthDataAccess.READ,
+      // HealthDataAccess.READ,
+      // HealthDataAccess.READ,
       // HealthDataAccess.READ,
     ];
 
@@ -66,8 +69,15 @@ class _HealthAppState extends State<HealthApp> {
     // requesting access to the data types before reading them
     // note that strictly speaking, the [permissions] are not
     // needed, since we only want READ access.
-    bool requested = await health.requestAuthorization(types, permissions: permissions);
-    print('requested: $requested');
+
+    bool requested = false;
+    try {
+      requested = await health.requestAuthorization(types, permissions: permissions);
+      print('requested: $requested');
+    } catch (error) {
+      requested = false;
+      print("Exception in getHealthDataFromTypes: $error");
+    }
 
     // If we are trying to read Step Count, Workout, Sleep or other data that requires
     // the ACTIVITY_RECOGNITION permission, we need to request the permission first.

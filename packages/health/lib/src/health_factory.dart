@@ -101,6 +101,14 @@ class HealthFactory {
           'The length of [types] must be same as that of [permissions].');
     }
 
+    for(var dataType in types){
+      // If not implemented on platform, throw an exception
+      if (!isDataTypeAvailable(dataType)) {
+        throw HealthException(
+            dataType, 'Not available on platform $_platformType');
+      }
+    }
+
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
         ? List<int>.filled(types.length, HealthDataAccess.READ.index,
@@ -362,7 +370,7 @@ class HealthFactory {
         value = AudiogramHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.WORKOUT) {
         value = WorkoutHealthValue.fromJson(e);
-      } else if (dataType == HealthDataType.SLEEP) {
+      } else if (dataType == HealthDataType.SLEEP || dataType == HealthDataType.TOTAL_NUTRIENTS) {
         value = RawValue.fromJson(e?.cast<String, dynamic>());
       } else {
         value = NumericHealthValue(e['value']);

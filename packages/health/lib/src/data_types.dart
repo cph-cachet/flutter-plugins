@@ -58,6 +58,7 @@ enum HealthDataType {
   LOW_HEART_RATE_EVENT,
   IRREGULAR_HEART_RATE_EVENT,
   ELECTRODERMAL_ACTIVITY,
+  TOTAL_NUTRIENTS,
 }
 
 enum HealthDataAccess {
@@ -128,6 +129,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.SLEEP,
   HealthDataType.WATER,
   HealthDataType.WORKOUT,
+  HealthDataType.TOTAL_NUTRIENTS,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
@@ -177,6 +179,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECOND,
+  HealthDataType.TOTAL_NUTRIENTS: HealthDataUnit.NO_UNIT,
 };
 
 const PlatformTypeJsonValue = {
