@@ -71,7 +71,7 @@ Step 1: Append the Info.plist with the following 2 entries
 <string>We will sync your data with the Apple Health app to give you better insights</string>
 ```
 
-Step 2: Enable "HealthKit" inside the "Capabilities" tab.
+Step 2: Open your Flutter project in Xcode by right clicking on the "ios" folder and selecting "Open in Xcode". Next, enable "HealthKit" by adding a capability inside the "Signing & Capabilities" tab of the Runner target's settings.
 
 ### Google Fit (Android)
 
