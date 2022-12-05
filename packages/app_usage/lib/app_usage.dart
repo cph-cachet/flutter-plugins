@@ -65,7 +65,7 @@ class AppUsage {
   AppUsage._();
   factory AppUsage() => _instance;
 
-  Future<List<AppUsageInfo>> getAppUsage(
+  static Future<List<AppUsageInfo>> getAppUsage(
     DateTime startDate,
     DateTime endDate,
   ) async {
