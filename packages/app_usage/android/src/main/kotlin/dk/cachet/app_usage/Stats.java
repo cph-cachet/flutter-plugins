@@ -32,7 +32,7 @@ public class Stats {
     }
 
     /** Produces a map for each installed app package name,
-     * with the corresponding time in foreground in seconds for that application.
+     *  with the corresponding time in foreground in seconds for that application.
      */
     @SuppressWarnings("ResourceType")
     public static HashMap<String, List<Double>> getUsageMap(Context context, long start, long end) {
