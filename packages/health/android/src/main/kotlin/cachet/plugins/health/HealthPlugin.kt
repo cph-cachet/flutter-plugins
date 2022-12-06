@@ -65,6 +65,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   private var SLEEP = "SLEEP"
   private var WORKOUT = "WORKOUT"
   private var TOTAL_NUTRIENTS = "TOTAL_NUTRIENTS"
+  private var MENSTRUATION_DATA = "MENSTRUATION_DATA"
 
   val workoutTypeMap = mapOf(
     "AEROBICS" to FitnessActivities.AEROBICS,
@@ -282,6 +283,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       SLEEP -> DataType.TYPE_SLEEP_SEGMENT
       WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
       TOTAL_NUTRIENTS -> DataType.TYPE_NUTRITION
+      MENSTRUATION_DATA -> HealthDataTypes.TYPE_MENSTRUATION
       else -> throw IllegalArgumentException("Unsupported dataType: $type")
     }
   }
@@ -297,6 +299,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       BODY_TEMPERATURE -> HealthFields.FIELD_BODY_TEMPERATURE
       BLOOD_PRESSURE_SYSTOLIC -> HealthFields.FIELD_BLOOD_PRESSURE_SYSTOLIC
       BLOOD_PRESSURE_DIASTOLIC -> HealthFields.FIELD_BLOOD_PRESSURE_DIASTOLIC
+      MENSTRUATION_DATA -> HealthFields.FIELD_MENSTRUAL_FLOW
       BLOOD_OXYGEN -> HealthFields.FIELD_OXYGEN_SATURATION
       BLOOD_GLUCOSE -> HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
       MOVE_MINUTES -> Field.FIELD_DURATION

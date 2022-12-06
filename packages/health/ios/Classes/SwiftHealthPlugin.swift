@@ -55,6 +55,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_MILD = "HEADACHE_MILD"
     let HEADACHE_MODERATE = "HEADACHE_MODERATE"
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
+    let MENSTRUATION_DATA = "MENSTRUATION_DATA"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -713,6 +714,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[FLIGHTS_CLIMBED] = HKSampleType.quantityType(forIdentifier: .flightsClimbed)!
             dataTypesDict[WATER] = HKSampleType.quantityType(forIdentifier: .dietaryWater)!
             dataTypesDict[MINDFULNESS] = HKSampleType.categoryType(forIdentifier: .mindfulSession)!
+            dataTypesDict[MENSTRUATION_DATA] = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
             dataTypesDict[SLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
             dataTypesDict[WORKOUT] = HKSampleType.workoutType()

@@ -40,9 +40,9 @@ class _HealthAppState extends State<HealthApp> {
     // define the types to get
     final types = [
       // HealthDataType.TOTAL_NUTRIENTS,
-      HealthDataType.DIETARY_FATS_CONSUMED,
-      HealthDataType.DIETARY_PROTEIN_CONSUMED,
-      HealthDataType.DIETARY_ENERGY_CONSUMED,
+      // HealthDataType.DIETARY_FATS_CONSUMED,
+      // HealthDataType.DIETARY_PROTEIN_CONSUMED,
+      HealthDataType.MENSTRUATION_DATA,
       // HealthDataType.WEIGHT,
       // HealthDataType.HEIGHT,
       // HealthDataType.BLOOD_GLUCOSE,
@@ -55,8 +55,8 @@ class _HealthAppState extends State<HealthApp> {
     // with coresponsing permissions
     final permissions = [
       HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
+      // HealthDataAccess.READ,
+      // HealthDataAccess.READ,
       // HealthDataAccess.READ,
       // HealthDataAccess.READ,
       // HealthDataAccess.READ,
