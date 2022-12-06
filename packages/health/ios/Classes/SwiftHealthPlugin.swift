@@ -3,6 +3,7 @@ import UIKit
 import HealthKit
 
 public class SwiftHealthPlugin: NSObject, FlutterPlugin {
+    static let logStreamHandler = LogStreamHandler()
     
     let healthStore = HKHealthStore()
     var healthDataTypes = [HKSampleType]()
@@ -12,6 +13,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     var dataTypesDict: [String: HKSampleType] = [:]
     var unitDict: [String: HKUnit] = [:]
     var workoutActivityTypeMap: [String: HKWorkoutActivityType] = [:]
+    
     
     // Health Data Type Keys
     let ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
@@ -113,6 +115,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let channel = FlutterMethodChannel(name: "flutter_health", binaryMessenger: registrar.messenger())
         let instance = SwiftHealthPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
+        
+        let logChannge = FlutterEventChannel(name: "flutter_health_logs_channel",
+                                             binaryMessenger: registrar.messenger())
+        logChannge.setStreamHandler(logStreamHandler)
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -754,6 +760,25 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
 }
 
+class LogStreamHandler: NSObject, FlutterStreamHandler {
+    var eventSink: FlutterEventSink?
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        eventSink = events
+        return nil;
+    }
+    
+    public func sendInfo(_ message: String) {
+        eventSink?(message)
+    }
 
+    public func sendError(_ message: String) {
+        eventSink?(FlutterError(code: "Health_Error", message: message, details: nil))
+    }
 
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        eventSink  = nil
+        return nil
 
+    }
+}

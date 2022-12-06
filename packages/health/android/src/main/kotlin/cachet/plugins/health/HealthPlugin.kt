@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.util.Log
-import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
@@ -22,6 +21,7 @@ import com.google.android.gms.tasks.OnSuccessListener
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -34,14 +34,18 @@ import java.util.concurrent.*
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val CHANNEL_NAME = "flutter_health"
+const val LOGGER_CHANNEL_NAME = "flutter_health_logs_channel"
 const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
 
 class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandler,
+  EventChannel.StreamHandler,
   ActivityResultListener, Result, ActivityAware, FlutterPlugin {
   private var result: Result? = null
   private var handler: Handler? = null
   private var activity: Activity? = null
   private var threadPoolExecutor: ExecutorService? = null
+  private var logsChannel: EventChannel? = null
+  private var logger: EventChannel.EventSink? = null
 
   private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
   private var HEIGHT = "HEIGHT"
@@ -170,11 +174,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
     channel?.setMethodCallHandler(this)
     threadPoolExecutor = Executors.newFixedThreadPool(4)
+
+    logsChannel = EventChannel(flutterPluginBinding.binaryMessenger, LOGGER_CHANNEL_NAME)
+    logsChannel?.setStreamHandler(this)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    channel?.setMethodCallHandler(null)
     channel = null
     activity = null
+
+    logsChannel?.setStreamHandler(null)
+    logsChannel = null
+
     threadPoolExecutor!!.shutdown()
     threadPoolExecutor = null
   }
@@ -918,6 +930,27 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       "hasPermissions" -> hasPermissions(call, result)
       "writeWorkoutData" -> writeWorkoutData(call, result)
       else -> result.notImplemented()
+    }
+  }
+
+  /// Handle calls from the EventChannel.StreamHandler
+  override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+    this.logger = events
+  }
+
+  override fun onCancel(arguments: Any?) {
+    this.logger?.endOfStream()
+  }
+
+  private fun sendInfoLog(message: String) {
+    activity?.runOnUiThread {
+      logger?.success(message)
+    }
+  }
+
+  private fun sendErrorLog(message: String) {
+    activity?.runOnUiThread {
+      logger?.error("Health_Error", message, null)
     }
   }
 
