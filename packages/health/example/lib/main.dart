@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -42,19 +42,24 @@ class _HealthAppState extends State<HealthApp> {
       // HealthDataType.TOTAL_NUTRIENTS,
       // HealthDataType.DIETARY_FATS_CONSUMED,
       // HealthDataType.DIETARY_PROTEIN_CONSUMED,
-      HealthDataType.MENSTRUATION_DATA,
+      // HealthDataType.MENSTRUATION_DATA,
       // HealthDataType.WEIGHT,
       // HealthDataType.HEIGHT,
       // HealthDataType.BLOOD_GLUCOSE,
-      // HealthDataType.WORKOUT,
-      // HealthDataType.SLEEP,
+      HealthDataType.WORKOUT,
+      HealthDataType.SLEEP,
       // Uncomment these lines on iOS - only available on iOS
-      // HealthDataType.AUDIOGRAM
+      // HealthDataType.AUDIOGRAM,
+      HealthDataType.STEPS,
     ];
 
     // with coresponsing permissions
     final permissions = [
+      // HealthDataAccess.READ,
       HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
+      // HealthDataAccess.READ,
       // HealthDataAccess.READ,
       // HealthDataAccess.READ,
       // HealthDataAccess.READ,
@@ -65,7 +70,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(days: 30));
+    final yesterday = now.subtract(Duration(days: 1));
     // requesting access to the data types before reading them
     // note that strictly speaking, the [permissions] are not
     // needed, since we only want READ access.
@@ -73,7 +78,6 @@ class _HealthAppState extends State<HealthApp> {
     bool requested = false;
     try {
       requested = await health.requestAuthorization(types, permissions: permissions);
-      print('requested: $requested');
     } catch (error) {
       requested = false;
       print("Exception in getHealthDataFromTypes: $error");
@@ -91,6 +95,7 @@ class _HealthAppState extends State<HealthApp> {
       try {
         // fetch health data
         List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(yesterday, now, types);
+
         // save all the new data points (only the first 200)
         _healthDataList.addAll((healthData.length < 200) ? healthData : healthData.sublist(0, 200));
       } catch (error) {
@@ -193,36 +198,11 @@ class _HealthAppState extends State<HealthApp> {
         itemCount: _healthDataList.length,
         itemBuilder: (_, index) {
           HealthDataPoint p = _healthDataList[index];
-          if (p.value is AudiogramHealthValue) {
-            return ListTile(
-              title: Text("${p.typeString}: ${p.value}"),
-              trailing: Text('${p.unitString}'),
-              subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
-            );
-          }
-          if (p.value is WorkoutHealthValue) {
-            final item = p.value as WorkoutHealthValue;
-            final isAndroid = Platform.isAndroid;
-            return ListTile(
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "${p.typeString}: ${item.totalEnergyBurned} ${item.totalEnergyBurnedUnit?.name}",
-                  ),
-                  Text("Name: ${item.workoutActivityType.name}"),
-                  Text(
-                      "nativeWorkoutActivityType: ${isAndroid ? item.androidNativeWorkoutActivityType : item.iOSNativeWorkoutActivityType}"),
-                  Text("metadata: ${item.metadata}")
-                ],
-              ),
-              subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
-            );
-          }
+          final str = json.encode(p);
           return ListTile(
-            title: Text("${p.typeString}: ${p.value}"),
-            trailing: Text('${p.unitString}'),
-            subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+            title: Text(""),
+            trailing: Text(''),
+            subtitle: Text('$str'),
           );
         });
   }

@@ -1,6 +1,6 @@
 part of health;
 
-abstract class HeathLogger {
+abstract class HealthLogger {
   void i(String message);
 
   void d(String message);

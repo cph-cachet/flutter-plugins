@@ -28,9 +28,9 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.*
-
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val CHANNEL_NAME = "flutter_health"
@@ -66,6 +66,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   private var WORKOUT = "WORKOUT"
   private var TOTAL_NUTRIENTS = "TOTAL_NUTRIENTS"
   private var MENSTRUATION_DATA = "MENSTRUATION_DATA"
+
+  private var iso8601DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 
   val workoutTypeMap = mapOf(
     "AEROBICS" to FitnessActivities.AEROBICS,
@@ -341,8 +343,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     val type = call.argument<String>("dataTypeKey")!!
-    val startTime = call.argument<Long>("startTime")!!
-    val endTime = call.argument<Long>("endTime")!!
+    val startTime = call.argument<Long>("startTimeSec")!!
+    val endTime = call.argument<Long>("endTimeSec")!!
     val value = call.argument<Float>("value")!!
 
     // Look up data type and unit for the type key
@@ -361,10 +363,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     val builder = if (startTime == endTime)
       DataPoint.builder(dataSource)
-        .setTimestamp(startTime, TimeUnit.MILLISECONDS)
+        .setTimestamp(startTime, TimeUnit.SECONDS)
     else
       DataPoint.builder(dataSource)
-        .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+        .setTimeInterval(startTime, endTime, TimeUnit.SECONDS)
 
     // Conversion is needed because glucose is stored as mmoll in Google Fit;
     // while mgdl is used for glucose in this plugin.
@@ -407,8 +409,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     val type = call.argument<String>("activityType")!!
-    val startTime = call.argument<Long>("startTime")!!
-    val endTime = call.argument<Long>("endTime")!!
+    val startTime = call.argument<Long>("startTimeSec")!!
+    val endTime = call.argument<Long>("endTimeSec")!!
     val totalEnergyBurned = call.argument<Int>("totalEnergyBurned")
     val totalDistance = call.argument<Int>("totalDistance")
 
@@ -423,7 +425,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       .build()
     // Create the Activity Segment
     val activityDataPoint = DataPoint.builder(activitySegmentDataSource)
-      .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+      .setTimeInterval(startTime, endTime, TimeUnit.SECONDS)
       .setActivityField(Field.FIELD_ACTIVITY, activityType)
       .build()
     // Add DataPoint to DataSet
@@ -443,7 +445,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         .build()
 
       val distanceDataPoint = DataPoint.builder(distanceDataSource)
-        .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+        .setTimeInterval(startTime, endTime, TimeUnit.SECONDS)
         .setField(Field.FIELD_DISTANCE, totalDistance.toFloat())
         .build()
       // Create a data set
@@ -463,7 +465,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         .build()
 
       val energyDataPoint = DataPoint.builder(energyDataSource)
-        .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+        .setTimeInterval(startTime, endTime, TimeUnit.SECONDS)
         .setField(Field.FIELD_CALORIES, totalEnergyBurned.toFloat())
         .build()
       // Create a data set
@@ -478,8 +480,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       .setDescription("")
       .setIdentifier(UUID.randomUUID().toString())
       .setActivity(activityType)
-      .setStartTime(startTime, TimeUnit.MILLISECONDS)
-      .setEndTime(endTime, TimeUnit.MILLISECONDS)
+      .setStartTime(startTime, TimeUnit.SECONDS)
+      .setEndTime(endTime, TimeUnit.SECONDS)
       .build()
     // Build a session and add the values provided
     val sessionInsertRequestBuilder = SessionInsertRequest.Builder()
@@ -540,8 +542,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     val type = call.argument<String>("dataTypeKey")!!
-    val startTime = call.argument<Long>("startTime")!!
-    val endTime = call.argument<Long>("endTime")!!
+    val startTime = call.argument<Long>("startTimeSec")!!
+    val endTime = call.argument<Long>("endTimeSec")!!
     // Look up data type and unit for the type key
     val dataType = keyToHealthDataType(type)
     val field = getField(type)
@@ -565,7 +567,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       DataType.TYPE_SLEEP_SEGMENT -> {
         // request to the sessions for sleep data
         val request = SessionReadRequest.Builder()
-          .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+          .setTimeInterval(startTime, endTime, TimeUnit.SECONDS)
           .enableServerQueries()
           .readSessionsFromAllApps()
           .includeSleepSessions()
@@ -580,7 +582,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
           .readData(
             DataReadRequest.Builder()
               .read(dataType)
-              .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+              .setTimeRange(startTime, endTime, TimeUnit.SECONDS)
               .build()
           )
           .addOnSuccessListener(threadPoolExecutor!!, nutritionDataHandler(dataType, result))
@@ -589,7 +591,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       DataType.TYPE_ACTIVITY_SEGMENT -> {
         val readRequest: SessionReadRequest
         val readRequestBuilder = SessionReadRequest.Builder()
-            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+            .setTimeInterval(startTime, endTime, TimeUnit.SECONDS)
             .enableServerQueries()
             .readSessionsFromAllApps()
             .includeActivitySessions()
@@ -626,7 +628,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
           .readData(
             DataReadRequest.Builder()
               .read(dataType)
-              .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+              .setTimeRange(startTime, endTime, TimeUnit.SECONDS)
               .build()
           )
           .addOnSuccessListener(threadPoolExecutor!!, dataHandler(dataType, field, result))
@@ -642,16 +644,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       val dataSet = response.getDataSet(dataType)
       /// For each data point, extract the contents and send them to Flutter, along with date and unit.
       val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
+        var startTime = Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS))
+        var endTime = Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS))
+
         return@mapIndexed hashMapOf(
           "nutrients" to getHealthDataValue(dataPoint, Field.FIELD_NUTRIENTS),
-          "food_item_name" to getHealthDataValue(dataPoint, Field.FIELD_FOOD_ITEM),
-          "meal_type" to getHealthDataValue(dataPoint, Field.FIELD_MEAL_TYPE),
-          "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-          "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-          "source_name" to (dataPoint.originalDataSource.appPackageName
+          "foodItem" to getHealthDataValue(dataPoint, Field.FIELD_FOOD_ITEM),
+          "mealType" to getHealthDataValue(dataPoint, Field.FIELD_MEAL_TYPE),
+          "startTime" to iso8601DateFormat.format(startTime),
+          "endTime" to iso8601DateFormat.format(endTime),
+          "deviceModel" to (dataPoint.originalDataSource.appPackageName
             ?: (dataPoint.originalDataSource.device?.model
               ?: "")),
-          "source_id" to dataPoint.originalDataSource.streamIdentifier
+          "sourceId" to dataPoint.originalDataSource.streamIdentifier
         )
       }
       activity!!.runOnUiThread { result.success(healthData) }
@@ -663,14 +668,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       val dataSet = response.getDataSet(dataType)
       /// For each data point, extract the contents and send them to Flutter, along with date and unit.
       val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
+
+        val startTime = Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS))
+        val endTime =  Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS))
+
         return@mapIndexed hashMapOf(
           "value" to getHealthDataValue(dataPoint, field),
-          "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-          "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-          "source_name" to (dataPoint.originalDataSource.appPackageName
+          "startTime" to iso8601DateFormat.format(startTime),
+          "endTime" to iso8601DateFormat.format(endTime),
+          "deviceModel" to (dataPoint.originalDataSource.appPackageName
             ?: (dataPoint.originalDataSource.device?.model
               ?: "")),
-          "source_id" to dataPoint.originalDataSource.streamIdentifier
+          "sourceId" to dataPoint.originalDataSource.streamIdentifier
         )
       }
       activity!!.runOnUiThread { result.success(healthData) }
@@ -688,28 +697,28 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       val healthData: MutableList<Map<String, Any?>> = mutableListOf()
       for (session in response.sessions) {
         if (type == SLEEP) {
+          val startTime = Date(session.getStartTime(TimeUnit.MILLISECONDS))
+          val endTime = Date(session.getEndTime(TimeUnit.MILLISECONDS))
+
           healthData.add(
             hashMapOf(
               // Total duration of sleep in minutes
-              "sleepSessionDuration" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(TimeUnit.MINUTES),
-              "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-              "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-              "unit" to "MINUTES",
-              "source_name" to session.appPackageName,
-              "source_id" to session.identifier,
+              "startTime" to iso8601DateFormat.format(startTime),
+              "endTime" to iso8601DateFormat.format(endTime),
+              "appPackageName" to session.appPackageName,
+              "identifier" to session.identifier,
               // If the sleep session has finer granularity sub-components, extract them:
-              "sleepStages" to response.getDataSet(session).map { dataSet ->
+              "dataSet" to response.getDataSet(session).map { dataSet ->
                 dataSet.dataPoints.map { point ->
                   // Sleep stage stored as integer, in order.
                   val sleepStageVal = point.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt()
-                  val segmentStart = point.getStartTime(TimeUnit.MILLISECONDS)
-                  val segmentEnd = point.getEndTime(TimeUnit.MILLISECONDS)
+                  val segmentStart = Date(point.getStartTime(TimeUnit.MILLISECONDS))
+                  val segmentEnd = Date(point.getEndTime(TimeUnit.MILLISECONDS))
                   hashMapOf(
                     // Sleep stage stored as integer, in order.
                     "value" to sleepStageVal,
-                    "date_from" to segmentStart,
-                    "date_to" to segmentEnd,
-                    "unit" to "MINUTES"
+                    "startTime" to iso8601DateFormat.format(segmentStart),
+                    "endTime" to iso8601DateFormat.format(segmentEnd),
                   )
                 }
               }
@@ -739,20 +748,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             }
           }
         }
+        var startTime = Date(session.getStartTime(TimeUnit.MILLISECONDS))
+        var endTime = Date(session.getEndTime(TimeUnit.MILLISECONDS))
+
         healthData.add(
           hashMapOf(
             "workoutActivityType" to workoutTypeMap.filterValues { it == session.activity }.keys.first(),
-            "androidNativeWorkoutActivityType" to session.activity,
-            "metadata" to session.description,
+            "activity" to session.activity,
+            "description" to session.description,
             "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
-            "totalEnergyBurnedUnit" to "KILOCALORIE",
             "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
-            "totalDistanceUnit" to "METER",
-            "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-            "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-            "unit" to "MINUTES",
-            "source_name" to session.appPackageName,
-            "source_id" to session.identifier
+            "startTime" to iso8601DateFormat.format(startTime),
+            "endTime" to iso8601DateFormat.format(endTime),
+            "sessionAppPackageName" to session.appPackageName,
+            "sessionIdentifier" to session.identifier
           )
         )
       }
@@ -846,8 +855,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   }
 
   private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
-    val start = call.argument<Long>("startTime")!!
-    val end = call.argument<Long>("endTime")!!
+    val start = call.argument<Long>("startTimeSec")!!
+    val end = call.argument<Long>("endTimeSec")!!
 
     val activity = activity ?: return
 
@@ -901,9 +910,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
           val count = dp.getValue(aggregatedDataType.fields[0])
 
-          val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
+          val startTime = dp.getStartTime(TimeUnit.SECONDS)
           val startDate = Date(startTime)
-          val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
+          val endDate = Date(dp.getEndTime(TimeUnit.SECONDS))
           Log.i("FLUTTER_HEALTH::SUCCESS", "returning $count steps for $startDate - $endDate")
           map[startTime] = count.asInt()
         } else {

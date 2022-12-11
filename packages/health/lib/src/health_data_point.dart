@@ -1,118 +1,25 @@
 part of health;
 
-/// A [HealthDataPoint] object corresponds to a data point capture from
-/// GoogleFit or Apple HealthKit with a [HealthValue] as value.
-class HealthDataPoint {
-  HealthValue _value;
-  HealthDataType _type;
-  HealthDataUnit _unit;
-  DateTime _dateFrom;
-  DateTime _dateTo;
-  PlatformType _platform;
-  String _deviceId;
-  String _sourceId;
-  String _sourceName;
+class HealthDataPoint extends Equatable {
+  final _map = <String, dynamic>{};
 
-  HealthDataPoint(
-      this._value,
-      this._type,
-      this._unit,
-      this._dateFrom,
-      this._dateTo,
-      this._platform,
-      this._deviceId,
-      this._sourceId,
-      this._sourceName) {
-    // set the value to minutes rather than the category
-    // returned by the native API
-    if (type == HealthDataType.MINDFULNESS ||
-        type == HealthDataType.HEADACHE_UNSPECIFIED ||
-        type == HealthDataType.HEADACHE_NOT_PRESENT ||
-        type == HealthDataType.HEADACHE_MILD ||
-        type == HealthDataType.HEADACHE_MODERATE ||
-        type == HealthDataType.HEADACHE_SEVERE) {
-      this._value = _convertMinutes();
+  dynamic operator [](String key) => _map[key];
+  dynamic get(String key) => _map[key];
+
+  void operator []=(String key, dynamic value) => _map[key] = value;
+  void addAll(Map<String, dynamic> other) => _map.addAll(other);
+
+  Map<String, dynamic> toJson() => _map;
+
+  @override
+  List<Object?> get props {
+    try {
+      final str = json.encode(_map);
+      return [str];
+    }
+    catch (e) {
+      // cannot convert to json. Invalid dataPoint
+      return [];
     }
   }
-
-  NumericHealthValue _convertMinutes() {
-    int ms = dateTo.millisecondsSinceEpoch - dateFrom.millisecondsSinceEpoch;
-    return NumericHealthValue(ms / (1000 * 60));
-  }
-
-  /// Converts the [HealthDataPoint] to a json object
-  Map<String, dynamic> toJson() => {
-        'value': value.toJson(),
-        'data_type': type.name,
-        'unit': type.name,
-        'date_from': dateFrom.toIso8601String(),
-        'date_to': dateTo.toIso8601String(),
-        'platform_type': PlatformTypeJsonValue[platform],
-        'device_id': deviceId,
-        'source_id': sourceId,
-        'source_name': sourceName
-      };
-
-  @override
-  String toString() => """${this.runtimeType} - 
-    value: ${value.toString()},
-    unit: $unit,
-    dateFrom: $dateFrom,
-    dateTo: $dateTo,
-    dataType: $type,
-    platform: $platform,
-    deviceId: $deviceId,
-    sourceId: $sourceId,
-    sourceName: $sourceName""";
-
-  // / The quantity value of the data point
-  HealthValue get value => _value;
-
-  /// The start of the time interval
-  DateTime get dateFrom => _dateFrom;
-
-  /// The end of the time interval
-  DateTime get dateTo => _dateTo;
-
-  /// The type of the data point
-  HealthDataType get type => _type;
-
-  /// The unit of the data point
-  HealthDataUnit get unit => _unit;
-
-  /// The software platform of the data point
-  PlatformType get platform => _platform;
-
-  /// The data point type as a string
-  String get typeString => _type.name;
-
-  /// The data point unit as a string
-  String get unitString => _unit.name;
-
-  /// The id of the device from which the data point was fetched.
-  String get deviceId => _deviceId;
-
-  /// The id of the source from which the data point was fetched.
-  String get sourceId => _sourceId;
-
-  /// The name of the source from which the data point was fetched.
-  String get sourceName => _sourceName;
-
-  @override
-  bool operator ==(Object o) {
-    return o is HealthDataPoint &&
-        this.value == o.value &&
-        this.unit == o.unit &&
-        this.dateFrom == o.dateFrom &&
-        this.dateTo == o.dateTo &&
-        this.type == o.type &&
-        this.platform == o.platform &&
-        this.deviceId == o.deviceId &&
-        this.sourceId == o.sourceId &&
-        this.sourceName == o.sourceName;
-  }
-
-  @override
-  int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type, platform,
-      deviceId, sourceId, sourceName);
 }
