@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -70,7 +71,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(days: 1));
+    final yesterday = now.subtract(Duration(days: 10));
     // requesting access to the data types before reading them
     // note that strictly speaking, the [permissions] are not
     // needed, since we only want READ access.
@@ -96,14 +97,15 @@ class _HealthAppState extends State<HealthApp> {
         // fetch health data
         List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(yesterday, now, types);
 
+        // filter out duplicates
+        _healthDataList.removeWhere(
+            (shownElement) => healthData.indexWhere((newElement) => mapEquals(shownElement, newElement)) != -1);
+
         // save all the new data points (only the first 200)
         _healthDataList.addAll((healthData.length < 200) ? healthData : healthData.sublist(0, 200));
       } catch (error) {
         print("Exception in getHealthDataFromTypes: $error");
       }
-
-      // filter out duplicates
-      _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
 
       // print the results
       _healthDataList.forEach((x) => print(x));

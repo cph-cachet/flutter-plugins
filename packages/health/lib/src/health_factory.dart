@@ -260,12 +260,7 @@ class HealthFactory {
       dataPoints.addAll(result);
     }
 
-    const int threshold = 100;
-    if (dataPoints.length > threshold) {
-      return compute(removeDuplicates, dataPoints);
-    }
-
-    return removeDuplicates(dataPoints);
+    return dataPoints;
   }
 
   /// Prepares a query, i.e. checks if the types are available, etc.
@@ -291,7 +286,7 @@ class HealthFactory {
       'startTimeSec': startTime.millisecondsSinceEpoch ~/ 1000,
       'endTimeSec': endTime.millisecondsSinceEpoch ~/ 1000,
     };
-    final fetchedDataPoints = await _channel.invokeMethod('getData', args);
+    List<Map>? fetchedDataPoints = await _channel.invokeListMethod('getData', args);
     if (fetchedDataPoints != null) {
       return _parse(dataType: dataType, dataPoints: fetchedDataPoints);
     } else {
@@ -299,31 +294,20 @@ class HealthFactory {
     }
   }
 
-  List<HealthDataPoint> _parse({required HealthDataType dataType, required List<Object?> dataPoints}) {
+  List<HealthDataPoint> _parse({required HealthDataType dataType, required List<Map> dataPoints}) {
+
+    final healthDataPoints = dataPoints.map((e) => e.cast<String, dynamic>()).toList();
+
     final dataToAdd = {
       "dataType": dataType.name,
       "deviceId": "$_deviceId",
     };
 
-    final list = dataPoints.fold<List<HealthDataPoint>>([], (previousValue, element) {
-      if (element is Map) {
-        final healthDataPoint = HealthDataPoint();
-        element.forEach((key, value) {
-          if (key is String) {
-            healthDataPoint[key] = value;
-          }
-        });
-        previousValue.add(healthDataPoint..addAll(dataToAdd));
-      }
-      return previousValue;
+    healthDataPoints.forEach((element) {
+        element.addAll(dataToAdd);
     });
-    return removeDuplicates(list);
-  }
 
-  /// Given an array of [HealthDataPoint]s, this method will return the array
-  /// without any duplicates.
-  static List<HealthDataPoint> removeDuplicates(List<HealthDataPoint> points) {
-    return LinkedHashSet.of(points).toList();
+    return healthDataPoints;
   }
 
   /// Get the total number of steps within a specific time period.
