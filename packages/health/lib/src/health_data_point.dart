@@ -54,10 +54,10 @@ class HealthDataPoint {
 
     return HealthDataPoint(
         healthValue,
-        HealthDataType.values.firstWhere(
-            (element) => element.typeToString() == json['data_type']),
+        HealthDataType.values
+            .firstWhere((element) => element.name == json['data_type']),
         HealthDataUnit.values
-            .firstWhere((element) => element.typeToString() == json['unit']),
+            .firstWhere((element) => element.name == json['unit']),
         DateTime.parse(json['date_from']),
         DateTime.parse(json['date_to']),
         PlatformTypeJsonValue.keys.toList()[PlatformTypeJsonValue.values
@@ -71,8 +71,8 @@ class HealthDataPoint {
   /// Converts the [HealthDataPoint] to a json object
   Map<String, dynamic> toJson() => {
         'value': value.toJson(),
-        'data_type': type.typeToString(),
-        'unit': unit.typeToString(),
+        'data_type': type.name,
+        'unit': unit.name,
         'date_from': dateFrom.toIso8601String(),
         'date_to': dateTo.toIso8601String(),
         'platform_type': PlatformTypeJsonValue[platform],
@@ -112,10 +112,10 @@ class HealthDataPoint {
   PlatformType get platform => _platform;
 
   /// The data point type as a string
-  String get typeString => _type.typeToString();
+  String get typeString => _type.name;
 
   /// The data point unit as a string
-  String get unitString => _unit.typeToString();
+  String get unitString => _unit.name;
 
   /// The id of the device from which the data point was fetched.
   String get deviceId => _deviceId;

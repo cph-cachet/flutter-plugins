@@ -59,7 +59,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(days: 1));
+    final yesterday = now.subtract(Duration(hours: 24));
     // requesting access to the data types before reading them
     // note that strictly speaking, the [permissions] are not
     // needed, since we only want READ access.
@@ -154,7 +154,9 @@ class _HealthAppState extends State<HealthApp> {
 
     // Store a workout eg. running
     success &= await health.writeWorkoutData(
-      HealthWorkoutActivityType.RUNNING, earlier, now,
+      HealthWorkoutActivityType.RUNNING,
+      earlier,
+      now,
       // The following are optional parameters
       // and the UNITS are functional on iOS ONLY!
       totalEnergyBurned: 230,
@@ -244,9 +246,9 @@ class _HealthAppState extends State<HealthApp> {
           if (p.value is WorkoutHealthValue) {
             return ListTile(
               title: Text(
-                  "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.typeToString()}"),
+                  "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
               trailing: Text(
-                  '${(p.value as WorkoutHealthValue).workoutActivityType.typeToString()}'),
+                  '${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
               subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
             );
           }
