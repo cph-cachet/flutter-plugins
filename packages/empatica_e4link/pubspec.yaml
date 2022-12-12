@@ -1,6 +1,6 @@
 name: empatica_e4link
 description: Flutter plugin for the Empatica E4 wristband
-version: 0.0.1
+version: 0.1.0
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/empatica_e4link
 
 environment:
