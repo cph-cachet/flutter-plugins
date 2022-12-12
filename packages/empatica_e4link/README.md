@@ -4,11 +4,13 @@ Flutter plugin for the [Empatica E4](http://e4.empatica.com/e4-wristband)
 wristband on Android. iOS coming soon.
 
 ## Install (Flutter)
+
 Add `empatica_e4link` as a dependency in `pubspec.yaml` or run `flutter pub add
 empatica_e4link`
 For help on adding as a dependency, view the [pubspec documenation](https://flutter.io/using-packages/).
 
 ## Android
+
 The package uses your location and bluetooth to fetch data from the eSense ear plugs.
 Therefore location tracking and bluetooth must be enabled.
 
@@ -25,17 +27,17 @@ Add the following entry to your `manifest.xml` file, in the Android project of y
 Also make sure to obtain permissions in your app to use location and bluetooth.
 See the example app on how to e.g. use the [`permission_handler`](https://pub.dev/packages/permission_handler) for this. Note that the plugin **does not** handle permissions - this has to be done on an app level.
 
-Set the Android compile and minimum SDK versions to `compileSdkVersion 31`,
+Set the Android compile and minimum SDK versions to `compileSdkVersion 33`,
 and `minSdkVersion 28` respectively, inside the `android/app/build.gradle` file.
 
 ## iOS
-Coming soon.
 
+Due to compatibility issues with Empatica's SDK, the iOS implementation is not able to function with new CocoaPods and iPhone architectures.
 
 ## Usage
 
 The Empatica E4 Flutter plugin has been designed to resemble the Android
-Empatica API almost __1:1__. Hence, you should be able to recognize the names
+Empatica API almost **1:1**. Hence, you should be able to recognize the names
 of the different classes and class variables.
 For example, the methods on the `EmpaticaDeviceManager` class is mapped 1:1.
 See the [Empatica Android documentation](https://developer.empatica.com/empatica-android-sdk-javadoc.zip) on how it all works.
@@ -88,13 +90,12 @@ process. In order to know the status of the device manager, you should listen to
 status events `statusEventSink`.
 This is done via the `statusEventSink` stream.
 Note, that if you want to know if your connection to the device is successful, you should initiate listening
-__before__ the connection is initiated, as shown above.
-
+**before** the connection is initiated, as shown above.
 
 ### Listen to physiological data
 
 When the status is `CONNECTED` the device will be sending all data events to
-`dataEventSink`. To get *ALL* data one should start listening on this stream
+`dataEventSink`. To get _ALL_ data one should start listening on this stream
 before it is connected, e.g. when the status is `CONNECTING`.
 
 ```dart
@@ -107,21 +108,24 @@ deviceManager.dataEventSink?.listen((event) {
 ```
 
 The possible data events are
-| dataEventSink       |
+| dataEventSink |
 |---------------------|
-| ReceiveBVP          |
-| ReceiveGSR          |
-| ReceiveIBI          |
-| ReceiveTemperature  |
+| ReceiveBVP |
+| ReceiveGSR |
+| ReceiveIBI |
+| ReceiveTemperature |
 | ReceiveAcceleration |
 | ReceiveBatteryLevel |
-| ReceiveTag          |
+| ReceiveTag |
 | UpdateOnWristStatus |
 
 ## Authors
 
- * Lars K.B. Refsgaard, Technical University of Denmark
- <!-- * The iOS implementation uses the [eSense iOS Library](https://github.com/tetujin/ESense). -->
+- Lars K.B. Refsgaard, Technical University of Denmark
+
+## Maintainers
+
+- CACHET (Copenhagen Center for Health Technology)
 
 ## Contributing
 

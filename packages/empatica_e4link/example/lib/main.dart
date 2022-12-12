@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> {
           // if we are now listening to the status event sink
           // connect to the api
           // also could use authenticate with connect
-          await deviceManager.authenticateWithAPIKey('');
+          await deviceManager.authenticateWithAPIKey('INSERT KEY HERE');
           break;
         case UpdateStatus:
 
