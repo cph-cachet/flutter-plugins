@@ -132,14 +132,14 @@ class WorkoutHealthValue extends HealthValue {
         HealthWorkoutActivityType.values.firstWhere(
             (element) => element.name == json['workoutActivityType']),
         json['totalEnergyBurned'] != null
-            ? (json['totalEnergyBurned'] as double).toInt()
+            ? (json['totalEnergyBurned'] as num).toInt()
             : null,
         json['totalEnergyBurnedUnit'] != null
             ? HealthDataUnit.values.firstWhere(
                 (element) => element.name == json['totalEnergyBurnedUnit'])
             : null,
         json['totalDistance'] != null
-            ? (json['totalDistance'] as double).toInt()
+            ? (json['totalDistance'] as num).toInt()
             : null,
         json['totalDistanceUnit'] != null
             ? HealthDataUnit.values.firstWhere(
@@ -149,20 +149,20 @@ class WorkoutHealthValue extends HealthValue {
 
   @override
   Map<String, dynamic> toJson() => {
-        'workoutActivityType': _workoutActivityType.toString(),
+        'workoutActivityType': _workoutActivityType.name,
         'totalEnergyBurned': _totalEnergyBurned,
-        'totalEnergyBurnedUnit': _totalEnergyBurnedUnit?.toString(),
+        'totalEnergyBurnedUnit': _totalEnergyBurnedUnit?.name,
         'totalDistance': _totalDistance,
-        'totalDistanceUnit': _totalDistanceUnit?.toString(),
+        'totalDistanceUnit': _totalDistanceUnit?.name,
       };
 
   @override
   String toString() {
-    return """workoutActivityType: ${workoutActivityType.toString()},
-    totalEnergyBurned: $totalEnergyBurned,
-    totalEnergyBurnedUnit: ${totalEnergyBurnedUnit?.toString()},
-    totalDistance: $totalDistance,
-    totalDistanceUnit: ${totalDistanceUnit?.toString()}""";
+    return """workoutActivityType: ${workoutActivityType.name},
+           totalEnergyBurned: $totalEnergyBurned,
+           totalEnergyBurnedUnit: ${totalEnergyBurnedUnit?.name},
+           totalDistance: $totalDistance,
+           totalDistanceUnit: ${totalDistanceUnit?.name}""";
   }
 
   @override

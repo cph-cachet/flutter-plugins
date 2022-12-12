@@ -46,8 +46,10 @@ class HealthDataPoint {
   /// Converts a json object to the [HealthDataPoint]
   factory HealthDataPoint.fromJson(json) {
     HealthValue healthValue;
-    if (json['data_type'] == 'audiogram') {
+    if (json['data_type'] == 'AUDIOGRAM') {
       healthValue = AudiogramHealthValue.fromJson(json['value']);
+    } else if (json['data_type'] == 'WORKOUT') {
+      healthValue = WorkoutHealthValue.fromJson(json['value']);
     } else {
       healthValue = NumericHealthValue.fromJson(json['value']);
     }
@@ -84,10 +86,10 @@ class HealthDataPoint {
   @override
   String toString() => """${this.runtimeType} - 
     value: ${value.toString()},
-    unit: $unit,
+    unit: ${unit.name},
     dateFrom: $dateFrom,
     dateTo: $dateTo,
-    dataType: $type,
+    dataType: ${type.name},
     platform: $platform,
     deviceId: $deviceId,
     sourceId: $sourceId,
