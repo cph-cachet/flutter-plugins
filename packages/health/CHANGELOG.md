@@ -1,3 +1,9 @@
+## 4.5.0
+
+- Updated android sdk, gradle
+- Updated `enumToString` to native `.name`
+- Update and fixed JSON serialization of HealthDataPoints
+
 ## 4.4.0
 
 - Merged pull request #566, #578, #596, #623, #632
