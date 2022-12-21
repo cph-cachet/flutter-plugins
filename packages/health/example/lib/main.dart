@@ -317,6 +317,12 @@ class _HealthAppState extends State<HealthApp> {
             title: const Text('Health Example'),
             actions: <Widget>[
               IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  HealthFactory.revokePermissions([HealthDataType.STEPS]);
+                },
+              ),
+              IconButton(
                 icon: Icon(Icons.file_download),
                 onPressed: () {
                   fetchData();
