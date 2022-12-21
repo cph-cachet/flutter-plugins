@@ -751,7 +751,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         healthData.add(
           hashMapOf(
-            "workoutActivityType" to workoutTypeMap.filterValues { it == session.activity }.keys.first(),
+            "workoutActivityType" to workoutTypeMap.filterValues { it == session.activity }.keys.firstOrNull(),
             "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
             "totalEnergyBurnedUnit" to "KILOCALORIE",
             "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
@@ -822,6 +822,29 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     )
 
     mResult?.success(isGranted)
+  }
+
+  private fun revokePermissions(call: MethodCall, result: Result) {
+
+    if (activity == null) {
+      result.success(null)
+      return
+    }
+
+    val optionsToRegister = callToHealthTypes(call)
+    mResult = result
+
+    Fitness.getConfigClient(activity!!,  GoogleSignIn.getAccountForExtension(activity!!.applicationContext, optionsToRegister))
+      .disableFit()
+      .addOnSuccessListener {
+        Log.i("revoke:success","Disabled Google Fit")
+      }
+      .addOnFailureListener { e ->
+        Log.w("revoke:failed","There was an error disabling Google Fit", e)
+      }
+
+    // 成功/失敗のフラグを返すようにしても良い
+    mResult?.success(null)
   }
 
   /// Called when the "requestAuthorization" is invoked from Flutter
@@ -939,6 +962,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       "writeData" -> writeData(call, result)
       "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
       "hasPermissions" -> hasPermissions(call, result)
+      "revokePermissions" -> revokePermissions(call, result)
       "writeWorkoutData" -> writeWorkoutData(call, result)
       else -> result.notImplemented()
     }
