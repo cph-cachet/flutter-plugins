@@ -752,7 +752,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         var workoutActivityKeys = workoutTypeMap.filterValues { it == session.activity }.keys
         healthData.add(
           hashMapOf(
-            "workoutActivityType" to if(workoutActivityKeys.isNotEmpty()) workoutActivityKeys.first() else "UNKNOWN",
+            "workoutActivityType" to if(workoutActivityKeys.isNotEmpty()) workoutActivityKeys.first() else "OTHER",
             "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
             "totalEnergyBurnedUnit" to "KILOCALORIE",
             "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
