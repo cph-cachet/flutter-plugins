@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
@@ -580,7 +581,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             android.Manifest.permission.ACCESS_FINE_LOCATION
           ) == PackageManager.PERMISSION_GRANTED
         ) {
-          // Request permission with distance data. 
+          // Request permission with distance data.
           // Google Fit requires this when we query for distance data
           // as it is restricted data
           if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
@@ -592,7 +593,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             )
           }
           readRequestBuilder.read(DataType.TYPE_DISTANCE_DELTA)
-        } 
+        }
         readRequest = readRequestBuilder.build()
         Fitness.getSessionsClient(activity!!.applicationContext, googleSignInAccount)
           .readSession(readRequest)
@@ -837,6 +838,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     Fitness.getConfigClient(activity!!,  GoogleSignIn.getAccountForExtension(activity!!.applicationContext, optionsToRegister))
       .disableFit()
+      .continueWithTask {
+        // disableFitだけでは、requestAuthorizationがすでに権限要求済みの判定になり、再度権限要求ができない
+        // disableFit成功後に revokeAccessを使用する
+        // https://github.com/android/fit-samples/issues/28#issuecomment-557865949
+        // TODO: 使用後にstatusCode 4のエラーが出る
+        val signInOptions = GoogleSignInOptions.Builder()
+          .addExtension(optionsToRegister)
+          .build()
+        GoogleSignIn.getClient(activity!!.applicationContext, signInOptions)
+          .revokeAccess()
+      }
       .addOnSuccessListener {
         Log.i("revoke:success","Disabled Google Fit")
       }
