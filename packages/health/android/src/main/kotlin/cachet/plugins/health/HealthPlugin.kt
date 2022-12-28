@@ -937,10 +937,8 @@ private fun writeBloodPressure(call: MethodCall, result: Result) {
     val optionsToRegister = callToHealthTypes(call)
     mResult = result
 
-    val isGranted = GoogleSignIn.hasPermissions(
-      GoogleSignIn.getLastSignedInAccount(activity!!),
-      optionsToRegister
-    )
+    val isGranted = false
+    
     /// Not granted? Ask for permission
     if (!isGranted && activity != null) {
       GoogleSignIn.requestPermissions(
