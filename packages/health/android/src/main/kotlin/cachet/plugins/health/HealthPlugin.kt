@@ -12,8 +12,6 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
-import com.google.android.gms.fitness.request.DataDeleteRequest
-import java.util.concurrent.TimeUnit
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
@@ -323,7 +321,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
   }
 
-  // delete records of the diven type in the time range
+// delete records of the diven type in the time range
   private fun delete(call: MethodCall, result: Result) {
 
     if (activity == null) {
@@ -420,8 +418,6 @@ private fun writeBloodPressure(call: MethodCall, result: Result) {
       result.success(false)
     }
   }
-
-
 
   private fun writeData(call: MethodCall, result: Result) {
 
@@ -907,7 +903,6 @@ private fun writeBloodPressure(call: MethodCall, result: Result) {
     }
     return typesBuilder.build()
   }
-
 
   private fun hasPermissions(call: MethodCall, result: Result) {
 
