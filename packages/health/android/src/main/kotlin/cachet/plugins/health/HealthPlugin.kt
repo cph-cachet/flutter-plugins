@@ -13,6 +13,7 @@ import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataReadRequest
+import com.google.android.gms.fitness.request.DataDeleteRequest
 import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
@@ -31,6 +32,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.security.Permission
 import java.util.*
 import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
@@ -933,7 +935,7 @@ private fun writeBloodPressure(call: MethodCall, result: Result) {
     mResult = result
 
     val isGranted = false
-    
+
     /// Not granted? Ask for permission
     if (!isGranted && activity != null) {
       GoogleSignIn.requestPermissions(
