@@ -160,6 +160,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("hasPermissions")){
             try! hasPermissions(call: call, result: result)
         }
+        
+        /// Handle delete data
+        else if (call.method.elementsEqual("delete")){
+            try! delete(call: call, result: result)
+        }
+        
     }
     
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -364,6 +370,42 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 result(success)
             }
         })
+    }
+    
+    func delete(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? NSDictionary
+        let dataTypeKey = (arguments?["dataTypeKey"] as? String)!
+        let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
+        let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
+
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let dataType = dataTypeLookUp(key: dataTypeKey)
+        
+        let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
+
+        let deleteQuery = HKSampleQuery(sampleType: dataType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { [self] x, samplesOrNil, error in
+
+            guard let samplesOrNil = samplesOrNil, error == nil else {
+                // Handle the error if necessary
+                print("Error deleting \(dataType) Sample: \(err.localizedDescription)")
+                return
+            }
+
+            // Delete the retrieved objects from the HealthKit store
+            HKHealthStore().delete(samplesOrNil) { (success, error) in
+                if let err = error {
+                        print("Error deleting \(dataType) Sample: \(err.localizedDescription)")
+                    }
+                    DispatchQueue.main.async {
+                        result(success)
+                    }
+            }
+        }
+
+        HKHealthStore().execute(deleteQuery)
     }
     
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
