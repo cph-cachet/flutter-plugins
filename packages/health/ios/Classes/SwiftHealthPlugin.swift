@@ -390,7 +390,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
             guard let samplesOrNil = samplesOrNil, error == nil else {
                 // Handle the error if necessary
-                print("Error deleting \(dataType) Sample: \(err.localizedDescription)")
+                print("Error deleting \(dataType)")
                 return
             }
 
