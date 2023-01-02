@@ -64,7 +64,7 @@ As illustrated below, each service has a 1 or more `MovisensBluetoothCharacteris
 ### Initialization
 
 To connect to a Movisens device, you must know its `name`.
-Using the `name` you can build a `MovisensDevice` and connect.
+Using the `name` you can create a `MovisensDevice` and connect.
 
 > Why name and not MAC address?
 >
