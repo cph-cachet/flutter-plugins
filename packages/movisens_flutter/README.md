@@ -55,9 +55,9 @@ The `movisens_flutter` package is a Movisens-specific implementation of Bluetoot
 
 At the top level you have a `MovisensDevice`. The device has a list of `MovisensService`s which split the data into categories of data.
 
-Each service has a 1 or more `MovisensBluetoothCharacteristics`. Each characteristic is one data type. It can either be a stream of values such as `SensorTemperatureEvents` or a read/write such as `setDeleteData()`.
+As illustrated below, each service has a 1 or more `MovisensBluetoothCharacteristics`. Each characteristic is one data type. It can either be a stream of values such as `SensorTemperatureEvents` or a read/write such as `setDeleteData()`.
 
-<img src="images/movisens-design.png" alt="drawing" width="800"/>
+<img src="https://github.com/cph-cachet/flutter-plugins/blob/master/packages/movisens_flutter/images/movisens-design.png" alt="movisens_flutter_design" width="776"/>
 
 ## Example Usage
 
