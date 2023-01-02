@@ -57,7 +57,7 @@ At the top level you have a `MovisensDevice`. The device has a list of `Movisens
 
 As illustrated below, each service has a 1 or more `MovisensBluetoothCharacteristics`. Each characteristic is one data type. It can either be a stream of values such as `SensorTemperatureEvents` or a read/write such as `setDeleteData()`.
 
-<img src="https://github.com/cph-cachet/flutter-plugins/blob/master/packages/movisens_flutter/images/movisens-design.png" alt="movisens_flutter_design" width="776"/>
+<img src="https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/movisens_flutter/images/movisens-design.png" alt="movisens_flutter_design" width="776"/>
 
 ## Example Usage
 

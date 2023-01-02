@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.1.0+1
 
 * added support for getting a stream of device connection `state` events
 * misc. update to docs
