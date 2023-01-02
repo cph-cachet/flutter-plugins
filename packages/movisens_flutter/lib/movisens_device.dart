@@ -20,6 +20,12 @@ class MovisensDevice {
 
   final Map<MovisensServiceTypes, MovisensService> _services = {};
 
+  /// The bluetooth connection state of the device.
+  ///
+  /// Returns null if the device is not connected or being connected
+  /// using the [connect] method.
+  Stream<BluetoothDeviceState>? get state => _bluetoothDevice?.state;
+
   /// Get the [AmbientService] if the device supports it.
   /// Is null if not supported / discovered on device.
   AmbientService? get ambientService =>

@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/movisens_flutter.svg)](https://pub.dartlang.org/packages/movisens_flutter)
 
-A plugin for connecting and collecting data from a Movisens sensor. **This plugin works for both Android and iOS.**
+A plugin for connecting and collecting data from a Movisens sensor. Works for both Android and iOS.
 
 # Install
 
@@ -65,7 +65,7 @@ Each service has a 1 or more `MovisensBluetoothCharacteristics`. Each characteri
 
 # Example Usage
 
-## Initialization:
+## Initialization
 
 To connect to a Movisens device, you must know its `name`.
 Using the `name` you can build a `MovisensDevice` and connect.
@@ -135,7 +135,7 @@ await device.disconnect();
 
 The example app showcases most of the features `movisens_flutter` has - just remember to set the name to your own device.
 
-# Timestamps!
+# Timestamps
 
 On Movisens devices the stream of data sent through Bluetooth is **not instant** after it was measured on the device.
 
