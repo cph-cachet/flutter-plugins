@@ -1,14 +1,16 @@
-name: example
-description: A new Flutter project.
+name: movisens_flutter_example
+description: An example on how to use the movisens_flutter Plugin.
 publish_to: "none"
-version: 1.0.0+1
+version: 1.1.0
 
 environment:
   sdk: ">=2.18.2 <3.0.0"
+  flutter: ">=2.5.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  logging: ^1.1.0
   movisens_flutter:
     path: ../
 
@@ -17,7 +19,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: any
 
 flutter:
   uses-material-design: true
