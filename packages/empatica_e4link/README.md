@@ -1,6 +1,6 @@
 # Empatica Flutter plugin
 
-Flutter plugin for the [Empatica E4](http://e4.empatica.com/e4-wristband)
+Flutter plugin for the [Empatica E4](https://e4.empatica.com/e4-wristband)
 wristband on Android. iOS coming soon.
 
 ## Install (Flutter)
