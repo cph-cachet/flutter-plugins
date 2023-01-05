@@ -107,25 +107,16 @@ deviceManager.dataEventSink?.listen((event) {
           break;
 ```
 
-The possible data events are
-| dataEventSink |
-|---------------------|
-| ReceiveBVP |
-| ReceiveGSR |
-| ReceiveIBI |
-| ReceiveTemperature |
-| ReceiveAcceleration |
-| ReceiveBatteryLevel |
-| ReceiveTag |
-| UpdateOnWristStatus |
+The possible data events in the `dataEventSink` are:
 
-## Authors
-
-- Lars K.B. Refsgaard, Technical University of Denmark
-
-## Maintainers
-
-- CACHET (Copenhagen Center for Health Technology)
+- ReceiveBVP
+- ReceiveGSR
+- ReceiveIBI
+- ReceiveTemperature
+- ReceiveAcceleration
+- ReceiveBatteryLevel
+- ReceiveTag
+- UpdateOnWristStatus
 
 ## Contributing
 
