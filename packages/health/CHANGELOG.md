@@ -6,8 +6,8 @@
 
 ## 4.4.0
 
-- Merged pull request #566, #578, #596, #623, #632
-- ECG added as part of #566
+- Merged pull request #[566](https://github.com/cph-cachet/flutter-plugins/pull/566), [#578](https://github.com/cph-cachet/flutter-plugins/pull/578), [#596](https://github.com/cph-cachet/flutter-plugins/pull/596), [#623](https://github.com/cph-cachet/flutter-plugins/pull/623), [#632](https://github.com/cph-cachet/flutter-plugins/pull/632)
+- ECG added as part of [#566](https://github.com/cph-cachet/flutter-plugins/pull/566)
 - Small fixes
 
 ## 4.3.0
