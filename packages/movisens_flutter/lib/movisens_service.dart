@@ -20,22 +20,22 @@ enum MovisensServiceTypes {
   skinTemperature
 }
 
-/// A basic movisens service interface.
+/// A basic Movisens service interface.
 abstract class MovisensService {
-  /// UUID of the service.
+  /// UUID of this service.
   abstract final String uuid;
 
-  /// The underlying FlutterBluePlus bluetoothservice object.
+  /// The underlying [BluetoothService] for this service.
   late BluetoothService _bluetoothService;
 
-  /// The list of enums, which are part of the service.
+  /// The list of Bluetooth characteristics for this service.
   abstract List<MovisensBluetoothCharacteristics> characteristics;
 
-  /// The String representation of the service enum.
+  /// The string representation of the service enum.
   String get name => serviceUUIDToName[uuid]!.name;
 }
 
-/// A basic movisens service interface with a stream for streamed events.
+/// A basic Movisens service interface with a stream for streamed events.
 abstract class StreamingMovisensService extends MovisensService {
   // Stream of [MovisensEvent]s
   late Stream<MovisensEvent> _events;
@@ -53,12 +53,12 @@ abstract class StreamingMovisensService extends MovisensService {
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(true);
         _log.info(
-            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] movisens device [${_bluetoothService.deviceId.id}]");
+            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
       }
     }
   }
 
-  /// Disables the notifying of ***every*** bluetooth characteristic in this service.
+  /// Disables the notifying of all bluetooth characteristic in this service.
   Future<void> disableNotify() async {
     for (BluetoothCharacteristic characteristic
         in _bluetoothService.characteristics) {
@@ -68,42 +68,43 @@ abstract class StreamingMovisensService extends MovisensService {
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(false);
         _log.info(
-            "Disabling [Notify] for [${enumToReadableString(serviceUUIDToName[uuid]!)}] movisens device [${_bluetoothService.deviceId.id}]");
+            "Disabling [Notify] for [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
       }
     }
   }
 }
 
-/// A movisens service containing Ambient data.
+/// A Movisens service containing Ambient data.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.light]
 /// * [MovisensBluetoothCharacteristics.lightRGB]
 /// * [MovisensBluetoothCharacteristics.sensorTemperature]
 class AmbientService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.light,
     MovisensBluetoothCharacteristics.lightRGB,
     MovisensBluetoothCharacteristics.sensorTemperature
-  ]; // TODO: Handle buffered values
+  ];
+
+  // TODO: Handle buffered values
 
   Stream<LightEvent>? _lightEvents;
   Stream<LightRGBEvent>? _lightRGBEvents;
   Stream<SensorTemperatureEvent>? _sensorTemperatureEvents;
 
-  /// A stream of [LightEvent]s
+  /// Stream of [LightEvent]s
   Stream<LightEvent>? get lightEvents => _lightEvents;
 
-  /// A stream of [LightRGBEvent]s
+  /// Stream of [LightRGBEvent]s
   Stream<LightRGBEvent>? get lightRGBEvents => _lightRGBEvents;
 
-  /// A stream of [SensorTemperatureEvent]s
+  /// Stream of [SensorTemperatureEvent]s
   Stream<SensorTemperatureEvent>? get sensorTemperatureEvents =>
       _sensorTemperatureEvents;
 
-  /// A movisens service containing Ambient data.
+  /// A Movisens service containing Ambient data.
   AmbientService({required BluetoothService service}) {
     _bluetoothService = service;
     List<Stream<MovisensEvent>> nonNullStreams = [];
@@ -143,28 +144,28 @@ class AmbientService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.ambient]!;
 }
 
-/// A movisens service containing EDA (Electrodermal Activity) data.
+/// A Movisens service containing EDA (Electrodermal Activity) data.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.edaSclMean]
 class EdaService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.edaSclMean
-  ]; // TODO: Handle buffered values
+  ];
+
+  // TODO: Handle buffered values
 
   Stream<EdaSclMeanEvent>? _edaSclMeanEvents;
 
-  /// A stream of [EdaSclMeanEvent]s
+  /// Stream of [EdaSclMeanEvent]s
   Stream<EdaSclMeanEvent>? get edaSclMeanEvents => _edaSclMeanEvents;
 
-  /// A movisens service containing EDA (Electrodermal Activity) data.
+  /// A Movisens service containing EDA (Electrodermal Activity) data.
   EdaService({required BluetoothService service}) {
     _bluetoothService = service;
     List<Stream<MovisensEvent>> nonNullStreams = [];
@@ -186,25 +187,25 @@ class EdaService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.eda]!;
 }
 
-/// A movisens service containing HRV related data.
+/// A Movisens service containing HRV related data.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.hrMean]
 /// * [MovisensBluetoothCharacteristics.hrvIsValid]
 /// * [MovisensBluetoothCharacteristics.rmssd]
 class HrvService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.hrMean,
     MovisensBluetoothCharacteristics.hrvIsValid,
     MovisensBluetoothCharacteristics.rmssd
-  ]; // TODO: Handle buffered values
+  ];
+
+  // TODO: Handle buffered values
 
   Stream<HrMeanEvent>? _hrMeanEvents;
   Stream<HrvIsValidEvent>? _hrvIsValidEvents;
@@ -219,7 +220,7 @@ class HrvService extends StreamingMovisensService {
   /// A stream of [RmssdEvent]s
   Stream<RmssdEvent>? get rmssd => _rmssdEvents;
 
-  /// A movisens service containing HRV related data.
+  /// A Movisens service containing HRV related data.
   HrvService({required BluetoothService service}) {
     _bluetoothService = service;
     List<Stream<MovisensEvent>> nonNullStreams = [];
@@ -259,28 +260,28 @@ class HrvService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.hrv]!;
 }
 
-/// A movisens service containing marker data from user taps.
+/// A Movisens service containing marker data from user taps.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.tapMarker]
 class MarkerService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.tapMarker
-  ]; // TODO: Handle buffered values
+  ];
+
+  // TODO: Handle buffered values
 
   Stream<TapMarkerEvent>? _tapMarkerEvents;
 
   /// A stream of [TapMarkerEvent]s.
   Stream<TapMarkerEvent>? get tapMarkerEvents => _tapMarkerEvents;
 
-  /// A movisens service containing marker data from user taps.
+  /// A Movisens service containing marker data from user taps.
   MarkerService({required BluetoothService service}) {
     _bluetoothService = service;
     List<Stream<MovisensEvent>> nonNullStreams = [];
@@ -303,28 +304,28 @@ class MarkerService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.marker]!;
 }
 
-/// A movisens service containing Battery data.
+/// A Movisens service containing Battery data.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.charging]
 class BatteryService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.charging
-  ]; // TODO: Handle buffered values + Battery level
+  ];
+
+  // TODO: Handle buffered values + Battery level
 
   Stream<ChargingEvent>? _chargingEvents;
 
-  /// A stream of [ChargingEvent]s.
+  /// Stream of [ChargingEvent]s.
   Stream<ChargingEvent>? get chargingEvents => _chargingEvents;
 
-  /// A movisens service containing Battery data.
+  /// A Movisens service containing Battery data.
   BatteryService({required BluetoothService service}) {
     _bluetoothService = service;
     List<Stream<MovisensEvent>> nonNullStreams = [];
@@ -347,7 +348,6 @@ class BatteryService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.battery]!;
 }
@@ -368,13 +368,12 @@ enum SensorLocation {
   leftSideHip
 }
 
-/// A movisens service containing User Data information.
+/// A Movisens service containing User Data information.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.ageFloat]
 /// * [MovisensBluetoothCharacteristics.sensorLocation]
 class UserDataService extends MovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.ageFloat,
@@ -526,12 +525,11 @@ class UserDataService extends MovisensService {
     }
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.userData]!;
 }
 
-/// A movisens service containing Physical Activity data.
+/// A Movisens service containing Physical Activity data.
 ///
 /// Several of the characteristics require other data to be set, such as [sensorLocation], [age] or []
 ///
@@ -543,7 +541,6 @@ class UserDataService extends MovisensService {
 /// * [MovisensBluetoothCharacteristics.movementAcceleration]
 /// * [MovisensBluetoothCharacteristics.steps]
 class PhysicalActivityService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.bodyPosition,
@@ -561,23 +558,23 @@ class PhysicalActivityService extends StreamingMovisensService {
   Stream<MovementAccelerationEvent>? _movementAccelerationEvents;
   Stream<StepsEvent>? _stepsEvents;
 
-  /// A stream of [BodyPositionEvent]s.
+  /// Stream of [BodyPositionEvent]s.
   Stream<BodyPositionEvent>? get bodyPositionEvents => _bodyPositionEvents;
 
-  /// A stream of [InclinationEvent]s.
+  /// Stream of [InclinationEvent]s.
   Stream<InclinationEvent>? get inclinationEvents => _inclinationEvents;
 
-  /// A stream of [MetEvent]s.
+  /// Stream of [MetEvent]s.
   Stream<MetEvent>? get metEvents => _metEvents;
 
-  /// A stream of [MetLevelEvent]s.
+  /// Stream of [MetLevelEvent]s.
   Stream<MetLevelEvent>? get metLevelEvents => _metLevelEvents;
 
-  /// A stream of [MovementAccelerationEvent]s.
+  /// Stream of [MovementAccelerationEvent]s.
   Stream<MovementAccelerationEvent>? get movementAccelerationEvents =>
       _movementAccelerationEvents;
 
-  /// A stream of [StepsEvent]s.
+  /// Stream of [StepsEvent]s.
   Stream<StepsEvent>? get stepsEvents => _stepsEvents;
 
   PhysicalActivityService({required BluetoothService service}) {
@@ -643,21 +640,21 @@ class PhysicalActivityService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.physicalActivity]!;
 }
 
-/// A movisens service containing Respiration data.
+/// A Movisens service containing Respiration data.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.respiratoryMovement]
 class RespirationService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.respiratoryMovement
-  ]; // TODO: Handle buffered values
+  ];
+
+  // TODO: Handle buffered values
 
   Stream<RespiratoryMovementEvent>? _respiratoryMovementEvents;
 
@@ -687,12 +684,11 @@ class RespirationService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.respiration]!;
 }
 
-/// A movisens service containing the Sensor Control interface.
+/// A Movisens service containing the Sensor Control interface.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.commandResult]
@@ -710,7 +706,6 @@ class RespirationService extends StreamingMovisensService {
 /// * [MovisensBluetoothCharacteristics.timeZoneId]
 /// * [MovisensBluetoothCharacteristics.timeZoneOffset]
 class SensorControlService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.commandResult,
@@ -923,7 +918,7 @@ class SensorControlService extends StreamingMovisensService {
     await _deleteData!.write(byteList);
   }
 
-  /// Checks if a measurement is running on the divice.
+  /// Checks if a measurement is running on the device.
   ///
   /// `true` if a measurement is running otherwise `false`.
   Future<bool?> getMeasurementEnabled() async {
@@ -1080,8 +1075,8 @@ class SensorControlService extends StreamingMovisensService {
     return status;
   }
 
+  // TODO: Missing documentation from Movisens - request it
   /// Get the time zone ID of the time zone.
-  // TODO: Missing documentation from movisens - request it
   Future<int?> getTimeZoneId() async {
     if (_timeZoneId == null) {
       _log.warning("Time Zone Id characteristic not found on device");
@@ -1093,8 +1088,8 @@ class SensorControlService extends StreamingMovisensService {
     return timeZoneId;
   }
 
+  // TODO: Missing documentation from Movisens - request it
   /// Set the time zone ID of the time zone.
-  // TODO: Missing documentation from movisens - request it
   Future<void> setTimeZoneId(int timeZoneId) async {
     if (_timeZoneId == null) {
       _log.warning("Time Zone Id characteristic not found on device");
@@ -1130,21 +1125,21 @@ class SensorControlService extends StreamingMovisensService {
     await _timeZoneOffset!.write(byteList);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.sensorControl]!;
 }
 
-/// A movisens service containing Skin Temperature data.
+/// A Movisens service containing Skin Temperature data.
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.skinTemperature]
 class SkinTemperatureService extends StreamingMovisensService {
-  /// List of the enumerated characteristics included in the service.
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.skinTemperature
-  ]; // TODO: Handle buffered values
+  ];
+
+  // TODO: Handle buffered values
 
   Stream<SkinTemperatureEvent>? _skinTemperatureEvents;
   Stream<SkinTemperatureEvent>? get skinTemperatureEvents =>
@@ -1172,7 +1167,6 @@ class SkinTemperatureService extends StreamingMovisensService {
     _events = Rx.merge(nonNullStreams);
   }
 
-  /// UUID of the service
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.skinTemperature]!;
 }

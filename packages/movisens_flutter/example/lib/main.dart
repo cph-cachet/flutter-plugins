@@ -52,6 +52,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void connect() async {
     await device.connect();
+
+    device.state?.listen((event) {
+      print('Connection event: $event');
+    });
   }
 
   void listen() async {
