@@ -130,7 +130,26 @@ class HealthFactory {
         : permissions.map((permission) => permission.index).toList();
 
     // on Android, if BMI is requested, then also ask for weight and height
-    if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+    if (_platformType == PlatformType.ANDROID) {
+      _handleBMI(mTypes, mPermissions);
+
+      if (mTypes.contains(HealthDataType.WORKOUT) ||
+          mTypes.contains(HealthDataType.STEPS) ||
+          mTypes.contains(HealthDataType.EXERCISE_TIME)) {
+        // If we are trying to read Step Count, Workout, Sleep or other data that requires
+        // the ACTIVITY_RECOGNITION permission, we need to request the permission first.
+        // This requires a special request authorization call.
+        //
+        // The location permission is requested for Workouts using the Distance information.
+        final activityRecognitionPermissionStatus = await Permission.activityRecognition.request();
+        final locationPermissionStatus = await Permission.location.request();
+
+        if (activityRecognitionPermissionStatus != PermissionStatus.granted ||
+            locationPermissionStatus != PermissionStatus.granted) {
+          return false;
+        }
+      }
+    }
 
     List<String> keys = mTypes.map((e) => e.name).toList();
     final bool? isAuthorized =
@@ -295,7 +314,6 @@ class HealthFactory {
   }
 
   List<HealthDataPoint> _parse({required HealthDataType dataType, required List<Map> dataPoints}) {
-
     final healthDataPoints = dataPoints.map((e) => e.cast<String, dynamic>()).toList();
 
     final dataToAdd = {
@@ -304,7 +322,7 @@ class HealthFactory {
     };
 
     healthDataPoints.forEach((element) {
-        element.addAll(dataToAdd);
+      element.addAll(dataToAdd);
     });
 
     return healthDataPoints;

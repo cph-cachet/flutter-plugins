@@ -13,6 +13,7 @@ dependencies:
   intl: ^0.17.0
   device_info_plus: ^8.0.0
   equatable: ^2.0.5
+  permission_handler: ^10.0.0
 
 dev_dependencies:
   flutter_test:
