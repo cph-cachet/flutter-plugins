@@ -532,6 +532,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             "uuid": "\(sample.uuid)",
             "voltageValues": voltageValues,
             "averageHeartRate": sample.averageHeartRate?.doubleValue(for: HKUnit.count().unitDivided(by: HKUnit.minute())),
+            "samplingFrequency": sample.samplingFrequency?.doubleValue(for: HKUnit.hertz()),
             "classification": sample.classification.rawValue,
             "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
             "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
@@ -667,7 +668,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["FLEXIBILITY"] = .flexibility
         workoutActivityTypeMap["WALKING"] = .walking
         workoutActivityTypeMap["RUNNING"] = .running
-        workoutActivityTypeMap["RUNNING_JOGGING"] = .running // Supported due to combining with Android naming 
+        workoutActivityTypeMap["RUNNING_JOGGING"] = .running // Supported due to combining with Android naming
         workoutActivityTypeMap["RUNNING_SAND"] = .running // Supported due to combining with Android naming
         workoutActivityTypeMap["RUNNING_TREADMILL"] = .running // Supported due to combining with Android naming
         workoutActivityTypeMap["WHEELCHAIR_WALK_PACE"] = .wheelchairWalkPace

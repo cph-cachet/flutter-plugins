@@ -185,15 +185,18 @@ class WorkoutHealthValue extends HealthValue {
 /// Parameters:
 /// * [voltageValues] - an array of [ElectrocardiogramVoltageValue]
 /// * [averageHeartRate] - the average heart rate during the ECG (in BPM)
+/// * [samplingFrequency] - the frequency at which the Apple Watch sampled the voltage.
 /// * [classification] - an [ElectrocardiogramClassification]
 class ElectrocardiogramHealthValue extends HealthValue {
   List<ElectrocardiogramVoltageValue> voltageValues;
   num? averageHeartRate;
+  double? samplingFrequency;
   ElectrocardiogramClassification classification;
 
   ElectrocardiogramHealthValue({
     required this.voltageValues,
     required this.averageHeartRate,
+    required this.samplingFrequency,
     required this.classification,
   });
 
@@ -203,6 +206,7 @@ class ElectrocardiogramHealthValue extends HealthValue {
             .map((e) => ElectrocardiogramVoltageValue.fromJson(e))
             .toList(),
         averageHeartRate: json['averageHeartRate'],
+        samplingFrequency: json['samplingFrequency'],
         classification: ElectrocardiogramClassification.values
             .firstWhere((c) => c.value == json['classification']),
       );
@@ -211,6 +215,7 @@ class ElectrocardiogramHealthValue extends HealthValue {
         'voltageValues':
             voltageValues.map((e) => e.toJson()).toList(growable: false),
         'averageHeartRate': averageHeartRate,
+        'samplingFrequency': samplingFrequency,
         'classification': classification.value,
       };
 
@@ -219,15 +224,16 @@ class ElectrocardiogramHealthValue extends HealthValue {
       o is ElectrocardiogramHealthValue &&
       voltageValues == o.voltageValues &&
       averageHeartRate == o.averageHeartRate &&
+      samplingFrequency == o.samplingFrequency &&
       classification == o.classification;
 
   @override
-  int get hashCode =>
-      Object.hash(voltageValues, averageHeartRate, classification);
+  int get hashCode => Object.hash(
+      voltageValues, averageHeartRate, samplingFrequency, classification);
 
   @override
   String toString() =>
-      '${voltageValues.length} values, $averageHeartRate BPM, $classification';
+      '${voltageValues.length} values, $averageHeartRate BPM, $samplingFrequency HZ, $classification';
 }
 
 /// Single voltage value belonging to a [ElectrocardiogramHealthValue]
