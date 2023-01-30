@@ -14,6 +14,7 @@ import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataReadRequest
+import com.google.android.gms.fitness.request.DataDeleteRequest
 import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
@@ -32,6 +33,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.security.Permission
 import java.util.*
 import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
@@ -333,6 +335,104 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       Field.FORMAT_INT32 -> value.asInt()
       Field.FORMAT_STRING -> value.asString()
       else -> Log.e("Unsupported format:", value.format.toString())
+    }
+  }
+
+// delete records of the diven type in the time range
+  private fun delete(call: MethodCall, result: Result) {
+
+    if (activity == null) {
+      result.success(false)
+      return
+    }
+
+    val type = call.argument<String>("dataTypeKey")!!
+    val startTime = call.argument<Long>("startTime")!!
+    val endTime = call.argument<Long>("endTime")!!
+
+    // Look up data type and unit for the type key
+    val dataType = keyToHealthDataType(type)
+    val field = getField(type)
+
+    val typesBuilder = FitnessOptions.builder()
+    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+    val dataSource = DataDeleteRequest.Builder()    
+      .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+      .addDataType(dataType)
+      .build()   
+
+    val fitnessOptions = typesBuilder.build()
+    try {
+      val googleSignInAccount =
+        GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+    
+      Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+      .deleteData(dataSource)
+      .addOnSuccessListener {
+        Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
+          result.success(true)
+      }
+      .addOnFailureListener { e -> 
+        Log.w("FLUTTER_HEALTH::ERROR", "There was an error deleting the DataSet", e)
+        result.success(false)
+      }    
+    } catch (e3: Exception) {
+      result.success(false)
+    }
+}
+
+// save blood pressure
+private fun writeBloodPressure(call: MethodCall, result: Result) {
+
+    if (activity == null) {
+      result.success(false)
+      return
+    }
+
+    val dataType = HealthDataTypes.TYPE_BLOOD_PRESSURE
+    val systolic = call.argument<Float>("systolic")!!
+    val diastolic = call.argument<Float>("diastolic")!!
+    val startTime = call.argument<Long>("startTime")!!
+    val endTime = call.argument<Long>("endTime")!!
+
+    val typesBuilder = FitnessOptions.builder()
+    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+    val dataSource = DataSource.Builder()
+      .setDataType(dataType)
+      .setType(DataSource.TYPE_RAW)
+      .setDevice(Device.getLocalDevice(activity!!.applicationContext))
+      .setAppPackageName(activity!!.applicationContext)
+      .build()
+
+    val builder = DataPoint.builder(dataSource)
+        .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+        .setField(HealthFields.FIELD_BLOOD_PRESSURE_SYSTOLIC, systolic)
+        .setField(HealthFields.FIELD_BLOOD_PRESSURE_DIASTOLIC, diastolic)
+        .build()
+
+    val dataPoint = builder
+    val dataSet = DataSet.builder(dataSource)
+      .add(dataPoint)
+      .build()
+      
+    val fitnessOptions = typesBuilder.build()
+    try {
+      val googleSignInAccount =
+        GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+      Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+        .insertData(dataSet)
+        .addOnSuccessListener {
+          Log.i("FLUTTER_HEALTH::SUCCESS", "Blood Pressure added successfully!")
+          result.success(true)
+        }
+        .addOnFailureListener { e ->
+          Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the Blood Pressure", e)
+          result.success(false)
+        }
+    } catch (e3: Exception) {
+      result.success(false)
     }
   }
 
@@ -849,10 +949,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val optionsToRegister = callToHealthTypes(call)
     mResult = result
 
-    val isGranted = GoogleSignIn.hasPermissions(
-      GoogleSignIn.getLastSignedInAccount(context!!),
-      optionsToRegister
-    )
+    val isGranted = false
+
     /// Not granted? Ask for permission
     if (!isGranted && activity != null) {
       GoogleSignIn.requestPermissions(
@@ -955,6 +1053,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
       "hasPermissions" -> hasPermissions(call, result)
       "writeWorkoutData" -> writeWorkoutData(call, result)
+      "delete" -> delete(call, result)
+      "writeBloodPressure" -> writeBloodPressure(call, result)
       else -> result.notImplemented()
     }
   }
