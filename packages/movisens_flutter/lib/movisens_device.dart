@@ -48,11 +48,17 @@ class MovisensDevice {
 
   /// Get the [BatteryService] if the device supports it.
   /// Is null if not supported / discovered on device.
+  ///
+  /// Due to Movisens API, the service for movisens battery is seperate fom the general battery service
+  /// in this plugin they are bundled into this [BatteryService].
   BatteryService? get batteryService =>
       _services[MovisensServiceTypes.battery] as BatteryService?;
 
   /// Get the [UserDataService] if the device supports it.
   /// Is null if not supported / discovered on device.
+  ///
+  /// Due to Movisens API, the service for movisens user data is seperate fom the general user data service
+  /// in this plugin they are bundled into this [UserDataService].
   UserDataService? get userDataService =>
       _services[MovisensServiceTypes.userData] as UserDataService?;
 
@@ -77,6 +83,12 @@ class MovisensDevice {
   SkinTemperatureService? get skinTemperatureService =>
       _services[MovisensServiceTypes.skinTemperature]
           as SkinTemperatureService?;
+
+  /// Get the [DeviceInformationService] if the device supports it.
+  /// Is null if not supported / discovered on device.
+  DeviceInformationService? get deviceInformationService =>
+      _services[MovisensServiceTypes.deviceInformation]
+          as DeviceInformationService?;
 
   /// A Movisens bluetooth device.
   ///
@@ -150,6 +162,7 @@ class MovisensDevice {
     // Setup services
     for (BluetoothService service in services) {
       String serviceUuid = service.uuid.toString();
+      if (serviceUuid == "0000180f-0000-1000-8000-00805f9b34fb") {}
       MovisensServiceTypes? serviceType = serviceUUIDToName[serviceUuid];
       MovisensService? newService;
       switch (serviceType) {
@@ -160,16 +173,43 @@ class MovisensDevice {
           newService = EdaService(service: service);
           break;
         case MovisensServiceTypes.hrv:
-          newService = HrvService(service: service);
+          BluetoothService? secondaryService;
+          if (services.any((element) =>
+              element.uuid.toString() ==
+              "0000180d-0000-1000-8000-00805f9b34fb")) {
+            secondaryService = services.firstWhere((element) =>
+                element.uuid.toString() ==
+                "0000180d-0000-1000-8000-00805f9b34fb");
+          }
+          newService =
+              HrvService(service: service, secondaryService: secondaryService);
           break;
         case MovisensServiceTypes.marker:
           newService = MarkerService(service: service);
           break;
         case MovisensServiceTypes.battery:
-          newService = BatteryService(service: service);
+          BluetoothService? secondaryService;
+          if (services.any((element) =>
+              element.uuid.toString() ==
+              "0000180f-0000-1000-8000-00805f9b34fb")) {
+            secondaryService = services.firstWhere((element) =>
+                element.uuid.toString() ==
+                "0000180f-0000-1000-8000-00805f9b34fb");
+          }
+          newService = BatteryService(
+              service: service, secondaryService: secondaryService);
           break;
         case MovisensServiceTypes.userData:
-          newService = UserDataService(service: service);
+          BluetoothService? secondaryService;
+          if (services.any((element) =>
+              element.uuid.toString() ==
+              "0000181c-0000-1000-8000-00805f9b34fb")) {
+            secondaryService = services.firstWhere((element) =>
+                element.uuid.toString() ==
+                "0000181c-0000-1000-8000-00805f9b34fb");
+          }
+          newService = UserDataService(
+              service: service, secondaryService: secondaryService);
           break;
         case MovisensServiceTypes.physicalActivity:
           newService = PhysicalActivityService(service: service);
@@ -183,9 +223,15 @@ class MovisensDevice {
         case MovisensServiceTypes.skinTemperature:
           newService = SkinTemperatureService(service: service);
           break;
+        case MovisensServiceTypes.deviceInformation:
+          newService = DeviceInformationService(service: service);
+          break;
         default:
-          _log.warning(
-              "Service uuid $serviceUuid is not recognized on Movisens device [$id]");
+          // If service was not recognized and it is not one of the secondary services.
+          if (!_secondaryServices.contains(serviceUuid)) {
+            _log.warning(
+                "Service uuid $serviceUuid is not recognized on Movisens device [$id]");
+          }
           break;
       }
       if (newService != null) {

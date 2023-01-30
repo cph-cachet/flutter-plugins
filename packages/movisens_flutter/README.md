@@ -59,6 +59,31 @@ As illustrated below, each service has a 1 or more `MovisensBluetoothCharacteris
 
 <img src="https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/movisens_flutter/images/movisens-design.png" alt="movisens_flutter_design" width="776"/>
 
+### Undocumented API
+
+4 services and 9 characterisics are not documented in Movisens' documentation as they are part of the general Bluetooth GATT specifications but have been added to this plugin.
+Below is a list of their names and UUIDs. The battery service, heart rate service and user data service have been added to the movisens specific implementations for simplicity of the plugin API.
+
+- SERVICE: 0000180f-0000-1000-8000-00805f9b34fb // **_BATTERY SERVICE_** (added to the Battery Service)
+
+  - 00002a19-0000-1000-8000-00805f9b34fb // Battery Level
+
+- SERVICE: 0000180a-0000-1000-8000-00805f9b34fb // **_DEVICE INFORMATION SERVICE_**
+
+  - 00002a26-0000-1000-8000-00805f9b34fb // Firmware Revision String
+  - 00002a29-0000-1000-8000-00805f9b34fb // Manufacturer Name String
+  - 00002a24-0000-1000-8000-00805f9b34fb // Model Number String
+  - 00002a25-0000-1000-8000-00805f9b34fb // Serial Number String
+
+- SERVICE 0000180d-0000-1000-8000-00805f9b34fb // **_HEART RATE SERVICE_** (added to the HRV Service)
+
+  - 00002a37-0000-1000-8000-00805f9b34fb // Heart Rate Measurement
+
+- SERVICE: 0000181c-0000-1000-8000-00805f9b34fb // **_USER DATA SERVICE_** (added to the User Data Service)
+  - 00002a8c-0000-1000-8000-00805f9b34fb // gender
+  - 00002a8e-0000-1000-8000-00805f9b34fb // height
+  - 00002a98-0000-1000-8000-00805f9b34fb // weight
+
 ## Example Usage
 
 ### Initialization
@@ -74,7 +99,7 @@ Using the `name` you can create a `MovisensDevice` and connect.
 Connecting might take up to 10 seconds as the device has to both connect and load all its features.
 
 ```dart
-// The MAC address of your device
+// The name of your device
 String deviceName = "MOVISENS Sensor 03348";
 
 MovisensDevice device = MovisensDevice(name: deviceName);
@@ -99,6 +124,7 @@ await device.physicalActivityService?.enableNotify();
 await device.respirationService?.enableNotify();
 await device.sensorControlService?.enableNotify();
 await device.skinTemperatureService?.enableNotify();
+await device.deviceInformationService?.enableNotify();
 ```
 
 Once the services are enabled, you can listen to the `events` stream of the service which contains **all** data emitted by all the characteristics in that particular service.
@@ -135,7 +161,7 @@ The example app showcases most of the features `movisens_flutter` has - just rem
 On Movisens devices, the stream of data is **not** transmitted instantly over Bluetooth when measured on the device.
 
 As shown in [this table](https://docs.movisens.com/BluetoothLowEnergy/#available-signals-per-sensor) on the Movisens documentation homepage, values can be delayed by 0 and up to 84 seconds depending on both the device and the data type.
-For example, the `marker` (tapping the device) is instant with 0 seconds delay, whereas  the `hr_live` (heart rate) is delayed by 70 seconds.
+For example, the `marker` (tapping the device) is instant with 0 seconds delay, whereas the `hr_live` (heart rate) is delayed by 70 seconds.
 This delay **IS NOT HANDLED** by this package.
 Each of the different data event streams delivers the data event as received via the Bluetooth channel.
 

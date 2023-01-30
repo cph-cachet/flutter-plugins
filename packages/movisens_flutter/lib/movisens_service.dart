@@ -17,7 +17,10 @@ enum MovisensServiceTypes {
   physicalActivity,
   respiration,
   sensorControl,
-  skinTemperature
+  skinTemperature,
+
+  // General bluetooth 4.0 services:
+  deviceInformation,
 }
 
 /// A basic Movisens service interface.
@@ -44,12 +47,14 @@ abstract class StreamingMovisensService extends MovisensService {
   Stream<MovisensEvent> get events => _events;
 
   /// Enables the notifying of ***every*** bluetooth characteristic in this service.
+  ///
   Future<void> enableNotify() async {
     for (BluetoothCharacteristic characteristic
         in _bluetoothService.characteristics) {
-      if (characteristics.contains(
-              characteristicUUIDToMovisensBluetoothCharacteristics[
-                  characteristic.uuid.toString()]) &&
+      String charUuid = characteristic.uuid.toString();
+      MovisensBluetoothCharacteristics? moviChar =
+          characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
+      if (characteristics.contains(moviChar) &&
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(true);
         _log.info(
@@ -62,13 +67,14 @@ abstract class StreamingMovisensService extends MovisensService {
   Future<void> disableNotify() async {
     for (BluetoothCharacteristic characteristic
         in _bluetoothService.characteristics) {
-      if (characteristics.contains(
-              characteristicUUIDToMovisensBluetoothCharacteristics[
-                  characteristic.uuid.toString()]) &&
+      String charUuid = characteristic.uuid.toString();
+      MovisensBluetoothCharacteristics? moviChar =
+          characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
+      if (characteristics.contains(moviChar) &&
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(false);
         _log.info(
-            "Disabling [Notify] for [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
       }
     }
   }
@@ -194,12 +200,49 @@ class EdaService extends StreamingMovisensService {
 /// A Movisens service containing HRV related data.
 ///
 /// Included characteristics:
+/// * [MovisensBluetoothCharacteristics.heartRateMeasurement]
 /// * [MovisensBluetoothCharacteristics.hrMean]
 /// * [MovisensBluetoothCharacteristics.hrvIsValid]
 /// * [MovisensBluetoothCharacteristics.rmssd]
 class HrvService extends StreamingMovisensService {
+  BluetoothService? _heartRateMeasurementService;
+
+  @override
+  Future<void> enableNotify() async {
+    super.enableNotify();
+    for (BluetoothCharacteristic characteristic
+        in _heartRateMeasurementService?.characteristics ?? []) {
+      if (characteristics.contains(
+              characteristicUUIDToMovisensBluetoothCharacteristics[
+                  characteristic.uuid.toString()]) &&
+          characteristic.properties.notify) {
+        await characteristic.setNotifyValue(true);
+        _log.info(
+            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+      }
+    }
+  }
+
+  @override
+  Future<void> disableNotify() async {
+    super.disableNotify();
+    for (BluetoothCharacteristic characteristic
+        in _heartRateMeasurementService?.characteristics ?? []) {
+      String charUuid = characteristic.uuid.toString();
+      MovisensBluetoothCharacteristics? moviChar =
+          characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
+      if (characteristics.contains(moviChar) &&
+          characteristic.properties.notify) {
+        await characteristic.setNotifyValue(false);
+        _log.info(
+            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+      }
+    }
+  }
+
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
+    MovisensBluetoothCharacteristics.heartRateMeasurement,
     MovisensBluetoothCharacteristics.hrMean,
     MovisensBluetoothCharacteristics.hrvIsValid,
     MovisensBluetoothCharacteristics.rmssd
@@ -210,6 +253,7 @@ class HrvService extends StreamingMovisensService {
   Stream<HrMeanEvent>? _hrMeanEvents;
   Stream<HrvIsValidEvent>? _hrvIsValidEvents;
   Stream<RmssdEvent>? _rmssdEvents;
+  Stream<HeartRateMeasurementEvent>? _heartRateMeasurementEvents;
 
   /// A stream of [HrMeanEvent]s
   Stream<HrMeanEvent>? get hrMeanEvents => _hrMeanEvents;
@@ -220,8 +264,13 @@ class HrvService extends StreamingMovisensService {
   /// A stream of [RmssdEvent]s
   Stream<RmssdEvent>? get rmssd => _rmssdEvents;
 
+  /// A stream of [HeartRateMeasurementEvent]s
+  Stream<HeartRateMeasurementEvent>? get heartRateMeasurementEvents =>
+      _heartRateMeasurementEvents;
+
   /// A Movisens service containing HRV related data.
-  HrvService({required BluetoothService service}) {
+  HrvService(
+      {required BluetoothService service, BluetoothService? secondaryService}) {
     _bluetoothService = service;
     List<Stream<MovisensEvent>> nonNullStreams = [];
     // For each characteristic that is supported in the service
@@ -255,6 +304,22 @@ class HrvService extends StreamingMovisensService {
                 bytes: event, deviceId: _bluetoothService.deviceId.id))
             .asBroadcastStream();
         nonNullStreams.add(_rmssdEvents!);
+      }
+    }
+    // Secondary Service
+    _heartRateMeasurementService = secondaryService;
+    for (BluetoothCharacteristic char
+        in _heartRateMeasurementService?.characteristics ?? []) {
+      String charUuid = char.uuid.toString();
+      MovisensBluetoothCharacteristics? moviChar =
+          characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
+      if (moviChar == MovisensBluetoothCharacteristics.heartRateMeasurement) {
+        _heartRateMeasurementEvents = char.value
+            .skipWhile((element) => (element.isEmpty))
+            .map((event) => HeartRateMeasurementEvent(
+                bytes: event, deviceId: _bluetoothService.deviceId.id))
+            .asBroadcastStream();
+        nonNullStreams.add(_heartRateMeasurementEvents!);
       }
     }
     _events = Rx.merge(nonNullStreams);
@@ -311,22 +376,63 @@ class MarkerService extends StreamingMovisensService {
 /// A Movisens service containing Battery data.
 ///
 /// Included characteristics:
+/// * [MovisensBluetoothCharacteristics.batteryLevel]
 /// * [MovisensBluetoothCharacteristics.charging]
 class BatteryService extends StreamingMovisensService {
+  BluetoothService? _batteryService;
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
+    MovisensBluetoothCharacteristics.batteryLevel,
     MovisensBluetoothCharacteristics.charging
   ];
 
-  // TODO: Handle buffered values + Battery level
+  // TODO: Handle buffered values
+
+  @override
+  Future<void> enableNotify() async {
+    super.enableNotify();
+    for (BluetoothCharacteristic characteristic
+        in _batteryService?.characteristics ?? []) {
+      if (characteristics.contains(
+              characteristicUUIDToMovisensBluetoothCharacteristics[
+                  characteristic.uuid.toString()]) &&
+          characteristic.properties.notify) {
+        await characteristic.setNotifyValue(true);
+        _log.info(
+            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+      }
+    }
+  }
+
+  @override
+  Future<void> disableNotify() async {
+    super.disableNotify();
+    for (BluetoothCharacteristic characteristic
+        in _batteryService?.characteristics ?? []) {
+      String charUuid = characteristic.uuid.toString();
+      MovisensBluetoothCharacteristics? moviChar =
+          characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
+      if (characteristics.contains(moviChar) &&
+          characteristic.properties.notify) {
+        await characteristic.setNotifyValue(false);
+        _log.info(
+            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+      }
+    }
+  }
 
   Stream<ChargingEvent>? _chargingEvents;
+  Stream<BatteryLevelEvent>? _batteryLevelEvents;
 
   /// Stream of [ChargingEvent]s.
   Stream<ChargingEvent>? get chargingEvents => _chargingEvents;
 
+  /// Stream of [BatteryLevelEvent]s.
+  Stream<BatteryLevelEvent>? get batteryLevelEvents => _batteryLevelEvents;
+
   /// A Movisens service containing Battery data.
-  BatteryService({required BluetoothService service}) {
+  BatteryService(
+      {required BluetoothService service, BluetoothService? secondaryService}) {
     _bluetoothService = service;
     List<Stream<MovisensEvent>> nonNullStreams = [];
     // For each characteristic that is supported in the service
@@ -343,6 +449,25 @@ class BatteryService extends StreamingMovisensService {
                 bytes: event, deviceId: _bluetoothService.deviceId.id))
             .asBroadcastStream();
         nonNullStreams.add(_chargingEvents!);
+      }
+    }
+
+    // Secondary service
+    _batteryService = secondaryService;
+    for (BluetoothCharacteristic char
+        in _batteryService?.characteristics ?? []) {
+      String charUuid = char.uuid.toString();
+      MovisensBluetoothCharacteristics? moviChar =
+          characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
+
+      // add charging stream
+      if (moviChar == MovisensBluetoothCharacteristics.batteryLevel) {
+        _batteryLevelEvents = char.value
+            .skipWhile((element) => element.isEmpty)
+            .map((event) => BatteryLevelEvent(
+                bytes: event, deviceId: _bluetoothService.deviceId.id))
+            .asBroadcastStream();
+        nonNullStreams.add(_batteryLevelEvents!);
       }
     }
     _events = Rx.merge(nonNullStreams);
@@ -373,15 +498,26 @@ enum SensorLocation {
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.ageFloat]
 /// * [MovisensBluetoothCharacteristics.sensorLocation]
+/// * [MovisensBluetoothCharacteristics.gender]
+/// * [MovisensBluetoothCharacteristics.height]
+/// * [MovisensBluetoothCharacteristics.weight]
 class UserDataService extends MovisensService {
+  BluetoothService? _baseUserData;
+
   @override
   List<MovisensBluetoothCharacteristics> characteristics = [
     MovisensBluetoothCharacteristics.ageFloat,
-    MovisensBluetoothCharacteristics.sensorLocation
+    MovisensBluetoothCharacteristics.sensorLocation,
+    MovisensBluetoothCharacteristics.gender,
+    MovisensBluetoothCharacteristics.height,
+    MovisensBluetoothCharacteristics.weight,
   ];
 
   BluetoothCharacteristic? _ageFloat;
   BluetoothCharacteristic? _sensorLocation;
+  BluetoothCharacteristic? _gender;
+  BluetoothCharacteristic? _height;
+  BluetoothCharacteristic? _weight;
 
   /// Get the age of the user in years.
   /// Uses double format (e.g. 23.1 or 56.4 years old).
@@ -420,7 +556,7 @@ class UserDataService extends MovisensService {
     List<int> bytes = await _sensorLocation!.read();
     ByteData byteData = ByteData.sublistView(Uint8List.fromList(bytes));
     int sLoc = byteData.getInt8(0);
-    late SensorLocation sensorLoc;
+    SensorLocation? sensorLoc;
     switch (sLoc) {
       case 1:
         sensorLoc = SensorLocation.rightSideHip;
@@ -507,7 +643,101 @@ class UserDataService extends MovisensService {
     await _sensorLocation!.write(byteList);
   }
 
-  UserDataService({required BluetoothService service}) {
+  /// Get the height of the user in centimeters
+  ///
+  /// Can be null if not set previously.
+  Future<int?> getHeight() async {
+    if (_height == null) {
+      _log.warning("Height characteristic not found on device");
+      return null;
+    }
+    List<int> bytes = await _height!.read();
+    ByteData byteData = ByteData.sublistView(Uint8List.fromList(bytes));
+    int height = byteData.getUint16(0, Endian.little);
+    return height;
+  }
+
+  /// Set the height of the user in centimeters
+  ///
+  Future<void> setHeight(int height) async {
+    if (_height == null) {
+      _log.warning("Height characteristic not found on device");
+      return;
+    }
+    ByteData data = ByteData(2);
+    data.setUint16(0, height, Endian.little);
+    Uint8List byteList = data.buffer.asUint8List();
+    await _height!.write(byteList);
+  }
+
+  /// Get the gender of the user.
+  /// Uses enum [Gender]
+  ///
+  /// Can be null if not set previously.
+  Future<Gender?> getGender() async {
+    if (_gender == null) {
+      _log.warning("Gender characteristic not found on device");
+      return null;
+    }
+    List<int> bytes = await _gender!.read();
+    ByteData byteData = ByteData.sublistView(Uint8List.fromList(bytes));
+    int genderInt = byteData.getUint8(0);
+    switch (genderInt) {
+      case 0:
+        return Gender.male;
+      case 1:
+        return Gender.female;
+      case 2:
+        return Gender.unspecified;
+      case 3:
+        return Gender.invalid;
+      default:
+        return null;
+    }
+  }
+
+  /// Set the gender of the user.
+  /// Uses the [Gender] enum
+  Future<void> setGender(Gender gender) async {
+    if (_gender == null) {
+      _log.warning("Gender characteristic not found on device");
+      return;
+    }
+    ByteData data = ByteData(1);
+    data.setUint8(0, gender.value);
+    Uint8List byteList = data.buffer.asUint8List();
+    await _gender!.write(byteList);
+  }
+
+  /// Get the weight of the user in kg with 1 decimal.
+  ///
+  /// Can be null if not set previously.
+  Future<double?> getWeight() async {
+    if (_weight == null) {
+      _log.warning("Weight characteristic not found on device");
+      return null;
+    }
+    List<int> bytes = await _weight!.read();
+    ByteData byteData = ByteData.sublistView(Uint8List.fromList(bytes));
+    int weight = byteData.getUint16(0, Endian.little);
+    return weight / 200;
+  }
+
+  /// Set the weight of the user in kg with 1 decimal.
+  ///
+  Future<void> setWeight(double weight) async {
+    if (_weight == null) {
+      _log.warning("Weight characteristic not found on device");
+      return;
+    }
+    ByteData data = ByteData(2);
+    data.setUint16(0, (weight * 200).round(), Endian.little);
+    Uint8List byteList = data.buffer.asUint8List();
+    await _weight!.write(byteList);
+  }
+
+  UserDataService(
+      {required BluetoothService service, BluetoothService? secondaryService}) {
     _bluetoothService = service;
     for (BluetoothCharacteristic char in _bluetoothService.characteristics) {
       String charUuid = char.uuid.toString();
@@ -523,6 +753,28 @@ class UserDataService extends MovisensService {
         _sensorLocation = char;
       }
     }
+
+    // Secondary service
+    _baseUserData = secondaryService;
+    for (BluetoothCharacteristic char
+        in (_baseUserData?.characteristics ?? [])) {
+      String charUuid = char.uuid.toString();
+      MovisensBluetoothCharacteristics? moviChar =
+          characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
+
+      // Save as gender characteristic
+      if (moviChar == MovisensBluetoothCharacteristics.gender) {
+        _gender = char;
+      }
+      // Save as weight characteristic
+      if (moviChar == MovisensBluetoothCharacteristics.weight) {
+        _weight = char;
+      }
+      // Save as height characteristic
+      if (moviChar == MovisensBluetoothCharacteristics.height) {
+        _height = char;
+      }
+    }
   }
 
   @override
@@ -531,7 +783,7 @@ class UserDataService extends MovisensService {
 
 /// A Movisens service containing Physical Activity data.
 ///
-/// Several of the characteristics require other data to be set, such as [sensorLocation], [age] or []
+/// Several of the characteristics require other data to be set, such as [sensorLocation], [age]
 ///
 /// Included characteristics:
 /// * [MovisensBluetoothCharacteristics.bodyPosition]
@@ -1169,4 +1421,104 @@ class SkinTemperatureService extends StreamingMovisensService {
 
   @override
   String uuid = serviceToUuid[MovisensServiceTypes.skinTemperature]!;
+}
+
+/// A Movisens service containing device information.
+///
+/// Included characteristics:
+/// * [MovisensBluetoothCharacteristics.firmwareRevisionString]
+/// * [MovisensBluetoothCharacteristics.manufacturerNameString]
+/// * [MovisensBluetoothCharacteristics.modelNumberString]
+/// * [MovisensBluetoothCharacteristics.serialNumberString]
+class DeviceInformationService extends MovisensService {
+  @override
+  List<MovisensBluetoothCharacteristics> characteristics = [
+    MovisensBluetoothCharacteristics.firmwareRevisionString,
+    MovisensBluetoothCharacteristics.manufacturerNameString,
+    MovisensBluetoothCharacteristics.modelNumberString,
+    MovisensBluetoothCharacteristics.serialNumberString,
+  ];
+
+  BluetoothCharacteristic? _firmwareRevisionString;
+  BluetoothCharacteristic? _manufacturerNameString;
+  BluetoothCharacteristic? _modelNumberString;
+  BluetoothCharacteristic? _serialNumberString;
+
+  DeviceInformationService({required BluetoothService service}) {
+    _bluetoothService = service;
+    // For each characteristic that is supported in the service
+    for (BluetoothCharacteristic char in _bluetoothService.characteristics) {
+      String charUuid = char.uuid.toString();
+      MovisensBluetoothCharacteristics? moviChar =
+          characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
+
+      switch (moviChar) {
+        case MovisensBluetoothCharacteristics.firmwareRevisionString:
+          _firmwareRevisionString = char;
+          break;
+        case MovisensBluetoothCharacteristics.manufacturerNameString:
+          _manufacturerNameString = char;
+          break;
+        case MovisensBluetoothCharacteristics.modelNumberString:
+          _modelNumberString = char;
+          break;
+        case MovisensBluetoothCharacteristics.serialNumberString:
+          _serialNumberString = char;
+          break;
+        default:
+          _log.warning(
+              "Characteristics uuid $charUuid is not recognized on movisens device [${char.deviceId.id}]");
+          break;
+      }
+    }
+  }
+
+  /// Get the firmware revision string of the device.
+  Future<String?> getFirmwareRevisionString() async {
+    if (_firmwareRevisionString == null) {
+      _log.warning(
+          "Firmware Revision String characteristic not found on device");
+      return null;
+    }
+    List<int> bytes = await _firmwareRevisionString!.read();
+    String firmwareRevisionString = String.fromCharCodes(bytes);
+    return firmwareRevisionString.toString();
+  }
+
+  /// Get the manufacturer name string of the device.
+  Future<String?> getManufacturerNameString() async {
+    if (_manufacturerNameString == null) {
+      _log.warning(
+          "Manufacturer Name String characteristic not found on device");
+      return null;
+    }
+    List<int> bytes = await _manufacturerNameString!.read();
+    String manufacturerNameString = String.fromCharCodes(bytes);
+    return manufacturerNameString.toString();
+  }
+
+  /// Get the model number string of the device.
+  Future<String?> getModelNumberString() async {
+    if (_modelNumberString == null) {
+      _log.warning("Model Number String characteristic not found on device");
+      return null;
+    }
+    List<int> bytes = await _modelNumberString!.read();
+    String modelNumberString = String.fromCharCodes(bytes);
+    return modelNumberString;
+  }
+
+  /// Get the serial number string of the device.
+  Future<String?> getSerialNumberString() async {
+    if (_serialNumberString == null) {
+      _log.warning("Serial Number String characteristic not found on device");
+      return null;
+    }
+    List<int> bytes = await _serialNumberString!.read();
+    String serialNumberString = String.fromCharCodes(bytes);
+    return serialNumberString.toString();
+  }
+
+  @override
+  String uuid = serviceToUuid[MovisensServiceTypes.deviceInformation]!;
 }

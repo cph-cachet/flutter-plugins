@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:movisens_flutter/movisens_flutter.dart';
 import 'package:logging/logging.dart';
@@ -48,7 +50,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // The name of your device
   // Due to iOS using generated UUIDs instead of MAC addresses,
   // this is the only way to connect to the device
-  String deviceName = "xxx"; // Example: "MOVISENS Sensor 04421"
+  String deviceName =
+      "MOVISENS Sensor 01234"; // Example: "MOVISENS Sensor 04421"
 
   void connect() async {
     await device.connect();
@@ -114,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await device.sensorControlService?.getMeasurementStatus();
     bool? me = await device.sensorControlService?.getMeasurementEnabled();
     String s = (ms != null) ? enumToReadableString(ms) : "null";
-    print("Measurement status:: ${s}");
+    print("Measurement status:: $s");
     print("Measurement enabled:: $me");
     // Start a measurement that last 120 seconds or a indefinite one
     // Certain data has a delay of 60 - 84 seconds, so preferably a measurement longer than that.
@@ -125,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ms = await device.sensorControlService?.getMeasurementStatus();
     me = await device.sensorControlService?.getMeasurementEnabled();
     s = (ms != null) ? enumToReadableString(ms) : "null";
-    print("Measurement status after start:: ${s}");
+    print("Measurement status after start:: $s");
     print("Measurement enabled after start:: $me");
   }
 
@@ -137,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await device.sensorControlService?.getMeasurementStatus();
     bool? me = await device.sensorControlService?.getMeasurementEnabled();
     String s = (ms != null) ? enumToReadableString(ms) : "null";
-    print("Measurement status after stop:: ${s}");
+    print("Measurement status after stop:: $s");
     print("Measurement enabled after stop:: $me");
   }
 
@@ -179,14 +182,50 @@ class _MyHomePageState extends State<MyHomePage> {
     int? sl = await device.sensorControlService?.getStorageLevel();
     print('Storage level :: $sl');
 
+    // set age
+    await device.userDataService?.setAgeFloat(41.5);
     // get age
     double? age = await device.userDataService?.getAgeFloat();
     print('Age:: $age');
 
+    // set sensor location
+    await device.userDataService?.setSensorLocation(SensorLocation.chest);
     // get sensor location
     SensorLocation? sensorloc =
         await device.userDataService?.getSensorLocation();
     print('Sensor location:: $sensorloc');
+
+    // set gender
+    await device.userDataService?.setGender(Gender.male);
+    // get gender
+    Gender? gender = await device.userDataService?.getGender();
+    print('gender:: $gender');
+
+    // set height
+    await device.userDataService?.setHeight(182);
+    // get height
+    int? height = await device.userDataService?.getHeight();
+    print('height:: $height cm');
+
+    // set weight
+    await device.userDataService?.setWeight(84.5);
+    // get weight
+    double? weight = await device.userDataService?.getWeight();
+    print('weight:: $weight kg');
+
+    // Device information:
+    String? firmwareRevisionString =
+        await device.deviceInformationService?.getFirmwareRevisionString();
+    print(firmwareRevisionString);
+    String? manufacturerNameString =
+        await device.deviceInformationService?.getManufacturerNameString();
+    print(manufacturerNameString);
+    String? modelNumberString =
+        await device.deviceInformationService?.getModelNumberString();
+    print(modelNumberString);
+    String? serialNumberString =
+        await device.deviceInformationService?.getSerialNumberString();
+    print(serialNumberString);
   }
 
   void disconnect() async {
