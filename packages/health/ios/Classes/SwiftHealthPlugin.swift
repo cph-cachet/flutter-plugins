@@ -399,7 +399,18 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "device": [
+                            "udi_device_identifier": sample.device?.udiDeviceIdentifier,
+                            "firmware_version": sample.device?.firmwareVersion,
+                            "hardware_version": sample.device?.hardwareVersion,
+                            "manufacturer": sample.device?.manufacturer,
+                            "model": sample.device?.model,
+                            "name": sample.device?.name,
+                            "software_version": sample.device?.softwareVersion
+                        ]
+
+
                     ]
                 }
                 DispatchQueue.main.async {
@@ -438,7 +449,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "device": [
+                            "udi_device_identifier": sample.device?.udiDeviceIdentifier,
+                            "firmware_version": sample.device?.firmwareVersion,
+                            "hardware_version": sample.device?.hardwareVersion,
+                            "manufacturer": sample.device?.manufacturer,
+                            "model": sample.device?.model,
+                            "name": sample.device?.name,
+                            "software_version": sample.device?.softwareVersion
+                        ]
                     ]
                 }
                 DispatchQueue.main.async {
@@ -458,7 +478,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "device": [
+                            "udi_device_identifier": sample.device?.udiDeviceIdentifier,
+                            "firmware_version": sample.device?.firmwareVersion,
+                            "hardware_version": sample.device?.hardwareVersion,
+                            "manufacturer": sample.device?.manufacturer,
+                            "model": sample.device?.model,
+                            "name": sample.device?.name,
+                            "software_version": sample.device?.softwareVersion
+                        ]
                     ]
                 }
                 
@@ -484,7 +513,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "device": [
+                            "udi_device_identifier": sample.device?.udiDeviceIdentifier,
+                            "firmware_version": sample.device?.firmwareVersion,
+                            "hardware_version": sample.device?.hardwareVersion,
+                            "manufacturer": sample.device?.manufacturer,
+                            "model": sample.device?.model,
+                            "name": sample.device?.name,
+                            "software_version": sample.device?.softwareVersion
+                        ]
                     ]
                 }
                 DispatchQueue.main.async {

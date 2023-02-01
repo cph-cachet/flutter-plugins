@@ -12,6 +12,7 @@ class HealthDataPoint {
   String _deviceId;
   String _sourceId;
   String _sourceName;
+  Device _device;
 
   HealthDataPoint(
       this._value,
@@ -22,7 +23,8 @@ class HealthDataPoint {
       this._platform,
       this._deviceId,
       this._sourceId,
-      this._sourceName) {
+      this._sourceName,
+      this._device) {
     // set the value to minutes rather than the category
     // returned by the native API
     if (type == HealthDataType.MINDFULNESS ||
@@ -65,7 +67,8 @@ class HealthDataPoint {
             .indexOf(json['platform_type'])],
         json['device_id'],
         json['source_id'],
-        json['source_name']);
+        json['source_name'],
+        Device.fromJson(json['device']));
   }
 
   /// Converts the [HealthDataPoint] to a json object
@@ -78,7 +81,8 @@ class HealthDataPoint {
         'platform_type': PlatformTypeJsonValue[platform],
         'device_id': deviceId,
         'source_id': sourceId,
-        'source_name': sourceName
+        'source_name': sourceName,
+        'device': device.toJson()
       };
 
   @override
@@ -91,30 +95,32 @@ class HealthDataPoint {
     platform: $platform,
     deviceId: $deviceId,
     sourceId: $sourceId,
-    sourceName: $sourceName""";
+    sourceName: $sourceName,
+    device: $device
+    """;
 
-  // / The quantity value of the data point
+  /// The quantity value of the data point.
   HealthValue get value => _value;
 
-  /// The start of the time interval
+  /// The start of the time interval.
   DateTime get dateFrom => _dateFrom;
 
-  /// The end of the time interval
+  /// The end of the time interval.
   DateTime get dateTo => _dateTo;
 
-  /// The type of the data point
+  /// The type of the data point.
   HealthDataType get type => _type;
 
-  /// The unit of the data point
+  /// The unit of the data point.
   HealthDataUnit get unit => _unit;
 
-  /// The software platform of the data point
+  /// The software platform of the data point.
   PlatformType get platform => _platform;
 
-  /// The data point type as a string
+  /// The data point type as a string.
   String get typeString => _type.typeToString();
 
-  /// The data point unit as a string
+  /// The data point unit as a string.
   String get unitString => _unit.typeToString();
 
   /// The id of the device from which the data point was fetched.
@@ -125,6 +131,9 @@ class HealthDataPoint {
 
   /// The name of the source from which the data point was fetched.
   String get sourceName => _sourceName;
+
+  /// The device from which the data point was fetched.
+  Device get device => _device;
 
   @override
   bool operator ==(Object o) {
@@ -137,10 +146,11 @@ class HealthDataPoint {
         this.platform == o.platform &&
         this.deviceId == o.deviceId &&
         this.sourceId == o.sourceId &&
-        this.sourceName == o.sourceName;
+        this.sourceName == o.sourceName &&
+        this.device == o.device;
   }
 
   @override
   int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type, platform,
-      deviceId, sourceId, sourceName);
+      deviceId, sourceId, sourceName, device);
 }
