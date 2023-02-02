@@ -338,10 +338,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
   }
 
-// delete records of the diven type in the time range
+// delete records of the given type in the time range
   private fun delete(call: MethodCall, result: Result) {
 
-    if (activity == null) {
+    if (context == null) {
       result.success(false)
       return
     }
@@ -360,14 +360,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val dataSource = DataDeleteRequest.Builder()    
       .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
       .addDataType(dataType)
-      .build()   
+      .deleteAllSessions()
+      .build()
 
     val fitnessOptions = typesBuilder.build()
+
     try {
       val googleSignInAccount =
-        GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
-    
-      Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+        GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+      
+      Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
       .deleteData(dataSource)
       .addOnSuccessListener {
         Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet deleted successfully!")
@@ -382,10 +384,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 }
 
-// save blood pressure
-private fun writeBloodPressure(call: MethodCall, result: Result) {
+  // save blood pressure
+  private fun writeBloodPressure(call: MethodCall, result: Result) {
 
-    if (activity == null) {
+    if (context == null) {
       result.success(false)
       return
     }
@@ -402,8 +404,8 @@ private fun writeBloodPressure(call: MethodCall, result: Result) {
     val dataSource = DataSource.Builder()
       .setDataType(dataType)
       .setType(DataSource.TYPE_RAW)
-      .setDevice(Device.getLocalDevice(activity!!.applicationContext))
-      .setAppPackageName(activity!!.applicationContext)
+      .setDevice(Device.getLocalDevice(context!!.applicationContext))
+      .setAppPackageName(context!!.applicationContext)
       .build()
 
     val builder = DataPoint.builder(dataSource)
@@ -420,8 +422,8 @@ private fun writeBloodPressure(call: MethodCall, result: Result) {
     val fitnessOptions = typesBuilder.build()
     try {
       val googleSignInAccount =
-        GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
-      Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+        GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+      Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
         .insertData(dataSet)
         .addOnSuccessListener {
           Log.i("FLUTTER_HEALTH::SUCCESS", "Blood Pressure added successfully!")

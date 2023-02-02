@@ -19,7 +19,9 @@ enum AppState {
   NO_DATA,
   AUTH_NOT_GRANTED,
   DATA_ADDED,
+  DATA_DELETED,
   DATA_NOT_ADDED,
+  DATA_NOT_DELETED,
   STEPS_READY,
 }
 
@@ -43,12 +45,16 @@ class _HealthAppState extends State<HealthApp> {
       HealthDataType.HEIGHT,
       HealthDataType.BLOOD_GLUCOSE,
       HealthDataType.WORKOUT,
+      HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
       // Uncomment these lines on iOS - only available on iOS
       // HealthDataType.AUDIOGRAM
     ];
 
     // with coresponsing permissions
     final permissions = [
+      HealthDataAccess.READ,
+      HealthDataAccess.READ,
       HealthDataAccess.READ,
       HealthDataAccess.READ,
       HealthDataAccess.READ,
@@ -74,6 +80,9 @@ class _HealthAppState extends State<HealthApp> {
     // The location permission is requested for Workouts using the Distance information.
     await Permission.activityRecognition.request();
     await Permission.location.request();
+
+    // Clear old data points
+    _healthDataList.clear();
 
     if (requested) {
       try {
@@ -115,6 +124,8 @@ class _HealthAppState extends State<HealthApp> {
       HealthDataType.HEIGHT,
       HealthDataType.BLOOD_GLUCOSE,
       HealthDataType.WORKOUT, // Requires Google Fit on Android
+      HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
       // Uncomment these lines on iOS - only available on iOS
       // HealthDataType.AUDIOGRAM,
     ];
@@ -123,9 +134,13 @@ class _HealthAppState extends State<HealthApp> {
       HealthDataAccess.WRITE,
       HealthDataAccess.WRITE,
       HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
       // HealthDataAccess.WRITE
     ];
     final permissions = [
+      HealthDataAccess.READ_WRITE,
+      HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE,
@@ -165,6 +180,8 @@ class _HealthAppState extends State<HealthApp> {
       totalDistanceUnit: HealthDataUnit.FOOT,
     );
 
+    success &= await health.writeBloodPressure(120, 90, now, now);
+
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
@@ -185,6 +202,58 @@ class _HealthAppState extends State<HealthApp> {
 
     setState(() {
       _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
+    });
+  }
+
+  /// Delete some random health data.
+  Future deleteData() async {
+    final now = DateTime.now();
+    final earlier = now.subtract(Duration(minutes: 30));
+
+    final types = [
+      HealthDataType.STEPS,
+      HealthDataType.HEIGHT,
+      HealthDataType.BLOOD_GLUCOSE,
+      HealthDataType.WORKOUT, // Requires Google Fit on Android
+      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+      // Uncomment these lines on iOS - only available on iOS
+      // HealthDataType.AUDIOGRAM,
+    ];
+    final rights = [
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      HealthDataAccess.WRITE,
+      // HealthDataAccess.WRITE
+    ];
+    final permissions = [
+      HealthDataAccess.READ_WRITE,
+      HealthDataAccess.READ_WRITE,
+      HealthDataAccess.READ_WRITE,
+      HealthDataAccess.READ_WRITE,
+      HealthDataAccess.READ_WRITE,
+      // HealthDataAccess.READ_WRITE,
+    ];
+    bool? hasPermissions =
+        await HealthFactory.hasPermissions(types, permissions: rights);
+    if (hasPermissions == false) {
+      await health.requestAuthorization(types, permissions: permissions);
+    }
+
+    bool success = false;
+
+    success = await health.delete(HealthDataType.STEPS, earlier, now);
+    success &= await health.delete(HealthDataType.HEIGHT, earlier, now);
+    success &= await health.delete(HealthDataType.BLOOD_GLUCOSE, earlier, now);
+    success &= await health.delete(HealthDataType.WORKOUT, earlier, now);
+    success &= await health.delete(
+        HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+        earlier,
+        now); // on Android this deletes both systolic and diastolic measurements.
+
+    setState(() {
+      _state = success ? AppState.DATA_DELETED : AppState.DATA_NOT_DELETED;
     });
   }
 
@@ -285,12 +354,20 @@ class _HealthAppState extends State<HealthApp> {
     return Text('Data points inserted successfully!');
   }
 
+  Widget _dataDeleted() {
+    return Text('Data points deleted successfully!');
+  }
+
   Widget _stepsFetched() {
     return Text('Total number of steps: $_nofSteps');
   }
 
   Widget _dataNotAdded() {
     return Text('Failed to add data');
+  }
+
+  Widget _dataNotDeleted() {
+    return Text('Failed to delete data');
   }
 
   Widget _content() {
@@ -304,11 +381,16 @@ class _HealthAppState extends State<HealthApp> {
       return _authorizationNotGranted();
     else if (_state == AppState.DATA_ADDED)
       return _dataAdded();
+    else if (_state == AppState.DATA_DELETED)
+      return _dataDeleted();
     else if (_state == AppState.STEPS_READY)
       return _stepsFetched();
-    else if (_state == AppState.DATA_NOT_ADDED) return _dataNotAdded();
-
-    return _contentNotFetched();
+    else if (_state == AppState.DATA_NOT_ADDED)
+      return _dataNotAdded();
+    else if (_state == AppState.DATA_NOT_DELETED)
+      return _dataNotDeleted();
+    else
+      return _contentNotFetched();
   }
 
   @override
@@ -329,6 +411,12 @@ class _HealthAppState extends State<HealthApp> {
                   addData();
                 },
                 icon: Icon(Icons.add),
+              ),
+              IconButton(
+                onPressed: () {
+                  deleteData();
+                },
+                icon: Icon(Icons.delete),
               ),
               IconButton(
                 onPressed: () {
