@@ -524,7 +524,8 @@ class HealthFactory {
     if (_platformType == PlatformType.IOS && !_isOnIOS(activityType)) {
       throw HealthException(activityType,
           "Workout activity type $activityType is not supported on iOS");
-    } else if (!_isOnAndroid(activityType)) {
+    } else if (_platformType == PlatformType.ANDROID &&
+        !_isOnAndroid(activityType)) {
       throw HealthException(activityType,
           "Workout activity type $activityType is not supported on Android");
     }
