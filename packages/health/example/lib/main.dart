@@ -181,6 +181,8 @@ class _HealthAppState extends State<HealthApp> {
     );
 
     success &= await health.writeBloodPressure(120, 90, now, now);
+    success &= await health.writeHealthData(
+        3, HealthDataType.SLEEP_ASLEEP, now.subtract(Duration(hours: 3)), now);
 
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
