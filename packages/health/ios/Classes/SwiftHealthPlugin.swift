@@ -151,6 +151,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             try! writeAudiogram(call: call, result: result)
         }
         
+        /// Handle writeBloodPressure
+        else if (call.method.elementsEqual("writeBloodPressure")){
+            try! writeBloodPressure(call: call, result: result)
+        }
+        
         /// Handle writeWorkoutData
         else if (call.method.elementsEqual("writeWorkoutData")){
             try! writeWorkoutData(call: call, result: result)
@@ -160,6 +165,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("hasPermissions")){
             try! hasPermissions(call: call, result: result)
         }
+        
+        /// Handle delete data
+        else if (call.method.elementsEqual("delete")){
+            try! delete(call: call, result: result)
+        }
+        
     }
     
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -325,6 +336,32 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         })
     }
+
+    func writeBloodPressure(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+            let systolic = (arguments["systolic"] as? Double),
+            let diastolic = (arguments["diastolic"] as? Double),
+            let startTime = (arguments["startTime"] as? NSNumber),
+            let endTime = (arguments["endTime"] as? NSNumber)
+        else {
+            throw PluginError(message: "Invalid Arguments")
+        }
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let systolic_sample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .bloodPressureSystolic)!, quantity: HKQuantity(unit: HKUnit.millimeterOfMercury(), doubleValue: systolic), start: dateFrom, end: dateTo)
+        let diastolic_sample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .bloodPressureDiastolic)!, quantity: HKQuantity(unit: HKUnit.millimeterOfMercury(), doubleValue: diastolic), start: dateFrom, end: dateTo)
+        
+        HKHealthStore().save([systolic_sample, diastolic_sample], withCompletion: { (success, error) in
+            if let err = error {
+                print("Error Saving Blood Pressure Sample: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
+        })
+    }
+
     
     func writeWorkoutData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
         guard let arguments = call.arguments as? NSDictionary,
@@ -333,7 +370,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
               let endTime = (arguments["endTime"] as? NSNumber),
               let ac = workoutActivityTypeMap[activityType]
         else {
-            throw PluginError(message: "Invalid Arguments - ActivityType, startTime or endTime invalid")
+            throw PluginError(message: "Invalid Arguments - activityType, startTime or endTime invalid")
         }
         
         var totalEnergyBurned: HKQuantity?
@@ -364,6 +401,42 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 result(success)
             }
         })
+    }
+    
+    func delete(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? NSDictionary
+        let dataTypeKey = (arguments?["dataTypeKey"] as? String)!
+        let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
+        let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
+
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let dataType = dataTypeLookUp(key: dataTypeKey)
+        
+        let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
+
+        let deleteQuery = HKSampleQuery(sampleType: dataType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { [self] x, samplesOrNil, error in
+
+            guard let samplesOrNil = samplesOrNil, error == nil else {
+                // Handle the error if necessary
+                print("Error deleting \(dataType)")
+                return
+            }
+
+            // Delete the retrieved objects from the HealthKit store
+            HKHealthStore().delete(samplesOrNil) { (success, error) in
+                if let err = error {
+                        print("Error deleting \(dataType) Sample: \(err.localizedDescription)")
+                    }
+                    DispatchQueue.main.async {
+                        result(success)
+                    }
+            }
+        }
+
+        HKHealthStore().execute(deleteQuery)
     }
     
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -499,6 +572,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     }
                 } else {
                     DispatchQueue.main.async {
+                        print("Error getting ECG - only available on iOS 14.0 and above!")
                         result(nil)
                     }
                 }

@@ -12,27 +12,5 @@ class HealthException implements Exception {
       "Error requesting health data type '$dataType' - cause: $cause";
 }
 
-/// Extracts the string value from an enum
-String _enumToString(enumItem) => enumItem.toString().split('.').last;
-
-extension HealthWorkoutActivityTypeToStringExtension
-    on HealthWorkoutActivityType {
-  /// Returns the string representation of the enum
-  /// e.g. [HealthWorkoutActivityType.CYCLING] -> 'CYCLING'
-  String typeToString() => _enumToString(this);
-}
-
-extension HealthDataTypeToStringExtension on HealthDataType {
-  /// Returns the string representation of the enum
-  /// e.g. [HealthDataType.BLOOD_GLUCOSE] -> 'BLOOD_GLUCOSE'
-  String typeToString() => _enumToString(this);
-}
-
-extension HealthDataUnitToStringExtension on HealthDataUnit {
-  /// Returns the string representation of the enum
-  /// e.g. [HealthDataUnit.LITER] -> 'LITER'
-  String typeToString() => _enumToString(this);
-}
-
 /// A list of supported platforms.
 enum PlatformType { IOS, ANDROID }

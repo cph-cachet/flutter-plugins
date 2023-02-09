@@ -1,7 +1,17 @@
+## 4.5.0
+
+- Updated android sdk, gradle
+- Updated `enumToString` to native `.name`
+- Update and fixed JSON serialization of HealthDataPoints
+- Removed auth request in `writeWorkoutData` to avoid bug when denying the auth.
+- Merged pull requests [#653](https://github.com/cph-cachet/flutter-plugins/pull/653), [#652](https://github.com/cph-cachet/flutter-plugins/pull/652), [#639](https://github.com/cph-cachet/flutter-plugins/pull/639), [#644](https://github.com/cph-cachet/flutter-plugins/pull/644)
+- Further developed [#644](https://github.com/cph-cachet/flutter-plugins/pull/644) on android to accommodate having the `writeBloodPressure` api.
+- Small bug fixes
+
 ## 4.4.0
 
-- Merged pull request #566, #578, #596, #623, #632
-- ECG added as part of #566
+- Merged pull request #[566](https://github.com/cph-cachet/flutter-plugins/pull/566), [#578](https://github.com/cph-cachet/flutter-plugins/pull/578), [#596](https://github.com/cph-cachet/flutter-plugins/pull/596), [#623](https://github.com/cph-cachet/flutter-plugins/pull/623), [#632](https://github.com/cph-cachet/flutter-plugins/pull/632)
+- ECG added as part of [#566](https://github.com/cph-cachet/flutter-plugins/pull/566)
 - Small fixes
 
 ## 4.3.0
