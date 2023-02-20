@@ -32,6 +32,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |             |                                                             |
 | HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes         |                                                             |
 | HEIGHT                      | METERS                  | yes     | yes         |                                                             |
+| INSULIN_DELIVERY            | INTERNATIONAL_UNIT      | yes     |             |                                                             |
 | RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |             |                                                             |
 | STEPS                       | COUNT                   | yes     | yes         |                                                             |
 | WAIST_CIRCUMFERENCE         | METERS                  | yes     |             |                                                             |
