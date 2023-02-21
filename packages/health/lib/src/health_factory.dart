@@ -356,6 +356,9 @@ class HealthFactory {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
 
+    if (reason == InsulinDeliveryReason.NOT_SET)
+      throw ArgumentError("set a valid insulin delivery reason");
+
     Map<String, dynamic> args = {
       'units': units,
       'reason': reason.index,
