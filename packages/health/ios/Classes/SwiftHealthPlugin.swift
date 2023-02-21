@@ -156,6 +156,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("writeBloodPressure")){
             try! writeBloodPressure(call: call, result: result)
         }
+
+        /// Handle writeInsulinDelivery
+        else if (call.method.elementsEqual("writeInsulinDelivery")){
+            try! writeInsulinDelivery(call: call, result: result)
+        }
         
         /// Handle writeWorkoutData
         else if (call.method.elementsEqual("writeWorkoutData")){
@@ -363,6 +368,33 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         })
     }
 
+    func writeInsulinDelivery(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+            let units = (arguments["units"] as? Double),
+            let reason = (arguments["reason"] as? NSNumber),
+            let startTime = (arguments["startTime"] as? NSNumber),
+            let endTime = (arguments["endTime"] as? NSNumber)
+        else {
+            throw PluginError(message: "Invalid Arguments")
+        }
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let type = HKSampleType.quantityType(forIdentifier: .insulinDelivery)!
+        let quantity = HKQuantity(unit: HKUnit.internationalUnit(), doubleValue: units)
+        let metadata = [HKMetadataKeyInsulinDeliveryReason: reason]
+
+        let insulin_sample = HKQuantitySample(type: type, quantity: quantity, start: dateFrom, end: dateTo, metadata: metadata)
+        
+        HKHealthStore().save(insulin_sample, withCompletion: { (success, error) in
+            if let err = error {
+                print("Error Saving Insulin Delivery Sample: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
+        })
+    }
     
     func writeWorkoutData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
         guard let arguments = call.arguments as? NSDictionary,
@@ -473,7 +505,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
+                        "source_name": sample.sourceRevision.source.name,
+                        "metadata": sample.metadata
                     ]
                 }
                 DispatchQueue.main.async {
