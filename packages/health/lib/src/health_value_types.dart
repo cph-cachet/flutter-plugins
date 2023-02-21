@@ -266,7 +266,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
 }
 
 class InsulinDeliveryHealthValue extends HealthValue {
-  num units;
+  double units;
   InsulinDeliveryReason reason;
 
   InsulinDeliveryHealthValue({
@@ -274,12 +274,20 @@ class InsulinDeliveryHealthValue extends HealthValue {
     required this.reason,
   });
 
-  factory InsulinDeliveryHealthValue.fromJson(json) =>
-      InsulinDeliveryHealthValue(
-        units: json['value'],
-        reason: InsulinDeliveryReason.values
-            .firstWhere((c) => c.index == json['reason']),
-      );
+  factory InsulinDeliveryHealthValue.fromJson(json) {
+    final units = json['value'];
+
+    final metadata = json['metadata'] == null
+        ? null
+        : Map<String, dynamic>.from(json['metadata']);
+    final reasonIndex =
+        metadata == null || !metadata.containsKey('HKInsulinDeliveryReason')
+            ? 0
+            : metadata['HKInsulinDeliveryReason'] as double;
+    final reason = InsulinDeliveryReason.values[reasonIndex.toInt()];
+
+    return InsulinDeliveryHealthValue(units: units, reason: reason);
+  }
 
   Map<String, dynamic> toJson() => {
         'value': units.toString(),
