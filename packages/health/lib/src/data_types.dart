@@ -349,6 +349,12 @@ enum HealthWorkoutActivityType {
   // Android only
   AEROBICS,
   BIATHLON,
+  BIKING_HAND,
+  BIKING_MOUNTAIN,
+  BIKING_ROAD,
+  BIKING_SPINNING,
+  BIKING_STATIONARY,
+  BIKING_UTILITY,
   CALISTHENICS,
   CIRCUIT_TRAINING,
   CROSS_FIT,
@@ -364,6 +370,7 @@ enum HealthWorkoutActivityType {
   HOUSEWORK,
   INTERVAL_TRAINING,
   IN_VEHICLE,
+  ICE_SKATING,
   KAYAKING,
   KETTLEBELL_TRAINING,
   KICK_SCOOTER,
@@ -374,6 +381,7 @@ enum HealthWorkoutActivityType {
   PARAGLIDING,
   POLO,
   ROCK_CLIMBING, // on iOS this is the same as CLIMBING
+  ROWING_MACHINE,
   RUNNING_JOGGING, // on iOS this is the same as RUNNING
   RUNNING_SAND, // on iOS this is the same as RUNNING
   RUNNING_TREADMILL, // on iOS this is the same as RUNNING
@@ -381,10 +389,13 @@ enum HealthWorkoutActivityType {
   SKATING_CROSS, // on iOS this is the same as SKATING
   SKATING_INDOOR, // on iOS this is the same as SKATING
   SKATING_INLINE, // on iOS this is the same as SKATING
+  SKIING,
   SKIING_BACK_COUNTRY,
   SKIING_KITE,
   SKIING_ROLLER,
   SLEDDING,
+  SNOWMOBILE,
+  SNOWSHOEING,
   STAIR_CLIMBING_MACHINE,
   STANDUP_PADDLEBOARDING,
   STILL,

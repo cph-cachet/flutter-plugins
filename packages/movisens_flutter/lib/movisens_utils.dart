@@ -144,6 +144,29 @@ Map<String, MovisensBluetoothCharacteristics>
       MovisensBluetoothCharacteristics.skinTemperatureBuffered,
   "f89edeb7-0d8c-b529-baef-2f9ab82f6cc6":
       MovisensBluetoothCharacteristics.skinTemperatureWaiting,
+
+  // Characteristics implemented in Bluetooth general format.
+  // https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers/Assigned%20Number%20Types/Assigned%20Numbers.pdf
+  "00002a19-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.batteryLevel,
+  "00002a26-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.firmwareRevisionString,
+  "00002a29-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.manufacturerNameString,
+  "00002a24-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.modelNumberString,
+  "00002a25-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.serialNumberString,
+  "00002a37-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.heartRateMeasurement,
+  "00002a8c-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.gender,
+  "00002a8e-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.height,
+  "00002a98-0000-1000-8000-00805f9b34fb":
+      MovisensBluetoothCharacteristics.weight,
+
+  // TODO: Investigate use for future release.
   // "8d9fb9cb-861c-4328-b42d-075efe8fa19f": "Stop Measurement",
   // "8738ddd8-7937-43a0-848a-3a91b264e3b5": "Evaluation Expire Time",
   // "f89edec4-d590-764d-530f-8fff5c181606": "Current Time", --- DEPRECATED
@@ -176,11 +199,39 @@ Map<String, MovisensServiceTypes> serviceUUIDToName = {
   "da87d1a7-749c-4711-bd54-c625043ecd83": MovisensServiceTypes.respiration,
   "f89edeb6-e4e8-928b-4cfa-ebc07fce1768": MovisensServiceTypes.sensorControl,
   "247af432-444c-4211-8b9d-2c8512cfdf4a": MovisensServiceTypes.skinTemperature,
+  "0000180a-0000-1000-8000-00805f9b34fb":
+      MovisensServiceTypes.deviceInformation,
 };
 
 /// Reversed map of [MovisensServiceTypes] enum to uuid
 var serviceToUuid = Map.fromEntries(
     serviceUUIDToName.entries.map((e) => MapEntry(e.value, e.key)));
+
+// secondary services
+List<String> _secondaryServices = [
+  "0000180f-0000-1000-8000-00805f9b34fb",
+  "0000180d-0000-1000-8000-00805f9b34fb",
+  "0000181c-0000-1000-8000-00805f9b34fb",
+];
+
+/// Gender of the user
+enum Gender { male, female, unspecified, invalid }
+
+/// The numerical value of the [Gender] enum.
+extension GenderValue on Gender {
+  int get value {
+    switch (this) {
+      case Gender.male:
+        return 0;
+      case Gender.female:
+        return 1;
+      case Gender.unspecified:
+        return 2;
+      case Gender.invalid:
+        return 3;
+    }
+  }
+}
 
 /// Converts enum to a readable string with spaces and in lower case.
 String enumToReadableString(Enum e) {

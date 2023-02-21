@@ -11,6 +11,8 @@ The plugin supports:
 - writing audiograms on iOS using the `writeAudiogram` method.
 - accessing total step counts using the `getTotalStepsInInterval` method.
 - cleaning up dublicate data points via the `removeDuplicates` method.
+- removing data of a given type in a selected period of time using the `delete` method.
+- writing blood pressure data in a single call using the `saveBloodPressure` method (Android only).
 
 Note that for Android, the target phone **needs** to have [Google Fit](https://www.google.com/fit/) installed and have access to the internet, otherwise this plugin will not work.
 

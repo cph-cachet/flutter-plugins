@@ -1,3 +1,15 @@
+## 1.2.0
+
+- Added `DeviceInformationService`, `BatteryLevel`, live `HeartRateMeasurement`and more `UserData` values.
+
+## 1.1.0+1
+
+- added support for getting a stream of device connection `state` events
+
+## 1.1.0
+
+- misc. update to docs
+
 ## 1.0.0
 
 - Reimplentation of package to use direct bluetooth communication using `flutter_blue_plus` instead of Movisens libraries

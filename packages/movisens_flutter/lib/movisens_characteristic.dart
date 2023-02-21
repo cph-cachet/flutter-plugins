@@ -75,5 +75,16 @@ enum MovisensBluetoothCharacteristics {
   skinTemperature,
   skinTemperature1sBuffered,
   skinTemperatureBuffered,
-  skinTemperatureWaiting
+  skinTemperatureWaiting,
+
+  // General bluetooth 4.0 characteristics:
+  batteryLevel,
+  firmwareRevisionString,
+  manufacturerNameString,
+  modelNumberString,
+  serialNumberString,
+  heartRateMeasurement,
+  gender,
+  height,
+  weight,
 }

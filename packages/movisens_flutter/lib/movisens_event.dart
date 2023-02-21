@@ -808,3 +808,57 @@ class SkinTemperatureEvent extends MovisensEvent {
     return '${super.toString()}, Skin Temperature: $skinTemperature';
   }
 }
+
+/// An event of type [MovisensBluetoothCharacteristics.heartRateMeasurement]
+///
+/// A measurement of the current heart rate in beats per minute.
+/// Samples approximately every second.
+class HeartRateMeasurementEvent extends MovisensEvent {
+  late int _heartRateMeasurement;
+
+  HeartRateMeasurementEvent(
+      {required List<int> bytes, required String deviceId})
+      : super(deviceId) {
+    ByteData byteData = ByteData.sublistView(Uint8List.fromList(bytes));
+    _heartRateMeasurement =
+        (byteData.getUint16(0, Endian.little) / 250).round();
+  }
+
+  @override
+  MovisensBluetoothCharacteristics type =
+      MovisensBluetoothCharacteristics.heartRateMeasurement;
+
+  /// The calculated heart rate at the time
+  /// in beats per minute.
+  int get heartRateMeasurement => _heartRateMeasurement;
+
+  @override
+  String toString() {
+    return '${super.toString()}, Heart Rate Measurement: $heartRateMeasurement beats per minute';
+  }
+}
+
+/// An event of type [MovisensBluetoothCharacteristics.batteryLevel]
+///
+/// A measurement of the device battery level in percent.
+class BatteryLevelEvent extends MovisensEvent {
+  late int _batteryLevel;
+
+  BatteryLevelEvent({required List<int> bytes, required String deviceId})
+      : super(deviceId) {
+    ByteData byteData = ByteData.sublistView(Uint8List.fromList(bytes));
+    _batteryLevel = byteData.getUint8(0);
+  }
+
+  @override
+  MovisensBluetoothCharacteristics type =
+      MovisensBluetoothCharacteristics.batteryLevel;
+
+  /// Get battery level in percent.
+  int get batteryLevel => _batteryLevel;
+
+  @override
+  String toString() {
+    return '${super.toString()}, Battery Level: $batteryLevel%';
+  }
+}

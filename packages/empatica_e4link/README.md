@@ -1,6 +1,6 @@
 # Empatica Flutter plugin
 
-Flutter plugin for the [Empatica E4](http://e4.empatica.com/e4-wristband)
+Flutter plugin for the [Empatica E4](https://e4.empatica.com/e4-wristband)
 wristband on Android. iOS coming soon.
 
 ## Install (Flutter)
@@ -107,25 +107,16 @@ deviceManager.dataEventSink?.listen((event) {
           break;
 ```
 
-The possible data events are
-| dataEventSink |
-|---------------------|
-| ReceiveBVP |
-| ReceiveGSR |
-| ReceiveIBI |
-| ReceiveTemperature |
-| ReceiveAcceleration |
-| ReceiveBatteryLevel |
-| ReceiveTag |
-| UpdateOnWristStatus |
+The possible data events in the `dataEventSink` are:
 
-## Authors
-
-- Lars K.B. Refsgaard, Technical University of Denmark
-
-## Maintainers
-
-- CACHET (Copenhagen Center for Health Technology)
+- ReceiveBVP
+- ReceiveGSR
+- ReceiveIBI
+- ReceiveTemperature
+- ReceiveAcceleration
+- ReceiveBatteryLevel
+- ReceiveTag
+- UpdateOnWristStatus
 
 ## Contributing
 
