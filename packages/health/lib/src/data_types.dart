@@ -435,6 +435,12 @@ enum ElectrocardiogramClassification {
   UNRECOGNIZED,
 }
 
+enum InsulinDeliveryReason {
+  NOT_SET,
+  BASAL,
+  BOLUS,
+}
+
 extension ElectrocardiogramClassificationValue
     on ElectrocardiogramClassification {
   int get value {

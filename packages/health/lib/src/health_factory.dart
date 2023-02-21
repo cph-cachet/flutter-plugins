@@ -427,6 +427,8 @@ class HealthFactory {
         value = WorkoutHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.ELECTROCARDIOGRAM) {
         value = ElectrocardiogramHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.INSULIN_DELIVERY) {
+        value = InsulinDeliveryHealthValue.fromJson(e);
       } else {
         value = NumericHealthValue(e['value']);
       }

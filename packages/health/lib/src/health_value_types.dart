@@ -265,6 +265,38 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   String toString() => voltage.toString();
 }
 
+class InsulinDeliveryHealthValue extends HealthValue {
+  num units;
+  InsulinDeliveryReason reason;
+
+  InsulinDeliveryHealthValue({
+    required this.units,
+    required this.reason,
+  });
+
+  factory InsulinDeliveryHealthValue.fromJson(json) =>
+      InsulinDeliveryHealthValue(
+        units: json['value'],
+        reason: InsulinDeliveryReason.values
+            .firstWhere((c) => c.index == json['reason']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'value': units.toString(),
+        'reason': reason.index,
+      };
+
+  @override
+  bool operator ==(Object o) =>
+      o is InsulinDeliveryHealthValue && units == o.units && reason == o.reason;
+
+  @override
+  int get hashCode => Object.hash(units, reason);
+
+  @override
+  String toString() => '$units units, $reason reason';
+}
+
 abstract class HealthValue {
   Map<String, dynamic> toJson();
 }
