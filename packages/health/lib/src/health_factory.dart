@@ -83,7 +83,7 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     return await _channel.invokeMethod('revokePermissions', {
-      "types": mTypes.map((type) => type.typeToString()).toList(),
+      "types": mTypes.map((type) => type.name).toList(),
       "permissions": mPermissions,
     });
   }
