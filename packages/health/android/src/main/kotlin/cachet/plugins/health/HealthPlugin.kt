@@ -955,15 +955,24 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     mResult = result
 
     val isGranted = false
+    val account =  GoogleSignIn.getLastSignedInAccount(context!!)
+    Log.i("requestAuthorization", "activity: $activity")
+    Log.i("requestAuthorization", "GOOGLE_FIT_PERMISSIONS_REQUEST_CODE: $GOOGLE_FIT_PERMISSIONS_REQUEST_CODE")
+    Log.i("requestAuthorization", "impliedScopes: ${optionsToRegister.impliedScopes}")
+    Log.i("requestAuthorization", "optionsToRegister: ${optionsToRegister.toString()}")
+    Log.i("requestAuthorization", "account: ${account.toString()}")
+
+
 
     /// Not granted? Ask for permission
     if (!isGranted && activity != null) {
       GoogleSignIn.requestPermissions(
         activity!!,
         GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-        GoogleSignIn.getLastSignedInAccount(context!!),
+        account,
         optionsToRegister
       )
+      Log.i("requestAuthorization", "Finish requestPermissions")
     } else { /// Permission already granted
       mResult?.success(true)
     }
