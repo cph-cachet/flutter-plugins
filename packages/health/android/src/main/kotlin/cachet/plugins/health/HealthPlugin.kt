@@ -957,7 +957,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val isGranted = false
     val account =  GoogleSignIn.getLastSignedInAccount(context!!)
     Log.i("requestAuthorization", "activity: $activity")
-    Log.i("requestAuthorization", "GOOGLE_FIT_PERMISSIONS_REQUEST_CODE: $GOOGLE_FIT_PERMISSIONS_REQUEST_CODE")
     Log.i("requestAuthorization", "impliedScopes: ${optionsToRegister.impliedScopes}")
     Log.i("requestAuthorization", "optionsToRegister: ${optionsToRegister.toString()}")
     Log.i("requestAuthorization", "account: ${account.toString()}")
