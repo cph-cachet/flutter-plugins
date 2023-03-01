@@ -67,6 +67,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   private var SLEEP_AWAKE = "SLEEP_AWAKE"
   private var SLEEP_IN_BED = "SLEEP_IN_BED"
   private var WORKOUT = "WORKOUT"
+  private var NUTRITION = "NUTRITION"
 
   val workoutTypeMap = mapOf(
     "AEROBICS" to FitnessActivities.AEROBICS,
@@ -269,6 +270,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
       SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
       WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
+      NUTRITION -> DataType.TYPE_NUTRITION
       else -> throw IllegalArgumentException("Unsupported dataType: $type")
     }
   }
@@ -293,6 +295,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
       SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
       WORKOUT -> Field.FIELD_ACTIVITY
+      NUTRITION -> Field.FIELD_NUTRIENTS
       else -> throw IllegalArgumentException("Unsupported dataType: $type")
     }
   }
@@ -410,6 +413,101 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
           errHandler(
             result,
             "There was an error adding the blood pressure data!"
+          )
+        )
+    } catch (e3: Exception) {
+      result.success(false)
+    }
+  }
+
+  private fun writeMeal(call: MethodCall, result: Result) {
+    if (context == null) {
+        result.success(false)
+        return
+    }
+
+    val startTime = call.argument<Long>("startTime")!!
+    val endTime = call.argument<Long>("endTime")!!
+    val calories = call.argument<Double>("caloriesConsumed")!! as Double
+    val carbs = call.argument<Double>("carbohydrates") as Double?
+    val protein = call.argument<Double>("protein") as Double?
+    val fat = call.argument<Double>("fatTotal") as Double?
+    val name = call.argument<String>("name")
+
+    val dataType = DataType.TYPE_NUTRITION
+
+    val typesBuilder = FitnessOptions.builder()
+    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+    val dataSource = DataSource.Builder()
+        .setDataType(dataType)
+        .setType(DataSource.TYPE_RAW)
+        .setDevice(Device.getLocalDevice(context!!.applicationContext))
+        .setAppPackageName(context!!.applicationContext)
+        .build()
+
+    val nutrients = mutableMapOf(
+      Field.NUTRIENT_CALORIES to calories.toFloat()
+    )
+
+    if(carbs != null) {
+      nutrients[Field.NUTRIENT_TOTAL_CARBS] = carbs.toFloat()
+    }
+
+    if(protein != null) {
+      nutrients[Field.NUTRIENT_PROTEIN] = protein.toFloat()
+    }
+
+    if(fat != null) {
+      nutrients[Field.NUTRIENT_TOTAL_FAT] = fat.toFloat()
+    }
+
+    val dataBuilder = DataPoint.builder(dataSource)
+      .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+      .setField(Field.FIELD_NUTRIENTS, nutrients)
+
+    if(name != null) {
+      dataBuilder.setField(Field.FIELD_FOOD_ITEM, name as String)
+    }
+
+    val calendar = Calendar.getInstance()
+    calendar.time = Date(startTime as Long)
+
+    when (calendar.get(Calendar.HOUR_OF_DAY)) {
+        in 5..11 -> {
+          dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_BREAKFAST)
+        }
+        in 12..14 -> {
+          dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_LUNCH)
+        }
+        in 19..21 -> {
+          dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_DINNER)
+        }
+        else -> {
+          dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_SNACK)
+        }
+    }
+
+    val dataPoint = dataBuilder.build()
+
+    val dataSet = DataSet.builder(dataSource)
+      .add(dataPoint)
+      .build()
+
+    val fitnessOptions = typesBuilder.build()
+    try {
+      val googleSignInAccount =
+        GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+      Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
+        .insertData(dataSet)
+        .addOnSuccessListener {
+          Log.i("FLUTTER_HEALTH::SUCCESS", "Meal added successfully!")
+          result.success(true)
+        }
+        .addOnFailureListener(
+          errHandler(
+            result,
+            "There was an error adding the meal data!"
           )
         )
     } catch (e3: Exception) {
@@ -1025,6 +1123,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
       "writeWorkoutData" -> writeWorkoutData(call, result)
       "writeBloodPressure" -> writeBloodPressure(call, result)
+      "writeMeal" -> writeMeal(call, result)
       else -> result.notImplemented()
     }
   }
