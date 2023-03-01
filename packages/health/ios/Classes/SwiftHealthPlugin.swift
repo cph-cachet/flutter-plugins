@@ -55,6 +55,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_MILD = "HEADACHE_MILD"
     let HEADACHE_MODERATE = "HEADACHE_MODERATE"
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
+
+    let WALKING_SPEED = "WALKING_SPEED"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -106,6 +108,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let MILLIGRAM_PER_DECILITER = "MILLIGRAM_PER_DECILITER"
     let UNKNOWN_UNIT = "UNKNOWN_UNIT"
     let NO_UNIT = "NO_UNIT"
+
+    let METER_PER_SECOND = "METER_PER_SECOND"
     
     struct PluginError: Error {
         let message: String
@@ -377,6 +381,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
         
+        // update
         let dataType = dataTypeLookUp(key: dataTypeKey)
         
         let predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: .strictStartDate)
@@ -600,6 +605,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[MILLIGRAM_PER_DECILITER] = HKUnit.init(from: "mg/dL")
         unitDict[UNKNOWN_UNIT] = HKUnit.init(from: "")
         unitDict[NO_UNIT] = HKUnit.init(from: "")
+
+        // add
+        unitDict[METER_PER_SECOND] = HKUnit.init(from: "m/s")
         
         // Initialize workout types
         workoutActivityTypeMap["ARCHERY"] = .archery
@@ -752,6 +760,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         if #available(iOS 14.0, *) {
             unitDict[VOLT] = HKUnit.volt()
             unitDict[INCHES_OF_MERCURY] = HKUnit.inchesOfMercury()
+
+            dataTypesDict[WALKING_SPEED] = HKSampleType.quantityType(forIdentifier: .walkingSpeed) // add
             
             workoutActivityTypeMap["CARDIO_DANCE"] = HKWorkoutActivityType.cardioDance
             workoutActivityTypeMap["SOCIAL_DANCE"] = HKWorkoutActivityType.socialDance
