@@ -56,6 +56,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_MODERATE = "HEADACHE_MODERATE"
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
     let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
+    let NUTRITION = "NUTRITION"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -156,6 +157,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             try! writeBloodPressure(call: call, result: result)
         }
         
+        /// Handle writeMeal
+        else if (call.method.elementsEqual("writeMeal")){
+            try! writeMeal(call: call, result: result)
+        }
+        
         /// Handle writeWorkoutData
         else if (call.method.elementsEqual("writeWorkoutData")){
             try! writeWorkoutData(call: call, result: result)
@@ -179,11 +185,26 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     
     func hasPermissions(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
         let arguments = call.arguments as? NSDictionary
-        guard let types = arguments?["types"] as? Array<String>,
-              let permissions = arguments?["permissions"] as? Array<Int>,
+        guard var types = arguments?["types"] as? Array<String>,
+              var permissions = arguments?["permissions"] as? Array<Int>,
               types.count == permissions.count
         else {
             throw PluginError(message: "Invalid Arguments!")
+        }
+        
+        if let nutritionIndex = types.firstIndex(of: NUTRITION) {
+            types.remove(at: nutritionIndex)
+            let nutritionPermission = permissions[nutritionIndex]
+            permissions.remove(at: nutritionIndex)
+            
+            types.append(DIETARY_ENERGY_CONSUMED)
+            permissions.append(nutritionPermission)
+            types.append(DIETARY_CARBS_CONSUMED)
+            permissions.append(nutritionPermission)
+            types.append(DIETARY_PROTEIN_CONSUMED)
+            permissions.append(nutritionPermission)
+            types.append(DIETARY_FATS_CONSUMED)
+            permissions.append(nutritionPermission)
         }
         
         for (index, type) in types.enumerated() {
@@ -230,16 +251,28 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         var typesToRead = Set<HKSampleType>()
         var typesToWrite = Set<HKSampleType>()
         for (index, key) in types.enumerated() {
-            let dataType = dataTypeLookUp(key: key)
-            let access = permissions[index]
-            switch access {
-            case 0:
-                typesToRead.insert(dataType)
-            case 1:
-                typesToWrite.insert(dataType)
-            default:
-                typesToRead.insert(dataType)
-                typesToWrite.insert(dataType)
+            if (key == NUTRITION) {
+                let caloriesType = dataTypeLookUp(key: DIETARY_ENERGY_CONSUMED)
+                let carbsType = dataTypeLookUp(key: DIETARY_CARBS_CONSUMED)
+                let proteinType = dataTypeLookUp(key: DIETARY_PROTEIN_CONSUMED)
+                let fatType = dataTypeLookUp(key: DIETARY_FATS_CONSUMED)
+                
+                typesToWrite.insert(caloriesType);
+                typesToWrite.insert(carbsType);
+                typesToWrite.insert(proteinType);
+                typesToWrite.insert(fatType);
+            } else {
+                let dataType = dataTypeLookUp(key: key)
+                let access = permissions[index]
+                switch access {
+                case 0:
+                    typesToRead.insert(dataType)
+                case 1:
+                    typesToWrite.insert(dataType)
+                default:
+                    typesToRead.insert(dataType)
+                    typesToWrite.insert(dataType)
+                }
             }
         }
         
@@ -360,6 +393,76 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 result(success)
             }
         })
+    }
+    
+    func writeMeal(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+            let startTime = (arguments["startTime"] as? NSNumber),
+            let endTime = (arguments["endTime"] as? NSNumber),
+            let calories = (arguments["caloriesConsumed"] as? Double),
+            let carbs = (arguments["carbohydrates"] as? Double?) ?? 0,
+            let protein = (arguments["protein"] as? Double?) ?? 0,
+            let fat = (arguments["fatTotal"] as? Double?) ?? 0,
+            let name = (arguments["name"] as? String?)
+        else {
+            throw PluginError(message: "Invalid Arguments")
+        }
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+        
+        let hour = Calendar.current.component(.hour, from: dateFrom)
+        var mealType = "Snacks"
+        
+        if(hour > 5 && hour < 11) {
+            mealType = "Breakfast"
+        } else if(hour > 12 && hour < 15) {
+            mealType = "Lunch"
+        } else if(hour > 18 && hour < 22) {
+            mealType = "Dinner"
+        }
+        
+        var metadata = ["HKFoodMeal": "\(mealType)"]
+        
+        if(name != nil) {
+            metadata[HKMetadataKeyFoodType] = "\(name!)"
+        }
+        
+        print(metadata)
+        
+        var nutrition = Set<HKSample>()
+
+        let caloriesSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryEnergyConsumed)!, quantity: HKQuantity(unit: HKUnit.kilocalorie(), doubleValue: calories), start: dateFrom, end: dateTo, metadata: metadata)
+        nutrition.insert(caloriesSample)
+        
+        if(carbs > 0) {
+            let carbsSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: carbs), start: dateFrom, end: dateTo, metadata: metadata)
+            nutrition.insert(carbsSample)
+        }
+        
+        if(protein > 0) {
+            let proteinSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryProtein)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: protein), start: dateFrom, end: dateTo, metadata: metadata)
+            nutrition.insert(proteinSample)
+        }
+        
+        if(fat > 0) {
+            let fatSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryFatTotal)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: fat), start: dateFrom, end: dateTo, metadata: metadata)
+            nutrition.insert(fatSample)
+        }
+        
+        if #available(iOS 15.0, *){
+            let meal = HKCorrelation.init(type: HKCorrelationType.init(HKCorrelationTypeIdentifier.food), start: dateFrom, end: dateTo, objects: nutrition, metadata: metadata)
+            
+            HKHealthStore().save(meal, withCompletion: { (success, error) in
+                if let err = error {
+                    print("Error Saving Meal Sample: \(err.localizedDescription)")
+                }
+                DispatchQueue.main.async {
+                    result(success)
+                }
+            })
+        } else {
+            result(false)
+        }
     }
 
     

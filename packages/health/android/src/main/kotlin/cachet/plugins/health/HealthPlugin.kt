@@ -477,10 +477,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         in 5..11 -> {
           dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_BREAKFAST)
         }
-        in 12..14 -> {
+        in 12..15 -> {
           dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_LUNCH)
         }
-        in 19..21 -> {
+        in 18..22 -> {
           dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_DINNER)
         }
         else -> {
