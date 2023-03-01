@@ -300,6 +300,45 @@ class HealthFactory {
     return success ?? false;
   }
 
+  /// Saves meal record into Apple Health or Google Fit.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [startTime] - the start time when the meal was consumed.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when the meal was consumed.
+  ///   + It must be equal to or later than [startTime].
+  /// * [caloriesConsumed] - total calories consumed with this meal.
+  /// * [carbohydrates] - optional carbohydrates information.
+  /// * [protein] - optional protein information.
+  /// * [fatTotal] - optional total fat information.
+  /// * [name] - optional name information about this meal.
+  Future<bool> writeMeal(
+    DateTime startTime,
+    DateTime endTime,
+    double caloriesConsumed,
+    double? carbohydrates,
+    double? protein,
+    double? fatTotal,
+    String? name,
+  ) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+
+    Map<String, dynamic> args = {
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch,
+      'caloriesConsumed' : caloriesConsumed,
+      'carbohydrates' : carbohydrates,
+      'protein' : protein,
+      'fatTotal' : fatTotal,
+      'name' : name,
+    };
+    bool? success = await _channel.invokeMethod('writeMeal', args);
+    return success ?? false;
+  }
+
   /// Saves audiogram into Apple Health.
   ///
   /// Returns true if successful, false otherwise.
