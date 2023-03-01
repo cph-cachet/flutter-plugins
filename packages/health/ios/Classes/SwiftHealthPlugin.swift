@@ -433,8 +433,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             metadata[HKMetadataKeyFoodType] = "\(name!)"
         }
         
-        print(metadata)
-        
         var nutrition = Set<HKSample>()
 
         let caloriesSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryEnergyConsumed)!, quantity: HKQuantity(unit: HKUnit.kilocalorie(), doubleValue: calories), start: dateFrom, end: dateTo, metadata: metadata)
