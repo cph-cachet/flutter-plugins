@@ -908,6 +908,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     )
 
     mResult?.success(isGranted)
+
+    val account = GoogleSignIn.getLastSignedInAccount(context!!)
+    Log.i("hasPermissions", "email: ${account?.email}")
   }
 
   private fun revokePermissions(call: MethodCall, result: Result) {
@@ -920,7 +923,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val optionsToRegister = callToHealthTypes(call)
     mResult = result
 
-    Fitness.getConfigClient(activity!!,  GoogleSignIn.getAccountForExtension(activity!!.applicationContext, optionsToRegister))
+    val account = GoogleSignIn.getAccountForExtension(activity!!.applicationContext, optionsToRegister)
+    Log.i("revokePermissions","email:${account.email}")
+
+    Fitness.getConfigClient(activity!!, account)
       .disableFit()
       .continueWithTask {
         // disableFitだけでは、requestAuthorizationがすでに権限要求済みの判定になり、再度権限要求ができない
