@@ -1,6 +1,6 @@
 name: esense_flutter
 description: The eSense Flutter Plugin supporting the eSense earable computing devices from Nokia Bell Labs, Cambridge.
-version: 0.6.1
+version: 0.6.2
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/esense_flutter
 
 environment:
@@ -28,4 +28,3 @@ flutter:
         pluginClass: EsenseFlutterPlugin
       ios:
         pluginClass: EsenseFlutterPlugin
-  

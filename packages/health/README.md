@@ -11,6 +11,8 @@ The plugin supports:
 - writing audiograms on iOS using the `writeAudiogram` method.
 - accessing total step counts using the `getTotalStepsInInterval` method.
 - cleaning up dublicate data points via the `removeDuplicates` method.
+- removing data of a given type in a selected period of time using the `delete` method.
+- writing blood pressure data in a single call using the `saveBloodPressure` method (Android only).
 
 Note that for Android, the target phone **needs** to have [Google Fit](https://www.google.com/fit/) installed and have access to the internet, otherwise this plugin will not work.
 
@@ -56,6 +58,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | HEADACHE_SEVERE             | MINUTES                 | yes     |             |                                                             |
 | HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |             |                                                             |
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |             |                                                             |
+| ELECTROCARDIOGRAM           | VOLT                    | yes     |             | Requires Apple Watch                                        |
 
 ## Setup
 
@@ -70,7 +73,7 @@ Step 1: Append the Info.plist with the following 2 entries
 <string>We will sync your data with the Apple Health app to give you better insights</string>
 ```
 
-Step 2: Enable "HealthKit" inside the "Capabilities" tab.
+Step 2: Open your Flutter project in Xcode by right clicking on the "ios" folder and selecting "Open in Xcode". Next, enable "HealthKit" by adding a capability inside the "Signing & Capabilities" tab of the Runner target's settings.
 
 ### Google Fit (Android)
 
@@ -192,7 +195,7 @@ Below is a simplified flow of how to use the plugin.
 A `HealthDataPoint` object contains the following data fields:
 
 ```dart
-HealthValue value; // NumericHealthValue, AudiogramHealthValue, WorkoutHealthValue
+HealthValue value; // NumericHealthValue, AudiogramHealthValue, WorkoutHealthValue, ElectrocardiogramHealthValue
 HealthDataType type;
 HealthDataUnit unit;
 DateTime dateFrom;

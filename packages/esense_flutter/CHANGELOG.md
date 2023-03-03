@@ -1,3 +1,6 @@
+## 0.6.2
+* Added podspec file to iOS
+
 ## 0.6.1
 * fixed bug in sampling rate configuration on Android
 * small improvement to API doc and example app
@@ -27,7 +30,7 @@
 * updated Swift implementation to version 5
 
 ## 0.2.0+2
-* update to readme on iOS 
+* update to readme on iOS
 * added bluetooth permission to `Info.plist`
 
 ## 0.2.0+1
@@ -48,4 +51,4 @@
 * update of readme documentation on API.
 
 ## 0.1.0
-* Initial release supporting 1st released version of the Android eSense library, dated April 2019. 
+* Initial release supporting 1st released version of the Android eSense library, dated April 2019.

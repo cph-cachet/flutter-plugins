@@ -66,7 +66,7 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     return await _channel.invokeMethod('hasPermissions', {
-      "types": mTypes.map((type) => type.typeToString()).toList(),
+      "types": mTypes.map((type) => type.name).toList(),
       "permissions": mPermissions,
       "accountName": accountName,
     });
@@ -119,6 +119,18 @@ class HealthFactory {
           'The length of [types] must be same as that of [permissions].');
     }
 
+    if (permissions != null) {
+      for (int i = 0; i < types.length; i++) {
+        final type = types[i];
+        final permission = permissions[i];
+        if (type == HealthDataType.ELECTROCARDIOGRAM &&
+            permission != HealthDataAccess.READ) {
+          throw ArgumentError(
+              'Requesting WRITE permission on ELECTROCARDIOGRAM is not allowed.');
+        }
+      }
+    }
+
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
         ? List<int>.filled(types.length, HealthDataAccess.READ.index,
@@ -128,8 +140,7 @@ class HealthFactory {
     // on Android, if BMI is requested, then also ask for weight and height
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
-    List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
-
+    List<String> keys = mTypes.map((e) => e.name).toList();
     final String? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, 'permissions': mPermissions, 'accountName': accountName ?? ""});
     return isAuthorized;
@@ -218,11 +229,12 @@ class HealthFactory {
           "Adding workouts should be done using the writeWorkoutData method.");
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
-    if ([
+    if ({
       HealthDataType.HIGH_HEART_RATE_EVENT,
       HealthDataType.LOW_HEART_RATE_EVENT,
-      HealthDataType.IRREGULAR_HEART_RATE_EVENT
-    ].contains(type))
+      HealthDataType.IRREGULAR_HEART_RATE_EVENT,
+      HealthDataType.ELECTROCARDIOGRAM,
+    }.contains(type))
       throw ArgumentError(
           "$type - iOS doesnt support writing this data type in HealthKit");
 
@@ -244,12 +256,63 @@ class HealthFactory {
 
     Map<String, dynamic> args = {
       'value': value,
-      'dataTypeKey': type.typeToString(),
-      'dataUnitKey': unit.typeToString(),
+      'dataTypeKey': type.name,
+      'dataUnitKey': unit.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch
     };
     bool? success = await _channel.invokeMethod('writeData', args);
+    return success ?? false;
+  }
+
+  /// Deletes all records of the given type for a given period of time
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [type] - the value's HealthDataType
+  /// * [startTime] - the start time when this [value] is measured.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when this [value] is measured.
+  ///   + It must be equal to or later than [startTime].
+  Future<bool> delete(
+      HealthDataType type, DateTime startTime, DateTime endTime) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+
+    Map<String, dynamic> args = {
+      'dataTypeKey': type.name,
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+    bool? success = await _channel.invokeMethod('delete', args);
+    return success ?? false;
+  }
+
+  /// Saves blood pressure record into Apple Health or Google Fit.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [systolic] - the systolic part of the blood pressure
+  /// * [diastolic] - the diastolic part of the blood pressure
+  /// * [startTime] - the start time when this [value] is measured.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when this [value] is measured.
+  ///   + It must be equal to or later than [startTime].
+  ///   + Simply set [endTime] equal to [startTime] if the blood pressure is measured only at a specific point in time.
+  Future<bool> writeBloodPressure(
+      int systolic, int diastolic, DateTime startTime, DateTime endTime) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+
+    Map<String, dynamic> args = {
+      'systolic': systolic,
+      'diastolic': diastolic,
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+    bool? success = await _channel.invokeMethod('writeBloodPressure', args);
     return success ?? false;
   }
 
@@ -291,7 +354,7 @@ class HealthFactory {
       'frequencies': frequencies,
       'leftEarSensitivities': leftEarSensitivities,
       'rightEarSensitivities': rightEarSensitivities,
-      'dataTypeKey': HealthDataType.AUDIOGRAM.typeToString(),
+      'dataTypeKey': HealthDataType.AUDIOGRAM.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
       'metadata': metadata,
@@ -349,8 +412,8 @@ class HealthFactory {
   Future<List<HealthDataPoint>> _dataQuery(
       DateTime startTime, DateTime endTime, HealthDataType dataType, String? accountName) async {
     final args = <String, dynamic>{
-      'dataTypeKey': dataType.typeToString(),
-      'dataUnitKey': _dataTypeToUnit[dataType]!.typeToString(),
+      'dataTypeKey': dataType.name,
+      'dataUnitKey': _dataTypeToUnit[dataType]!.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
       'accountName': accountName,
@@ -396,6 +459,8 @@ class HealthFactory {
         value = AudiogramHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.WORKOUT) {
         value = WorkoutHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.ELECTROCARDIOGRAM) {
+        value = ElectrocardiogramHealthValue.fromJson(e);
       } else {
         value = NumericHealthValue(e['value']);
       }
@@ -493,18 +558,19 @@ class HealthFactory {
     if (_platformType == PlatformType.IOS && !_isOnIOS(activityType)) {
       throw HealthException(activityType,
           "Workout activity type $activityType is not supported on iOS");
-    } else if (!_isOnAndroid(activityType)) {
+    } else if (_platformType == PlatformType.ANDROID &&
+        !_isOnAndroid(activityType)) {
       throw HealthException(activityType,
           "Workout activity type $activityType is not supported on Android");
     }
     final args = <String, dynamic>{
-      'activityType': activityType.typeToString(),
+      'activityType': activityType.name,
       'startTime': start.millisecondsSinceEpoch,
       'endTime': end.millisecondsSinceEpoch,
       'totalEnergyBurned': totalEnergyBurned,
-      'totalEnergyBurnedUnit': _enumToString(totalEnergyBurnedUnit),
+      'totalEnergyBurnedUnit': totalEnergyBurnedUnit.name,
       'totalDistance': totalDistance,
-      'totalDistanceUnit': _enumToString(totalDistanceUnit),
+      'totalDistanceUnit': totalDistanceUnit.name,
     };
     final success = await _channel.invokeMethod('writeWorkoutData', args);
     return success ?? false;

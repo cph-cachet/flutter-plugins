@@ -19,6 +19,7 @@ import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataReadRequest
+import com.google.android.gms.fitness.request.DataDeleteRequest
 import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
@@ -37,6 +38,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.security.Permission
 import java.util.*
 import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
@@ -85,6 +87,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     "BASKETBALL" to FitnessActivities.BASKETBALL,
     "BIATHLON" to FitnessActivities.BIATHLON,
     "BIKING" to FitnessActivities.BIKING,
+    "BIKING_HAND" to FitnessActivities.BIKING_HAND,
+    "BIKING_MOUNTAIN" to FitnessActivities.BIKING_MOUNTAIN,
+    "BIKING_ROAD" to FitnessActivities.BIKING_ROAD,
+    "BIKING_SPINNING" to FitnessActivities.BIKING_SPINNING,
+    "BIKING_STATIONARY" to FitnessActivities.BIKING_STATIONARY,
+    "BIKING_UTILITY" to FitnessActivities.BIKING_UTILITY,
     "BOXING" to FitnessActivities.BOXING,
     "CALISTHENICS" to FitnessActivities.CALISTHENICS,
     "CIRCUIT_TRAINING" to FitnessActivities.CIRCUIT_TRAINING,
@@ -112,6 +120,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     "HORSEBACK_RIDING" to FitnessActivities.HORSEBACK_RIDING,
     "HOUSEWORK" to FitnessActivities.HOUSEWORK,
     "IN_VEHICLE" to FitnessActivities.IN_VEHICLE,
+    "ICE_SKATING" to FitnessActivities.ICE_SKATING,
     "INTERVAL_TRAINING" to FitnessActivities.INTERVAL_TRAINING,
     "JUMP_ROPE" to FitnessActivities.JUMP_ROPE,
     "KAYAKING" to FitnessActivities.KAYAKING,
@@ -129,6 +138,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     "RACQUETBALL" to FitnessActivities.RACQUETBALL,
     "ROCK_CLIMBING" to FitnessActivities.ROCK_CLIMBING,
     "ROWING" to FitnessActivities.ROWING,
+    "ROWING_MACHINE" to FitnessActivities.ROWING_MACHINE,
     "RUGBY" to FitnessActivities.RUGBY,
     "RUNNING_JOGGING" to FitnessActivities.RUNNING_JOGGING,
     "RUNNING_SAND" to FitnessActivities.RUNNING_SAND,
@@ -140,11 +150,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     "SKATING_INDOOR" to FitnessActivities.SKATING_INDOOR,
     "SKATING_INLINE" to FitnessActivities.SKATING_INLINE,
     "SKATING" to FitnessActivities.SKATING,
+    "SKIING" to FitnessActivities.SKIING,
     "SKIING_BACK_COUNTRY" to FitnessActivities.SKIING_BACK_COUNTRY,
     "SKIING_KITE" to FitnessActivities.SKIING_KITE,
     "SKIING_ROLLER" to FitnessActivities.SKIING_ROLLER,
     "SLEDDING" to FitnessActivities.SLEDDING,
     "SNOWBOARDING" to FitnessActivities.SNOWBOARDING,
+    "SNOWMOBILE" to FitnessActivities.SNOWMOBILE,
+    "SNOWSHOEING" to FitnessActivities.SNOWSHOEING,
     "SOCCER" to FitnessActivities.FOOTBALL_SOCCER,
     "SOFTBALL" to FitnessActivities.SOFTBALL,
     "SQUASH" to FitnessActivities.SQUASH,
@@ -166,6 +179,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     "VOLLEYBALL" to FitnessActivities.VOLLEYBALL,
     "WAKEBOARDING" to FitnessActivities.WAKEBOARDING,
     "WALKING_FITNESS" to FitnessActivities.WALKING_FITNESS,
+    "WALKING_PACED" to FitnessActivities.WALKING_PACED,
     "WALKING_NORDIC" to FitnessActivities.WALKING_NORDIC,
     "WALKING_STROLLER" to FitnessActivities.WALKING_STROLLER,
     "WALKING_TREADMILL" to FitnessActivities.WALKING_TREADMILL,
@@ -184,7 +198,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
     channel?.setMethodCallHandler(this)
-    context = flutterPluginBinding.applicationContext
+    context = flutterPluginBinding.applicationContext;
     threadPoolExecutor = Executors.newFixedThreadPool(4)
   }
 
@@ -216,26 +230,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       channel.setMethodCallHandler(plugin)
     }
   }
-  /// DataTypes to register
-  // private val fitnessOptions = FitnessOptions.builder()
-  //         .addDataType(keyToHealthDataType(BODY_FAT_PERCENTAGE), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(HEIGHT), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(WEIGHT), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(STEPS), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(ACTIVE_ENERGY_BURNED), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(HEART_RATE), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(BODY_TEMPERATURE), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(BLOOD_PRESSURE_SYSTOLIC), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(BLOOD_OXYGEN), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(BLOOD_GLUCOSE), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(MOVE_MINUTES), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(DISTANCE_DELTA), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(WATER), FitnessOptions.ACCESS_READ)
-  //         .addDataType(keyToHealthDataType(SLEEP_ASLEEP), FitnessOptions.ACCESS_READ)
-  //         .accessActivitySessions(FitnessOptions.ACCESS_READ)
-  //         .accessSleepSessions(FitnessOptions.ACCESS_READ)
-  //         .build()
-
 
   override fun success(p0: Any?) {
     handler.post { result?.success(p0) }
@@ -352,9 +346,109 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
   }
 
+  // delete records of the given type in the time range
+  private fun delete(call: MethodCall, result: Result) {
+
+    if (context == null) {
+      result.success(false)
+      return
+    }
+
+    val type = call.argument<String>("dataTypeKey")!!
+    val startTime = call.argument<Long>("startTime")!!
+    val endTime = call.argument<Long>("endTime")!!
+
+    // Look up data type and unit for the type key
+    val dataType = keyToHealthDataType(type)
+    val field = getField(type)
+
+    val typesBuilder = FitnessOptions.builder()
+    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+    val dataSource = DataDeleteRequest.Builder()
+      .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+      .addDataType(dataType)
+      .deleteAllSessions()
+      .build()
+
+    val fitnessOptions = typesBuilder.build()
+
+    try {
+      val googleSignInAccount =
+        GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+
+      Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
+        .deleteData(dataSource)
+        .addOnSuccessListener {
+          Log.i("FLUTTER_HEALTH::SUCCESS", "Dataset deleted successfully!")
+          result.success(true)
+        }
+        .addOnFailureListener(errHandler(result, "There was an error deleting the dataset"))
+    } catch (e3: Exception) {
+
+      result.success(false)
+    }
+  }
+
+  // save blood pressure
+  private fun writeBloodPressure(call: MethodCall, result: Result) {
+
+    if (context == null) {
+      result.success(false)
+      return
+    }
+
+    val dataType = HealthDataTypes.TYPE_BLOOD_PRESSURE
+    val systolic = call.argument<Float>("systolic")!!
+    val diastolic = call.argument<Float>("diastolic")!!
+    val startTime = call.argument<Long>("startTime")!!
+    val endTime = call.argument<Long>("endTime")!!
+
+    val typesBuilder = FitnessOptions.builder()
+    typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+    val dataSource = DataSource.Builder()
+      .setDataType(dataType)
+      .setType(DataSource.TYPE_RAW)
+      .setDevice(Device.getLocalDevice(context!!.applicationContext))
+      .setAppPackageName(context!!.applicationContext)
+      .build()
+
+    val builder = DataPoint.builder(dataSource)
+      .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+      .setField(HealthFields.FIELD_BLOOD_PRESSURE_SYSTOLIC, systolic)
+      .setField(HealthFields.FIELD_BLOOD_PRESSURE_DIASTOLIC, diastolic)
+      .build()
+
+    val dataPoint = builder
+    val dataSet = DataSet.builder(dataSource)
+      .add(dataPoint)
+      .build()
+
+    val fitnessOptions = typesBuilder.build()
+    try {
+      val googleSignInAccount =
+        GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+      Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
+        .insertData(dataSet)
+        .addOnSuccessListener {
+          Log.i("FLUTTER_HEALTH::SUCCESS", "Blood Pressure added successfully!")
+          result.success(true)
+        }
+        .addOnFailureListener(
+          errHandler(
+            result,
+            "There was an error adding the blood pressure data!"
+          )
+        )
+    } catch (e3: Exception) {
+      result.success(false)
+    }
+  }
+
   private fun writeData(call: MethodCall, result: Result) {
 
-    if (activity == null) {
+    if (context == null) {
       result.success(false)
       return
     }
@@ -374,8 +468,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val dataSource = DataSource.Builder()
       .setDataType(dataType)
       .setType(DataSource.TYPE_RAW)
-      .setDevice(Device.getLocalDevice(activity!!.applicationContext))
-      .setAppPackageName(activity!!.applicationContext)
+      .setDevice(Device.getLocalDevice(context!!.applicationContext))
+      .setAppPackageName(context!!.applicationContext)
       .build()
 
     val builder = if (startTime == endTime)
@@ -403,24 +497,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val fitnessOptions = typesBuilder.build()
     try {
       val googleSignInAccount =
-        GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
-      Fitness.getHistoryClient(activity!!.applicationContext, googleSignInAccount)
+        GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+      Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
         .insertData(dataSet)
         .addOnSuccessListener {
-          Log.i("FLUTTER_HEALTH::SUCCESS", "DataSet added successfully!")
+          Log.i("FLUTTER_HEALTH::SUCCESS", "Dataset added successfully!")
           result.success(true)
         }
-        .addOnFailureListener { e ->
-          Log.w("FLUTTER_HEALTH::ERROR", "There was an error adding the DataSet", e)
-          result.success(false)
-        }
+        .addOnFailureListener(errHandler(result, "There was an error adding the dataset"))
     } catch (e3: Exception) {
       result.success(false)
     }
   }
 
   private fun writeWorkoutData(call: MethodCall, result: Result) {
-    if (activity == null) {
+    if (context == null) {
       result.success(false)
       return
     }
@@ -432,10 +523,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val totalDistance = call.argument<Int>("totalDistance")
 
     val activityType = getActivityType(type)
-
     // Create the Activity Segment DataSource
     val activitySegmentDataSource = DataSource.Builder()
-      .setAppPackageName(activity!!.packageName)
+      .setAppPackageName(context!!.packageName)
       .setDataType(DataType.TYPE_ACTIVITY_SEGMENT)
       .setStreamName("FLUTTER_HEALTH - Activity")
       .setType(DataSource.TYPE_RAW)
@@ -455,7 +545,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     if (totalDistance != null) {
       // Create a data source
       val distanceDataSource = DataSource.Builder()
-        .setAppPackageName(activity!!.packageName)
+        .setAppPackageName(context!!.packageName)
         .setDataType(DataType.TYPE_DISTANCE_DELTA)
         .setStreamName("FLUTTER_HEALTH - Distance")
         .setType(DataSource.TYPE_RAW)
@@ -475,7 +565,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     if (totalEnergyBurned != null) {
       // Create a data source
       val energyDataSource = DataSource.Builder()
-        .setAppPackageName(activity!!.packageName)
+        .setAppPackageName(context!!.packageName)
         .setDataType(DataType.TYPE_CALORIES_EXPENDED)
         .setStreamName("FLUTTER_HEALTH - Calories")
         .setType(DataSource.TYPE_RAW)
@@ -524,28 +614,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     try {
       val googleSignInAccount =
-        GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
-      if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
-        GoogleSignIn.requestPermissions(
-          activity!!,
-          GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-          googleSignInAccount,
-          fitnessOptions
-        )
-      }
+        GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
       Fitness.getSessionsClient(
-        activity!!.applicationContext,
-        GoogleSignIn.getAccountForExtension(activity!!.applicationContext, fitnessOptions)
+        context!!.applicationContext,
+        googleSignInAccount
       )
         .insertSession(insertRequest)
         .addOnSuccessListener {
           Log.i("FLUTTER_HEALTH::SUCCESS", "Workout was successfully added!")
           result.success(true)
         }
-        .addOnFailureListener { e ->
-          Log.w("FLUTTER_HEALTH::ERROR", "There was a problem adding the workout: ", e)
-          result.success(false)
-        }
+        .addOnFailureListener(errHandler(result, "There was an error adding the workout"))
     } catch (e: Exception) {
       result.success(false)
     }
@@ -595,6 +674,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   }
 
   private fun getData(call: MethodCall, result: Result) {
+    if (context == null) {
+      result.success(null)
+      return
+    }
+
     val type = call.argument<String>("dataTypeKey")!!
     val startTime = call.argument<Long>("startTime")!!
     val endTime = call.argument<Long>("endTime")!!
@@ -645,18 +729,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         Fitness.getSessionsClient(context, googleSignInAccount)
           .readSession(request)
           .addOnSuccessListener(threadPoolExecutor!!, sleepDataHandler(type, result))
-          .addOnFailureListener(errHandler(result))
-
+          .addOnFailureListener(errHandler(result, "There was an error getting the sleeping data!"))
       }
       DataType.TYPE_ACTIVITY_SEGMENT -> {
         val readRequest: SessionReadRequest
         val readRequestBuilder = SessionReadRequest.Builder()
-            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-            .enableServerQueries()
-            .readSessionsFromAllApps()
-            .includeActivitySessions()
-            .read(dataType)
-            .read(DataType.TYPE_CALORIES_EXPENDED)
+          .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+          .enableServerQueries()
+          .readSessionsFromAllApps()
+          .includeActivitySessions()
+          .read(dataType)
+          .read(DataType.TYPE_CALORIES_EXPENDED)
 
         // If fine location is enabled, read distance data
         if (ContextCompat.checkSelfPermission(
@@ -664,26 +747,26 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             android.Manifest.permission.ACCESS_FINE_LOCATION
           ) == PackageManager.PERMISSION_GRANTED
         ) {
-          // Request permission with distance data. 
+          // Request permission with distance data.
           // Google Fit requires this when we query for distance data
           // as it is restricted data
           if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
             _checkActivity(result)
 
             GoogleSignIn.requestPermissions(
-              activity!!, // your activity
+              activity!!,
               GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
               googleSignInAccount,
               fitnessOptions
             )
           }
           readRequestBuilder.read(DataType.TYPE_DISTANCE_DELTA)
-        } 
+        }
         readRequest = readRequestBuilder.build()
         Fitness.getSessionsClient(context, googleSignInAccount)
           .readSession(readRequest)
           .addOnSuccessListener(threadPoolExecutor!!, workoutDataHandler(type, result))
-          .addOnFailureListener(errHandler(result))
+          .addOnFailureListener(errHandler(result, "There was an error getting the workout data!"))
       }
       else -> {
         Fitness.getHistoryClient(context, googleSignInAccount)
@@ -694,7 +777,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
               .build()
           )
           .addOnSuccessListener(threadPoolExecutor!!, dataHandler(dataType, field, result))
-          .addOnFailureListener(errHandler(result))
+          .addOnFailureListener(errHandler(result, "There was an error getting the data!"))
       }
     }
   }
@@ -718,10 +801,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       _runOnUiThread { result.success(healthData) }
     }
 
-  private fun errHandler(result: Result) = OnFailureListener { exception ->
-    _runOnUiThread { result.success(null) }
-    Log.i("FLUTTER_HEALTH::ERROR", exception.message ?: "unknown error")
-    Log.i("FLUTTER_HEALTH::ERROR", exception.stackTrace.toString())
+  private fun errHandler(result: Result, addMessage: String) = OnFailureListener { exception ->
+    // Handler(context!!.mainLooper).run { result.success(null) }
+    Handler(context!!.mainLooper).run { result.success(false) }
+    Log.w("FLUTTER_HEALTH::ERROR", addMessage)
+    Log.w("FLUTTER_HEALTH::ERROR", exception.message ?: "unknown error")
+    Log.w("FLUTTER_HEALTH::ERROR", exception.stackTrace.toString())
   }
 
   private fun sleepDataHandler(type: String, result: Result) =
@@ -836,7 +921,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         healthData.add(
           hashMapOf(
-            "workoutActivityType" to workoutTypeMap.filterValues { it == session.activity }.keys.first(),
+            "workoutActivityType" to (workoutTypeMap.filterValues { it == session.activity }.keys.firstOrNull()
+              ?: "OTHER"),
             "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
             "totalEnergyBurnedUnit" to "KILOCALORIE",
             "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
@@ -874,7 +960,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         else -> throw IllegalArgumentException("Unknown access type $access")
       }
-      if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE || typeKey == SLEEP_IN_BED || typeKey == WORKOUT) {
+      if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE || typeKey == SLEEP_IN_BED) {
         typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
         when (access) {
           0 -> typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
@@ -1000,9 +1086,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         googleSignInAccount,
         optionsToRegister
       )
-    }
-    /// Permission already granted
-    else {
+    } else { /// Permission already granted
       result.success(googleSignInAccount.email)
     }
   }
@@ -1011,7 +1095,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val start = call.argument<Long>("startTime")!!
     val end = call.argument<Long>("endTime")!!
 
-    val activity = activity ?: return
+    val context = context ?: return
 
     val stepsDataType = keyToHealthDataType(STEPS)
     val aggregatedDataType = keyToHealthDataType(AGGREGATE_STEP_COUNT)
@@ -1020,7 +1104,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       .addDataType(stepsDataType)
       .addDataType(aggregatedDataType)
       .build()
-    val gsa = GoogleSignIn.getAccountForExtension(activity, fitnessOptions)
+    val gsa = GoogleSignIn.getAccountForExtension(context, fitnessOptions)
 
     val ds = DataSource.Builder()
       .setAppPackageName("com.google.android.gms")
@@ -1037,13 +1121,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       .setTimeRange(start, end, TimeUnit.MILLISECONDS)
       .build()
 
-    Fitness.getHistoryClient(activity, gsa).readData(request)
-      .addOnFailureListener(errHandler(result))
+    Fitness.getHistoryClient(context, gsa).readData(request)
+      .addOnFailureListener(
+        errHandler(
+          result,
+          "There was an error getting the total steps in the interval!"
+        )
+      )
       .addOnSuccessListener(
         threadPoolExecutor!!,
         getStepsInRange(start, end, aggregatedDataType, result)
       )
-
   }
 
 
@@ -1059,7 +1147,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       for (bucket in response.buckets) {
         val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
         if (dp != null) {
-          print(dp)
 
           val count = dp.getValue(aggregatedDataType.fields[0])
 
@@ -1088,12 +1175,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   /// Handle calls from the MethodChannel
   override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
+      "hasPermissions" -> hasPermissions(call, result)
       "requestAuthorization" -> requestAuthorization(call, result)
       "getData" -> getData(call, result)
       "writeData" -> writeData(call, result)
+      "delete" -> delete(call, result)
       "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
-      "hasPermissions" -> hasPermissions(call, result)
       "writeWorkoutData" -> writeWorkoutData(call, result)
+      "writeBloodPressure" -> writeBloodPressure(call, result)
       else -> result.notImplemented()
     }
   }
