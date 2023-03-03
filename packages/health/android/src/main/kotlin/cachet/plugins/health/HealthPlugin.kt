@@ -956,12 +956,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     val isGranted = false
     val account =  GoogleSignIn.getLastSignedInAccount(context!!)
-    Log.i("requestAuthorization", "activity: $activity")
-    Log.i("requestAuthorization", "impliedScopes: ${optionsToRegister.impliedScopes}")
-    Log.i("requestAuthorization", "optionsToRegister: ${optionsToRegister.toString()}")
-    Log.i("requestAuthorization", "account: ${account.toString()}")
-
-
 
     /// Not granted? Ask for permission
     if (!isGranted && activity != null) {
@@ -975,6 +969,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     } else { /// Permission already granted
       mResult?.success(true)
     }
+
+    Log.i("requestAuthorization", "activity: $activity")
+    Log.i("requestAuthorization", "impliedScopes: ${optionsToRegister.impliedScopes}")
+    Log.i("requestAuthorization", "optionsToRegister: ${optionsToRegister.toString()}")
+    Log.i("requestAuthorization", "account: ${account.toString()}")
+    Log.i("requestAuthorization", "account: ${account?.email}")
+
   }
 
   private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
