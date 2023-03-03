@@ -48,6 +48,10 @@ enum HealthDataType {
   IRREGULAR_HEART_RATE_EVENT,
   ELECTRODERMAL_ACTIVITY,
   ELECTROCARDIOGRAM,
+
+  // add
+  WALKING_SPEED,
+  SPEED,
 }
 
 enum HealthDataAccess {
@@ -100,6 +104,9 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.HEADACHE_SEVERE,
   HealthDataType.HEADACHE_UNSPECIFIED,
   HealthDataType.ELECTROCARDIOGRAM,
+
+  // add
+  HealthDataType.WALKING_SPEED,
 ];
 
 /// List of data types available on Android
@@ -123,6 +130,8 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.SLEEP_IN_BED,
   HealthDataType.WATER,
   HealthDataType.WORKOUT,
+  //add
+  HealthDataType.SPEED,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
@@ -175,6 +184,10 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECOND,
   HealthDataType.ELECTROCARDIOGRAM: HealthDataUnit.VOLT,
+
+  // add
+  HealthDataType.WALKING_SPEED: HealthDataUnit.METER_PER_SECOND,
+  HealthDataType.SPEED: HealthDataUnit.METER_PER_SECOND,
 };
 
 const PlatformTypeJsonValue = {
@@ -260,6 +273,9 @@ enum HealthDataUnit {
   MILLIGRAM_PER_DECILITER,
   UNKNOWN_UNIT,
   NO_UNIT,
+
+  // add
+  METER_PER_SECOND,
 }
 
 /// List of [HealthWorkoutActivityType]s.

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(HealthApp());
@@ -25,6 +26,8 @@ enum AppState {
   STEPS_READY,
 }
 
+const _accountNamePreference = 'accountName';
+
 class _HealthAppState extends State<HealthApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
@@ -34,8 +37,31 @@ class _HealthAppState extends State<HealthApp> {
   // create a HealthFactory for use in the app
   HealthFactory health = HealthFactory();
 
+  Future<bool> _requestAuthorization(
+    bool mayUseLastAccount,
+    List<HealthDataType> types, {
+      List<HealthDataAccess>? permissions,
+    }
+  ) async {
+    var prefs = await SharedPreferences.getInstance();
+    var accountName;
+    if (mayUseLastAccount) {
+      accountName = prefs.getString(_accountNamePreference);
+    }
+
+    var requested = await health.requestAuthorizationWithAccount(
+      types, permissions: permissions, accountName: accountName,
+    );
+    if (requested == null) return false;
+
+    if (accountName != requested) {
+      await prefs.setString(_accountNamePreference, requested);
+    }
+    return true;
+  }
+
   /// Fetch data points from the health plugin and show them in the app.
-  Future fetchData() async {
+  Future fetchData([bool mayUseLastAccount = true]) async {
     setState(() => _state = AppState.FETCHING_DATA);
 
     // define the types to get
@@ -70,7 +96,7 @@ class _HealthAppState extends State<HealthApp> {
     // note that strictly speaking, the [permissions] are not
     // needed, since we only want READ access.
     bool requested =
-        await health.requestAuthorization(types, permissions: permissions);
+        await _requestAuthorization(mayUseLastAccount, types, permissions: permissions);
     print('requested: $requested');
 
     // If we are trying to read Step Count, Workout, Sleep or other data that requires
@@ -115,7 +141,7 @@ class _HealthAppState extends State<HealthApp> {
   }
 
   /// Add some random health data.
-  Future addData() async {
+  Future addData([bool mayUseLastAccount = true]) async {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(minutes: 20));
 
@@ -150,7 +176,7 @@ class _HealthAppState extends State<HealthApp> {
     bool? hasPermissions =
         await HealthFactory.hasPermissions(types, permissions: rights);
     if (hasPermissions == false) {
-      await health.requestAuthorization(types, permissions: permissions);
+      await _requestAuthorization(mayUseLastAccount, types, permissions: permissions);
     }
 
     // Store a count of steps taken
@@ -208,7 +234,7 @@ class _HealthAppState extends State<HealthApp> {
   }
 
   /// Delete some random health data.
-  Future deleteData() async {
+  Future deleteData([bool mayUseLastAccount = true]) async {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(minutes: 30));
 
@@ -240,7 +266,7 @@ class _HealthAppState extends State<HealthApp> {
     bool? hasPermissions =
         await HealthFactory.hasPermissions(types, permissions: rights);
     if (hasPermissions == false) {
-      await health.requestAuthorization(types, permissions: permissions);
+      await _requestAuthorization(mayUseLastAccount, types, permissions: permissions);
     }
 
     bool success = false;
@@ -260,14 +286,16 @@ class _HealthAppState extends State<HealthApp> {
   }
 
   /// Fetch steps from the health plugin and show them in the app.
-  Future fetchStepData() async {
+  Future fetchStepData([bool mayUseLastAccount = true]) async {
     int? steps;
 
     // get steps for today (i.e., since midnight)
     final now = DateTime.now();
     final midnight = DateTime(now.year, now.month, now.day);
 
-    bool requested = await health.requestAuthorization([HealthDataType.STEPS]);
+    bool requested = await _requestAuthorization(
+      mayUseLastAccount, [HealthDataType.STEPS],
+    );
 
     if (requested) {
       try {
@@ -402,30 +430,50 @@ class _HealthAppState extends State<HealthApp> {
           appBar: AppBar(
             title: const Text('Health Example'),
             actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.file_download),
-                onPressed: () {
-                  fetchData();
+              InkWell(
+                child: IconButton(
+                  icon: Icon(Icons.file_download),
+                  onPressed: () {
+                    fetchData();
+                  },
+                ),
+                onLongPress: () {
+                  fetchData(false);
                 },
               ),
-              IconButton(
-                onPressed: () {
-                  addData();
+              InkWell(
+                child: IconButton(
+                  onPressed: () {
+                    addData();
+                  },
+                  icon: Icon(Icons.add),
+                ),
+                onLongPress: () {
+                  addData(false);
                 },
-                icon: Icon(Icons.add),
               ),
-              IconButton(
-                onPressed: () {
-                  deleteData();
+              InkWell(
+                child: IconButton(
+                  onPressed: () {
+                    deleteData();
+                  },
+                  icon: Icon(Icons.delete),
+                ),
+                onLongPress: () {
+                  deleteData(false);
                 },
-                icon: Icon(Icons.delete),
               ),
-              IconButton(
-                onPressed: () {
-                  fetchStepData();
+              InkWell(
+                child: IconButton(
+                  onPressed: () {
+                    fetchStepData();
+                  },
+                  icon: Icon(Icons.nordic_walking),
+                ),
+                onLongPress: () {
+                  fetchStepData(false);
                 },
-                icon: Icon(Icons.nordic_walking),
-              )
+              ),
             ],
           ),
           body: Center(
