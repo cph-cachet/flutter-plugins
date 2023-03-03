@@ -980,7 +980,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     Log.i("requestAuthorization", "impliedScopes: ${optionsToRegister.impliedScopes}")
     Log.i("requestAuthorization", "optionsToRegister: ${optionsToRegister.toString()}")
     Log.i("requestAuthorization", "account: ${account.toString()}")
-    Log.i("requestAuthorization", "account: ${account?.email}")
+    Log.i("requestAuthorization", "email: ${account?.email}")
 
   }
 
