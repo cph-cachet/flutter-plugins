@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.OnSuccessListener
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.embedding.engine.systemchannels.SettingsChannel.CHANNEL_NAME
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -36,13 +37,13 @@ import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.TimeUnit
 
-
-const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
-const val CHANNEL_NAME = "flutter_health"
-const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
-
 class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandler,
   ActivityResultListener, Result, ActivityAware, FlutterPlugin {
+
+  private val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
+  private val CHANNEL_NAME = "flutter_health"
+  private val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
+
   private var result: Result? = null
   private var handler: Handler? = null
   private var activity: Activity? = null
