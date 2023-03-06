@@ -911,6 +911,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     mResult?.success(isGranted)
 
     val account = GoogleSignIn.getLastSignedInAccount(context!!)
+
     Log.i("hasPermissions", "email: ${account?.email}")
   }
 
@@ -977,11 +978,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       mResult?.success(true)
     }
 
+    val account2 =  GoogleSignIn.getLastSignedInAccount(context!!)
+
     Log.i("requestAuthorization", "activity: $activity")
     Log.i("requestAuthorization", "impliedScopes: ${optionsToRegister.impliedScopes}")
     Log.i("requestAuthorization", "optionsToRegister: ${optionsToRegister.toString()}")
     Log.i("requestAuthorization", "account: ${account.toString()}")
     Log.i("requestAuthorization", "email: ${account?.email}")
+    Log.i("requestAuthorization", "email2: ${account2?.email}")
 
   }
 
