@@ -68,10 +68,11 @@ class HealthFactory {
     });
   }
 
-  /// Revoke permissions obtained earlier.
+  /// Revokes permissions of all types.
+  /// Uses `disableFit()` on Google Fit.
   ///
-  /// Not supported on iOS and method does nothing.
-  static Future<void> revokePermissions() async {
+  /// Not supported on iOS
+  Future<void> revokePermissions() async {
     return await _channel.invokeMethod('revokePermissions');
   }
 

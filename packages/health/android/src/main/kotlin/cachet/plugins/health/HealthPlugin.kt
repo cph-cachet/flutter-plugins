@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
@@ -40,9 +41,9 @@ const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val CHANNEL_NAME = "flutter_health"
 const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
 
-class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandler,
-  ActivityResultListener, Result, ActivityAware, FlutterPlugin {
-  private var result: Result? = null
+class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandler, 
+ActivityResultListener, Result, ActivityAware, FlutterPlugin { 
+  private var mResult: Result? = null
   private var handler: Handler? = null
   private var activity: Activity? = null
   private var context: Context? = null
@@ -219,17 +220,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
   }
 
   override fun success(p0: Any?) {
-    handler?.post { result?.success(p0) }
+    handler?.post { mResult?.success(p0) }
   }
 
   override fun notImplemented() {
-    handler?.post { result?.notImplemented() }
+    handler?.post { mResult?.notImplemented() }
   }
 
   override fun error(
     errorCode: String, errorMessage: String?, errorDetails: Any?
   ) {
-    handler?.post { result?.error(errorCode, errorMessage, errorDetails) }
+    handler?.post { mResult?.error(errorCode, errorMessage, errorDetails) }
   }
 
 
@@ -246,7 +247,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     return false
   }
 
-  private var mResult: Result? = null
 
   private fun keyToHealthDataType(type: String): DataType {
     return when (type) {
@@ -317,9 +317,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
   }
 
-  // delete records of the given type in the time range
+  /** 
+   * Delete records of the given type in the time range
+   */
   private fun delete(call: MethodCall, result: Result) {
-
     if (context == null) {
       result.success(false)
       return
@@ -347,7 +348,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     try {
       val googleSignInAccount =
         GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
-
       Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
         .deleteData(dataSource)
         .addOnSuccessListener {
@@ -356,14 +356,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         .addOnFailureListener(errHandler(result, "There was an error deleting the dataset"))
     } catch (e3: Exception) {
-
       result.success(false)
     }
   }
 
-  // save blood pressure
+  /** 
+   * Save a Blood Pressure measurement with systolic and diastolic values
+   */
   private fun writeBloodPressure(call: MethodCall, result: Result) {
-
     if (context == null) {
       result.success(false)
       return
@@ -417,8 +417,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
   }
 
+  /** 
+   * Save a data type in Google Fit
+   */
   private fun writeData(call: MethodCall, result: Result) {
-
     if (context == null) {
       result.success(false)
       return
@@ -481,6 +483,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
   }
 
+  /**
+   * Save a Workout session with options for distance and calories expended
+   */
   private fun writeWorkoutData(call: MethodCall, result: Result) {
     if (context == null) {
       result.success(false)
@@ -604,7 +609,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
   }
 
-
+  /**
+   * Get all datapoints of the DataType within the given time range
+   */
   private fun getData(call: MethodCall, result: Result) {
     if (context == null) {
       result.success(null)
@@ -662,17 +669,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             android.Manifest.permission.ACCESS_FINE_LOCATION
           ) == PackageManager.PERMISSION_GRANTED
         ) {
-          // Request permission with distance data.
-          // Google Fit requires this when we query for distance data
-          // as it is restricted data
-          if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
-            GoogleSignIn.requestPermissions(
-              activity!!,
-              GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-              googleSignInAccount,
-              fitnessOptions
-            )
-          }
           readRequestBuilder.read(DataType.TYPE_DISTANCE_DELTA)
         }
         readRequest = readRequestBuilder.build()
@@ -715,8 +711,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
   private fun errHandler(result: Result, addMessage: String) = OnFailureListener { exception ->
-    // Handler(context!!.mainLooper).run { result.success(null) }
-    Handler(context!!.mainLooper).run { result.success(false) }
+    Handler(context!!.mainLooper).run { result.success(null) }
     Log.w("FLUTTER_HEALTH::ERROR", addMessage)
     Log.w("FLUTTER_HEALTH::ERROR", exception.message ?: "unknown error")
     Log.w("FLUTTER_HEALTH::ERROR", exception.stackTrace.toString())
@@ -885,30 +880,42 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
           else -> throw IllegalArgumentException("Unknown access type $access")
         }
       }
+      if (typeKey == WORKOUT) {
+        when (access) {
+          0 -> typesBuilder.accessActivitySessions(FitnessOptions.ACCESS_READ)
+          1 -> typesBuilder.accessActivitySessions(FitnessOptions.ACCESS_WRITE)
+          2 -> {
+            typesBuilder.accessActivitySessions(FitnessOptions.ACCESS_READ)
+            typesBuilder.accessActivitySessions(FitnessOptions.ACCESS_WRITE)
+          }
+          else -> throw IllegalArgumentException("Unknown access type $access")
+        }
+      }
 
     }
     return typesBuilder.build()
   }
 
   private fun hasPermissions(call: MethodCall, result: Result) {
-
     if (context == null) {
       result.success(false)
       return
     }
 
     val optionsToRegister = callToHealthTypes(call)
-    mResult = result
 
     val isGranted = GoogleSignIn.hasPermissions(
       GoogleSignIn.getLastSignedInAccount(context!!),
       optionsToRegister
     )
 
-    mResult?.success(isGranted)
+    result?.success(isGranted)
   }
 
-  /// Called when the "requestAuthorization" is invoked from Flutter
+  /** 
+   * Requests authorization for the HealthDataTypes 
+   * with the the READ or READ_WRITE permission type.
+   */
   private fun requestAuthorization(call: MethodCall, result: Result) {
     if (context == null) {
       result.success(false)
@@ -918,9 +925,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     val optionsToRegister = callToHealthTypes(call)
     mResult = result
 
+    // Set to false due to bug described in https://github.com/cph-cachet/flutter-plugins/issues/640#issuecomment-1366830132
     val isGranted = false
 
-    /// Not granted? Ask for permission
+    // If not granted then ask for permission
     if (!isGranted && activity != null) {
       GoogleSignIn.requestPermissions(
         activity!!,
@@ -929,8 +937,32 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         optionsToRegister
       )
     } else { /// Permission already granted
-      mResult?.success(true)
+      result?.success(true)
     }
+  }
+
+  /** 
+   * Revokes access to Google Fit using the `disableFit`-method.
+   * 
+   * Note: Using the `revokeAccess` creates a bug on android 
+   * when trying to reapply for permissions afterwards, hence
+   * `disableFit` was used.
+   */
+  private fun revokePermissions(call: MethodCall, result: Result) {
+    if (context == null) {
+      result.success(false)
+      return
+    }
+    Fitness.getConfigClient(activity!!, GoogleSignIn.getLastSignedInAccount(context!!)!!)
+      .disableFit()
+      .addOnSuccessListener {
+        Log.i("Health","Disabled Google Fit")
+        result.success(true)
+      }
+      .addOnFailureListener { e ->
+        Log.w("Health", "There was an error disabling Google Fit", e)
+        result.success(false)
+      }
   }
 
   private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
@@ -976,7 +1008,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
       )
   }
 
-
   private fun getStepsInRange(
     start: Long,
     end: Long,
@@ -1014,11 +1045,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     return workoutTypeMap[type] ?: FitnessActivities.UNKNOWN
   }
 
-  /// Handle calls from the MethodChannel
+  /**
+   *  Handle calls from the MethodChannel
+   */
   override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
       "hasPermissions" -> hasPermissions(call, result)
       "requestAuthorization" -> requestAuthorization(call, result)
+      "revokePermissions" -> revokePermissions(call, result)
       "getData" -> getData(call, result)
       "writeData" -> writeData(call, result)
       "delete" -> delete(call, result)

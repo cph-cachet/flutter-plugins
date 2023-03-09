@@ -66,12 +66,6 @@ class _HealthAppState extends State<HealthApp> {
     // get data within the last 24 hours
     final now = DateTime.now();
     final yesterday = now.subtract(Duration(hours: 24));
-    // requesting access to the data types before reading them
-    // note that strictly speaking, the [permissions] are not
-    // needed, since we only want READ access.
-    bool requested =
-        await health.requestAuthorization(types, permissions: permissions);
-    print('requested: $requested');
 
     // If we are trying to read Step Count, Workout, Sleep or other data that requires
     // the ACTIVITY_RECOGNITION permission, we need to request the permission first.
@@ -80,6 +74,13 @@ class _HealthAppState extends State<HealthApp> {
     // The location permission is requested for Workouts using the Distance information.
     await Permission.activityRecognition.request();
     await Permission.location.request();
+
+    // requesting access to the data types before reading them
+    // note that strictly speaking, the [permissions] are not
+    // needed, since we only want READ access.
+    bool requested =
+        await health.requestAuthorization(types, permissions: permissions);
+    print('requested: $requested');
 
     // Clear old data points
     _healthDataList.clear();
@@ -129,15 +130,6 @@ class _HealthAppState extends State<HealthApp> {
       // Uncomment these lines on iOS - only available on iOS
       // HealthDataType.AUDIOGRAM,
     ];
-    final rights = [
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      // HealthDataAccess.WRITE
-    ];
     final permissions = [
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE,
@@ -147,8 +139,12 @@ class _HealthAppState extends State<HealthApp> {
       HealthDataAccess.READ_WRITE,
       // HealthDataAccess.READ_WRITE,
     ];
+
     bool? hasPermissions =
-        await HealthFactory.hasPermissions(types, permissions: rights);
+        await HealthFactory.hasPermissions(types, permissions: permissions);
+    // hasPermissions = false because the getData method only requests READ,
+    // and the hasPermission cannot disclose if WRITE access exists.
+    hasPermissions = false;
     if (hasPermissions == false) {
       await health.requestAuthorization(types, permissions: permissions);
     }
@@ -167,6 +163,8 @@ class _HealthAppState extends State<HealthApp> {
     success &= await health.writeHealthData(
         _mgdl, HealthDataType.BLOOD_GLUCOSE, now, now);
 
+    success &= await health.writeBloodPressure(120, 90, now, now);
+
     // Store a workout eg. running
     success &= await health.writeWorkoutData(
       HealthWorkoutActivityType.RUNNING,
@@ -180,9 +178,8 @@ class _HealthAppState extends State<HealthApp> {
       totalDistanceUnit: HealthDataUnit.FOOT,
     );
 
-    success &= await health.writeBloodPressure(120, 90, now, now);
-    success &= await health.writeHealthData(
-        3, HealthDataType.SLEEP_ASLEEP, now.subtract(Duration(hours: 3)), now);
+    // success &= await health.writeHealthData(
+    //     3, HealthDataType.SLEEP_ASLEEP, now.subtract(Duration(hours: 3)), now);
 
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
@@ -210,7 +207,7 @@ class _HealthAppState extends State<HealthApp> {
   /// Delete some random health data.
   Future deleteData() async {
     final now = DateTime.now();
-    final earlier = now.subtract(Duration(minutes: 30));
+    final earlier = now.subtract(Duration(hours: 24));
 
     final types = [
       HealthDataType.STEPS,
@@ -221,14 +218,6 @@ class _HealthAppState extends State<HealthApp> {
       // Uncomment these lines on iOS - only available on iOS
       // HealthDataType.AUDIOGRAM,
     ];
-    final rights = [
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      HealthDataAccess.WRITE,
-      // HealthDataAccess.WRITE
-    ];
     final permissions = [
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE,
@@ -238,7 +227,10 @@ class _HealthAppState extends State<HealthApp> {
       // HealthDataAccess.READ_WRITE,
     ];
     bool? hasPermissions =
-        await HealthFactory.hasPermissions(types, permissions: rights);
+        await HealthFactory.hasPermissions(types, permissions: permissions);
+    // hasPermissions = false because the getData method only requests READ,
+    // and the hasPermission cannot disclose if WRITE access exists.
+    hasPermissions = false;
     if (hasPermissions == false) {
       await health.requestAuthorization(types, permissions: permissions);
     }
@@ -286,6 +278,10 @@ class _HealthAppState extends State<HealthApp> {
       print("Authorization not granted - error in authorization");
       setState(() => _state = AppState.DATA_NOT_FETCHED);
     }
+  }
+
+  Future revokeAccess() async {
+    await health.revokePermissions();
   }
 
   Widget _contentFetchingData() {
@@ -425,6 +421,12 @@ class _HealthAppState extends State<HealthApp> {
                   fetchStepData();
                 },
                 icon: Icon(Icons.nordic_walking),
+              ),
+              IconButton(
+                onPressed: () {
+                  revokeAccess();
+                },
+                icon: Icon(Icons.logout),
               )
             ],
           ),

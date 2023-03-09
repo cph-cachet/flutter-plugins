@@ -1,3 +1,7 @@
+## 4.6.0
+
+- Added method for revoking permissions for Google Fit - `revokePermissions`.
+
 ## 4.5.0
 
 - Updated android sdk, gradle
