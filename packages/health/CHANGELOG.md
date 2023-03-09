@@ -1,3 +1,7 @@
+## 4.6.0
+
+- Added method for revoking permissions. On Android it uses `disableFit()` to remove access to Google Fit - `revokePermissions`. Documented lack of methods for iOS.
+
 ## 4.5.0
 
 - Updated android sdk, gradle
