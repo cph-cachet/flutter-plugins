@@ -20,6 +20,7 @@ class AudioStreamer {
   Stream<List<double>>? _stream;
   StreamSubscription<List<dynamic>>? _subscription;
 
+  /// Use EventChannel to receive audio stream from native
   Stream<List<double>> _makeAudioStream(Function handleErrorFunction) {
     if (_stream == null) {
       _stream = _noiseEventChannel
@@ -35,14 +36,15 @@ class AudioStreamer {
     return _stream!;
   }
 
-  /// Verify that it was granted
+  /// Verify that microphone permission was granted
   static Future<bool> checkPermission() async =>
-      Permission.microphone.request().isGranted;
+      await Permission.microphone.request().isGranted;
 
   /// Request the microphone permission
   static Future<void> requestPermission() async =>
-      Permission.microphone.request();
+      await Permission.microphone.request();
 
+  /// Start recording if microphone permission was granted
   Future<bool> start(Function onData, Function handleError) async {
     if (_isRecording) {
       print('AudioStreamer: Already recording!');
@@ -70,6 +72,7 @@ class AudioStreamer {
     return _isRecording;
   }
 
+  /// Stop the recording
   Future<bool> stop() async {
     try {
       if (_subscription != null) {

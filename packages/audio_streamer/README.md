@@ -25,6 +25,23 @@ When editing the `Info.plist` file manually, the entries needed are:
 </array>
 ```
 
+* Edit the `Podfile` to include the permission for the microphone:
+
+```ruby
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+
+    target.build_configurations.each do |config|
+      # for more infomation: https://github.com/BaseflowIT/flutter-permission-handler/blob/master/permission_handler/ios/Classes/PermissionHandlerEnums.h
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_MICROPHONE=1',]
+    end
+  end
+end
+```
+
 ## Example
 See the file `example/lib/main.dart` for a fully fledged example app using the plugin.
 

@@ -1,3 +1,7 @@
+## 2.2.0+1
+- updated example app podfile to correctly include permission for iOS
+- updated README to include podfile permission
+
 ## 2.2.0
 - upgrade of `permission_handler: ^10.0.0`
 - Upgraded to Dart 2.17 and Flutter 3.0
