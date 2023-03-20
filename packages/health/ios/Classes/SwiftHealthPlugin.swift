@@ -487,7 +487,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         workout["totalEnergyBurned"] = totalEnergyBurned
                     }
                     if let totalDistance = sample.totalDistance?.doubleValue(for: HKUnit.meter()) {
-                        workout["totalDistance"] = totalDistance
+                        workout["totalDistance"] = totalDistance / 1000
                     }
 
                     if let metadata = sample.metadata {
