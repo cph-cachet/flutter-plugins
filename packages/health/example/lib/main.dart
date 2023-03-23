@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
+import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(HealthApp());
@@ -17,6 +18,7 @@ enum AppState {
   FETCHING_DATA,
   DATA_READY,
   NO_DATA,
+  AUTHORIZED,
   AUTH_NOT_GRANTED,
   DATA_ADDED,
   DATA_DELETED,
@@ -30,43 +32,38 @@ class _HealthAppState extends State<HealthApp> {
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 10;
   double _mgdl = 10.0;
+  // define the types to get
+  final types = dataTypesAndroid;
+  // final types = [
+  //   HealthDataType.WEIGHT,
+  //   HealthDataType.STEPS,
+  //   HealthDataType.HEIGHT,
+  //   HealthDataType.BLOOD_GLUCOSE,
+  //   HealthDataType.WORKOUT,
+  //   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+  //   HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+  //   // Uncomment these lines on iOS - only available on iOS
+  //   HealthDataType.AUDIOGRAM
+  // ];
+
+  // with coresponsing permissions
+  final permissions =
+      dataTypesAndroid.map((e) => HealthDataAccess.READ_WRITE).toList();
+  // final permissions = [
+  //   HealthDataAccess.READ_WRITE,
+  //   HealthDataAccess.READ_WRITE,
+  //   HealthDataAccess.READ_WRITE,
+  //   HealthDataAccess.READ_WRITE,
+  //   HealthDataAccess.READ_WRITE,
+  //   HealthDataAccess.READ_WRITE,
+  //   HealthDataAccess.READ_WRITE,
+  //   HealthDataAccess.READ_WRITE,
+  // ];
 
   // create a HealthFactory for use in the app
   HealthFactory health = HealthFactory();
 
-  /// Fetch data points from the health plugin and show them in the app.
-  Future fetchData() async {
-    setState(() => _state = AppState.FETCHING_DATA);
-
-    // define the types to get
-    final types = [
-      HealthDataType.STEPS,
-      HealthDataType.WEIGHT,
-      HealthDataType.HEIGHT,
-      HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.WORKOUT,
-      HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-      // Uncomment these lines on iOS - only available on iOS
-      // HealthDataType.AUDIOGRAM
-    ];
-
-    // with coresponsing permissions
-    final permissions = [
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      HealthDataAccess.READ,
-      // HealthDataAccess.READ,
-    ];
-
-    // get data within the last 24 hours
-    final now = DateTime.now();
-    final yesterday = now.subtract(Duration(hours: 24));
-
+  Future authorize() async {
     // If we are trying to read Step Count, Workout, Sleep or other data that requires
     // the ACTIVITY_RECOGNITION permission, we need to request the permission first.
     // This requires a special request authorization call.
@@ -75,79 +72,63 @@ class _HealthAppState extends State<HealthApp> {
     await Permission.activityRecognition.request();
     await Permission.location.request();
 
-    // requesting access to the data types before reading them
-    // note that strictly speaking, the [permissions] are not
-    // needed, since we only want READ access.
-    bool requested =
-        await health.requestAuthorization(types, permissions: permissions);
-    print('requested: $requested');
+    // Check if we have permission
+    bool? hasPermissions =
+        await HealthFactory.hasPermissions(types, permissions: permissions);
+
+    // hasPermissions = false because the hasPermission cannot disclose if WRITE access exists.
+    // Hence, we have to request with WRITE as well.
+    hasPermissions = false;
+
+    bool authorized = false;
+    if (!hasPermissions) {
+      // requesting access to the data types before reading them
+      authorized =
+          await health.requestAuthorization(types, permissions: permissions);
+    }
+
+    setState(() => _state =
+        (authorized) ? AppState.AUTHORIZED : AppState.AUTH_NOT_GRANTED);
+  }
+
+  /// Fetch data points from the health plugin and show them in the app.
+  Future fetchData() async {
+    setState(() => _state = AppState.FETCHING_DATA);
+
+    // get data within the last 24 hours
+    final now = DateTime.now();
+    final yesterday = now.subtract(Duration(hours: 24));
 
     // Clear old data points
     _healthDataList.clear();
 
-    if (requested) {
-      try {
-        // fetch health data
-        List<HealthDataPoint> healthData =
-            await health.getHealthDataFromTypes(yesterday, now, types);
-        // save all the new data points (only the first 100)
-        _healthDataList.addAll((healthData.length < 100)
-            ? healthData
-            : healthData.sublist(0, 100));
-      } catch (error) {
-        print("Exception in getHealthDataFromTypes: $error");
-      }
-
-      // filter out duplicates
-      _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
-
-      // print the results
-      _healthDataList.forEach((x) => print(x));
-
-      // update the UI to display the results
-      setState(() {
-        _state =
-            _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
-      });
-    } else {
-      print("Authorization not granted");
-      setState(() => _state = AppState.DATA_NOT_FETCHED);
+    try {
+      // fetch health data
+      List<HealthDataPoint> healthData =
+          await health.getHealthDataFromTypes(yesterday, now, types);
+      // save all the new data points (only the first 100)
+      _healthDataList.addAll(
+          (healthData.length < 100) ? healthData : healthData.sublist(0, 100));
+    } catch (error) {
+      print("Exception in getHealthDataFromTypes: $error");
     }
+
+    // filter out duplicates
+    _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
+
+    // print the results
+    _healthDataList.forEach((x) => print(x));
+
+    // update the UI to display the results
+    setState(() {
+      _state = _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
+    });
   }
 
   /// Add some random health data.
   Future addData() async {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(minutes: 20));
-
-    final types = [
-      HealthDataType.STEPS,
-      HealthDataType.HEIGHT,
-      HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.WORKOUT, // Requires Google Fit on Android
-      HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-      // Uncomment these lines on iOS - only available on iOS
-      // HealthDataType.AUDIOGRAM,
-    ];
-    final permissions = [
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      // HealthDataAccess.READ_WRITE,
-    ];
-
-    bool? hasPermissions =
-        await HealthFactory.hasPermissions(types, permissions: permissions);
-    // hasPermissions = false because the getData method only requests READ,
-    // and the hasPermission cannot disclose if WRITE access exists.
-    hasPermissions = false;
-    if (hasPermissions == false) {
-      await health.requestAuthorization(types, permissions: permissions);
-    }
 
     // Store a count of steps taken
     _nofSteps = Random().nextInt(10);
@@ -208,32 +189,6 @@ class _HealthAppState extends State<HealthApp> {
   Future deleteData() async {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(hours: 24));
-
-    final types = [
-      HealthDataType.STEPS,
-      HealthDataType.HEIGHT,
-      HealthDataType.BLOOD_GLUCOSE,
-      HealthDataType.WORKOUT, // Requires Google Fit on Android
-      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-      // Uncomment these lines on iOS - only available on iOS
-      // HealthDataType.AUDIOGRAM,
-    ];
-    final permissions = [
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      HealthDataAccess.READ_WRITE,
-      // HealthDataAccess.READ_WRITE,
-    ];
-    bool? hasPermissions =
-        await HealthFactory.hasPermissions(types, permissions: permissions);
-    // hasPermissions = false because the getData method only requests READ,
-    // and the hasPermission cannot disclose if WRITE access exists.
-    hasPermissions = false;
-    if (hasPermissions == false) {
-      await health.requestAuthorization(types, permissions: permissions);
-    }
 
     bool success = false;
 
@@ -342,6 +297,10 @@ class _HealthAppState extends State<HealthApp> {
     );
   }
 
+  Widget _authorized() {
+    return Text('Authorization granted!');
+  }
+
   Widget _authorizationNotGranted() {
     return Text('Authorization not given. '
         'For Android please check your OAUTH2 client ID is correct in Google Developer Console. '
@@ -375,6 +334,8 @@ class _HealthAppState extends State<HealthApp> {
       return _contentNoData();
     else if (_state == AppState.FETCHING_DATA)
       return _contentFetchingData();
+    else if (_state == AppState.AUTHORIZED)
+      return _authorized();
     else if (_state == AppState.AUTH_NOT_GRANTED)
       return _authorizationNotGranted();
     else if (_state == AppState.DATA_ADDED)
@@ -395,44 +356,65 @@ class _HealthAppState extends State<HealthApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-          appBar: AppBar(
-            title: const Text('Health Example'),
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.file_download),
-                onPressed: () {
-                  fetchData();
-                },
+        appBar: AppBar(
+          title: const Text('Health Example'),
+        ),
+        body: Container(
+          child: Column(
+            children: [
+              Wrap(
+                spacing: 10,
+                children: [
+                  TextButton(
+                      onPressed: authorize,
+                      child:
+                          Text("Auth", style: TextStyle(color: Colors.white)),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.blue))),
+                  TextButton(
+                      onPressed: fetchData,
+                      child: Text("Fetch Data",
+                          style: TextStyle(color: Colors.white)),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.blue))),
+                  TextButton(
+                      onPressed: addData,
+                      child: Text("Add Data",
+                          style: TextStyle(color: Colors.white)),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.blue))),
+                  TextButton(
+                      onPressed: deleteData,
+                      child: Text("Delete Data",
+                          style: TextStyle(color: Colors.white)),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.blue))),
+                  TextButton(
+                      onPressed: fetchStepData,
+                      child: Text("Fetch Step Data",
+                          style: TextStyle(color: Colors.white)),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.blue))),
+                  TextButton(
+                      onPressed: revokeAccess,
+                      child: Text("Revoke Access",
+                          style: TextStyle(color: Colors.white)),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.blue))),
+                ],
               ),
-              IconButton(
-                onPressed: () {
-                  addData();
-                },
-                icon: Icon(Icons.add),
-              ),
-              IconButton(
-                onPressed: () {
-                  deleteData();
-                },
-                icon: Icon(Icons.delete),
-              ),
-              IconButton(
-                onPressed: () {
-                  fetchStepData();
-                },
-                icon: Icon(Icons.nordic_walking),
-              ),
-              IconButton(
-                onPressed: () {
-                  revokeAccess();
-                },
-                icon: Icon(Icons.logout),
-              )
+              Divider(thickness: 3),
+              Expanded(child: Center(child: _content()))
             ],
           ),
-          body: Center(
-            child: _content(),
-          )),
+        ),
+      ),
     );
   }
 }
