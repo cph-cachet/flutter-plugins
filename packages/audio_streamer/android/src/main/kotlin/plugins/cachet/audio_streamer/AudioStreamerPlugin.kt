@@ -15,20 +15,24 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
 import java.util.*
 
 /** AudioStreamerPlugin */
 class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, EventChannel.StreamHandler, ActivityAware {
 
-    /// Constants
+    // / Constants
     private val eventChannelName = "audio_streamer.eventChannel"
-    private val sampleRate = 44100
-    private var bufferSize = 6400 * 2; /// Magical number!
+
+    // / Method channel for returning the sample rate.
+    private val methodChannelName = "audio_streamer.methodChannel"
+    private var sampleRate = 44100 // standard value to initialize
+    private var bufferSize = 6400 * 2; // / Magical number!
     private val maxAmplitude = 32767 // same as 2^15
     private val logTag = "AudioStreamerPlugin"
 
-    /// Variables (i.e. will change value)
+    // / Variables (i.e. will change value)
     private var eventSink: EventSink? = null
     private var recording = false
 
@@ -38,6 +42,16 @@ class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, Eve
         val messenger = flutterPluginBinding.binaryMessenger
         val eventChannel = EventChannel(messenger, eventChannelName)
         eventChannel.setStreamHandler(this)
+        val methodChannel = MethodChannel(messenger, methodChannelName)
+        methodChannel.setMethodCallHandler {
+                call, result ->
+            if (call.method == "getSampleRate") {
+                // Sample rate never changes, so return the given sample rate.
+                result.success(sampleRate)
+            } else {
+                result.notImplemented()
+            }
+        }
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -63,11 +77,16 @@ class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, Eve
     }
 
     /**
-     * Called from Flutter, starts the stream.
+     * Called from Flutter, starts the stream and updates the sample rate using the argument.
      */
     override fun onListen(arguments: Any?, events: EventSink?) {
         this.eventSink = events
         recording = true
+        sampleRate = (arguments as Map<*, *>)["sampleRate"] as Int
+        if (sampleRate < 4000 || sampleRate > 48000) {
+            events!!.error("SampleRateError", "A sample rate of " + sampleRate + "Hz is not supported by Android.", null)
+            return
+        }
         streamMicData()
     }
 
@@ -92,42 +111,45 @@ class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, Eve
     /**
      * Starts recording and streaming audio data from the mic.
      * Uses a buffer array of size 512. Whenever buffer is full, the content is sent to Flutter.
-     *
+     * Sets the sample rate as defined by [sampleRate].
      *
      * Source:
      * https://www.newventuresoftware.com/blog/record-play-and-visualize-raw-audio-data-in-android
      */
     private fun streamMicData() {
-        Thread(Runnable {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
-            val audioBuffer = ShortArray(bufferSize / 2)
-            val record = AudioRecord(
+        Thread(
+            Runnable {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
+                val audioBuffer = ShortArray(bufferSize / 2)
+                val record = AudioRecord(
                     MediaRecorder.AudioSource.DEFAULT,
                     sampleRate,
                     AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT,
-                    bufferSize)
-            if (record.state != AudioRecord.STATE_INITIALIZED) {
-                Log.e(logTag, "Audio Record can't initialize!")
-                return@Runnable
-            }
-            /** Start recording loop  */
-            record.startRecording()
-            while (recording) {
-                /** Read data into buffer  */
-                record.read(audioBuffer, 0, audioBuffer.size)
-                Handler(Looper.getMainLooper()).post {
-                    /// Convert to list in order to send via EventChannel.
-                    val audioBufferList = ArrayList<Double>()
-                    for (impulse in audioBuffer) {
-                        val normalizedImpulse = impulse.toDouble() / maxAmplitude.toDouble()
-                        audioBufferList.add(normalizedImpulse)
-                    }
-                    eventSink!!.success(audioBufferList)
+                    bufferSize,
+                )
+                if (record.state != AudioRecord.STATE_INITIALIZED) {
+                    Log.e(logTag, "Audio Record can't initialize!")
+                    return@Runnable
                 }
-            }
-            record.stop()
-            record.release()
-        }).start()
+                /** Start recording loop  */
+                record.startRecording()
+                while (recording) {
+                    /** Read data into buffer  */
+                    record.read(audioBuffer, 0, audioBuffer.size)
+                    Handler(Looper.getMainLooper()).post {
+                        // / Convert to list in order to send via EventChannel.
+                        val audioBufferList = ArrayList<Double>()
+                        for (impulse in audioBuffer) {
+                            val normalizedImpulse = impulse.toDouble() / maxAmplitude.toDouble()
+                            audioBufferList.add(normalizedImpulse)
+                        }
+                        eventSink!!.success(audioBufferList)
+                    }
+                }
+                record.stop()
+                record.release()
+            },
+        ).start()
     }
 }

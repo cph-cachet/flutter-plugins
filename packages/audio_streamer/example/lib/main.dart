@@ -23,10 +23,10 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  void onAudio(List<double> buffer) {
+  void onAudio(List<double> buffer) async {
     _audio.addAll(buffer);
-    double secondsRecorded =
-        _audio.length.toDouble() / AudioStreamer.sampleRate.toDouble();
+    var sampleRate = await AudioStreamer.currSampleRate;
+    double secondsRecorded = _audio.length.toDouble() / sampleRate;
     print('Max amp: ${buffer.reduce(max)}');
     print('Min amp: ${buffer.reduce(min)}');
     print('$secondsRecorded seconds recorded.');
@@ -43,6 +43,7 @@ class _MyAppState extends State<MyApp> {
 
   void start() async {
     try {
+      //_streamer.start(onAudio, handleError, sampleRate: 16000);
       _streamer.start(onAudio, handleError);
       setState(() {
         _isRecording = true;
