@@ -17,7 +17,7 @@ On *iOS* enable the following:
 * In the Runner Xcode project edit the _Info.plist_ file. Add an entry for _'Privacy - Microphone Usage Description'_
 
 When editing the Info.plist file manually, the entries needed are:
-```plist
+```xml
 <key>NSMicrophoneUsageDescription</key>
 <string>YOUR DESCRIPTION</string>
 <key>UIBackgroundModes</key>
