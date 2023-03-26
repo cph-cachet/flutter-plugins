@@ -16,6 +16,31 @@ On *iOS* enable the following:
 * Capabilities > Background Modes > _Audio, AirPlay and Picture in Picture_
 * In the Runner Xcode project edit the _Info.plist_ file. Add an entry for _'Privacy - Microphone Usage Description'_
 
+When editing the Info.plist file manually, the entries needed are:
+```plist
+<key>NSMicrophoneUsageDescription</key>
+<string>YOUR DESCRIPTION</string>
+<key>UIBackgroundModes</key>
+<array>
+  <string>audio</string>
+</array>
+```
+* Edit the ```Podfile``` to include the permission for the microphone:
+
+```Podfile
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+
+    target.build_configurations.each do |config|
+      # for more infomation: https://github.com/BaseflowIT/flutter-permission-handler/blob/master/permission_handler/ios/Classes/PermissionHandlerEnums.h
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_MICROPHONE=1',]
+    end
+  end
+end
+```
 
 ## Usage
 ### Initialization
