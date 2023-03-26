@@ -27,7 +27,7 @@ When editing the Info.plist file manually, the entries needed are:
 ```
 * Edit the ```Podfile``` to include the permission for the microphone:
 
-```Podfile
+```ruby
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
