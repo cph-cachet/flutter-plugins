@@ -43,8 +43,9 @@ class _MyAppState extends State<MyApp> {
 
   void start() async {
     try {
-      //_streamer.start(onAudio, handleError, sampleRate: 16000);
-      _streamer.start(onAudio, handleError);
+      //_streamer.start(onAudio, handleError, sampleRate: 16000); //uses custom sample rate
+      _streamer.start(
+          onAudio, handleError); //uses default sample rate of 44100 Hz
       setState(() {
         _isRecording = true;
       });

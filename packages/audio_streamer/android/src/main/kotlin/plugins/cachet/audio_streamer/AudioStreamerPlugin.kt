@@ -38,6 +38,8 @@ class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, Eve
 
     private var currentActivity: Activity? = null
 
+    private lateinit var audioRecord: AudioRecord;
+
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         val messenger = flutterPluginBinding.binaryMessenger
         val eventChannel = EventChannel(messenger, eventChannelName)
@@ -47,7 +49,7 @@ class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, Eve
                 call, result ->
             if (call.method == "getSampleRate") {
                 // Sample rate never changes, so return the given sample rate.
-                result.success(sampleRate)
+                result.success(audioRecord?.getSampleRate())
             } else {
                 result.notImplemented()
             }
@@ -121,22 +123,22 @@ class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, Eve
             Runnable {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
                 val audioBuffer = ShortArray(bufferSize / 2)
-                val record = AudioRecord(
+                audioRecord = AudioRecord(
                     MediaRecorder.AudioSource.DEFAULT,
                     sampleRate,
                     AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT,
                     bufferSize,
                 )
-                if (record.state != AudioRecord.STATE_INITIALIZED) {
+                if (audioRecord.state != AudioRecord.STATE_INITIALIZED) {
                     Log.e(logTag, "Audio Record can't initialize!")
                     return@Runnable
                 }
                 /** Start recording loop  */
-                record.startRecording()
+                audioRecord.startRecording()
                 while (recording) {
                     /** Read data into buffer  */
-                    record.read(audioBuffer, 0, audioBuffer.size)
+                    audioRecord.read(audioBuffer, 0, audioBuffer.size)
                     Handler(Looper.getMainLooper()).post {
                         // / Convert to list in order to send via EventChannel.
                         val audioBufferList = ArrayList<Double>()
@@ -147,8 +149,8 @@ class AudioStreamerPlugin : FlutterPlugin, RequestPermissionsResultListener, Eve
                         eventSink!!.success(audioBufferList)
                     }
                 }
-                record.stop()
-                record.release()
+                audioRecord.stop()
+                audioRecord.release()
             },
         ).start()
     }
