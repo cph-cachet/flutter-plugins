@@ -8,22 +8,34 @@ import 'package:permission_handler/permission_handler.dart';
  * to the native environment and streaming audio from the microphone.*
  */
 const String EVENT_CHANNEL_NAME = 'audio_streamer.eventChannel';
+const String METHOD_CHANNEL_NAME = 'audio_streamer.methodChannel';
 
 class AudioStreamer {
   bool _isRecording = false;
 
-  static int get sampleRate => 44100;
+  static Future<int> get currSampleRate => _getActualSampleRate();
 
   static const EventChannel _noiseEventChannel =
       EventChannel(EVENT_CHANNEL_NAME);
 
+  static const MethodChannel _sampleRateChannel =
+      MethodChannel(METHOD_CHANNEL_NAME);
+
   Stream<List<double>>? _stream;
   StreamSubscription<List<dynamic>>? _subscription;
 
-  Stream<List<double>> _makeAudioStream(Function handleErrorFunction) {
+  /// Use MethodChannel to get the current sample rate, may be different from requested sample rate
+  static Future<int> _getActualSampleRate() async {
+    var currSampleRate = await _sampleRateChannel.invokeMethod('getSampleRate');
+    return currSampleRate;
+  }
+
+  /// Use EventChannel to receive audio stream from native
+  Stream<List<double>> _makeAudioStream(
+      Function handleErrorFunction, int sampleRate) {
     if (_stream == null) {
       _stream = _noiseEventChannel
-          .receiveBroadcastStream()
+          .receiveBroadcastStream({"sampleRate": sampleRate})
           .handleError((error) {
             _isRecording = false;
             _stream = null;
@@ -35,15 +47,25 @@ class AudioStreamer {
     return _stream!;
   }
 
-  /// Verify that it was granted
+  /// Verify that microphone permission was granted
   static Future<bool> checkPermission() async =>
-      Permission.microphone.request().isGranted;
+      await Permission.microphone.request().isGranted;
 
   /// Request the microphone permission
   static Future<void> requestPermission() async =>
-      Permission.microphone.request();
+      await Permission.microphone.request();
 
-  Future<bool> start(Function onData, Function handleError) async {
+  /// Start recording if microphone permission was granted
+  ///
+  /// Parameters:
+  ///
+  /// * [onData] - A callback function that will be called to handle the audio stream.
+  /// * [handleError] - A callback function that will be called to handle any errors.
+  /// * [sampleRate] - Optional.
+  ///   + If unspecified: Default sample rate of 44100 will be used.
+  ///   + If specified: Audio streamer will use the specified sample rate, but this may not succeed on iOS.
+  Future<bool> start(Function onData, Function handleError,
+      {sampleRate = 44100}) async {
     if (_isRecording) {
       print('AudioStreamer: Already recording!');
       return _isRecording;
@@ -52,7 +74,7 @@ class AudioStreamer {
 
       if (granted) {
         try {
-          final stream = _makeAudioStream(handleError);
+          final stream = _makeAudioStream(handleError, sampleRate);
           _subscription = stream.listen(onData as void Function(List<double>)?);
           _isRecording = true;
         } catch (err) {
@@ -64,12 +86,13 @@ class AudioStreamer {
       /// ask for it, and then try recording again.
       else {
         await AudioStreamer.requestPermission();
-        start(onData, handleError);
+        start(onData, handleError, sampleRate: sampleRate);
       }
     }
     return _isRecording;
   }
 
+  /// Stop the recording
   Future<bool> stop() async {
     try {
       if (_subscription != null) {

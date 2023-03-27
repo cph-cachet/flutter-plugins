@@ -1,3 +1,13 @@
+## 2.1.1
+
+- check of Android OS version added when getting `lastForeground`.
+
+## 2.1.0
+
+- Addition of `lastForeground` information - when was the app last time in the foreground.
+- update of example app to AndroidX and new gradle build version.
+- update of documentation.
+
 ## 2.0.0
 
 - Migration to null safety

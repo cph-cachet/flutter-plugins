@@ -12,8 +12,5 @@ class HealthException implements Exception {
       "Error requesting health data type '$dataType' - cause: $cause";
 }
 
-/// Extracts the string value from an enum
-String _enumToString(enumItem) => enumItem.toString().split('.').last;
-
 /// A list of supported platforms.
 enum PlatformType { IOS, ANDROID }

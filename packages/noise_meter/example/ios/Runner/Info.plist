@@ -47,5 +47,9 @@
 	<false/>
     <key>NSMicrophoneUsageDescription</key>
     <string>Records audio noise detection</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>
