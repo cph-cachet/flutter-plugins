@@ -8,6 +8,7 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
   var engine = AVAudioEngine()
   var audioData: [Float] = []
   var recording = false
+  var preferredSampleRate: Int? = nil
 
   // Register plugin
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -38,38 +39,39 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
       object: nil)
   }
 
-   @objc func handleInterruption(notification: Notification) {
-        // If no eventSink to emit events to, do nothing (wait)
-        if eventSink == nil {
-            return
-        }
-
-        guard let userInfo = notification.userInfo,
-              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
-              let type = AVAudioSession.InterruptionType(rawValue: typeValue)
-        else {
-            return
-        }
-
-        switch type {
-        case .began: ()
-        case .ended:
-            // An interruption ended. Resume playback, if appropriate.
-
-            guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
-            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
-            if options.contains(.shouldResume) {
-                startRecording()
-            }
-
-        default: 
-            eventSink!(
-              FlutterError(
-                code: "100", message: "Recording was interrupted",
-                details: "Another process interrupted recording."))
-        }
+  @objc func handleInterruption(notification: Notification) {
+    // If no eventSink to emit events to, do nothing (wait)
+    if eventSink == nil {
+      return
     }
 
+    guard let userInfo = notification.userInfo,
+      let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+      let type = AVAudioSession.InterruptionType(rawValue: typeValue)
+    else {
+      return
+    }
+
+    switch type {
+    case .began: ()
+    case .ended:
+      // An interruption ended. Resume playback, if appropriate.
+
+      guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else {
+        return
+      }
+      let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+      if options.contains(.shouldResume) {
+        startRecording(sampleRate: preferredSampleRate)
+      }
+
+    default:
+      eventSink!(
+        FlutterError(
+          code: "100", message: "Recording was interrupted",
+          details: "Another process interrupted recording."))
+    }
+  }
 
   // Handle stream emitting (Swift => Flutter)
   private func emitValues(values: [Float]) {
@@ -89,8 +91,8 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
   ) -> FlutterError? {
     self.eventSink = eventSink
     if let args = arguments as? [String: Any] {
-      let sampleRate = args["sampleRate"] as? Int
-      startRecording(sampleRate: sampleRate)
+      preferredSampleRate = args["sampleRate"] as? Int
+      startRecording(sampleRate: preferredSampleRate)
     } else {
       startRecording(sampleRate: nil)
     }
@@ -108,43 +110,33 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
   func startRecording(sampleRate: Int?) {
     engine = AVAudioEngine()
 
-    try! AVAudioSession.sharedInstance().setCategory(
-      AVAudioSession.Category.playAndRecord, options: .mixWithOthers)
     do {
+      try AVAudioSession.sharedInstance().setCategory(
+        AVAudioSession.Category.playAndRecord, options: .mixWithOthers)
+      try AVAudioSession.sharedInstance().setActive(true)
+
       if let sampleRateNotNull = sampleRate {
         // Try to set sample rate
-        try print(AVAudioSession.sharedInstance().setPreferredSampleRate(Double(sampleRateNotNull)))
+        try AVAudioSession.sharedInstance().setPreferredSampleRate(Double(sampleRateNotNull))
       }
+
+      let input = engine.inputNode
+      let bus = 0
+
+      input.installTap(onBus: bus, bufferSize: 22050, format: input.inputFormat(forBus: bus)) {
+        buffer, _ -> Void in
+        let samples = buffer.floatChannelData?[0]
+        // audio callback, samples in samples[0]...samples[buffer.frameLength-1]
+        let arr = Array(UnsafeBufferPointer(start: samples, count: Int(buffer.frameLength)))
+        self.emitValues(values: arr)
+      }
+
+      try engine.start()
     } catch {
-      print("Unexpected error: \(error).")
+      eventSink!(
+        FlutterError(
+          code: "100", message: "Unable to start audio session", details: error.localizedDescription
+        ))
     }
-
-
-    func startRecording() {
-        engine = AVAudioEngine()
-
-        do {
-            try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playAndRecord, options: .mixWithOthers)
-            try AVAudioSession.sharedInstance().setActive(true)
-            
-            if let sampleRateNotNull = sampleRate {
-              // Try to set sample rate
-              try AVAudioSession.sharedInstance().setPreferredSampleRate(Double(sampleRateNotNull))
-            }
-
-            let input = engine.inputNode
-            let bus = 0
-
-            input.installTap(onBus: bus, bufferSize: 22050, format: input.inputFormat(forBus: bus)) { buffer, _ -> Void in
-                let samples = buffer.floatChannelData?[0]
-                // audio callback, samples in samples[0]...samples[buffer.frameLength-1]
-                let arr = Array(UnsafeBufferPointer(start: samples, count: Int(buffer.frameLength)))
-                self.emitValues(values: arr)
-            }
-
-            try engine.start()
-        } catch {
-            eventSink!(FlutterError(code: "100", message: "Unable to start audio session", details: error.localizedDescription))
-        }
-    }
+  }
 }
