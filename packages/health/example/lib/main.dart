@@ -30,8 +30,8 @@ enum AppState {
 class _HealthAppState extends State<HealthApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
-  int _nofSteps = 10;
-  double _mgdl = 10.0;
+  int _nofSteps = 0;
+
   // define the types to get
   final types = dataTypesAndroid;
   // final types = [
@@ -130,34 +130,59 @@ class _HealthAppState extends State<HealthApp> {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(minutes: 20));
 
-    // Store a count of steps taken
-    _nofSteps = Random().nextInt(10);
     bool success = await health.writeHealthData(
-        _nofSteps.toDouble(), HealthDataType.STEPS, earlier, now);
-
-    // Store a height
-    success &=
-        await health.writeHealthData(1.93, HealthDataType.HEIGHT, earlier, now);
-
-    // Store a Blood Glucose measurement
-    _mgdl = Random().nextInt(10) * 1.0;
+        10, HealthDataType.BODY_FAT_PERCENTAGE, earlier, now);
     success &= await health.writeHealthData(
-        _mgdl, HealthDataType.BLOOD_GLUCOSE, now, now);
+        1.925, HealthDataType.HEIGHT, earlier, now);
+    success &=
+        await health.writeHealthData(90, HealthDataType.WEIGHT, earlier, now);
+    success &=
+        await health.writeHealthData(90, HealthDataType.STEPS, earlier, now);
+    success &=
+        await health.writeHealthData(90, HealthDataType.STEPS, earlier, now);
+    success &= await health.writeHealthData(
+        200, HealthDataType.ACTIVE_ENERGY_BURNED, earlier, now);
+    success &= await health.writeHealthData(
+        70, HealthDataType.HEART_RATE, earlier, now);
+    success &= await health.writeHealthData(
+        37, HealthDataType.BODY_TEMPERATURE, earlier, now);
+    success &= await health.writeHealthData(
+        98, HealthDataType.BLOOD_OXYGEN, earlier, now);
+    success &= await health.writeHealthData(
+        105, HealthDataType.BLOOD_GLUCOSE, earlier, now);
+    success &= await health.writeHealthData(
+        1100, HealthDataType.DISTANCE_DELTA, earlier, now);
+    success &=
+        await health.writeHealthData(1.8, HealthDataType.WATER, earlier, now);
 
-    success &= await health.writeBloodPressure(120, 90, now, now);
+    // // Store a count of steps taken
+    // _nofSteps = Random().nextInt(10);
+    // bool success = await health.writeHealthData(
+    //     _nofSteps.toDouble(), HealthDataType.STEPS, earlier, now);
 
-    // Store a workout eg. running
-    success &= await health.writeWorkoutData(
-      HealthWorkoutActivityType.RUNNING,
-      earlier,
-      now,
-      // The following are optional parameters
-      // and the UNITS are functional on iOS ONLY!
-      totalEnergyBurned: 230,
-      totalEnergyBurnedUnit: HealthDataUnit.KILOCALORIE,
-      totalDistance: 1234,
-      totalDistanceUnit: HealthDataUnit.FOOT,
-    );
+    // // Store a height
+    // success &=
+    //     await health.writeHealthData(1.93, HealthDataType.HEIGHT, earlier, now);
+
+    // // Store a Blood Glucose measurement
+    // _mgdl = Random().nextInt(10) * 1.0;
+    // success &= await health.writeHealthData(
+    //     _mgdl, HealthDataType.BLOOD_GLUCOSE, now, now);
+
+    // success &= await health.writeBloodPressure(120, 90, now, now);
+
+    // // Store a workout eg. running
+    // success &= await health.writeWorkoutData(
+    //   HealthWorkoutActivityType.RUNNING,
+    //   earlier,
+    //   now,
+    //   // The following are optional parameters
+    //   // and the UNITS are functional on iOS ONLY!
+    //   totalEnergyBurned: 230,
+    //   totalEnergyBurnedUnit: HealthDataUnit.KILOCALORIE,
+    //   totalDistance: 1234,
+    //   totalDistanceUnit: HealthDataUnit.FOOT,
+    // );
 
     // success &= await health.writeHealthData(
     //     3, HealthDataType.SLEEP_ASLEEP, now.subtract(Duration(hours: 3)), now);

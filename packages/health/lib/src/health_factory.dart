@@ -198,6 +198,7 @@ class HealthFactory {
   /// * [endTime] - the end time when this [value] is measured.
   ///   + It must be equal to or later than [startTime].
   ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
+  /// * [unit] - <mark>(iOS ONLY)</mark> the unit the health data is measured in.
   ///
   /// Values for Sleep and Headache are ignored and will be automatically assigned the coresponding value.
   Future<bool> writeHealthData(
@@ -213,11 +214,12 @@ class HealthFactory {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
     if ({
-      HealthDataType.HIGH_HEART_RATE_EVENT,
-      HealthDataType.LOW_HEART_RATE_EVENT,
-      HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-      HealthDataType.ELECTROCARDIOGRAM,
-    }.contains(type))
+          HealthDataType.HIGH_HEART_RATE_EVENT,
+          HealthDataType.LOW_HEART_RATE_EVENT,
+          HealthDataType.IRREGULAR_HEART_RATE_EVENT,
+          HealthDataType.ELECTROCARDIOGRAM,
+        }.contains(type) &&
+        _platformType == PlatformType.IOS)
       throw ArgumentError(
           "$type - iOS doesnt support writing this data type in HealthKit");
 

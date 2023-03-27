@@ -42,7 +42,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 
 // Health Connect
-import androidx.health.connect.client.units.Mass
+import androidx.health.connect.client.units.*
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.changes.DeletionChange
@@ -206,6 +206,122 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     "OTHER" to FitnessActivities.OTHER,
   )
 
+  val workoutTypeMapHealthConnect = mapOf(
+    // "AEROBICS" to ExerciseSessionRecord.EXERCISE_TYPE_AEROBICS,
+    "AMERICAN_FOOTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AMERICAN,
+    // "ARCHERY" to ExerciseSessionRecord.EXERCISE_TYPE_ARCHERY,
+    "AUSTRALIAN_FOOTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AUSTRALIAN,
+    "BADMINTON" to ExerciseSessionRecord.EXERCISE_TYPE_BADMINTON,
+    "BASEBALL" to ExerciseSessionRecord.EXERCISE_TYPE_BASEBALL,
+    "BASKETBALL" to ExerciseSessionRecord.EXERCISE_TYPE_BASKETBALL,
+    // "BIATHLON" to ExerciseSessionRecord.EXERCISE_TYPE_BIATHLON,
+    "BIKING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
+    // "BIKING_HAND" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_HAND,
+    // "BIKING_MOUNTAIN" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
+    // "BIKING_ROAD" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_ROAD,
+    // "BIKING_SPINNING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_SPINNING,
+    // "BIKING_STATIONARY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
+    // "BIKING_UTILITY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_UTILITY,
+    "BOXING" to ExerciseSessionRecord.EXERCISE_TYPE_BOXING,
+    "CALISTHENICS" to ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS,
+    // "CIRCUIT_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_CIRCUIT_TRAINING,
+    "CRICKET" to ExerciseSessionRecord.EXERCISE_TYPE_CRICKET,
+    // "CROSS_COUNTRY_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_CROSS_COUNTRY,
+    // "CROSS_FIT" to ExerciseSessionRecord.EXERCISE_TYPE_CROSSFIT,
+    // "CURLING" to ExerciseSessionRecord.EXERCISE_TYPE_CURLING,
+    "DANCING" to ExerciseSessionRecord.EXERCISE_TYPE_DANCING,
+    // "DIVING" to ExerciseSessionRecord.EXERCISE_TYPE_DIVING,
+    // "DOWNHILL_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_DOWNHILL,
+    // "ELEVATOR" to ExerciseSessionRecord.EXERCISE_TYPE_ELEVATOR,
+    "ELLIPTICAL" to ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL,
+    // "ERGOMETER" to ExerciseSessionRecord.EXERCISE_TYPE_ERGOMETER,
+    // "ESCALATOR" to ExerciseSessionRecord.EXERCISE_TYPE_ESCALATOR,
+    "FENCING" to ExerciseSessionRecord.EXERCISE_TYPE_FENCING,
+    "FRISBEE_DISC" to ExerciseSessionRecord.EXERCISE_TYPE_FRISBEE_DISC,
+    // "GARDENING" to ExerciseSessionRecord.EXERCISE_TYPE_GARDENING,
+    "GOLF" to ExerciseSessionRecord.EXERCISE_TYPE_GOLF,
+    "GUIDED_BREATHING" to ExerciseSessionRecord.EXERCISE_TYPE_GUIDED_BREATHING,
+    "GYMNASTICS" to ExerciseSessionRecord.EXERCISE_TYPE_GYMNASTICS,
+    "HANDBALL" to ExerciseSessionRecord.EXERCISE_TYPE_HANDBALL,
+    "HIGH_INTENSITY_INTERVAL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
+    "HIKING" to ExerciseSessionRecord.EXERCISE_TYPE_HIKING,
+    // "HOCKEY" to ExerciseSessionRecord.EXERCISE_TYPE_HOCKEY,
+    // "HORSEBACK_RIDING" to ExerciseSessionRecord.EXERCISE_TYPE_HORSEBACK_RIDING,
+    // "HOUSEWORK" to ExerciseSessionRecord.EXERCISE_TYPE_HOUSEWORK,
+    // "IN_VEHICLE" to ExerciseSessionRecord.EXERCISE_TYPE_IN_VEHICLE,
+    "ICE_SKATING" to ExerciseSessionRecord.EXERCISE_TYPE_ICE_SKATING,
+    // "INTERVAL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_INTERVAL_TRAINING,
+    // "JUMP_ROPE" to ExerciseSessionRecord.EXERCISE_TYPE_JUMP_ROPE,
+    // "KAYAKING" to ExerciseSessionRecord.EXERCISE_TYPE_KAYAKING,
+    // "KETTLEBELL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_KETTLEBELL_TRAINING,
+    // "KICK_SCOOTER" to ExerciseSessionRecord.EXERCISE_TYPE_KICK_SCOOTER,
+    // "KICKBOXING" to ExerciseSessionRecord.EXERCISE_TYPE_KICKBOXING,
+    // "KITE_SURFING" to ExerciseSessionRecord.EXERCISE_TYPE_KITESURFING,
+    "MARTIAL_ARTS" to ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS,
+    // "MEDITATION" to ExerciseSessionRecord.EXERCISE_TYPE_MEDITATION,
+    // "MIXED_MARTIAL_ARTS" to ExerciseSessionRecord.EXERCISE_TYPE_MIXED_MARTIAL_ARTS,
+    // "P90X" to ExerciseSessionRecord.EXERCISE_TYPE_P90X,
+    "PARAGLIDING" to ExerciseSessionRecord.EXERCISE_TYPE_PARAGLIDING,
+    "PILATES" to ExerciseSessionRecord.EXERCISE_TYPE_PILATES,
+    // "POLO" to ExerciseSessionRecord.EXERCISE_TYPE_POLO,
+    "RACQUETBALL" to ExerciseSessionRecord.EXERCISE_TYPE_RACQUETBALL,
+    "ROCK_CLIMBING" to ExerciseSessionRecord.EXERCISE_TYPE_ROCK_CLIMBING,
+    "ROWING" to ExerciseSessionRecord.EXERCISE_TYPE_ROWING,
+    "ROWING_MACHINE" to ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
+    "RUGBY" to ExerciseSessionRecord.EXERCISE_TYPE_RUGBY,
+    // "RUNNING_JOGGING" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_JOGGING,
+    // "RUNNING_SAND" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_SAND,
+    "RUNNING_TREADMILL" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
+    "RUNNING" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
+    "SAILING" to ExerciseSessionRecord.EXERCISE_TYPE_SAILING,
+    "SCUBA_DIVING" to ExerciseSessionRecord.EXERCISE_TYPE_SCUBA_DIVING,
+    // "SKATING_CROSS" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_CROSS,
+    // "SKATING_INDOOR" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INDOOR,
+    // "SKATING_INLINE" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INLINE,
+    "SKATING" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING,
+    "SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING,
+    // "SKIING_BACK_COUNTRY" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_BACK_COUNTRY,
+    // "SKIING_KITE" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_KITE,
+    // "SKIING_ROLLER" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_ROLLER,
+    // "SLEDDING" to ExerciseSessionRecord.EXERCISE_TYPE_SLEDDING,
+    "SNOWBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWBOARDING,
+    // "SNOWMOBILE" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWMOBILE,
+    "SNOWSHOEING" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWSHOEING,
+    // "SOCCER" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_SOCCER,
+    "SOFTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_SOFTBALL,
+    "SQUASH" to ExerciseSessionRecord.EXERCISE_TYPE_SQUASH,
+    "STAIR_CLIMBING_MACHINE" to ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE,
+    "STAIR_CLIMBING" to ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING,
+    // "STANDUP_PADDLEBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_STANDUP_PADDLEBOARDING,
+    // "STILL" to ExerciseSessionRecord.EXERCISE_TYPE_STILL,
+    "STRENGTH_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
+    "SURFING" to ExerciseSessionRecord.EXERCISE_TYPE_SURFING,
+    "SWIMMING_OPEN_WATER" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER,
+    "SWIMMING_POOL" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL,
+    // "SWIMMING" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING,
+    "TABLE_TENNIS" to ExerciseSessionRecord.EXERCISE_TYPE_TABLE_TENNIS,
+    // "TEAM_SPORTS" to ExerciseSessionRecord.EXERCISE_TYPE_TEAM_SPORTS,
+    "TENNIS" to ExerciseSessionRecord.EXERCISE_TYPE_TENNIS,
+    // "TILTING" to ExerciseSessionRecord.EXERCISE_TYPE_TILTING,
+    // "VOLLEYBALL_BEACH" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_BEACH,
+    // "VOLLEYBALL_INDOOR" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_INDOOR,
+    "VOLLEYBALL" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL,
+    // "WAKEBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_WAKEBOARDING,
+    // "WALKING_FITNESS" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_FITNESS,
+    // "WALKING_PACED" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_PACED,
+    // "WALKING_NORDIC" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_NORDIC,
+    // "WALKING_STROLLER" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_STROLLER,
+    // "WALKING_TREADMILL" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_TREADMILL,
+    "WALKING" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
+    "WATER_POLO" to ExerciseSessionRecord.EXERCISE_TYPE_WATER_POLO,
+    "WEIGHTLIFTING" to ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
+    "WHEELCHAIR" to ExerciseSessionRecord.EXERCISE_TYPE_WHEELCHAIR,
+    // "WINDSURFING" to ExerciseSessionRecord.EXERCISE_TYPE_WINDSURFING,
+    "YOGA" to ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
+    // "ZUMBA" to ExerciseSessionRecord.EXERCISE_TYPE_ZUMBA,
+    // "OTHER" to ExerciseSessionRecord.EXERCISE_TYPE_OTHER,
+  )
+
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
@@ -257,7 +373,6 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     handler?.post { mResult?.error(errorCode, errorMessage, errorDetails) }
   }
 
-
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
     println("onActivityResult")
     println("resultcode: " + resultCode)
@@ -282,7 +397,6 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     }
     return false
   }
-
 
   private fun keyToHealthDataType(type: String): DataType {
     return when (type) {
@@ -453,34 +567,12 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     }
   }
 
-  fun writeHCData(call: MethodCall, result: Result) {
-    val permissions = setOf(
-      HealthPermission.getReadPermission(WeightRecord::class),
-      HealthPermission.getWritePermission(WeightRecord::class),
-    )
-    val contract = PermissionController.createRequestPermissionResultContract()
-    val intent = contract.createIntent(activity!!, permissions)
-    activity!!.startActivityForResult(intent, HEALTH_CONNECT_RESULT_CODE)
-    scope.launch {
-      val time = ZonedDateTime.now().withNano(0)
-      val weightRecord = WeightRecord(
-          weight = Mass.kilograms(92.3),
-          time = time.toInstant(),
-          zoneOffset = time.offset
-      )
-      val records = listOf(weightRecord)
-      healthConnectClient.insertRecords(records)
-    }
-  }
-
-
   /** 
    * Save a data type in Google Fit
    */
   private fun writeData(call: MethodCall, result: Result) {
     if (healthConnectAvailability) {
       writeHCData(call, result)
-      result.success(true)
       return
     }
     if (context == null) {
@@ -670,8 +762,6 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
       result.success(false)
     }
   }
-  
-
 
   /**
    * Get all datapoints of the DataType within the given time range
@@ -1270,26 +1360,26 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
                                                   "date_to" to record.time.toEpochMilli(),
                                                   "source_id" to "",
                                                   "source_name" to metadata.dataOrigin.packageName))
-      // is OxygenSaturationRecord -> return listOf(mapOf<String, Any>("value" to , 
-      //                                             "date_from" to , 
-      //                                             "date_to" to ,
-      //                                             "source_id" to "",
-      //                                             "source_name" to metadata.dataOrigin.packageName))
-      // is BloodGlucoseRecord -> return listOf(mapOf<String, Any>("value" to , 
-      //                                             "date_from" to , 
-      //                                             "date_to" to ,
-      //                                             "source_id" to "",
-      //                                             "source_name" to metadata.dataOrigin.packageName))
-      // is DistanceRecord -> return listOf(mapOf<String, Any>("value" to , 
-      //                                             "date_from" to , 
-      //                                             "date_to" to ,
-      //                                             "source_id" to "",
-      //                                             "source_name" to metadata.dataOrigin.packageName))
-      // is HydrationRecord -> return listOf(mapOf<String, Any>("value" to , 
-      //                                             "date_from" to , 
-      //                                             "date_to" to ,
-      //                                             "source_id" to "",
-      //                                             "source_name" to metadata.dataOrigin.packageName))
+      is OxygenSaturationRecord -> return listOf(mapOf<String, Any>("value" to record.percentage.value, 
+                                                  "date_from" to record.time.toEpochMilli(), 
+                                                  "date_to" to record.time.toEpochMilli(),
+                                                  "source_id" to "",
+                                                  "source_name" to metadata.dataOrigin.packageName))
+      is BloodGlucoseRecord -> return listOf(mapOf<String, Any>("value" to record.level.inMilligramsPerDeciliter, 
+                                                  "date_from" to record.time.toEpochMilli(), 
+                                                  "date_to" to record.time.toEpochMilli(),
+                                                  "source_id" to "",
+                                                  "source_name" to metadata.dataOrigin.packageName))
+      is DistanceRecord -> return listOf(mapOf<String, Any>("value" to record.distance.inMeters, 
+                                                  "date_from" to record.startTime.toEpochMilli(), 
+                                                  "date_to" to record.endTime.toEpochMilli(),
+                                                  "source_id" to "",
+                                                  "source_name" to metadata.dataOrigin.packageName))
+      is HydrationRecord -> return listOf(mapOf<String, Any>("value" to record.volume.inLiters, 
+                                                  "date_from" to record.startTime.toEpochMilli(), 
+                                                  "date_to" to record.endTime.toEpochMilli(),
+                                                  "source_id" to "",
+                                                  "source_name" to metadata.dataOrigin.packageName))
       // is SleepSessionRecord -> return listOf(mapOf<String, Any>("value" to , 
       //                                             "date_from" to , 
       //                                             "date_to" to ,
@@ -1300,9 +1390,80 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
       //                                             "date_to" to ,
       //                                             "source_id" to "",
       //                                             "source_name" to metadata.dataOrigin.packageName))
-      else -> throw IllegalArgumentException("Record type not supported") // TODO: Exception or error?
+      else -> throw IllegalArgumentException("Health data type not supported") // TODO: Exception or error?
     }
   }
+
+  fun writeHCData(call: MethodCall, result: Result) {
+    val type = call.argument<String>("dataTypeKey")!!
+    val startTime = call.argument<Long>("startTime")!!
+    val endTime = call.argument<Long>("endTime")!!
+    val value = call.argument<Double>("value")!!
+    val record = when (type) {
+      BODY_FAT_PERCENTAGE   -> BodyFatRecord(time = Instant.ofEpochMilli(startTime),
+                                            percentage = Percentage(value),
+                                            zoneOffset = null)
+      HEIGHT                -> HeightRecord(time = Instant.ofEpochMilli(startTime),
+                                            height = Length.meters(value),
+                                            zoneOffset = null)
+      WEIGHT                -> WeightRecord(time = Instant.ofEpochMilli(startTime),
+                                            weight = Mass.kilograms(value),
+                                            zoneOffset = null)
+      STEPS                 -> StepsRecord(startTime = Instant.ofEpochMilli(startTime),
+                                            endTime = Instant.ofEpochMilli(endTime),
+                                            count = value.toLong(),
+                                            startZoneOffset = null,
+                                            endZoneOffset = null)
+      ACTIVE_ENERGY_BURNED  -> ActiveCaloriesBurnedRecord(startTime = Instant.ofEpochMilli(startTime),
+                                                          endTime = Instant.ofEpochMilli(endTime),
+                                                          energy = Energy.kilocalories(value),
+                                                          startZoneOffset = null,
+                                                          endZoneOffset = null)
+      HEART_RATE            -> HeartRateRecord(startTime = Instant.ofEpochMilli(startTime),
+                                              endTime = Instant.ofEpochMilli(endTime),
+                                              samples = listOf<HeartRateRecord.Sample>(
+                                                              HeartRateRecord.Sample(time = Instant.ofEpochMilli(startTime),
+                                                              beatsPerMinute = value.toLong())),
+                                              startZoneOffset = null,
+                                              endZoneOffset = null)
+      BODY_TEMPERATURE      -> BodyTemperatureRecord(time = Instant.ofEpochMilli(startTime),
+                                                    temperature = Temperature.celsius(value),
+                                                    zoneOffset = null)
+      BLOOD_OXYGEN          -> OxygenSaturationRecord(time = Instant.ofEpochMilli(startTime),
+                                                      percentage = Percentage(value),
+                                                      zoneOffset = null)
+      BLOOD_GLUCOSE         -> BloodGlucoseRecord(time = Instant.ofEpochMilli(startTime),
+                                                  level = BloodGlucose.milligramsPerDeciliter(value),
+                                                  zoneOffset = null)
+      DISTANCE_DELTA        -> DistanceRecord(startTime = Instant.ofEpochMilli(startTime),
+                                              endTime = Instant.ofEpochMilli(endTime),
+                                              distance = Length.meters(value),
+                                              startZoneOffset = null,
+                                              endZoneOffset = null)
+      WATER                 -> HydrationRecord(startTime = Instant.ofEpochMilli(startTime),
+                                              endTime = Instant.ofEpochMilli(endTime),
+                                              volume = Volume.liters(value),
+                                              startZoneOffset = null,
+                                              endZoneOffset = null)
+      // SLEEP_ASLEEP -> SleepSessionRecord()
+      // SLEEP_AWAKE -> SleepSessionRecord()
+      // SLEEP_IN_BED -> SleepSessionRecord()
+      // AGGREGATE_STEP_COUNT -> StepsRecord()
+      // BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
+      // BLOOD_PRESSURE_DIASTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
+      // WORKOUT -> throw IllegalArgumentException("You must use the [writeWorkoutData] API ")
+      else -> throw IllegalArgumentException("The type $type was not supported by the Health plugin or you must use another API ")
+    }
+    scope.launch {
+      try {
+        healthConnectClient.insertRecords(listOf(record))
+        result.success(true)
+      } catch (e: Exception) {
+        result.success(false)
+      }
+    }
+  }
+
 
   val MapToHCType = hashMapOf(
     BODY_FAT_PERCENTAGE to BodyFatRecord::class,

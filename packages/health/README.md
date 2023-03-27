@@ -12,53 +12,53 @@ The plugin supports:
 - accessing total step counts using the `getTotalStepsInInterval` method.
 - cleaning up dublicate data points via the `removeDuplicates` method.
 - removing data of a given type in a selected period of time using the `delete` method.
-- writing blood pressure data in a single call using the `saveBloodPressure` method (Android only).
+- writing blood pressure data in a single call using the `writeBloodPressure` method.
 
 Note that for Android, the target phone **needs** to have [Google Fit](https://www.google.com/fit/) installed and have access to the internet, otherwise this plugin will not work.
 
 ## Data Types
 
-| **Data Type**               | **Unit**                | **iOS** | **Android** | **Comments**                                                |
-| --------------------------- | ----------------------- | ------- | ----------- | ----------------------------------------------------------- |
-| ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes         |                                                             |
-| BASAL_ENERGY_BURNED         | CALORIES                | yes     |             |                                                             |
-| BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes         |                                                             |
-| BLOOD_OXYGEN                | PERCENTAGE              | yes     | yes         |                                                             |
-| BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes     | yes         |                                                             |
-| BLOOD_PRESSURE_SYSTOLIC     | MILLIMETER_OF_MERCURY   | yes     | yes         |                                                             |
-| BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes     | yes         |                                                             |
-| BODY_MASS_INDEX             | NO_UNIT                 | yes     | yes         |                                                             |
-| BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes     | yes         |                                                             |
-| ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |             |                                                             |
-| HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes         |                                                             |
-| HEIGHT                      | METERS                  | yes     | yes         |                                                             |
-| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |             |                                                             |
-| STEPS                       | COUNT                   | yes     | yes         |                                                             |
-| WAIST_CIRCUMFERENCE         | METERS                  | yes     |             |                                                             |
-| WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |             |                                                             |
-| WEIGHT                      | KILOGRAMS               | yes     | yes         |                                                             |
-| DISTANCE_WALKING_RUNNING    | METERS                  | yes     |             |                                                             |
-| FLIGHTS_CLIMBED             | COUNT                   | yes     |             |                                                             |
-| MOVE_MINUTES                | MINUTES                 |         | yes         |                                                             |
-| DISTANCE_DELTA              | METERS                  |         | yes         |                                                             |
-| MINDFULNESS                 | MINUTES                 | yes     |             |                                                             |
-| SLEEP_IN_BED                | MINUTES                 | yes     | yes         |                                                             |
-| SLEEP_ASLEEP                | MINUTES                 | yes     | yes         |                                                             |
-| SLEEP_AWAKE                 | MINUTES                 | yes     | yes         |                                                             |
-| WATER                       | LITER                   | yes     | yes         | On Android water requires a 3rd party app to be registered. |
-| EXERCISE_TIME               | MINUTES                 | yes     |             |                                                             |
-| WORKOUT                     | NO_UNIT                 | yes     | yes         |                                                             |
-| HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
-| LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
-| IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
-| HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes     |             | Requires Apple Watch                                        |
-| HEADACHE_NOT_PRESENT        | MINUTES                 | yes     |             |                                                             |
-| HEADACHE_MILD               | MINUTES                 | yes     |             |                                                             |
-| HEADACHE_MODERATE           | MINUTES                 | yes     |             |                                                             |
-| HEADACHE_SEVERE             | MINUTES                 | yes     |             |                                                             |
-| HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |             |                                                             |
-| AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |             |                                                             |
-| ELECTROCARDIOGRAM           | VOLT                    | yes     |             | Requires Apple Watch                                        |
+| **Data Type**               | **Unit**                | **iOS** | **Android (Google Fit)** | **Android (Health Connect)** | **Comments**                                                |
+| --------------------------- | ----------------------- | ------- | ------------------------ | ---------------------------- | ----------------------------------------------------------- |
+| ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes                      | yes                          |                                                             |
+| BASAL_ENERGY_BURNED         | CALORIES                | yes     |                          |                              |                                                             |
+| BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes                      | yes                          |                                                             |
+| BLOOD_OXYGEN                | PERCENTAGE              | yes     | yes                      | yes                          |                                                             |
+| BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes     | yes                      | yes                          |                                                             |
+| BLOOD_PRESSURE_SYSTOLIC     | MILLIMETER_OF_MERCURY   | yes     | yes                      | yes                          |                                                             |
+| BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes     | yes                      | yes                          |                                                             |
+| BODY_MASS_INDEX             | NO_UNIT                 | yes     | yes                      | yes                          |                                                             |
+| BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes     | yes                      | yes                          |                                                             |
+| ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |                          |                              |                                                             |
+| HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes                      | yes                          |                                                             |
+| HEIGHT                      | METERS                  | yes     | yes                      | yes                          |                                                             |
+| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                                             |
+| STEPS                       | COUNT                   | yes     | yes                      | yes                          |                                                             |
+| WAIST_CIRCUMFERENCE         | METERS                  | yes     |                          |                              |                                                             |
+| WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                                             |
+| WEIGHT                      | KILOGRAMS               | yes     | yes                      | yes                          |                                                             |
+| DISTANCE_WALKING_RUNNING    | METERS                  | yes     |                          |                              |                                                             |
+| FLIGHTS_CLIMBED             | COUNT                   | yes     |                          |                              |                                                             |
+| MOVE_MINUTES                | MINUTES                 |         | yes                      |                              |                                                             |
+| DISTANCE_DELTA              | METERS                  |         | yes                      | yes                          |                                                             |
+| MINDFULNESS                 | MINUTES                 | yes     |                          |                              |                                                             |
+| SLEEP_IN_BED                | MINUTES                 | yes     | yes                      |                              |                                                             |
+| SLEEP_ASLEEP                | MINUTES                 | yes     | yes                      |                              |                                                             |
+| SLEEP_AWAKE                 | MINUTES                 | yes     | yes                      |                              |                                                             |
+| WATER                       | LITER                   | yes     | yes                      |                              | On Android water requires a 3rd party app to be registered. |
+| EXERCISE_TIME               | MINUTES                 | yes     |                          |                              |                                                             |
+| WORKOUT                     | NO_UNIT                 | yes     | yes                      | yes                          |                                                             |
+| HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes     |                          |                              | Requires Apple Watch to write the data                      |
+| LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes     |                          |                              | Requires Apple Watch to write the data                      |
+| IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes     |                          |                              | Requires Apple Watch to write the data                      |
+| HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes     |                          |                              | Requires Apple Watch to write the data                      |
+| HEADACHE_NOT_PRESENT        | MINUTES                 | yes     |                          |                              |                                                             |
+| HEADACHE_MILD               | MINUTES                 | yes     |                          |                              |                                                             |
+| HEADACHE_MODERATE           | MINUTES                 | yes     |                          |                              |                                                             |
+| HEADACHE_SEVERE             | MINUTES                 | yes     |                          |                              |                                                             |
+| HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |                          |                              |                                                             |
+| AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                          |                              |                                                             |
+| ELECTROCARDIOGRAM           | VOLT                    | yes     |                          |                              | Requires Apple Watch to write the data                      |
 
 ## Setup
 
