@@ -119,20 +119,32 @@ public class SwiftAudioStreamerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
       print("Unexpected error: \(error).")
     }
 
-    try! AVAudioSession.sharedInstance().setActive(true)
 
-    let input = engine.inputNode
-    let bus = 0
+    func startRecording() {
+        engine = AVAudioEngine()
 
-    input.installTap(onBus: bus, bufferSize: 22050, format: input.inputFormat(forBus: bus)) {
-      (buffer, time) -> Void in
-      let samples = buffer.floatChannelData?[0]
-      // audio callback, samples in samples[0]...samples[buffer.frameLength-1]
-      let arr = Array(UnsafeBufferPointer(start: samples, count: Int(buffer.frameLength)))
-      self.emitValues(values: arr)
+        do {
+            try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playAndRecord, options: .mixWithOthers)
+            try AVAudioSession.sharedInstance().setActive(true)
+            
+            if let sampleRateNotNull = sampleRate {
+              // Try to set sample rate
+              try AVAudioSession.sharedInstance().setPreferredSampleRate(Double(sampleRateNotNull))
+            }
+
+            let input = engine.inputNode
+            let bus = 0
+
+            input.installTap(onBus: bus, bufferSize: 22050, format: input.inputFormat(forBus: bus)) { buffer, _ -> Void in
+                let samples = buffer.floatChannelData?[0]
+                // audio callback, samples in samples[0]...samples[buffer.frameLength-1]
+                let arr = Array(UnsafeBufferPointer(start: samples, count: Int(buffer.frameLength)))
+                self.emitValues(values: arr)
+            }
+
+            try engine.start()
+        } catch {
+            eventSink!(FlutterError(code: "100", message: "Unable to start audio session", details: error.localizedDescription))
+        }
     }
-
-    try! engine.start()
-  }
-
 }
