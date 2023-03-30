@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
@@ -32,9 +31,13 @@ class _HealthAppState extends State<HealthApp> {
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 0;
 
-  // define the types to get
-  final types = dataTypesAndroid;
-  // final types = [
+  // Define the types to get.
+  // NOTE: These are only the ones supported on Androids new API Health Connect.
+  // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
+  // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
+  static final types = dataTypesAndroid;
+  // Or selected types
+  // static final types = [
   //   HealthDataType.WEIGHT,
   //   HealthDataType.STEPS,
   //   HealthDataType.HEIGHT,
@@ -43,25 +46,17 @@ class _HealthAppState extends State<HealthApp> {
   //   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
   //   HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
   //   // Uncomment these lines on iOS - only available on iOS
-  //   HealthDataType.AUDIOGRAM
+  //   // HealthDataType.AUDIOGRAM
   // ];
 
   // with coresponsing permissions
-  final permissions =
-      dataTypesAndroid.map((e) => HealthDataAccess.READ_WRITE).toList();
-  // final permissions = [
-  //   HealthDataAccess.READ_WRITE,
-  //   HealthDataAccess.READ_WRITE,
-  //   HealthDataAccess.READ_WRITE,
-  //   HealthDataAccess.READ_WRITE,
-  //   HealthDataAccess.READ_WRITE,
-  //   HealthDataAccess.READ_WRITE,
-  //   HealthDataAccess.READ_WRITE,
-  //   HealthDataAccess.READ_WRITE,
-  // ];
+  // READ only
+  // final permissions = types.map((e) => HealthDataAccess.READ).toList();
+  // Or READ and WRITE
+  final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
 
   // create a HealthFactory for use in the app
-  HealthFactory health = HealthFactory();
+  HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
 
   Future authorize() async {
     // If we are trying to read Step Count, Workout, Sleep or other data that requires
@@ -74,7 +69,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // Check if we have permission
     bool? hasPermissions =
-        await HealthFactory.hasPermissions(types, permissions: permissions);
+        await health.hasPermissions(types, permissions: permissions);
 
     // hasPermissions = false because the hasPermission cannot disclose if WRITE access exists.
     // Hence, we have to request with WRITE as well.
@@ -130,14 +125,19 @@ class _HealthAppState extends State<HealthApp> {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(minutes: 20));
 
-    bool success = await health.writeHealthData(
+    // Add data for supported types
+    // NOTE: These are only the ones supported on Androids new API Health Connect.
+    // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
+    // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
+    bool success = true;
+    success &= await health.writeHealthData(
         10, HealthDataType.BODY_FAT_PERCENTAGE, earlier, now);
     success &= await health.writeHealthData(
         1.925, HealthDataType.HEIGHT, earlier, now);
     success &=
         await health.writeHealthData(90, HealthDataType.WEIGHT, earlier, now);
-    success &=
-        await health.writeHealthData(90, HealthDataType.STEPS, earlier, now);
+    success &= await health.writeHealthData(
+        90, HealthDataType.HEART_RATE, earlier, now);
     success &=
         await health.writeHealthData(90, HealthDataType.STEPS, earlier, now);
     success &= await health.writeHealthData(
@@ -154,38 +154,13 @@ class _HealthAppState extends State<HealthApp> {
         1100, HealthDataType.DISTANCE_DELTA, earlier, now);
     success &=
         await health.writeHealthData(1.8, HealthDataType.WATER, earlier, now);
-
-    // // Store a count of steps taken
-    // _nofSteps = Random().nextInt(10);
-    // bool success = await health.writeHealthData(
-    //     _nofSteps.toDouble(), HealthDataType.STEPS, earlier, now);
-
-    // // Store a height
-    // success &=
-    //     await health.writeHealthData(1.93, HealthDataType.HEIGHT, earlier, now);
-
-    // // Store a Blood Glucose measurement
-    // _mgdl = Random().nextInt(10) * 1.0;
-    // success &= await health.writeHealthData(
-    //     _mgdl, HealthDataType.BLOOD_GLUCOSE, now, now);
-
-    // success &= await health.writeBloodPressure(120, 90, now, now);
-
-    // // Store a workout eg. running
-    // success &= await health.writeWorkoutData(
-    //   HealthWorkoutActivityType.RUNNING,
-    //   earlier,
-    //   now,
-    //   // The following are optional parameters
-    //   // and the UNITS are functional on iOS ONLY!
-    //   totalEnergyBurned: 230,
-    //   totalEnergyBurnedUnit: HealthDataUnit.KILOCALORIE,
-    //   totalDistance: 1234,
-    //   totalDistanceUnit: HealthDataUnit.FOOT,
-    // );
-
-    // success &= await health.writeHealthData(
-    //     3, HealthDataType.SLEEP_ASLEEP, now.subtract(Duration(hours: 3)), now);
+    success &= await health.writeWorkoutData(
+        HealthWorkoutActivityType.AMERICAN_FOOTBALL,
+        now.subtract(Duration(minutes: 15)),
+        now,
+        totalDistance: 2430,
+        totalEnergyBurned: 400);
+    success &= await health.writeBloodPressure(90, 80, earlier, now);
 
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
@@ -215,16 +190,10 @@ class _HealthAppState extends State<HealthApp> {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(hours: 24));
 
-    bool success = false;
-
-    success = await health.delete(HealthDataType.STEPS, earlier, now);
-    success &= await health.delete(HealthDataType.HEIGHT, earlier, now);
-    success &= await health.delete(HealthDataType.BLOOD_GLUCOSE, earlier, now);
-    success &= await health.delete(HealthDataType.WORKOUT, earlier, now);
-    success &= await health.delete(
-        HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-        earlier,
-        now); // on Android this deletes both systolic and diastolic measurements.
+    bool success = true;
+    for (HealthDataType type in types) {
+      success &= await health.delete(type, earlier, now);
+    }
 
     setState(() {
       _state = success ? AppState.DATA_DELETED : AppState.DATA_NOT_DELETED;

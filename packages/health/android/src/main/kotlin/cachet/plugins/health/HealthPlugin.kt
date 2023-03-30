@@ -67,6 +67,7 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
   private var activity: Activity? = null
   private var context: Context? = null
   private var threadPoolExecutor: ExecutorService? = null
+  private var useHealthConnectIfAvailable: Boolean = false
   private lateinit var healthConnectClient: HealthConnectClient
   private lateinit var scope: CoroutineScope
 
@@ -206,6 +207,7 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     "OTHER" to FitnessActivities.OTHER,
   )
 
+  // TODO: Update with new workout types when Health Connect becomes the standard.
   val workoutTypeMapHealthConnect = mapOf(
     // "AEROBICS" to ExerciseSessionRecord.EXERCISE_TYPE_AEROBICS,
     "AMERICAN_FOOTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AMERICAN,
@@ -374,9 +376,6 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-    println("onActivityResult")
-    println("resultcode: " + resultCode)
-    println("requestCode: " + requestCode)
     if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
       if (resultCode == Activity.RESULT_OK) {
         Log.i("FLUTTER_HEALTH", "Access Granted!")
@@ -471,6 +470,10 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
    * Delete records of the given type in the time range
    */
   private fun delete(call: MethodCall, result: Result) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
+      deleteHCData(call, result)
+      return
+    }
     if (context == null) {
       result.success(false)
       return
@@ -514,6 +517,10 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
    * Save a Blood Pressure measurement with systolic and diastolic values
    */
   private fun writeBloodPressure(call: MethodCall, result: Result) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
+      writeBloodPressureHC(call, result)
+      return
+    }
     if (context == null) {
       result.success(false)
       return
@@ -571,7 +578,7 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
    * Save a data type in Google Fit
    */
   private fun writeData(call: MethodCall, result: Result) {
-    if (healthConnectAvailability) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
       writeHCData(call, result)
       return
     }
@@ -641,6 +648,10 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
    * Save a Workout session with options for distance and calories expended
    */
   private fun writeWorkoutData(call: MethodCall, result: Result) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
+      writeWorkoutHCData(call, result)
+      return
+    }
     if (context == null) {
       result.success(false)
       return
@@ -767,7 +778,7 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
    * Get all datapoints of the DataType within the given time range
    */
   private fun getData(call: MethodCall, result: Result) {
-    if (healthConnectAvailability) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
       getHCData(call, result)
       return
     }
@@ -1056,6 +1067,10 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
   }
 
   private fun hasPermissions(call: MethodCall, result: Result) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
+      hasPermissionsHC(call, result)
+      return
+    }
     if (context == null) {
       result.success(false)
       return
@@ -1082,7 +1097,7 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     }
     mResult = result
     
-    if (healthConnectAvailability) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
       requestAuthorizationHC(call, result)
       return
     }
@@ -1113,6 +1128,9 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
    * `disableFit` was used.
    */
   private fun revokePermissions(call: MethodCall, result: Result) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
+      result.notImplemented()
+    }
     if (context == null) {
       result.success(false)
       return
@@ -1130,6 +1148,9 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
   }
 
   private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
+    if (useHealthConnectIfAvailable && healthConnectAvailable) {
+      result.notImplemented()
+    }
     val start = call.argument<Long>("startTime")!!
     val end = call.argument<Long>("endTime")!!
 
@@ -1179,7 +1200,6 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     result: Result
   ) =
     OnSuccessListener { response: DataReadResponse ->
-
       val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
       for (bucket in response.buckets) {
         val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
@@ -1214,6 +1234,7 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
    */
   override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
+      "useHealthConnectIfAvailable" -> useHealthConnectIfAvailable(call, result)
       "hasPermissions" -> hasPermissions(call, result)
       "requestAuthorization" -> requestAuthorization(call, result)
       "revokePermissions" -> revokePermissions(call, result)
@@ -1254,15 +1275,20 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
   /**
    * HEALTH CONNECT BELOW
    */
-  var healthConnectAvailability = false
+  var healthConnectAvailable = false
   var healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
 
   fun checkAvailability() {
     healthConnectStatus = HealthConnectClient.sdkStatus(context!!)
-    healthConnectAvailability = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
+    healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
   }
 
-  private fun requestAuthorizationHC(call: MethodCall, result: Result) {
+  fun useHealthConnectIfAvailable(call: MethodCall, result: Result) {
+    useHealthConnectIfAvailable = true
+    result.success(null)
+  }
+
+  private fun hasPermissionsHC(call: MethodCall, result: Result) {
     val args = call.arguments as HashMap<*, *>
     val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()!!
     val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()!!
@@ -1270,7 +1296,6 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     var permList = mutableListOf<String>()
     for ((i, typeKey) in types.withIndex()) {
       val access = permissions[i]!!
-      println(typeKey)
       val dataType = MapToHCType[typeKey]!!
       if (access == 0) {
         permList.add(
@@ -1282,6 +1307,66 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
             HealthPermission.getWritePermission(dataType),
         ))
       }
+      // Workout also needs distance and total energy burned too
+      if (typeKey == WORKOUT) {
+        if (access == 0) {
+          permList.addAll(listOf(
+            HealthPermission.getReadPermission(DistanceRecord::class),
+            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+          ))
+        } else {
+          permList.addAll(listOf(
+            HealthPermission.getReadPermission(DistanceRecord::class),
+            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+            HealthPermission.getWritePermission(DistanceRecord::class),
+            HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class),
+          ))
+        }
+      }
+    }
+    scope.launch {
+      result.success(healthConnectClient.permissionController.getGrantedPermissions().containsAll(permList))
+    }
+    // val contract = PermissionController.createRequestPermissionResultContract()
+    // val intent = contract.createIntent(activity!!, permList.toSet())
+    // activity!!.startActivityForResult(intent, HEALTH_CONNECT_RESULT_CODE)
+  }
+
+  private fun requestAuthorizationHC(call: MethodCall, result: Result) {
+    val args = call.arguments as HashMap<*, *>
+    val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()!!
+    val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()!!
+
+    var permList = mutableListOf<String>()
+    for ((i, typeKey) in types.withIndex()) {
+      val access = permissions[i]!!
+      val dataType = MapToHCType[typeKey]!!
+      if (access == 0) {
+        permList.add(
+          HealthPermission.getReadPermission(dataType),
+        )
+      } else {
+        permList.addAll(listOf(
+            HealthPermission.getReadPermission(dataType),
+            HealthPermission.getWritePermission(dataType),
+        ))
+      }
+      // Workout also needs distance and total energy burned too
+      if (typeKey == WORKOUT) {
+        if (access == 0) {
+          permList.addAll(listOf(
+            HealthPermission.getReadPermission(DistanceRecord::class),
+            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+          ))
+        } else {
+          permList.addAll(listOf(
+            HealthPermission.getReadPermission(DistanceRecord::class),
+            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+            HealthPermission.getWritePermission(DistanceRecord::class),
+            HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class),
+          ))
+        }
+      }
     }
     val contract = PermissionController.createRequestPermissionResultContract()
     val intent = contract.createIntent(activity!!, permList.toSet())
@@ -1292,7 +1377,7 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     val dataType = call.argument<String>("dataTypeKey")!!
     val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
     val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
-    val healthConnectData = mutableListOf<Map<String,Any>>()
+    val healthConnectData = mutableListOf<Map<String,Any?>>()
     scope.launch {
       MapToHCType[dataType]?.let { classType ->
         val request = ReadRecordsRequest(
@@ -1300,15 +1385,56 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
           timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
           )
         val response = healthConnectClient.readRecords(request)
-        println("response") 
-        println(response.records) 
-        // healthConnectData = response.records.map {
-        //   convertRecord(it)
-        // }
-        for (rec in response.records) {
-          healthConnectData.addAll(convertRecord(rec, dataType))
+
+        // Workout needs distance and total calories burned too
+        if (dataType == WORKOUT) {
+          for (rec in response.records) {
+            val record = rec as ExerciseSessionRecord
+            val distanceRequest = healthConnectClient.readRecords(
+              ReadRecordsRequest(
+                recordType = DistanceRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(record.startTime, record.endTime)
+              )
+            )
+            var totalDistance = 0.0
+            for (distanceRec in distanceRequest.records) {
+              totalDistance += distanceRec.distance.inMeters
+            }
+
+            val energyBurnedRequest = healthConnectClient.readRecords(
+              ReadRecordsRequest(
+                recordType = TotalCaloriesBurnedRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(record.startTime, record.endTime)
+              )
+            )
+            var totalEnergyBurned = 0.0
+            for (energyBurnedRec in energyBurnedRequest.records) {
+              totalEnergyBurned += energyBurnedRec.energy.inKilocalories
+            }
+            
+            // val metadata = (rec as Record).metadata
+            // Add final datapoint
+            healthConnectData.add(
+              // mapOf( 
+              mapOf<String, Any?>( 
+                "workoutActivityType" to (workoutTypeMapHealthConnect.filterValues { it == record.exerciseType }.keys.firstOrNull()
+                  ?: "OTHER"),
+                "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
+                "totalDistanceUnit" to "METER",
+                "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
+                "totalEnergyBurnedUnit" to "KILOCALORIE",
+                "unit" to "MINUTES",
+                "date_from" to rec.startTime.toEpochMilli(), 
+                "date_to" to rec.endTime.toEpochMilli(),
+                "source_id" to "",
+                "source_name" to record.metadata.dataOrigin.packageName)
+            )
+          }
+        } else {
+          for (rec in response.records) {
+            healthConnectData.addAll(convertRecord(rec, dataType))
+          }
         }
-        println(healthConnectData)
       }
       Handler(context!!.mainLooper).run { result.success(healthConnectData) }
     }
@@ -1449,9 +1575,9 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
       // SLEEP_AWAKE -> SleepSessionRecord()
       // SLEEP_IN_BED -> SleepSessionRecord()
       // AGGREGATE_STEP_COUNT -> StepsRecord()
-      // BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
-      // BLOOD_PRESSURE_DIASTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
-      // WORKOUT -> throw IllegalArgumentException("You must use the [writeWorkoutData] API ")
+      BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
+      BLOOD_PRESSURE_DIASTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
+      WORKOUT -> throw IllegalArgumentException("You must use the [writeWorkoutData] API ")
       else -> throw IllegalArgumentException("The type $type was not supported by the Health plugin or you must use another API ")
     }
     scope.launch {
@@ -1464,6 +1590,103 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     }
   }
 
+  fun writeWorkoutHCData(call: MethodCall, result: Result) {
+    val type = call.argument<String>("activityType")!!
+    val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
+    val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
+    val totalEnergyBurned = call.argument<Int>("totalEnergyBurned")
+    val totalDistance = call.argument<Int>("totalDistance")
+    val workoutType = workoutTypeMapHealthConnect[type]!!
+
+    scope.launch {
+      try {
+        val list = mutableListOf<Record>()
+        list.add(ExerciseSessionRecord(
+          startTime = startTime,
+          startZoneOffset = null,
+          endTime = endTime,
+          endZoneOffset = null,
+          exerciseType = workoutType,
+          title = type
+        ))
+        if (totalDistance != null) {
+          list.add(DistanceRecord(
+            startTime = startTime,
+            startZoneOffset = null,
+            endTime = endTime,
+            endZoneOffset = null,
+            distance = Length.meters(totalDistance.toDouble()),
+          ))
+        }
+        if (totalEnergyBurned != null) {
+          list.add(TotalCaloriesBurnedRecord(
+            startTime = startTime,
+            startZoneOffset = null,
+            endTime = endTime,
+            endZoneOffset = null,
+            energy = Energy.kilocalories(totalEnergyBurned.toDouble())
+          ))
+        }
+        healthConnectClient.insertRecords(
+          list
+        )
+        result.success(true)
+        Log.i("FLUTTER_HEALTH::SUCCESS", "[Health Connect] Workout was successfully added!")
+      } catch (e: Exception) {
+        Log.w("FLUTTER_HEALTH::ERROR", "[Health Connect] There was an error adding the workout")
+        Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
+        Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
+        result.success(false)
+      }
+    }
+  }
+
+  fun writeBloodPressureHC(call: MethodCall, result: Result) {
+    val systolic = call.argument<Double>("systolic")!!
+    val diastolic = call.argument<Double>("diastolic")!!
+    val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
+    val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
+
+    scope.launch {
+      try {
+        healthConnectClient.insertRecords(
+          listOf(
+            BloodPressureRecord(
+              time = startTime,
+              systolic = Pressure.millimetersOfMercury(systolic),
+              diastolic = Pressure.millimetersOfMercury(diastolic),
+              zoneOffset = null)
+          )
+        )
+        result.success(true)
+        Log.i("FLUTTER_HEALTH::SUCCESS", "[Health Connect] Blood pressure was successfully added!")
+      } catch (e: Exception) {
+        Log.w("FLUTTER_HEALTH::ERROR", "[Health Connect] There was an error adding the blood pressure")
+        Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
+        Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
+        result.success(false)
+      }
+    }
+  }
+
+  fun deleteHCData(call: MethodCall, result: Result) {
+    val type = call.argument<String>("dataTypeKey")!!
+    val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
+    val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
+    val classType = MapToHCType[type]!!
+
+    scope.launch {
+      try {
+        healthConnectClient.deleteRecords(
+          recordType = classType,
+          timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+        )
+        result.success(true)
+      } catch (e: Exception) {
+        result.success(false)
+      }
+    }
+  }
 
   val MapToHCType = hashMapOf(
     BODY_FAT_PERCENTAGE to BodyFatRecord::class,
