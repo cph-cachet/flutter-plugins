@@ -1327,9 +1327,6 @@ ActivityResultListener, Result, ActivityAware, FlutterPlugin {
     scope.launch {
       result.success(healthConnectClient.permissionController.getGrantedPermissions().containsAll(permList))
     }
-    // val contract = PermissionController.createRequestPermissionResultContract()
-    // val intent = contract.createIntent(activity!!, permList.toSet())
-    // activity!!.startActivityForResult(intent, HEALTH_CONNECT_RESULT_CODE)
   }
 
   private fun requestAuthorizationHC(call: MethodCall, result: Result) {
