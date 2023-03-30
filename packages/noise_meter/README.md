@@ -114,7 +114,7 @@ void stopRecorder() async {
 
 ### Sample rate
 
-The sample rate for both native implementations is 44,100.
+The sample rate for both native implementations are 44,100.
 
 ### Microphone data
 

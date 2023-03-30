@@ -1,7 +1,7 @@
 ## 3.2.0
 
 - upgrade to `audio_streamer: ^2.3.0`
-- upgrade example to include corret iOS permission
+- upgrade example to include correct iOS permissions
 
 ## 3.1.0
 
