@@ -146,12 +146,11 @@ class _HealthAppState extends State<HealthApp> {
         70, HealthDataType.HEART_RATE, earlier, now);
     success &= await health.writeHealthData(
         37, HealthDataType.BODY_TEMPERATURE, earlier, now);
-    success &= await health.writeHealthData(
-        98, HealthDataType.BLOOD_OXYGEN, earlier, now);
+    success &= await health.writeBloodOxygen(98, earlier, now, flowRate: 1.0);
     success &= await health.writeHealthData(
         105, HealthDataType.BLOOD_GLUCOSE, earlier, now);
-    success &= await health.writeHealthData(
-        1100, HealthDataType.DISTANCE_DELTA, earlier, now);
+    //success &= await health.writeHealthData(
+    //    1100, HealthDataType.DISTANCE_DELTA, earlier, now);
     success &=
         await health.writeHealthData(1.8, HealthDataType.WATER, earlier, now);
     success &= await health.writeWorkoutData(
@@ -230,7 +229,11 @@ class _HealthAppState extends State<HealthApp> {
   }
 
   Future revokeAccess() async {
-    await health.revokePermissions();
+    try {
+      await health.revokePermissions();
+    } catch (error) {
+      print("Caught exception in revokeAccess: $error");
+    }
   }
 
   Widget _contentFetchingData() {
