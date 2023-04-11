@@ -78,8 +78,12 @@ class _HealthAppState extends State<HealthApp> {
     bool authorized = false;
     if (!hasPermissions) {
       // requesting access to the data types before reading them
-      authorized =
-          await health.requestAuthorization(types, permissions: permissions);
+      try {
+        authorized =
+            await health.requestAuthorization(types, permissions: permissions);
+      } catch (error) {
+        print("Exception in authorize: $error");
+      }
     }
 
     setState(() => _state =
@@ -149,8 +153,6 @@ class _HealthAppState extends State<HealthApp> {
     success &= await health.writeBloodOxygen(98, earlier, now, flowRate: 1.0);
     success &= await health.writeHealthData(
         105, HealthDataType.BLOOD_GLUCOSE, earlier, now);
-    //success &= await health.writeHealthData(
-    //    1100, HealthDataType.DISTANCE_DELTA, earlier, now);
     success &=
         await health.writeHealthData(1.8, HealthDataType.WATER, earlier, now);
     success &= await health.writeWorkoutData(
