@@ -538,21 +538,25 @@ class HealthFactory {
   /// * [startTime] - Range startTime for Overwrite
   /// * [endTime] - Range endTime for Overwrite
   Future<bool> writeHCNutrition({
-    required List<HealthConnectNutrition> listNutrition,
+    List<HealthConnectNutrition>? listNutrition,
     bool isOverWrite = false,
     DateTime? startTime,
     DateTime? endTime,
   }) async {
+    listNutrition ??= [];
     if (_platformType != PlatformType.ANDROID) {
       throw ArgumentError("This operation is not supported for $_platformType");
     }
-    if (listNutrition.isEmpty) throw ArgumentError("list must be not null");
 
     if (isOverWrite) {
       if (startTime == null) throw ArgumentError("startTime must be not null");
       if (endTime == null) throw ArgumentError("endTime must be not null");
       if (startTime.isAfter(endTime))
         throw ArgumentError("startTime must be equal or earlier than endTime");
+    } else {
+      if (listNutrition.isEmpty)
+        throw ArgumentError(
+            "list must be not null when `isOverWrite` is False");
     }
 
     listNutrition.forEach((nutrition) {
