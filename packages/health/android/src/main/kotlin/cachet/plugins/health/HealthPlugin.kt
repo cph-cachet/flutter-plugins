@@ -46,6 +46,7 @@ import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
+import androidx.health.connect.client.request.AggregateRequest
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val HEALTH_CONNECT_RESULT_CODE = 16969
@@ -1235,12 +1236,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
-        if (useHealthConnectIfAvailable && healthConnectAvailable) {
-            result.notImplemented()
-            return
-        }
         val start = call.argument<Long>("startTime")!!
         val end = call.argument<Long>("endTime")!!
+
+        if (useHealthConnectIfAvailable && healthConnectAvailable) {
+            getStepsHealthConnect(start, end, result)
+            return
+        }
 
         val context = context ?: return
 
@@ -1279,6 +1281,26 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 threadPoolExecutor!!,
                 getStepsInRange(start, end, aggregatedDataType, result),
             )
+    }
+
+    private fun getStepsHealthConnect(start: Long, end: Long, result: Result) = scope.launch {
+        try {
+            val startInstant = Instant.ofEpochMilli(start)
+            val endInstant = Instant.ofEpochMilli(end)
+            val response = healthConnectClient.aggregate(
+                AggregateRequest(
+                    metrics = setOf(StepsRecord.COUNT_TOTAL),
+                    timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant),
+                ),
+            )
+            // The result may be null if no data is available in the time range.
+            val stepsInInterval = response[StepsRecord.COUNT_TOTAL] ?: 0L
+            Log.i("FLUTTER_HEALTH::SUCCESS", "returning $stepsInInterval steps")
+            result.success(stepsInInterval)
+        } catch (e: Exception) {
+            Log.i("FLUTTER_HEALTH::ERROR", "unable to return steps")
+            result.success(false)
+        }
     }
 
     private fun getStepsInRange(
