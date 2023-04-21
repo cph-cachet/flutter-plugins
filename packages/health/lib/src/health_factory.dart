@@ -83,8 +83,16 @@ class HealthFactory {
   ///
   /// Not implemented on iOS as there is no way to programmatically remove access.
   Future<void> revokePermissions() async {
-    await _channel.invokeMethod('revokePermissions');
-    return;
+    try {
+      if (_platformType == PlatformType.IOS) {
+        throw UnsupportedError(
+            'Revoke permissions is not supported on iOS. Please revoke permissions manually in the settings.');
+      }
+      await _channel.invokeMethod('revokePermissions');
+      return;
+    } catch (e) {
+      print(e);
+    }
   }
 
   /// Requests permissions to access data types in Apple Health or Google Fit.
