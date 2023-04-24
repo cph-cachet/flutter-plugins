@@ -402,6 +402,24 @@ class HealthFactory {
     return success ?? false;
   }
 
+  //Jasper implementation of getting specific data with limit quantity
+  Future<List<HealthDataPoint>> getDataWithLimit(List<HealthDataType> dataType, int limit) async {
+    List<HealthDataPoint> dataPoints = [];
+    final endTime = DateTime.now();
+    final startTime = DateTime(2000);
+    for (var type in dataType) {
+      final result = await _prepareQuery(startTime, endTime, type, limit: limit);
+      dataPoints.addAll(result);
+    }
+
+    const int threshold = 100;
+    if (dataPoints.length > threshold) {
+      return compute(removeDuplicates, dataPoints);
+    }
+
+    return removeDuplicates(dataPoints);
+  }
+
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
       DateTime startTime, DateTime endTime, List<HealthDataType> types) async {
@@ -421,8 +439,8 @@ class HealthFactory {
   }
 
   /// Prepares a query, i.e. checks if the types are available, etc.
-  Future<List<HealthDataPoint>> _prepareQuery(
-      DateTime startTime, DateTime endTime, HealthDataType dataType) async {
+  Future<List<HealthDataPoint>> _prepareQuery(DateTime startTime, DateTime endTime, HealthDataType dataType,
+      {int? limit}) async {
     // Ask for device ID only once
     _deviceId ??= _platformType == PlatformType.ANDROID
         ? (await _deviceInfo.androidInfo).id
@@ -443,13 +461,14 @@ class HealthFactory {
   }
 
   /// The main function for fetching health data
-  Future<List<HealthDataPoint>> _dataQuery(
-      DateTime startTime, DateTime endTime, HealthDataType dataType) async {
+  Future<List<HealthDataPoint>> _dataQuery(DateTime startTime, DateTime endTime, HealthDataType dataType,
+      {int? limit}) async {
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
       'dataUnitKey': _dataTypeToUnit[dataType]!.name,
       'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
+      'endTime': endTime.millisecondsSinceEpoch,
+      'limit': limit,
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
     if (fetchedDataPoints != null) {
