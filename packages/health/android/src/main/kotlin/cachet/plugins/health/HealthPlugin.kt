@@ -1299,7 +1299,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             result.success(stepsInInterval)
         } catch (e: Exception) {
             Log.i("FLUTTER_HEALTH::ERROR", "unable to return steps")
-            result.success(false)
+            result.success(null)
         }
     }
 
