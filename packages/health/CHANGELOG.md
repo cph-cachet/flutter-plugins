@@ -1,3 +1,10 @@
+## 6.0.0
+
+- Fixed issues #[694](https://github.com/cph-cachet/flutter-plugins/issues/694), #[696](https://github.com/cph-cachet/flutter-plugins/issues/696), #[697](https://github.com/cph-cachet/flutter-plugins/issues/697), #[698](https://github.com/cph-cachet/flutter-plugins/issues/698)
+- added totalSteps for HealthConnect
+- added supplemental oxygen flow rate for blood oxygen saturation on Android
+
+
 ## 5.0.0
 
 - Added initial support for the new Health Connect API, as Google Fit is being deprecated.
