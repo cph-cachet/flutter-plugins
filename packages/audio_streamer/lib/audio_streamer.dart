@@ -42,7 +42,10 @@ class AudioStreamer {
             handleErrorFunction(error);
           })
           .map((buffer) => buffer as List<dynamic>?)
-          .map((list) => list!.map((e) => double.parse('$e')).toList());
+          .map(((list) {
+        if (list != null && list.isNotEmpty && list[0] is double) return list.cast<double>();
+        return list!.map((e) => e is double ? e : double.parse('$e')).toList();
+      });
     }
     return _stream!;
   }
