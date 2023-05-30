@@ -1598,10 +1598,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         )
                     }
                 } else if (dataType == SLEEP_IN_BED) {
-                    handle request by removing out of bed
+                    for (rec in response.records) {
+                        if (rec is SleepStageRecord) {
+                            Log.i("TAG", "getHCData" + rec.stage)
+                            if (rec.stage != 3) {
+                                healthConnectData.addAll(convertRecord(rec, dataType))
+                            }
+                        }
+                    }
                 } else {
                     for (rec in response.records) {
-                        Log.i("TAG", "getHCData" + rec)
                         healthConnectData.addAll(convertRecord(rec, dataType))
                     }
                 }

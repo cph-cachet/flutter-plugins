@@ -48,6 +48,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
   let SLEEP_IN_BED = "SLEEP_IN_BED"
   let SLEEP_ASLEEP = "SLEEP_ASLEEP"
   let SLEEP_AWAKE = "SLEEP_AWAKE"
+  let SLEEP_DEEP = "SLEEP_DEEP"
+  let SLEEP_REM = "SLEEP_REM"
+
   let EXERCISE_TIME = "EXERCISE_TIME"
   let WORKOUT = "WORKOUT"
   let HEADACHE_UNSPECIFIED = "HEADACHE_UNSPECIFIED"
@@ -903,6 +906,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       dataTypesDict[SLEEP_IN_BED] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
       dataTypesDict[SLEEP_ASLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
       dataTypesDict[SLEEP_AWAKE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+      dataTypesDict[SLEEP_DEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+      dataTypesDict[SLEEP_REM] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+
       dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
       dataTypesDict[WORKOUT] = HKSampleType.workoutType()
 

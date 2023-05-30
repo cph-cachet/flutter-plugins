@@ -34,9 +34,12 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.MINDFULNESS,
   */
 
-  HealthDataType.SLEEP_IN_BED,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
+  HealthDataType.SLEEP_IN_BED,
+  //HealthDataType.SLEEP_LIGHT,
+  HealthDataType.SLEEP_DEEP,
+  HealthDataType.SLEEP_REM,
   /*
   HealthDataType.WATER,
   //HealthDataType.EXERCISE_TIME,
@@ -66,13 +69,13 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.STEPS,
   // HealthDataType.MOVE_MINUTES, // TODO: Find alternative for Health Connect
   HealthDataType.DISTANCE_DELTA,
-  HealthDataType.SLEEP_AWAKE,
-  HealthDataType.SLEEP_ASLEEP,
+  //HealthDataType.SLEEP_AWAKE,
+  //HealthDataType.SLEEP_ASLEEP,
   HealthDataType.SLEEP_IN_BED,
-  HealthDataType.SLEEP_LIGHT,
-  HealthDataType.SLEEP_DEEP,
-  HealthDataType.SLEEP_REM,
-  HealthDataType.SLEEP_SESSION,
+  //HealthDataType.SLEEP_LIGHT,
+  //HealthDataType.SLEEP_DEEP,
+  //HealthDataType.SLEEP_REM,
+  //HealthDataType.SLEEP_SESSION,
   HealthDataType.WATER,
   HealthDataType.WORKOUT,
 ];
