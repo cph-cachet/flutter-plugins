@@ -452,6 +452,8 @@ class HealthFactory {
       'endTime': endTime.millisecondsSinceEpoch
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
+    print(fetchedDataPoints);
+
     if (fetchedDataPoints != null) {
       final mesg = <String, dynamic>{
         "dataType": dataType,
@@ -476,6 +478,8 @@ class HealthFactory {
     final device = message["deviceId"];
     final unit = _dataTypeToUnit[dataType]!;
     final list = dataPoints.map<HealthDataPoint>((e) {
+      print(e);
+      print(dataType);
       // Handling different [HealthValue] types
       HealthValue value;
       if (dataType == HealthDataType.AUDIOGRAM) {
@@ -484,6 +488,8 @@ class HealthFactory {
         value = WorkoutHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.ELECTROCARDIOGRAM) {
         value = ElectrocardiogramHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.SLEEP_IN_BED) {
+        value = NumericHealthValue(0);
       } else {
         value = NumericHealthValue(e['value']);
       }
@@ -491,6 +497,7 @@ class HealthFactory {
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
       final String sourceName = e["source_name"];
+      print(value);
       return HealthDataPoint(
         value,
         dataType,

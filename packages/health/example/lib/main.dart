@@ -134,6 +134,7 @@ class _HealthAppState extends State<HealthApp> {
     // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
     // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
     bool success = true;
+    /*
     success &= await health.writeHealthData(
         10, HealthDataType.BODY_FAT_PERCENTAGE, earlier, now);
     success &= await health.writeHealthData(
@@ -162,6 +163,26 @@ class _HealthAppState extends State<HealthApp> {
         totalDistance: 2430,
         totalEnergyBurned: 400);
     success &= await health.writeBloodPressure(90, 80, earlier, now);
+    */
+
+    //success &= await health.writeHealthData(
+    //   0.0, HealthDataType.SLEEP_IN_BED, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_SESSION, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_REM, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_ASLEEP, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_LIGHT, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_OUT_OF_BED, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_DEEP, earlier, now);
+
+    print(success);
 
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS

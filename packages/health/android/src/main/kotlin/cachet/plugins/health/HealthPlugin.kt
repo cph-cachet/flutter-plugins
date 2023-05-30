@@ -47,6 +47,7 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.request.AggregateRequest
+import java.time.temporal.ChronoUnit
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val HEALTH_CONNECT_RESULT_CODE = 16969
@@ -87,14 +88,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
     private var WATER = "WATER"
 
-    //TODO support unknown?
+    // TODO support unknown?
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
     private var SLEEP_AWAKE = "SLEEP_AWAKE"
     private var SLEEP_IN_BED = "SLEEP_IN_BED"
+    private var SLEEP_SESSION = "SLEEP_SESSION"
     private var SLEEP_LIGHT = "SLEEP_LIGHT"
     private var SLEEP_DEEP = "SLEEP_DEEP"
     private var SLEEP_REM = "SLEEP_REM"
-    private var SLEEP_OUT_OF_BED = "SLEEP_OUT_BED"
+    private var SLEEP_OUT_OF_BED = "SLEEP_OUT_OF_BED"
     private var WORKOUT = "WORKOUT"
 
     val workoutTypeMap = mapOf(
@@ -830,7 +832,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         if (totalDistance != null) {
             fitnessOptionsBuilder.addDataType(
                 DataType.TYPE_DISTANCE_DELTA,
-                FitnessOptions.ACCESS_WRITE
+                FitnessOptions.ACCESS_WRITE,
             )
         }
         if (totalEnergyBurned != null) {
@@ -909,8 +911,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     .addOnFailureListener(
                         errHandler(
                             result,
-                            "There was an error getting the sleeping data!"
-                        )
+                            "There was an error getting the sleeping data!",
+                        ),
                     )
             }
             DataType.TYPE_ACTIVITY_SEGMENT -> {
@@ -938,8 +940,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     .addOnFailureListener(
                         errHandler(
                             result,
-                            "There was an error getting the workout data!"
-                        )
+                            "There was an error getting the workout data!",
+                        ),
                     )
             }
             else -> {
@@ -952,13 +954,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     )
                     .addOnSuccessListener(
                         threadPoolExecutor!!,
-                        dataHandler(dataType, field, result)
+                        dataHandler(dataType, field, result),
                     )
                     .addOnFailureListener(
                         errHandler(
                             result,
-                            "There was an error getting the data!"
-                        )
+                            "There was an error getting the data!",
+                        ),
                     )
             }
         }
@@ -1003,7 +1005,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     healthData.add(
                         hashMapOf(
                             "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
-                                TimeUnit.MINUTES
+                                TimeUnit.MINUTES,
                             ),
                             "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
                             "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
@@ -1353,7 +1355,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
                     Log.i(
                         "FLUTTER_HEALTH::SUCCESS",
-                        "returning $count steps for $startDate - $endDate"
+                        "returning $count steps for $startDate - $endDate",
                     )
                     map[startTime] = count.asInt()
                 } else {
@@ -1477,7 +1479,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         scope.launch {
             result.success(
                 healthConnectClient.permissionController.getGrantedPermissions()
-                    .containsAll(permList)
+                    .containsAll(permList),
             )
         }
     }
@@ -1551,7 +1553,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                 recordType = DistanceRecord::class,
                                 timeRangeFilter = TimeRangeFilter.between(
                                     record.startTime,
-                                    record.endTime
+                                    record.endTime,
                                 ),
                             ),
                         )
@@ -1565,7 +1567,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                 recordType = TotalCaloriesBurnedRecord::class,
                                 timeRangeFilter = TimeRangeFilter.between(
                                     record.startTime,
-                                    record.endTime
+                                    record.endTime,
                                 ),
                             ),
                         )
@@ -1595,8 +1597,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             ),
                         )
                     }
+                } else if (dataType == SLEEP_IN_BED) {
+                    handle request by removing out of bed
                 } else {
                     for (rec in response.records) {
+                        Log.i("TAG", "getHCData" + rec)
                         healthConnectData.addAll(convertRecord(rec, dataType))
                     }
                 }
@@ -1717,11 +1722,25 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
-            // is SleepSessionRecord -> return listOf(mapOf<String, Any>("value" to ,
-            //                                             "date_from" to ,
-            //                                             "date_to" to ,
-            //                                             "source_id" to "",
-            //                                             "source_name" to metadata.dataOrigin.packageName))
+            is SleepSessionRecord -> return listOf(
+                mapOf<String, Any>(
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
+            )
+            is SleepStageRecord -> return listOf(
+                mapOf<String, Any>(
+                    "stage" to record.stage,
+                    "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
+            )
             // is ExerciseSessionRecord -> return listOf(mapOf<String, Any>("value" to ,
             //                                             "date_from" to ,
             //                                             "date_to" to ,
@@ -1812,42 +1831,55 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_SLEEPING
+                stage = SleepStageRecord.STAGE_TYPE_SLEEPING,
             )
             SLEEP_LIGHT -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_LIGHT
+                stage = SleepStageRecord.STAGE_TYPE_LIGHT,
             )
             SLEEP_DEEP -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_DEEP
+                stage = SleepStageRecord.STAGE_TYPE_DEEP,
             )
             SLEEP_REM -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_REM
+                stage = SleepStageRecord.STAGE_TYPE_REM,
             )
             SLEEP_OUT_OF_BED -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_OUT_OF_BED
+                stage = SleepStageRecord.STAGE_TYPE_OUT_OF_BED,
             )
             SLEEP_AWAKE -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_AWAKE
+                stage = SleepStageRecord.STAGE_TYPE_AWAKE,
+            )
+            /*
+            SLEEP_IN_BED -> SleepStageRecord(
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
+            )*/
+            SLEEP_SESSION -> SleepSessionRecord(
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
             )
 
             // AGGREGATE_STEP_COUNT -> StepsRecord()
@@ -1859,13 +1891,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         scope.launch {
             try {
                 healthConnectClient.insertRecords(listOf(record))
+                val response = healthConnectClient.readRecords(ReadRecordsRequest(SleepSessionRecord::class, timeRangeFilter = TimeRangeFilter.between(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime))))
+                for (stepRecord in response.records) {
+                    // Process each step record
+                    Log.i("TAG", "test" + stepRecord.toString())
+                }
+
                 result.success(true)
             } catch (e: Exception) {
                 result.success(false)
             }
         }
     }
-
 
     fun writeWorkoutHCData(call: MethodCall, result: Result) {
         val type = call.argument<String>("activityType")!!
@@ -1918,7 +1955,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             } catch (e: Exception) {
                 Log.w(
                     "FLUTTER_HEALTH::ERROR",
-                    "[Health Connect] There was an error adding the workout"
+                    "[Health Connect] There was an error adding the workout",
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
@@ -1948,12 +1985,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 result.success(true)
                 Log.i(
                     "FLUTTER_HEALTH::SUCCESS",
-                    "[Health Connect] Blood pressure was successfully added!"
+                    "[Health Connect] Blood pressure was successfully added!",
                 )
             } catch (e: Exception) {
                 Log.w(
                     "FLUTTER_HEALTH::ERROR",
-                    "[Health Connect] There was an error adding the blood pressure"
+                    "[Health Connect] There was an error adding the blood pressure",
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
@@ -2002,7 +2039,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         SLEEP_DEEP to SleepStageRecord::class,
         SLEEP_REM to SleepStageRecord::class,
         SLEEP_OUT_OF_BED to SleepStageRecord::class,
-
+        SLEEP_IN_BED to SleepStageRecord::class,
+        SLEEP_SESSION to SleepSessionRecord::class,
         WORKOUT to ExerciseSessionRecord::class,
         // MOVE_MINUTES to TODO: Find alternative?
         // TODO: Implement remaining types
