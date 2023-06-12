@@ -883,7 +883,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val fitnessOptions = typesBuilder.build()
         val googleSignInAccount =
             GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
-        Log.i("Google Sign In Account", googleSignInAccount)
         Log.i("Exist Account?", googleSignInAccount != null)
         // Handle data types
         when (dataType) {
