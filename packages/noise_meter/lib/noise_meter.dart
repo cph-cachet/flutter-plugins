@@ -52,7 +52,7 @@ class NoiseMeter {
   NoiseMeter([this.onError]);
 
   /// The rate at which the audio is sampled
-  static int get sampleRate => AudioStreamer.sampleRate;
+  static Future<int> get sampleRate async => await AudioStreamer.currSampleRate;
 
   /// The stream of noise readings.
   Stream<NoiseReading> get noiseStream {

@@ -1,3 +1,17 @@
+## 6.0.0
+
+- Fixed issues #[694](https://github.com/cph-cachet/flutter-plugins/issues/694), #[696](https://github.com/cph-cachet/flutter-plugins/issues/696), #[697](https://github.com/cph-cachet/flutter-plugins/issues/697), #[698](https://github.com/cph-cachet/flutter-plugins/issues/698)
+- added totalSteps for HealthConnect
+- added supplemental oxygen flow rate for blood oxygen saturation on Android
+
+
+## 5.0.0
+
+- Added initial support for the new Health Connect API, as Google Fit is being deprecated.
+  - Does not yet support `revokePermissions`, `getTotalStepsInInterval`.
+- Changed Intl package version dependancy to `^0.17.0` to work with flutter stable version.
+- Updated the example app to handle more buttons.
+
 ## 4.6.0
 
 - Added method for revoking permissions. On Android it uses `disableFit()` to remove access to Google Fit - `revokePermissions`. Documented lack of methods for iOS.

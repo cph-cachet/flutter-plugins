@@ -36,7 +36,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "cachet.plugins.example_app"
-        minSdkVersion 16
+        minSdkVersion 26
         targetSdkVersion 31
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -60,10 +60,14 @@ flutter {
 }
 
 dependencies {
+    def composeBom = platform('androidx.compose:compose-bom:2022.10.00')
+    implementation(composeBom)
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     testImplementation 'junit:junit:4.12'
     implementation("com.google.android.gms:play-services-fitness:21.1.0")
     implementation("com.google.android.gms:play-services-auth:20.2.0")
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    // The new health connect api
+    // implementation("androidx.health.connect:connect-client:1.0.0-alpha11")
 }

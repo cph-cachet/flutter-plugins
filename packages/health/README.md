@@ -1,64 +1,67 @@
 # Health
 
-Enables reading and writing health data from/to Apple Health and Google Fit.
+Enables reading and writing health data from/to Apple Health, Google Fit and Health Connect.
+
+> Google Fitness API is being deprecated and Health Connect the plugin will transition into the API as the Health Connect
 
 The plugin supports:
 
 - handling permissions to access health data using the `hasPermissions`, `requestAuthorization`, `revokePermissions` methods.
 - reading health data using the `getHealthDataFromTypes` method.
 - writing health data using the `writeHealthData` method.
-- writing workouts on iOS (Apple Health) & Android (Google Fit) using the `writeWorkout` method.
+- writing workouts using the `writeWorkout` method.
 - writing audiograms on iOS using the `writeAudiogram` method.
+- writing blood pressure data using the `writeBloodPressure` method.
 - accessing total step counts using the `getTotalStepsInInterval` method.
 - cleaning up dublicate data points via the `removeDuplicates` method.
 - removing data of a given type in a selected period of time using the `delete` method.
-- writing blood pressure data in a single call using the `saveBloodPressure` method (Android only).
+- Support the future Android API Health Connect.
 
-Note that for Android, the target phone **needs** to have [Google Fit](https://www.google.com/fit/) installed and have access to the internet, otherwise this plugin will not work.
+Note that for Android, the target phone **needs** to have [Google Fit](https://www.google.com/fit/) or [Health Connect](https://health.google/health-connect-android/) (which is currently in beta) installed and have access to the internet, otherwise this plugin will not work.
 
 ## Data Types
 
-| **Data Type**               | **Unit**                | **iOS** | **Android** | **Comments**                                                |
-| --------------------------- | ----------------------- | ------- | ----------- | ----------------------------------------------------------- |
-| ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes         |                                                             |
-| BASAL_ENERGY_BURNED         | CALORIES                | yes     |             |                                                             |
-| BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes         |                                                             |
-| BLOOD_OXYGEN                | PERCENTAGE              | yes     | yes         |                                                             |
-| BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes     | yes         |                                                             |
-| BLOOD_PRESSURE_SYSTOLIC     | MILLIMETER_OF_MERCURY   | yes     | yes         |                                                             |
-| BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes     | yes         |                                                             |
-| BODY_MASS_INDEX             | NO_UNIT                 | yes     | yes         |                                                             |
-| BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes     | yes         |                                                             |
-| ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |             |                                                             |
-| HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes         |                                                             |
-| HEIGHT                      | METERS                  | yes     | yes         |                                                             |
-| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |             |                                                             |
-| STEPS                       | COUNT                   | yes     | yes         |                                                             |
-| WAIST_CIRCUMFERENCE         | METERS                  | yes     |             |                                                             |
-| WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |             |                                                             |
-| WEIGHT                      | KILOGRAMS               | yes     | yes         |                                                             |
-| DISTANCE_WALKING_RUNNING    | METERS                  | yes     |             |                                                             |
-| FLIGHTS_CLIMBED             | COUNT                   | yes     |             |                                                             |
-| MOVE_MINUTES                | MINUTES                 |         | yes         |                                                             |
-| DISTANCE_DELTA              | METERS                  |         | yes         |                                                             |
-| MINDFULNESS                 | MINUTES                 | yes     |             |                                                             |
-| SLEEP_IN_BED                | MINUTES                 | yes     | yes         |                                                             |
-| SLEEP_ASLEEP                | MINUTES                 | yes     | yes         |                                                             |
-| SLEEP_AWAKE                 | MINUTES                 | yes     | yes         |                                                             |
-| WATER                       | LITER                   | yes     | yes         | On Android water requires a 3rd party app to be registered. |
-| EXERCISE_TIME               | MINUTES                 | yes     |             |                                                             |
-| WORKOUT                     | NO_UNIT                 | yes     | yes         |                                                             |
-| HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
-| LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
-| IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes     |             | Requires Apple Watch                                        |
-| HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes     |             | Requires Apple Watch                                        |
-| HEADACHE_NOT_PRESENT        | MINUTES                 | yes     |             |                                                             |
-| HEADACHE_MILD               | MINUTES                 | yes     |             |                                                             |
-| HEADACHE_MODERATE           | MINUTES                 | yes     |             |                                                             |
-| HEADACHE_SEVERE             | MINUTES                 | yes     |             |                                                             |
-| HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |             |                                                             |
-| AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |             |                                                             |
-| ELECTROCARDIOGRAM           | VOLT                    | yes     |             | Requires Apple Watch                                        |
+| **Data Type**               | **Unit**                | **iOS** | **Android (Google Fit)** | **Android (Health Connect)** | **Comments**                           |
+| --------------------------- | ----------------------- | ------- | ------------------------ | ---------------------------- | -------------------------------------- |
+| ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes                      | yes                          |                                        |
+| BASAL_ENERGY_BURNED         | CALORIES                | yes     |                          |                              |                                        |
+| BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes                      | yes                          |                                        |
+| BLOOD_OXYGEN                | PERCENTAGE              | yes     | yes                      | yes                          |                                        |
+| BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes     | yes                      | yes                          |                                        |
+| BLOOD_PRESSURE_SYSTOLIC     | MILLIMETER_OF_MERCURY   | yes     | yes                      | yes                          |                                        |
+| BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes     | yes                      | yes                          |                                        |
+| BODY_MASS_INDEX             | NO_UNIT                 | yes     | yes                      | yes                          |                                        |
+| BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes     | yes                      | yes                          |                                        |
+| ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |                          |                              |                                        |
+| HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes                      | yes                          |                                        |
+| HEIGHT                      | METERS                  | yes     | yes                      | yes                          |                                        |
+| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                        |
+| STEPS                       | COUNT                   | yes     | yes                      | yes                          |                                        |
+| WAIST_CIRCUMFERENCE         | METERS                  | yes     |                          |                              |                                        |
+| WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                        |
+| WEIGHT                      | KILOGRAMS               | yes     | yes                      | yes                          |                                        |
+| DISTANCE_WALKING_RUNNING    | METERS                  | yes     |                          |                              |                                        |
+| FLIGHTS_CLIMBED             | COUNT                   | yes     |                          |                              |                                        |
+| MOVE_MINUTES                | MINUTES                 |         | yes                      |                              |                                        |
+| DISTANCE_DELTA              | METERS                  |         | yes                      | yes                          |                                        |
+| MINDFULNESS                 | MINUTES                 | yes     |                          |                              |                                        |
+| SLEEP_IN_BED                | MINUTES                 | yes     | yes                      |                              |                                        |
+| SLEEP_ASLEEP                | MINUTES                 | yes     | yes                      |                              |                                        |
+| SLEEP_AWAKE                 | MINUTES                 | yes     | yes                      |                              |                                        |
+| WATER                       | LITER                   | yes     | yes                      | yes                          |                                        |
+| EXERCISE_TIME               | MINUTES                 | yes     |                          |                              |                                        |
+| WORKOUT                     | NO_UNIT                 | yes     | yes                      | yes                          | (Has other workout types)              |
+| HIGH_HEART_RATE_EVENT       | NO_UNIT                 | yes     |                          |                              | Requires Apple Watch to write the data |
+| LOW_HEART_RATE_EVENT        | NO_UNIT                 | yes     |                          |                              | Requires Apple Watch to write the data |
+| IRREGULAR_HEART_RATE_EVENT  | NO_UNIT                 | yes     |                          |                              | Requires Apple Watch to write the data |
+| HEART_RATE_VARIABILITY_SDNN | MILLISECONDS            | yes     |                          |                              | Requires Apple Watch to write the data |
+| HEADACHE_NOT_PRESENT        | MINUTES                 | yes     |                          |                              |                                        |
+| HEADACHE_MILD               | MINUTES                 | yes     |                          |                              |                                        |
+| HEADACHE_MODERATE           | MINUTES                 | yes     |                          |                              |                                        |
+| HEADACHE_SEVERE             | MINUTES                 | yes     |                          |                              |                                        |
+| HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |                          |                              |                                        |
+| AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                          |                              |                                        |
+| ELECTROCARDIOGRAM           | VOLT                    | yes     |                          |                              | Requires Apple Watch to write the data |
 
 ## Setup
 
@@ -75,7 +78,7 @@ Step 1: Append the Info.plist with the following 2 entries
 
 Step 2: Open your Flutter project in Xcode by right clicking on the "ios" folder and selecting "Open in Xcode". Next, enable "HealthKit" by adding a capability inside the "Signing & Capabilities" tab of the Runner target's settings.
 
-### Google Fit (Android)
+### Google Fit (Android option 1)
 
 Follow the guide at https://developers.google.com/fit/android/get-api-key
 
@@ -110,6 +113,16 @@ Follow the instructions at https://developers.google.com/fit/android/get-api-key
 
 The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`.
 
+### Health Connect (Android option 2)
+
+Health Connect requires the following lines in the `AndroidManifest.xml` file (also seen in the example app):
+
+```
+<queries>
+    <package android:name="com.google.android.apps.healthdata" />
+</queries>
+```
+
 ### Android Permissions
 
 Starting from API level 28 (Android 9.0) acessing some fitness data (e.g. Steps) requires a special permission.
@@ -119,6 +132,20 @@ To set it add the following line to your `AndroidManifest.xml` file.
 ```
 <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 ```
+
+#### Health Connect
+
+If using Health Connect on Android it requires speciel permissions in the `AndroidManifest.xml` file.
+The permissions can be found here: https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types
+
+Example shown here (can also be found in the example app):
+
+```
+<uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+<uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
+```
+
+#### Workout permissions
 
 Additionally, for Workouts: If the distance of a workout is requested then the location permissions below are needed.
 
@@ -135,6 +162,7 @@ Follow the plugin setup instructions and add the following line before requsting
 
 ```
 await Permission.activityRecognition.request();
+await Permission.location.request();
 ```
 
 ### Android X
@@ -244,142 +272,142 @@ As of 4.0.0 Health supports adding workouts to both iOS and Android.
 
 ### Workout Types
 
-| **Workout Type**                 | **iOS** | **Android** | **Comments**                                                      |
-| -------------------------------- | ------- | ----------- | ----------------------------------------------------------------- |
-| ARCHERY                          | yes     | yes         |                                                                   |
-| BADMINTON                        | yes     | yes         |                                                                   |
-| BASEBALL                         | yes     | yes         |                                                                   |
-| BASKETBALL                       | yes     | yes         |                                                                   |
-| BIKING                           | yes     | yes         | on iOS this is CYCLING, but name changed here to fit with Android |
-| BOXING                           | yes     | yes         |                                                                   |
-| CRICKET                          | yes     | yes         |                                                                   |
-| CURLING                          | yes     | yes         |                                                                   |
-| ELLIPTICAL                       | yes     | yes         |                                                                   |
-| FENCING                          | yes     | yes         |                                                                   |
-| AMERICAN_FOOTBALL                | yes     | yes         |                                                                   |
-| AUSTRALIAN_FOOTBALL              | yes     | yes         |                                                                   |
-| SOCCER                           | yes     | yes         |                                                                   |
-| GOLF                             | yes     | yes         |                                                                   |
-| GYMNASTICS                       | yes     | yes         |                                                                   |
-| HANDBALL                         | yes     | yes         |                                                                   |
-| HIGH_INTENSITY_INTERVAL_TRAINING | yes     | yes         |                                                                   |
-| HIKING                           | yes     | yes         |                                                                   |
-| HOCKEY                           | yes     | yes         |                                                                   |
-| SKATING                          | yes     | yes         | On iOS this is skating_sports                                     |
-| JUMP_ROPE                        | yes     | yes         |                                                                   |
-| KICKBOXING                       | yes     | yes         |                                                                   |
-| MARTIAL_ARTS                     | yes     | yes         |                                                                   |
-| PILATES                          | yes     | yes         |                                                                   |
-| RACQUETBALL                      | yes     | yes         |                                                                   |
-| RUGBY                            | yes     | yes         |                                                                   |
-| RUNNING                          | yes     | yes         |                                                                   |
-| ROWING                           | yes     | yes         |                                                                   |
-| SAILING                          | yes     | yes         |                                                                   |
-| CROSS_COUNTRY_SKIING             | yes     | yes         |                                                                   |
-| DOWNHILL_SKIING                  | yes     | yes         |                                                                   |
-| SNOWBOARDING                     | yes     | yes         |                                                                   |
-| SOFTBALL                         | yes     | yes         |                                                                   |
-| SQUASH                           | yes     | yes         |                                                                   |
-| STAIR_CLIMBING                   | yes     | yes         |                                                                   |
-| SWIMMING                         | yes     | yes         |                                                                   |
-| TABLE_TENNIS                     | yes     | yes         |                                                                   |
-| TENNIS                           | yes     | yes         |                                                                   |
-| VOLLEYBALL                       | yes     | yes         |                                                                   |
-| WALKING                          | yes     | yes         |                                                                   |
-| WATER_POLO                       | yes     | yes         |                                                                   |
-| YOGA                             | yes     | yes         |                                                                   |
-| BOWLING                          | yes     |             |                                                                   |
-| CROSS_TRAINING                   | yes     |             |                                                                   |
-| TRACK_AND_FIELD                  | yes     |             |                                                                   |
-| DISC_SPORTS                      | yes     |             |                                                                   |
-| LACROSSE                         | yes     |             |                                                                   |
-| PREPARATION_AND_RECOVERY         | yes     |             |                                                                   |
-| FLEXIBILITY                      | yes     |             |                                                                   |
-| COOLDOWN                         | yes     |             |                                                                   |
-| WHEELCHAIR_WALK_PACE             | yes     |             |                                                                   |
-| WHEELCHAIR_RUN_PACE              | yes     |             |                                                                   |
-| HAND_CYCLING                     | yes     |             |                                                                   |
-| CORE_TRAINING                    | yes     |             |                                                                   |
-| FUNCTIONAL_STRENGTH_TRAINING     | yes     |             |                                                                   |
-| TRADITIONAL_STRENGTH_TRAINING    | yes     |             |                                                                   |
-| MIXED_CARDIO                     | yes     |             |                                                                   |
-| STAIRS                           | yes     |             |                                                                   |
-| STEP_TRAINING                    | yes     |             |                                                                   |
-| FITNESS_GAMING                   | yes     |             |                                                                   |
-| BARRE                            | yes     |             |                                                                   |
-| CARDIO_DANCE                     | yes     |             |                                                                   |
-| SOCIAL_DANCE                     | yes     |             |                                                                   |
-| MIND_AND_BODY                    | yes     |             |                                                                   |
-| PICKLEBALL                       | yes     |             |                                                                   |
-| CLIMBING                         | yes     |             |                                                                   |
-| EQUESTRIAN_SPORTS                | yes     |             |                                                                   |
-| FISHING                          | yes     |             |                                                                   |
-| HUNTING                          | yes     |             |                                                                   |
-| PLAY                             | yes     |             |                                                                   |
-| SNOW_SPORTS                      | yes     |             |                                                                   |
-| PADDLE_SPORTS                    | yes     |             |                                                                   |
-| SURFING_SPORTS                   | yes     |             |                                                                   |
-| WATER_FITNESS                    | yes     |             |                                                                   |
-| WATER_SPORTS                     | yes     |             |                                                                   |
-| TAI_CHI                          | yes     |             |                                                                   |
-| WRESTLING                        | yes     |             |                                                                   |
-| AEROBICS                         |         | yes         |                                                                   |
-| BIATHLON                         |         | yes         |                                                                   |
-| CALISTHENICS                     |         | yes         |                                                                   |
-| CIRCUIT_TRAINING                 |         | yes         |                                                                   |
-| CROSS_FIT                        |         | yes         |                                                                   |
-| DANCING                          |         | yes         |                                                                   |
-| DIVING                           |         | yes         |                                                                   |
-| ELEVATOR                         |         | yes         |                                                                   |
-| ERGOMETER                        |         | yes         |                                                                   |
-| ESCALATOR                        |         | yes         |                                                                   |
-| FRISBEE_DISC                     |         | yes         |                                                                   |
-| GARDENING                        |         | yes         |                                                                   |
-| GUIDED_BREATHING                 |         | yes         |                                                                   |
-| HORSEBACK_RIDING                 |         | yes         |                                                                   |
-| HOUSEWORK                        |         | yes         |                                                                   |
-| INTERVAL_TRAINING                |         | yes         |                                                                   |
-| IN_VEHICLE                       |         | yes         |                                                                   |
-| KAYAKING                         |         | yes         |                                                                   |
-| KETTLEBELL_TRAINING              |         | yes         |                                                                   |
-| KICK_SCOOTER                     |         | yes         |                                                                   |
-| KITE_SURFING                     |         | yes         |                                                                   |
-| MEDITATION                       |         | yes         |                                                                   |
-| MIXED_MARTIAL_ARTS               |         | yes         |                                                                   |
-| P90X                             |         | yes         |                                                                   |
-| PARAGLIDING                      |         | yes         |                                                                   |
-| POLO                             |         | yes         |                                                                   |
-| ROCK_CLIMBING                    | (yes)   | yes         | on iOS this will be stored as CLIMBING                            |
-| RUNNING_JOGGING                  | (yes)   | yes         | on iOS this will be stored as RUNNING                             |
-| RUNNING_SAND                     | (yes)   | yes         | on iOS this will be stored as RUNNING                             |
-| RUNNING_TREADMILL                | (yes)   | yes         | on iOS this will be stored as RUNNING                             |
-| SCUBA_DIVING                     |         | yes         |                                                                   |
-| SKATING_CROSS                    | (yes)   | yes         | on iOS this will be stored as SKATING                             |
-| SKATING_INDOOR                   | (yes)   | yes         | on iOS this will be stored as SKATING                             |
-| SKATING_INLINE                   | (yes)   | yes         | on iOS this will be stored as SKATING                             |
-| SKIING_BACK_COUNTRY              |         | yes         |                                                                   |
-| SKIING_KITE                      |         | yes         |                                                                   |
-| SKIING_ROLLER                    |         | yes         |                                                                   |
-| SLEDDING                         |         | yes         |                                                                   |
-| STAIR_CLIMBING_MACHINE           |         | yes         |                                                                   |
-| STANDUP_PADDLEBOARDING           |         | yes         |                                                                   |
-| STILL                            |         | yes         |                                                                   |
-| STRENGTH_TRAINING                |         | yes         |                                                                   |
-| SURFING                          |         | yes         |                                                                   |
-| SWIMMING_OPEN_WATER              |         | yes         |                                                                   |
-| SWIMMING_POOL                    |         | yes         |                                                                   |
-| TEAM_SPORTS                      |         | yes         |                                                                   |
-| TILTING                          |         | yes         |                                                                   |
-| TREADMILL                        |         | yes         |                                                                   |
-| VOLLEYBALL_BEACH                 |         | yes         |                                                                   |
-| VOLLEYBALL_INDOOR                |         | yes         |                                                                   |
-| WAKEBOARDING                     |         | yes         |                                                                   |
-| WALKING_FITNESS                  |         | yes         |                                                                   |
-| WALKING_NORDIC                   |         | yes         |                                                                   |
-| WALKING_STROLLER                 |         | yes         |                                                                   |
-| WALKING_TREADMILL                |         | yes         |                                                                   |
-| WEIGHTLIFTING                    |         | yes         |                                                                   |
-| WHEELCHAIR                       |         | yes         |                                                                   |
-| WINDSURFING                      |         | yes         |                                                                   |
-| ZUMBA                            |         | yes         |                                                                   |
-| OTHER                            | yes     | yes         |                                                                   |
+| **Workout Type**                 | **iOS** | **Android (Google Fit)** | **Android (Health Connect)** | **Comments**                                                      |
+| -------------------------------- | ------- | ------------------------ | ---------------------------- | ----------------------------------------------------------------- |
+| ARCHERY                          | yes     | yes                      |                              |                                                                   |
+| BADMINTON                        | yes     | yes                      | yes                          |                                                                   |
+| BASEBALL                         | yes     | yes                      | yes                          |                                                                   |
+| BASKETBALL                       | yes     | yes                      | yes                          |                                                                   |
+| BIKING                           | yes     | yes                      | yes                          | on iOS this is CYCLING, but name changed here to fit with Android |
+| BOXING                           | yes     | yes                      | yes                          |                                                                   |
+| CRICKET                          | yes     | yes                      | yes                          |                                                                   |
+| CURLING                          | yes     | yes                      |                              |                                                                   |
+| ELLIPTICAL                       | yes     | yes                      | yes                          |                                                                   |
+| FENCING                          | yes     | yes                      | yes                          |                                                                   |
+| AMERICAN_FOOTBALL                | yes     | yes                      | yes                          |                                                                   |
+| AUSTRALIAN_FOOTBALL              | yes     | yes                      | yes                          |                                                                   |
+| SOCCER                           | yes     | yes                      |                              |                                                                   |
+| GOLF                             | yes     | yes                      | yes                          |                                                                   |
+| GYMNASTICS                       | yes     | yes                      | yes                          |                                                                   |
+| HANDBALL                         | yes     | yes                      | yes                          |                                                                   |
+| HIGH_INTENSITY_INTERVAL_TRAINING | yes     | yes                      | yes                          |                                                                   |
+| HIKING                           | yes     | yes                      | yes                          |                                                                   |
+| HOCKEY                           | yes     | yes                      |                              |                                                                   |
+| SKATING                          | yes     | yes                      | yes                          | On iOS this is skating_sports                                     |
+| JUMP_ROPE                        | yes     | yes                      |                              |                                                                   |
+| KICKBOXING                       | yes     | yes                      |                              |                                                                   |
+| MARTIAL_ARTS                     | yes     | yes                      | yes                          |                                                                   |
+| PILATES                          | yes     | yes                      | yes                          |                                                                   |
+| RACQUETBALL                      | yes     | yes                      | yes                          |                                                                   |
+| RUGBY                            | yes     | yes                      | yes                          |                                                                   |
+| RUNNING                          | yes     | yes                      | yes                          |                                                                   |
+| ROWING                           | yes     | yes                      | yes                          |                                                                   |
+| SAILING                          | yes     | yes                      | yes                          |                                                                   |
+| CROSS_COUNTRY_SKIING             | yes     | yes                      |                              |                                                                   |
+| DOWNHILL_SKIING                  | yes     | yes                      |                              |                                                                   |
+| SNOWBOARDING                     | yes     | yes                      | yes                          |                                                                   |
+| SOFTBALL                         | yes     | yes                      | yes                          |                                                                   |
+| SQUASH                           | yes     | yes                      | yes                          |                                                                   |
+| STAIR_CLIMBING                   | yes     | yes                      | yes                          |                                                                   |
+| SWIMMING                         | yes     | yes                      |                              |                                                                   |
+| TABLE_TENNIS                     | yes     | yes                      | yes                          |                                                                   |
+| TENNIS                           | yes     | yes                      | yes                          |                                                                   |
+| VOLLEYBALL                       | yes     | yes                      | yes                          |                                                                   |
+| WALKING                          | yes     | yes                      | yes                          |                                                                   |
+| WATER_POLO                       | yes     | yes                      | yes                          |                                                                   |
+| YOGA                             | yes     | yes                      | yes                          |                                                                   |
+| BOWLING                          | yes     |                          |                              |                                                                   |
+| CROSS_TRAINING                   | yes     |                          |                              |                                                                   |
+| TRACK_AND_FIELD                  | yes     |                          |                              |                                                                   |
+| DISC_SPORTS                      | yes     |                          |                              |                                                                   |
+| LACROSSE                         | yes     |                          |                              |                                                                   |
+| PREPARATION_AND_RECOVERY         | yes     |                          |                              |                                                                   |
+| FLEXIBILITY                      | yes     |                          |                              |                                                                   |
+| COOLDOWN                         | yes     |                          |                              |                                                                   |
+| WHEELCHAIR_WALK_PACE             | yes     |                          |                              |                                                                   |
+| WHEELCHAIR_RUN_PACE              | yes     |                          |                              |                                                                   |
+| HAND_CYCLING                     | yes     |                          |                              |                                                                   |
+| CORE_TRAINING                    | yes     |                          |                              |                                                                   |
+| FUNCTIONAL_STRENGTH_TRAINING     | yes     |                          |                              |                                                                   |
+| TRADITIONAL_STRENGTH_TRAINING    | yes     |                          |                              |                                                                   |
+| MIXED_CARDIO                     | yes     |                          |                              |                                                                   |
+| STAIRS                           | yes     |                          |                              |                                                                   |
+| STEP_TRAINING                    | yes     |                          |                              |                                                                   |
+| FITNESS_GAMING                   | yes     |                          |                              |                                                                   |
+| BARRE                            | yes     |                          |                              |                                                                   |
+| CARDIO_DANCE                     | yes     |                          |                              |                                                                   |
+| SOCIAL_DANCE                     | yes     |                          |                              |                                                                   |
+| MIND_AND_BODY                    | yes     |                          |                              |                                                                   |
+| PICKLEBALL                       | yes     |                          |                              |                                                                   |
+| CLIMBING                         | yes     |                          |                              |                                                                   |
+| EQUESTRIAN_SPORTS                | yes     |                          |                              |                                                                   |
+| FISHING                          | yes     |                          |                              |                                                                   |
+| HUNTING                          | yes     |                          |                              |                                                                   |
+| PLAY                             | yes     |                          |                              |                                                                   |
+| SNOW_SPORTS                      | yes     |                          |                              |                                                                   |
+| PADDLE_SPORTS                    | yes     |                          |                              |                                                                   |
+| SURFING_SPORTS                   | yes     |                          |                              |                                                                   |
+| WATER_FITNESS                    | yes     |                          |                              |                                                                   |
+| WATER_SPORTS                     | yes     |                          |                              |                                                                   |
+| TAI_CHI                          | yes     |                          |                              |                                                                   |
+| WRESTLING                        | yes     |                          |                              |                                                                   |
+| AEROBICS                         |         | yes                      |                              |                                                                   |
+| BIATHLON                         |         | yes                      |                              |                                                                   |
+| CALISTHENICS                     |         | yes                      | yes                          |                                                                   |
+| CIRCUIT_TRAINING                 |         | yes                      |                              |                                                                   |
+| CROSS_FIT                        |         | yes                      |                              |                                                                   |
+| DANCING                          |         | yes                      | yes                          |                                                                   |
+| DIVING                           |         | yes                      |                              |                                                                   |
+| ELEVATOR                         |         | yes                      |                              |                                                                   |
+| ERGOMETER                        |         | yes                      |                              |                                                                   |
+| ESCALATOR                        |         | yes                      |                              |                                                                   |
+| FRISBEE_DISC                     |         | yes                      | yes                          |                                                                   |
+| GARDENING                        |         | yes                      |                              |                                                                   |
+| GUIDED_BREATHING                 |         | yes                      | yes                          |                                                                   |
+| HORSEBACK_RIDING                 |         | yes                      |                              |                                                                   |
+| HOUSEWORK                        |         | yes                      |                              |                                                                   |
+| INTERVAL_TRAINING                |         | yes                      |                              |                                                                   |
+| IN_VEHICLE                       |         | yes                      |                              |                                                                   |
+| KAYAKING                         |         | yes                      |                              |                                                                   |
+| KETTLEBELL_TRAINING              |         | yes                      |                              |                                                                   |
+| KICK_SCOOTER                     |         | yes                      |                              |                                                                   |
+| KITE_SURFING                     |         | yes                      |                              |                                                                   |
+| MEDITATION                       |         | yes                      |                              |                                                                   |
+| MIXED_MARTIAL_ARTS               |         | yes                      |                              |                                                                   |
+| P90X                             |         | yes                      |                              |                                                                   |
+| PARAGLIDING                      |         | yes                      | yes                          |                                                                   |
+| POLO                             |         | yes                      |                              |                                                                   |
+| ROCK_CLIMBING                    | (yes)   | yes                      | yes                          | on iOS this will be stored as CLIMBING                            |
+| RUNNING_JOGGING                  | (yes)   | yes                      |                              | on iOS this will be stored as RUNNING                             |
+| RUNNING_SAND                     | (yes)   | yes                      |                              | on iOS this will be stored as RUNNING                             |
+| RUNNING_TREADMILL                | (yes)   | yes                      | yes                          | on iOS this will be stored as RUNNING                             |
+| SCUBA_DIVING                     |         | yes                      | yes                          |                                                                   |
+| SKATING_CROSS                    | (yes)   | yes                      |                              | on iOS this will be stored as SKATING                             |
+| SKATING_INDOOR                   | (yes)   | yes                      |                              | on iOS this will be stored as SKATING                             |
+| SKATING_INLINE                   | (yes)   | yes                      |                              | on iOS this will be stored as SKATING                             |
+| SKIING_BACK_COUNTRY              |         | yes                      |                              |                                                                   |
+| SKIING_KITE                      |         | yes                      |                              |                                                                   |
+| SKIING_ROLLER                    |         | yes                      |                              |                                                                   |
+| SLEDDING                         |         | yes                      |                              |                                                                   |
+| STAIR_CLIMBING_MACHINE           |         | yes                      | yes                          |                                                                   |
+| STANDUP_PADDLEBOARDING           |         | yes                      |                              |                                                                   |
+| STILL                            |         | yes                      |                              |                                                                   |
+| STRENGTH_TRAINING                |         | yes                      | yes                          |                                                                   |
+| SURFING                          |         | yes                      | yes                          |                                                                   |
+| SWIMMING_OPEN_WATER              |         | yes                      | yes                          |                                                                   |
+| SWIMMING_POOL                    |         | yes                      | yes                          |                                                                   |
+| TEAM_SPORTS                      |         | yes                      |                              |                                                                   |
+| TILTING                          |         | yes                      |                              |                                                                   |
+| TREADMILL                        |         | yes                      |                              |                                                                   |
+| VOLLEYBALL_BEACH                 |         | yes                      |                              |                                                                   |
+| VOLLEYBALL_INDOOR                |         | yes                      |                              |                                                                   |
+| WAKEBOARDING                     |         | yes                      |                              |                                                                   |
+| WALKING_FITNESS                  |         | yes                      |                              |                                                                   |
+| WALKING_NORDIC                   |         | yes                      |                              |                                                                   |
+| WALKING_STROLLER                 |         | yes                      |                              |                                                                   |
+| WALKING_TREADMILL                |         | yes                      |                              |                                                                   |
+| WEIGHTLIFTING                    |         | yes                      | yes                          |                                                                   |
+| WHEELCHAIR                       |         | yes                      | yes                          |                                                                   |
+| WINDSURFING                      |         | yes                      |                              |                                                                   |
+| ZUMBA                            |         | yes                      |                              |                                                                   |
+| OTHER                            | yes     | yes                      |                              |                                                                   |
