@@ -1,3 +1,11 @@
+## 3.0.0
+
+- implementing `AudioStreamer` as a singleton
+- updates Kotlin plugin and AGP
+- upgrade to Dart 3
+- [PR#682](https://github.com/cph-cachet/flutter-plugins/pull/682)
+- [PR#721](https://github.com/cph-cachet/flutter-plugins/pull/721)
+
 ## 2.3.0
 
 - implemented custom sample rate functionality
@@ -35,11 +43,11 @@
 
 ## 1.3.0
 
-- Fixed an issue where using another media player/recorder would cause the plugin to go into an error state on iOS (see https://github.com/cph-cachet/flutter-plugins/issues/86)
+- Fixed an issue where using another media player/recorder would cause the plugin to go into an error state on iOS (see <https://github.com/cph-cachet/flutter-plugins/issues/86>)
 
 ## 1.2.0
 
-- Fixed an issue where the AVAudioRecorder would crash on iOS (see https://github.com/cph-cachet/flutter-plugins/issues/91)
+- Fixed an issue where the AVAudioRecorder would crash on iOS (see <https://github.com/cph-cachet/flutter-plugins/issues/91>)
 
 ## 1.1.6
 

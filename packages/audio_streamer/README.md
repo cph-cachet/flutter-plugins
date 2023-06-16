@@ -1,10 +1,10 @@
 # Audio Streamer
 
-Streaming of PCM audio from Android and iOS with a customizable sample rate.
+Streaming of PCM audio from Android and iOS with a customizable sampling rate.
 
 ## Permissions
 
-On **Android** add the audio recording permission to `AndroidManifest.xml`:
+On **Android** add the audio recording permission to `AndroidManifest.xml`.
 
 ```xml
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -49,20 +49,30 @@ See the file `example/lib/main.dart` for a fully fledged example app using the p
 Note that on iOS the sample rate will not necessarily change, as there is only the option to set a preferred one.
 
 ```dart
-  AudioStreamer _streamer = AudioStreamer();
+  // Note that AudioStreamer works as a singleton.
+  AudioStreamer streamer = AudioStreamer();
   bool _isRecording = false;
   List<double> _audio = [];
 
-  void onAudio(List<double> buffer) {
+  void onAudio(List<double> buffer) async {
     _audio.addAll(buffer);
-    double secondsRecorded = _audio.length.toDouble() / _streamer.sampleRate.toDouble();
+    var sampleRate = await streamer.actualSampleRate;
+    double secondsRecorded = _audio.length.toDouble() / sampleRate;
+    print('Max amp: ${buffer.reduce(max)}');
+    print('Min amp: ${buffer.reduce(min)}');
     print('$secondsRecorded seconds recorded.');
+    print('-' * 50);
+  }
+
+  void handleError(PlatformException error) {
+    print(error);
   }
 
   void start() async {
     try {
-      //_streamer.start(onAudio, handleError, sampleRate: 16000); //uses custom sample rate
-      _streamer.start(onAudio, handleError); //uses default sample rate of 44100 Hz
+      // start streaming using default sample rate of 44100 Hz
+      streamer.start(onAudio, handleError);
+
       setState(() {
         _isRecording = true;
       });
@@ -72,7 +82,7 @@ Note that on iOS the sample rate will not necessarily change, as there is only t
   }
 
   void stop() async {
-    bool stopped = await _streamer.stop();
+    bool stopped = await streamer.stop();
     setState(() {
       _isRecording = stopped;
     });
