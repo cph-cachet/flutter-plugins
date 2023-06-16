@@ -1,19 +1,24 @@
+## 4.0.0
+
+- Updates Kotlin plugin and AGP.
+- Upgrade of `compileSdkVersion` to 33.
+- Upgrade to Dart 3.
+
 ## 3.0.0
 
 - Migrated to null safety
 
 ## 2.1.0
 
-- Removed automatic error handling such as when the sensor is not available.
-  - This allows the plugin user to see when errors occur.
+- Removed automatic error handling such as when the sensor is not available. This allows the plugin user to see when errors occur.
 
 ## 2.0.2
 
-- Getters for streams are no longer async (it was unnecessary)
+- Getters for streams are no longer async
 
 ## 2.0.1+2
 
-- Downgraded minSdkVersion to 18 on Android
+- Downgraded `minSdkVersion` to 18 on Android
 - It was set to 26 by mistake in a previous release
 
 ## 2.0.1+1
