@@ -10,6 +10,7 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.NonNull
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.NutritionRecord
@@ -638,9 +639,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val bodyFatRecord = BodyFatRecord(
-                    Percentage(value.toDouble()),
                     time = time.toInstant(),
-                    zoneOffset = time.offset
+                    zoneOffset = time.offset,
+                    Percentage(value.toDouble()),
                 )
                 records = listOf(bodyFatRecord)
             }
@@ -679,8 +680,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         endTime = endTime.toInstant(),
                         startZoneOffset = startTime.offset,
                         endZoneOffset = endTime.offset,
-                        mealType = (if (value.contains("mealType")) {
-                            value.getValue("mealType").toString(); } else null),
+                        mealType = 0,
+//                        mealType = (if (value.contains("mealType")) {
+//                            value.getValue("mealType").toString(); } else null),
                         name = (if (value.contains("name")) {
                             value.getValue("name").toString(); } else null),
                         biotin = (if (value.contains("biotin")) {
@@ -897,7 +899,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         val zonedDateTime =
                             dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
-                        val uid = it.metadata.uid
+                        val uid = it.metadata.id
                         val weight = it.weight.inGrams
                         return@mapIndexed hashMapOf(
                             //"zonedDateTime" to formatter.format(zonedDateTime),
@@ -933,7 +935,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         val zonedDateTime =
                             dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
-                        val uid = it.metadata.uid
+                        val uid = it.metadata.id
                         val bodyFat = it.percentage.value
                         return@mapIndexed hashMapOf(
                             "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
@@ -970,7 +972,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                             dateTimeWithOffsetOrDefault(it.startTime, it.startZoneOffset)
                         val endZonedDateTime =
                             dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
-                        val uid = it.metadata.uid
+                        val uid = it.metadata.id
                         val hashMapData = hashMapOf<String, Any>(
                             "startDateTime" to startZonedDateTime.toInstant().toEpochMilli(),
                             "endDateTime" to endZonedDateTime.toInstant().toEpochMilli(),
@@ -1135,7 +1137,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             CoroutineScope(Dispatchers.Main).launch {
                 healthConnectClient.deleteRecords(
                     WeightRecord::class,
-                    uidsList = listOf(uID),
+                    recordIdsList = listOf(uID),
                     clientRecordIdsList = emptyList()
                 )
                 result.success(true)
@@ -1144,7 +1146,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             CoroutineScope(Dispatchers.Main).launch {
                 healthConnectClient.deleteRecords(
                     BodyFatRecord::class,
-                    uidsList = listOf(uID),
+                    recordIdsList = listOf(uID),
                     clientRecordIdsList = emptyList()
                 )
                 result.success(true)
@@ -1153,7 +1155,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             CoroutineScope(Dispatchers.Main).launch {
                 healthConnectClient.deleteRecords(
                     NutritionRecord::class,
-                    uidsList = listOf(uID),
+                    recordIdsList = listOf(uID),
                     clientRecordIdsList = emptyList()
                 )
                 result.success(true)
@@ -1452,8 +1454,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         return typesBuilder.build()
     }
 
-    private fun callToHealthConnectTypes(call: MethodCall): Set<HealthPermission> {
-        val listPermission = arrayListOf<HealthPermission>()
+    private fun callToHealthConnectTypes(call: MethodCall): Set<String> {
+        val listPermission = arrayListOf<String>()
 
         val args = call.arguments as HashMap<*, *>
         val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()
@@ -1479,14 +1481,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             }
             when (access) {
                 0 -> {
-                    listPermission.add(HealthPermission.createReadPermission(dataType))
+                    listPermission.add(HealthPermission.getReadPermission(dataType))
                 }
                 1 -> {
-                    listPermission.add(HealthPermission.createWritePermission(dataType))
+                    listPermission.add(HealthPermission.getWritePermission(dataType))
                 }
                 2 -> {
-                    listPermission.add(HealthPermission.createWritePermission(dataType))
-                    listPermission.add(HealthPermission.createReadPermission(dataType))
+                    listPermission.add(HealthPermission.getWritePermission(dataType))
+                    listPermission.add(HealthPermission.getReadPermission(dataType))
                 }
                 else -> throw IllegalArgumentException("Unknown access type $access")
             }
@@ -1503,12 +1505,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val permissionList = callToHealthConnectTypes(call)
         mResult = result
 
-        CoroutineScope(Dispatchers.Main).launch {
-            mResult?.success(
-                healthConnectClient.permissionController.getGrantedPermissions(
-                    permissionList.toSet()
-                ) == permissionList
-            )
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
+
+        if (granted.containsAll(permissionList.toSet())) {
+            mResult?.success(true)
+        } else {
+            mResult?.success(false)
+            // Do we need to request here?
         }
     }
 
@@ -1516,11 +1519,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     private fun isHealthConnectAvailable(call: MethodCall, result: Result) {
         availability.value = when {
-            HealthConnectClient.isAvailable(activity!!.applicationContext) -> HealthConnectAvailability.INSTALLED
+            HealthConnectClient.sdkStatus(activity!!.applicationContext) == HealthConnectClient.SDK_AVAILABLE -> HealthConnectAvailability.INSTALLED
             isSupported() -> HealthConnectAvailability.NOT_INSTALLED
             else -> HealthConnectAvailability.NOT_SUPPORTED
         }
-        result.success(HealthConnectClient.isAvailable(activity!!.applicationContext))
+        result.success(HealthConnectClient.sdkStatus(activity!!.applicationContext) == HealthConnectClient.SDK_AVAILABLE)
     }
 
     @ChecksSdkIntAtLeast(api = MIN_SUPPORTED_SDK)
@@ -1581,12 +1584,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             return
         }
         mResult = result
-        val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
         val permissionList = callToHealthConnectTypes(call)
 
-        val intent =
-            healthConnectClient.permissionController.createRequestPermissionActivityContract()
-                .createIntent(activity!!.applicationContext, permissionList)
+        val contract = PermissionController.createRequestPermissionResultContract()
+        val intent = contract.createIntent(activity!!.applicationContext, permissionList.toSet())
         activity!!.startActivityForResult(intent, HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE)
     }
 

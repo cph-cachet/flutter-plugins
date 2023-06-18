@@ -1,10 +1,10 @@
 name: health_example
 description: Demonstrates how to use the health plugin.
-publish_to: 'none'
+publish_to: "none"
 version: 3.4.0
 
 environment:
-  sdk: ">=2.12.0-0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -12,7 +12,7 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.5
 
 dev_dependencies:
   flutter_test:
@@ -20,13 +20,12 @@ dev_dependencies:
 
   health:
     path: ../
-  fluttertoast: ^8.0.9
+  fluttertoast: ^8.2.2
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

@@ -45,7 +45,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
 
     //For Health Connect SDK
-    implementation 'androidx.health.connect:connect-client:1.0.0-alpha04'
+    implementation 'androidx.health.connect:connect-client:1.0.0-alpha11'
 
     // For viewmodel support
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
