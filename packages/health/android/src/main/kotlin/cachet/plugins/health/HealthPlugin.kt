@@ -46,6 +46,7 @@ import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -73,6 +74,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var handler: Handler? = null
     private var activity: Activity? = null
     private var threadPoolExecutor: ExecutorService? = null
+
+    private lateinit var scope: CoroutineScope
 
     private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
     private var HEIGHT = "HEIGHT"
@@ -113,6 +116,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var DIETARY_SUGAR = "DIETARY_SUGAR"
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         channel?.setMethodCallHandler(this)
         threadPoolExecutor = Executors.newFixedThreadPool(4)
@@ -1505,13 +1509,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val permissionList = callToHealthConnectTypes(call)
         mResult = result
 
-        val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        scope.launch {
+            val granted = healthConnectClient.permissionController.getGrantedPermissions()
 
-        if (granted.containsAll(permissionList.toSet())) {
-            mResult?.success(true)
-        } else {
-            mResult?.success(false)
-            // Do we need to request here?
+            if (granted.containsAll(permissionList.toSet())) {
+                mResult?.success(true)
+            } else {
+                mResult?.success(false)
+                // Do we need to request here?
+            }
         }
     }
 

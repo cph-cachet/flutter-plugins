@@ -267,15 +267,15 @@ class _HealthAppState extends State<HealthApp> {
         endTime: DateTime.now(),
         listNutrition: [
           HealthConnectNutrition(startTime, endTime,
-              name: "Pixelapps BreakFast",
+              name: "Pixelapps BreakFast 1",
               mealType: MealType.BREAKFAST,
               biotin: Mass(0.07, type: Type.KILOGRAMS),
-              energy: Energy(1000, type: EType.CALORIES)),
+              energy: Energy(1000, type: EType.KILOCALORIES)),
           HealthConnectNutrition(startTime, endTime,
-              name: "Pixelapps BreakFast",
+              name: "Pixelapps BreakFast 2",
               mealType: MealType.BREAKFAST,
-              biotin: Mass(0.08, type: Type.KILOGRAMS),
-              energy: Energy(100, type: EType.CALORIES)),
+              biotin: Mass(3, type: Type.GRAMS),
+              energy: Energy(100, type: EType.KILOCALORIES)),
         ]);
 
     Fluttertoast.showToast(
