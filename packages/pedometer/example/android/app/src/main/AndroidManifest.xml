@@ -7,7 +7,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="pedometer_example">
+        android:label="Pedometer">
         <activity
             android:name=".MainActivity"
             android:exported="true"

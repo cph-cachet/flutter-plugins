@@ -1,8 +1,9 @@
-## 4.0.0
+## 4.0.1
 
 - Updates Kotlin plugin and AGP.
 - Upgrade of `compileSdkVersion` to 33.
 - Upgrade to Dart 3.
+- Small updates to example app
 
 ## 3.0.0
 
