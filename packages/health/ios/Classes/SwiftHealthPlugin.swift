@@ -271,7 +271,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         let sample: HKObject
         
-        if (unitLookUp(key: type) == HKUnit.init(from: "")) {
+        if (dataTypeLookUp(key: type) is HKCategoryType) {
             sample = HKCategorySample(type: dataTypeLookUp(key: type) as! HKCategoryType, value: Int(value), start: dateFrom, end: dateTo)
         } else {
             let quantity = HKQuantity(unit: unitDict[unit]!, doubleValue: value)
