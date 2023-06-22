@@ -125,6 +125,9 @@ Health Connect requires the following lines in the `AndroidManifest.xml` file (a
 ```
 <queries>
     <package android:name="com.google.android.apps.healthdata" />
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+        </intent>
 </queries>
 ```
 
@@ -188,8 +191,8 @@ The Health plugin is used via the `HealthFactory` class using the different meth
 Below is a simplified flow of how to use the plugin.
 
 ```dart
-  // create a HealthFactory for use in the app
-  HealthFactory health = HealthFactory();
+  // create a HealthFactory for use in the app, choose if HealthConnect should be used or not
+  HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
 
   // define the types to get
   var types = [
