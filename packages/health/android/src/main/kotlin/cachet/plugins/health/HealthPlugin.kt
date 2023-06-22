@@ -1597,16 +1597,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             ),
                         )
                     }
-                } else if (dataType == SLEEP_IN_BED) {
+                } /*else if (dataType == SLEEP_IN_BED) {
                     for (rec in response.records) {
                         if (rec is SleepStageRecord) {
-                            Log.i("TAG", "getHCData" + rec.stage)
                             if (rec.stage != 3) {
                                 healthConnectData.addAll(convertRecord(rec, dataType))
                             }
                         }
                     }
-                } else {
+                }
+                */
+                else {
                     for (rec in response.records) {
                         healthConnectData.addAll(convertRecord(rec, dataType))
                     }
@@ -1874,13 +1875,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 endZoneOffset = null,
                 stage = SleepStageRecord.STAGE_TYPE_AWAKE,
             )
-            /*
-            SLEEP_IN_BED -> SleepStageRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                startZoneOffset = null,
-                endZoneOffset = null,
-            )*/
+
+
             SLEEP_SESSION -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1897,12 +1893,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         scope.launch {
             try {
                 healthConnectClient.insertRecords(listOf(record))
-                val response = healthConnectClient.readRecords(ReadRecordsRequest(SleepSessionRecord::class, timeRangeFilter = TimeRangeFilter.between(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime))))
-                for (stepRecord in response.records) {
-                    // Process each step record
-                    Log.i("TAG", "test" + stepRecord.toString())
-                }
-
                 result.success(true)
             } catch (e: Exception) {
                 result.success(false)
@@ -2045,7 +2035,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         SLEEP_DEEP to SleepStageRecord::class,
         SLEEP_REM to SleepStageRecord::class,
         SLEEP_OUT_OF_BED to SleepStageRecord::class,
-        SLEEP_IN_BED to SleepStageRecord::class,
         SLEEP_SESSION to SleepSessionRecord::class,
         WORKOUT to ExerciseSessionRecord::class,
         // MOVE_MINUTES to TODO: Find alternative?

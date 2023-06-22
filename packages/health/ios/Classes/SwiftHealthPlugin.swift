@@ -270,26 +270,18 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
 
     let sample: HKObject
-    print("ios test type: \(type)")
-    print("unitlookup", unitLookUp(key: type))
-    print("comparison", HKUnit.init(from: ""))
 
-    if unitLookUp(key: type) == HKUnit.init(from: "") || unitLookUp(key: type) == HKUnit.count() {
-      print("here")
-      print("value", value)
+    if dataTypeLookUp(key: type).isKind(of: HKCategoryType.self) {
       sample = HKCategorySample(
         type: dataTypeLookUp(key: type) as! HKCategoryType, value: Int(value), start: dateFrom,
         end: dateTo)
-      print("sample", sample)
     } else {
-      print("there")
-
       let quantity = HKQuantity(unit: unitDict[unit]!, doubleValue: value)
-
       sample = HKQuantitySample(
         type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom,
         end: dateTo)
     }
+
 
     HKHealthStore().save(
       sample,
@@ -483,7 +475,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
     let limit = (arguments?["limit"] as? Int) ?? HKObjectQueryNoLimit
 
-    print("datatypekey", dataTypeKey)
 
     // Convert dates from milliseconds to Date()
     let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
@@ -524,13 +515,19 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       case var (samplesCategory as [HKCategorySample]) as Any:
         if dataTypeKey == self.SLEEP_IN_BED {
           samplesCategory = samplesCategory.filter { $0.value == 0 }
+
         }
         if dataTypeKey == self.SLEEP_ASLEEP {
           samplesCategory = samplesCategory.filter { $0.value == 1 }
         }
         if dataTypeKey == self.SLEEP_AWAKE {
           samplesCategory = samplesCategory.filter { $0.value == 2 }
-          print("samplescategoriy", samplesCategory)
+        }
+        if dataTypeKey == self.SLEEP_DEEP {
+          samplesCategory = samplesCategory.filter { $0.value == 3 }
+        }
+        if dataTypeKey == self.SLEEP_REM {
+          samplesCategory = samplesCategory.filter { $0.value == 4 }
         }
         if dataTypeKey == self.HEADACHE_UNSPECIFIED {
           samplesCategory = samplesCategory.filter { $0.value == 0 }
@@ -557,7 +554,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             "source_name": sample.sourceRevision.source.name,
           ]
         }
-        print("categories", categories)
         DispatchQueue.main.async {
           result(categories)
         }
@@ -710,12 +706,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
   }
 
   func unitLookUp(key: String) -> HKUnit {
-    print("unitDict", unitDict[key])
     guard let unit = unitDict[key] else {
-      print("unit", HKUnit.count())
       return HKUnit.count()
     }
-    print("unitLookUp:", unit)
     return unit
   }
 

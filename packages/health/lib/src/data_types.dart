@@ -127,7 +127,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.DISTANCE_DELTA,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
-  HealthDataType.SLEEP_IN_BED,
+  //HealthDataType.SLEEP_IN_BED,
   HealthDataType.SLEEP_DEEP,
   HealthDataType.SLEEP_LIGHT,
   HealthDataType.SLEEP_REM,
