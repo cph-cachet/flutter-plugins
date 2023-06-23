@@ -1,14 +1,13 @@
 package cachet.plugins.health
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.NonNull
-import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -46,9 +45,7 @@ import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -929,7 +926,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 )
                 CoroutineScope(Dispatchers.Main).launch {
                     val response = healthConnectClient.readRecords(request)
-                    val dataList: List<BodyFatRecord> = response.records;
+                    val dataList: List<BodyFatRecord> = response.records
 
                     val healthData = dataList.mapIndexed { _, it ->
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
@@ -965,7 +962,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 )
                 CoroutineScope(Dispatchers.Main).launch {
                     val response = healthConnectClient.readRecords(request)
-                    val dataList: List<NutritionRecord> = response.records;
+                    val dataList: List<NutritionRecord> = response.records
                     val healthData = dataList.mapIndexed { _, it ->
                         val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
                         val startZonedDateTime =
@@ -1517,19 +1514,29 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
-    private var availability = mutableStateOf(HealthConnectAvailability.NOT_SUPPORTED)
-
     private fun isHealthConnectAvailable(call: MethodCall, result: Result) {
-        availability.value = when {
-            HealthConnectClient.sdkStatus(activity!!.applicationContext) == HealthConnectClient.SDK_AVAILABLE -> HealthConnectAvailability.INSTALLED
-            isSupported() -> HealthConnectAvailability.NOT_INSTALLED
-            else -> HealthConnectAvailability.NOT_SUPPORTED
-        }
-        result.success(HealthConnectClient.sdkStatus(activity!!.applicationContext) == HealthConnectClient.SDK_AVAILABLE)
-    }
+        val sdkStatus = HealthConnectClient.sdkStatus(activity!!.applicationContext)
 
-    @ChecksSdkIntAtLeast(api = MIN_SUPPORTED_SDK)
-    private fun isSupported() = Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
+        if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+            try {
+                val providerPackageName = "com.google.android.apps.healthdata"
+                val uriString = "market://details?id=$providerPackageName&url=healthconnect%3A%2F%2Fonboarding"
+
+                activity!!.applicationContext.startActivity(
+                    Intent(Intent.ACTION_VIEW).apply {
+                        setPackage("com.android.vending")
+                        data = Uri.parse(uriString)
+                        putExtra("overlay", true)
+                        putExtra("callerId", activity!!.applicationContext.packageName)
+                    })
+                result.success(true)
+            } catch (e: Throwable) {
+                result.error("UNABLE_TO_LAUNCH_HEALTH_CONNECT_INSTALLATION_PAGE", e.message, e)
+            }
+        }
+
+        result.success(sdkStatus == HealthConnectClient.SDK_AVAILABLE)
+    }
 
     private fun hasPermissions(call: MethodCall, result: Result) {
 
@@ -1715,10 +1722,4 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         activity = null
     }
-}
-
-enum class HealthConnectAvailability {
-    INSTALLED,
-    NOT_INSTALLED,
-    NOT_SUPPORTED
 }
