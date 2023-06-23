@@ -1520,10 +1520,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             return
         }
 
+        val install = call.argument<Boolean>("install")!!
+
         val sdkStatus = HealthConnectClient.sdkStatus(activityLocal)
         val success = sdkStatus == HealthConnectClient.SDK_AVAILABLE
 
-        if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+        if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED && install) {
             try {
                 val providerPackageName = "com.google.android.apps.healthdata"
                 val uriString = "market://details?id=$providerPackageName&url=healthconnect%3A%2F%2Fonboarding"
