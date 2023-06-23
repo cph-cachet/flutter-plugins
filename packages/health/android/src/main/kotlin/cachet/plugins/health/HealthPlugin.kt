@@ -1529,7 +1529,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         putExtra("overlay", true)
                         putExtra("callerId", activity!!.applicationContext.packageName)
                     })
-                result.success(true)
             } catch (e: Throwable) {
                 result.error("UNABLE_TO_LAUNCH_HEALTH_CONNECT_INSTALLATION_PAGE", e.message, e)
             }
