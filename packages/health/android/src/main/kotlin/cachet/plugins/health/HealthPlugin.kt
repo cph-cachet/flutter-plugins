@@ -1514,27 +1514,38 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
-    private fun isHealthConnectAvailable(call: MethodCall, result: Result) {
-        val sdkStatus = HealthConnectClient.sdkStatus(activity!!.applicationContext)
+    private fun isHealthConnectAvailable(activityLocal: Activity?, call: MethodCall, result: Result) {
+        if (activityLocal == null) {
+            result.success(false)
+            return
+        }
+
+        val sdkStatus = HealthConnectClient.sdkStatus(activityLocal)
+        val success = sdkStatus == HealthConnectClient.SDK_AVAILABLE
 
         if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
             try {
                 val providerPackageName = "com.google.android.apps.healthdata"
                 val uriString = "market://details?id=$providerPackageName&url=healthconnect%3A%2F%2Fonboarding"
 
-                activity!!.applicationContext.startActivity(
+                activityLocal.startActivity(
                     Intent(Intent.ACTION_VIEW).apply {
                         setPackage("com.android.vending")
                         data = Uri.parse(uriString)
                         putExtra("overlay", true)
-                        putExtra("callerId", activity!!.applicationContext.packageName)
+                        putExtra("callerId", activityLocal.packageName)
                     })
+
+                result.success(false)
+                return
             } catch (e: Throwable) {
-                result.error("UNABLE_TO_LAUNCH_HEALTH_CONNECT_INSTALLATION_PAGE", e.message, e)
+                print(e.message)
+                result.success(false)
+                return
             }
         }
 
-        result.success(sdkStatus == HealthConnectClient.SDK_AVAILABLE)
+        result.success(success)
     }
 
     private fun hasPermissions(call: MethodCall, result: Result) {
@@ -1679,6 +1690,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     /// Handle calls from the MethodChannel
     override fun onMethodCall(call: MethodCall, result: Result) {
+        val activityContext = activity
+
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
@@ -1693,7 +1706,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             "getHealthConnectData" -> getHealthConnectData(call, result)
             "deleteHealthConnectData" -> deleteHealthConnectData(call, result)
             "requestHealthConnectPermission" -> requestHealthConnectPermission(call, result)
-            "isHealthConnectAvailable" -> isHealthConnectAvailable(call, result)
+            "isHealthConnectAvailable" -> isHealthConnectAvailable(activityContext, call, result)
             "deleteHealthConnectDataByDateRange" -> deleteHealthConnectDataByDateRange(call, result)
             else -> result.notImplemented()
         }
