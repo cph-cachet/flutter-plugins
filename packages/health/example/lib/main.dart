@@ -135,8 +135,6 @@ class _HealthAppState extends State<HealthApp> {
     // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
     bool success = true;
     success &= await health.writeHealthData(
-        10, HealthDataType.BODY_FAT_PERCENTAGE, earlier, now);
-    success &= await health.writeHealthData(
         1.925, HealthDataType.HEIGHT, earlier, now);
     success &=
         await health.writeHealthData(90, HealthDataType.WEIGHT, earlier, now);
@@ -162,6 +160,14 @@ class _HealthAppState extends State<HealthApp> {
         totalDistance: 2430,
         totalEnergyBurned: 400);
     success &= await health.writeBloodPressure(90, 80, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_REM, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_ASLEEP, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_DEEP, earlier, now);
 
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS

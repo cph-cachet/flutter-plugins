@@ -45,9 +45,14 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | MOVE_MINUTES                | MINUTES                 |         | yes                      |                              |                                        |
 | DISTANCE_DELTA              | METERS                  |         | yes                      | yes                          |                                        |
 | MINDFULNESS                 | MINUTES                 | yes     |                          |                              |                                        |
-| SLEEP_IN_BED                | MINUTES                 | yes     | yes                      |                              |                                        |
-| SLEEP_ASLEEP                | MINUTES                 | yes     | yes                      |                              |                                        |
-| SLEEP_AWAKE                 | MINUTES                 | yes     | yes                      |                              |                                        |
+| SLEEP_IN_BED                | MINUTES                 | yes     |                          |                              |                                        |
+| SLEEP_ASLEEP                | MINUTES                 | yes     |                          | yes                          |                                        |
+| SLEEP_AWAKE                 | MINUTES                 | yes     |                          | yes                          |                                        |
+| SLEEP_DEEP                  | MINUTES                 | yes     |                          | yes                          |                                        |
+| SLEEP_LIGHT                 | MINUTES                 |         |                          | yes                          |                                        |
+| SLEEP_REM                   | MINUTES                 | yes     |                          | yes                          |                                        |
+| SLEEP_OUT_OF_BED            | MINUTES                 |         |                          | yes                          |                                        |
+| SLEEP_SESSION               | MINUTES                 |         |                          | yes                          |                                        |
 | WATER                       | LITER                   | yes     | yes                      | yes                          |                                        |
 | EXERCISE_TIME               | MINUTES                 | yes     |                          |                              |                                        |
 | WORKOUT                     | NO_UNIT                 | yes     | yes                      | yes                          | (Has other workout types)              |
@@ -120,6 +125,9 @@ Health Connect requires the following lines in the `AndroidManifest.xml` file (a
 ```
 <queries>
     <package android:name="com.google.android.apps.healthdata" />
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+        </intent>
 </queries>
 ```
 
@@ -183,8 +191,8 @@ The Health plugin is used via the `HealthFactory` class using the different meth
 Below is a simplified flow of how to use the plugin.
 
 ```dart
-  // create a HealthFactory for use in the app
-  HealthFactory health = HealthFactory();
+  // create a HealthFactory for use in the app, choose if HealthConnect should be used or not
+  HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
 
   // define the types to get
   var types = [
