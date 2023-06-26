@@ -1,3 +1,8 @@
+## 3.0.0
+
+- Updates Kotlin plugin and AGP
+- Upgrade of compileSdkVersion
+
 ## 2.0.1
 
 - Update Weather parsing to accept int values for double fields.
