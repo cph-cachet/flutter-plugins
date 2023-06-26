@@ -134,8 +134,6 @@ class _HealthAppState extends State<HealthApp> {
     // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
     // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
     bool success = true;
-    //success &= await health.writeHealthData(
-    //    10, HealthDataType.BODY_FAT_PERCENTAGE, earlier, now);
     success &= await health.writeHealthData(
         1.925, HealthDataType.HEIGHT, earlier, now);
     success &=
