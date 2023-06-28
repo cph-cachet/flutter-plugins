@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audio_streamer: ^2.3.0
+  audio_streamer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
