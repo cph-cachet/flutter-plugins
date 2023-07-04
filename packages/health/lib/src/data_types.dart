@@ -55,6 +55,7 @@ enum HealthDataType {
   ELECTROCARDIOGRAM,
 }
 
+/// Access types for Health Data.
 enum HealthDataAccess {
   READ,
   WRITE,
@@ -438,6 +439,7 @@ enum HealthWorkoutActivityType {
   OTHER,
 }
 
+/// Classifications for ECG readings.
 enum ElectrocardiogramClassification {
   NOT_SET,
   SINUS_RHYTHM,
@@ -449,6 +451,7 @@ enum ElectrocardiogramClassification {
   UNRECOGNIZED,
 }
 
+/// Extension to assign numbers to [ElectrocardiogramClassification]s
 extension ElectrocardiogramClassificationValue
     on ElectrocardiogramClassification {
   int get value {

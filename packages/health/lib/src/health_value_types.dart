@@ -11,6 +11,7 @@ class NumericHealthValue extends HealthValue {
 
   NumericHealthValue(this._numericValue);
 
+  /// A [num] value for the [HealthDataPoint].
   num get numericValue => _numericValue;
 
   @override
@@ -18,6 +19,7 @@ class NumericHealthValue extends HealthValue {
     return numericValue.toString();
   }
 
+  /// Parses a json object to [NumericHealthValue]
   factory NumericHealthValue.fromJson(json) {
     return NumericHealthValue(num.parse(json['numericValue']));
   }
@@ -49,14 +51,19 @@ class AudiogramHealthValue extends HealthValue {
   AudiogramHealthValue(this._frequencies, this._leftEarSensitivities,
       this._rightEarSensitivities);
 
+  /// Array of frequencies of the test.
   List<num> get frequencies => _frequencies;
+
+  /// Threshold in decibel for the left ear.
   List<num> get leftEarSensitivities => _leftEarSensitivities;
+
+  /// Threshold in decibel for the right ear.
   List<num> get rightEarSensitivities => _rightEarSensitivities;
 
   @override
   String toString() {
-    return """frequencies: ${frequencies.toString()}, 
-    left ear sensitivities: ${leftEarSensitivities.toString()}, 
+    return """frequencies: ${frequencies.toString()},
+    left ear sensitivities: ${leftEarSensitivities.toString()},
     right ear sensitivities: ${rightEarSensitivities.toString()}""";
   }
 
@@ -183,14 +190,21 @@ class WorkoutHealthValue extends HealthValue {
 /// A [HealthValue] object for ECGs
 ///
 /// Parameters:
-/// * [voltageValues] - an array of [ElectrocardiogramVoltageValue]
+/// * [voltageValues] - an array of [ElectrocardiogramVoltageValue]s
 /// * [averageHeartRate] - the average heart rate during the ECG (in BPM)
 /// * [samplingFrequency] - the frequency at which the Apple Watch sampled the voltage.
 /// * [classification] - an [ElectrocardiogramClassification]
 class ElectrocardiogramHealthValue extends HealthValue {
+  /// An array of [ElectrocardiogramVoltageValue]s.
   List<ElectrocardiogramVoltageValue> voltageValues;
+
+  /// The average heart rate during the ECG (in BPM).
   num? averageHeartRate;
+
+  /// The frequency at which the Apple Watch sampled the voltage.
   double? samplingFrequency;
+
+  /// An [ElectrocardiogramClassification].
   ElectrocardiogramClassification classification;
 
   ElectrocardiogramHealthValue({
@@ -200,6 +214,7 @@ class ElectrocardiogramHealthValue extends HealthValue {
     required this.classification,
   });
 
+  /// Parses [ElectrocardiogramHealthValue] from JSON.
   factory ElectrocardiogramHealthValue.fromJson(json) =>
       ElectrocardiogramHealthValue(
         voltageValues: (json['voltageValues'] as List)
@@ -238,7 +253,10 @@ class ElectrocardiogramHealthValue extends HealthValue {
 
 /// Single voltage value belonging to a [ElectrocardiogramHealthValue]
 class ElectrocardiogramVoltageValue extends HealthValue {
+  /// Voltage of the ECG.
   num voltage;
+
+  /// Time since the start of the ECG.
   num timeSinceSampleStart;
 
   ElectrocardiogramVoltageValue(this.voltage, this.timeSinceSampleStart);
@@ -265,6 +283,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   String toString() => voltage.toString();
 }
 
+/// An abstract class for health values.
 abstract class HealthValue {
   Map<String, dynamic> toJson();
 }
