@@ -1,3 +1,7 @@
+## 7.0.1
+
+- Updated dart doc
+
 ## 7.0.0
 
 - Merged PR #722
