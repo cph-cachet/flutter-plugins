@@ -19,7 +19,7 @@ class HealthFactory {
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
-  // The plugin was created to use Health Connect (if true) or Google Fit (if false).
+  /// The plugin was created to use Health Connect (if true) or Google Fit (if false).
   bool get useHealthConnectIfAvailable => _useHealthConnectIfAvailable;
 
   HealthFactory({bool useHealthConnectIfAvailable = false}) {
@@ -148,6 +148,7 @@ class HealthFactory {
     return isAuthorized ?? false;
   }
 
+  /// Obtains health and weight if BMI is requested on Android.
   static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
     final index = mTypes.indexOf(HealthDataType.BODY_MASS_INDEX);
 
@@ -442,7 +443,7 @@ class HealthFactory {
     return await _dataQuery(startTime, endTime, dataType);
   }
 
-  /// The main function for fetching health data
+  /// Fetches data points from Android/iOS native code.
   Future<List<HealthDataPoint>> _dataQuery(
       DateTime startTime, DateTime endTime, HealthDataType dataType) async {
     final args = <String, dynamic>{
@@ -471,6 +472,7 @@ class HealthFactory {
     }
   }
 
+  /// Parses the fetched data points into a list of [HealthDataPoint].
   static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
     final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
@@ -533,6 +535,7 @@ class HealthFactory {
     return stepsCount;
   }
 
+  /// Assigns numbers to specific [HealthDataType]s.
   int _alignValue(HealthDataType type) {
     switch (type) {
       case HealthDataType.SLEEP_IN_BED:
