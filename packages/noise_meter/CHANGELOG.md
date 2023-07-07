@@ -1,4 +1,4 @@
-## 4.0.0
+## 4.0.1
 
 - upgrade to `audio_streamer: ^3.0.0` ([PR #755](https://github.com/cph-cachet/flutter-plugins/pull/755))
 - updates Android AGP

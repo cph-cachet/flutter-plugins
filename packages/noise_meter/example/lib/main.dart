@@ -13,9 +13,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isRecording = false;
-  NoiseReading _latestReading = NoiseReading([0, 0]);
+  NoiseReading? _latestReading;
   StreamSubscription<NoiseReading>? _noiseSubscription;
-  late NoiseMeter _noiseMeter;
+  NoiseMeter? _noiseMeter;
 
   @override
   void initState() {
@@ -37,13 +37,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   void onError(Object error) {
-    print(error.toString());
+    print(error);
     _isRecording = false;
   }
 
   void start() {
     try {
-      _noiseSubscription = _noiseMeter.noise.listen(onData);
+      _noiseSubscription = _noiseMeter?.noise.listen(onData);
     } catch (err) {
       print(err);
     }
@@ -71,13 +71,13 @@ class _MyAppState extends State<MyApp> {
               ),
               Container(
                 child: Text(
-                  'Noise: ${_latestReading.meanDecibel} dB',
+                  'Noise: ${_latestReading?.meanDecibel} dB',
                 ),
                 margin: EdgeInsets.only(top: 20),
               ),
               Container(
                 child: Text(
-                  'Max: ${_latestReading.maxDecibel} dB',
+                  'Max: ${_latestReading?.maxDecibel} dB',
                 ),
               )
             ])),

@@ -36,85 +36,79 @@ end
 
 ## Usage
 
+See the full example app for how to use the plugin.
+
 ### Initialization
 
-Keep these three variables accessible:
+The example app uses these variables:
 
 ```dart
-bool _isRecording = false;
-StreamSubscription<NoiseReading> _noiseSubscription;
-NoiseMeter _noiseMeter = new NoiseMeter(onError);
+  bool _isRecording = false;
+  NoiseReading? _latestReading;
+  StreamSubscription<NoiseReading>? _noiseSubscription;
+  NoiseMeter? _noiseMeter;
 ```
 
 ### Start listening
 
-The easiest thing to do is to create a new instance of the NoiseMeter every time a new recording is started.
+You listen to noise readings via the `noise` stream on the `NoiseMeter` instance.
 
 ```dart
-void start() async {
+  void start() {
     try {
-      _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
-    } on NoiseMeterException catch (exception) {
-      print(exception);
+      _noiseSubscription = _noiseMeter?.noise.listen(onData);
+    } catch (err) {
+      print(err);
     }
-}
+  }
 ```
 
 ### On data
 
-When data comes in through the stream, it will be caught by the `onData` method, specified when the subscription was created.
-The incoming data points are of type `NoiseReading` which have a single field with a getter, namely the `db` value of type `double`.
+When data is streamed, it will be send to the `onData` method, specified when the subscription was created. The incoming data points are of type `NoiseReading` which holds the mean and maximum decibel reading.
 
 ```dart
-void onData(NoiseReading noiseReading) {
-  this.setState(() {
-    if (!this._isRecording) {
-      this._isRecording = true;
-    }
-  });
-  /// Do someting with the noiseReading object
-  print(noiseReading.toString());
-}
+  void onData(NoiseReading noiseReading) {
+    this.setState(() {
+      _latestReading = noiseReading;
+      if (!this._isRecording) this._isRecording = true;
+    });
+  }
 ```
 
 ### On errors
 
-Platform errors may occur when recording is interupted. You must decide what happens if such an error occurs.
-The [onError] callback must be of type `void Function(Object error)`
-or `void Function(Object error, StackTrace)`.
+Platform errors may occur when recording is interrupted. You must decide what happens if such an error occurs. The [onError] callback must be of type `void Function(Object error)` or `void Function(Object error, StackTrace trace)`.
 
 ```dart
-void onError(Object error) {
-    print(error.toString());
+  void onError(Object error) {
+    print(error);
     _isRecording = false;
-}
+  }
 ```
 
 ### Stop listening
 
-To stop listening, the `.cancel()` method is called on the subscription object.
+To stop listening, the `cancel` method is called on the subscription object.
 
 ```dart
-void stopRecorder() async {
-  try {
-    if (_noiseSubscription != null) {
-      _noiseSubscription.cancel();
-      _noiseSubscription = null;
+  void stop() {
+    try {
+      _noiseSubscription?.cancel();
+      this.setState(() {
+        this._isRecording = false;
+      });
+    } catch (err) {
+      print(err);
     }
-    this.setState(() {
-      this._isRecording = false;
-    });
-  } catch (err) {
-    print('stopRecorder error: $err');
   }
-}
 ```
 
 ## Technical documentation
 
 ### Sample rate
 
-The sample rate for both native implementations are 44,100.
+The sample rate for both Android and iOS implementations are 44,100.
 
 ### Microphone data
 

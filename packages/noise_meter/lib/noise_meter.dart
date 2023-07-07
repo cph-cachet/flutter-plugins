@@ -43,13 +43,13 @@ class NoiseMeter {
   StreamController<NoiseReading>? _controller;
   Stream<NoiseReading>? _stream;
 
-  /// The error callback function.
+  /// The error callback function, if available.
   Function? onError;
 
   /// Create a [NoiseMeter].
   ///
   /// The [onError] callback must be of type `void Function(Object error)`
-  /// or `void Function(Object error, StackTrace)`.
+  /// or `void Function(Object error, StackTrace trace)`.
   NoiseMeter([this.onError]);
 
   /// The rate at which the audio is sampled
