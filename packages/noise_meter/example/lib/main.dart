@@ -3,23 +3,24 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 void main() {
-  runApp(new MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
   bool _isRecording = false;
+  NoiseReading _latestReading = NoiseReading([0, 0]);
   StreamSubscription<NoiseReading>? _noiseSubscription;
   late NoiseMeter _noiseMeter;
 
   @override
   void initState() {
     super.initState();
-    _noiseMeter = new NoiseMeter(onError);
+    _noiseMeter = NoiseMeter(onError);
   }
 
   @override
@@ -30,11 +31,9 @@ class _MyAppState extends State<MyApp> {
 
   void onData(NoiseReading noiseReading) {
     this.setState(() {
-      if (!this._isRecording) {
-        this._isRecording = true;
-      }
+      _latestReading = noiseReading;
+      if (!this._isRecording) this._isRecording = true;
     });
-    print(noiseReading.toString());
   }
 
   void onError(Object error) {
@@ -42,25 +41,22 @@ class _MyAppState extends State<MyApp> {
     _isRecording = false;
   }
 
-  void start() async {
+  void start() {
     try {
-      _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
+      _noiseSubscription = _noiseMeter.noise.listen(onData);
     } catch (err) {
       print(err);
     }
   }
 
-  void stop() async {
+  void stop() {
     try {
-      if (_noiseSubscription != null) {
-        _noiseSubscription!.cancel();
-        _noiseSubscription = null;
-      }
+      _noiseSubscription?.cancel();
       this.setState(() {
         this._isRecording = false;
       });
     } catch (err) {
-      print('stopRecorder error: $err');
+      print(err);
     }
   }
 
@@ -72,6 +68,17 @@ class _MyAppState extends State<MyApp> {
                 child: Text(_isRecording ? "Mic: ON" : "Mic: OFF",
                     style: TextStyle(fontSize: 25, color: Colors.blue)),
                 margin: EdgeInsets.only(top: 20),
+              ),
+              Container(
+                child: Text(
+                  'Noise: ${_latestReading.meanDecibel} dB',
+                ),
+                margin: EdgeInsets.only(top: 20),
+              ),
+              Container(
+                child: Text(
+                  'Max: ${_latestReading.maxDecibel} dB',
+                ),
               )
             ])),
       ];

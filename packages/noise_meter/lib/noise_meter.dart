@@ -34,51 +34,50 @@ class NoiseReading {
 
   @override
   String toString() =>
-      '$runtimeType - meanDecibel: $meanDecibel, maxDecibel: $maxDecibel';
+      '$runtimeType - mean (dB): $meanDecibel, max (dB): $maxDecibel';
 }
 
-/// A [NoiseMeter] provides continous access to noise reading via the [noiseStream].
+/// A [NoiseMeter] provides continuous access to noise reading via the [noise] stream.
 class NoiseMeter {
   AudioStreamer _streamer = AudioStreamer();
-  late StreamController<NoiseReading> _controller;
+  StreamController<NoiseReading>? _controller;
   Stream<NoiseReading>? _stream;
 
-  // The error callback function.
+  /// The error callback function.
   Function? onError;
 
   /// Create a [NoiseMeter].
+  ///
   /// The [onError] callback must be of type `void Function(Object error)`
   /// or `void Function(Object error, StackTrace)`.
   NoiseMeter([this.onError]);
 
   /// The rate at which the audio is sampled
-  static Future<int> get sampleRate async => await AudioStreamer.currSampleRate;
+  static Future<int> get sampleRate => AudioStreamer().actualSampleRate;
 
   /// The stream of noise readings.
-  Stream<NoiseReading> get noiseStream {
+  Stream<NoiseReading> get noise {
     if (_stream == null) {
       _controller = StreamController<NoiseReading>.broadcast(
           onListen: _start, onCancel: _stop);
       _stream = (onError != null)
-          ? _controller.stream.handleError(onError!)
-          : _controller.stream;
+          ? _controller!.stream.handleError(onError!)
+          : _controller!.stream;
     }
     return _stream!;
   }
 
-  /// Whenever an array of PCM data comes in,
-  /// they are converted to a [NoiseReading],
+  /// Whenever an array of PCM data comes in, they are converted to a [NoiseReading],
   /// and then send out via the stream
-  void _onAudio(List<double> buffer) => _controller.add(NoiseReading(buffer));
+  void _onAudio(List<double> buffer) => _controller?.add(NoiseReading(buffer));
 
   void _onInternalError(PlatformException e) {
     _stream = null;
-    _controller.addError(e);
+    _controller?.addError(e);
   }
 
   /// Start noise monitoring.
-  /// This will trigger a permission request
-  /// if it hasn't yet been granted
+  /// This will trigger a permission request if it hasn't yet been granted
   void _start() async {
     try {
       _streamer.start(_onAudio, _onInternalError);
