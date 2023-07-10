@@ -52,7 +52,7 @@ class LocationManager {
       Stream<dynamic> dataStream = _port.asBroadcastStream();
       _locationStream = dataStream
           .where((event) => event != null)
-          .map((location) => location as LocationDto);
+          .map((json) => LocationDto.fromJson(json));
     }
     return _locationStream!;
   }
@@ -77,6 +77,8 @@ class LocationManager {
 
       await BackgroundLocator.registerLocationUpdate(
         LocationCallbackHandler.callback,
+        initCallback: LocationCallbackHandler.initCallback,
+        disposeCallback: LocationCallbackHandler.disposeCallback,
         autoStop: false,
         androidSettings: AndroidSettings(
             accuracy: _accuracy,
