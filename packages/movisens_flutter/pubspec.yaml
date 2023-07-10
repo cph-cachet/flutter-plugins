@@ -1,10 +1,10 @@
 name: movisens_flutter
 description: A Flutter plugin for Movisens devices, which connects to the device and listens for incoming data.
-version: 1.2.0
+version: 2.0.0
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/movisens_flutter
 
 environment:
-  sdk: ">=2.18.2 <3.0.0"
+  sdk: ">=2.18.2 <4.0.0"
   flutter: ">=2.5.0"
 
 dependencies:
