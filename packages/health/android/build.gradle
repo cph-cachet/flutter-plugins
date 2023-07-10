@@ -38,6 +38,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "cachet.plugins.health"
 }
 
 dependencies {

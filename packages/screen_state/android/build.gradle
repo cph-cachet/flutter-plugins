@@ -36,6 +36,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "dk.cachet.screen_state"
 }
 
 dependencies {

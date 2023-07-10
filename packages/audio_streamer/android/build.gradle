@@ -37,6 +37,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "plugins.cachet.audio_streamer"
 }
 
 dependencies {

@@ -36,6 +36,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "dk.cachet.app_usage"
 }
 
 dependencies {
