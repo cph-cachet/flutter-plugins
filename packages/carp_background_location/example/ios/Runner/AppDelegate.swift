@@ -1,14 +1,12 @@
 import UIKit
 import Flutter
-
-import background_locator
+import background_locator_2
 
 func registerPlugins(registry: FlutterPluginRegistry) -> () {
     if (!registry.hasPlugin("BackgroundLocatorPlugin")) {
         GeneratedPluginRegistrant.register(with: registry)
-    }
+    } 
 }
-
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
