@@ -1,15 +1,15 @@
 name: weather
 description: A weather plugin for fetching current weather and forecasting via the OpenWeatherMap API. Works for both Android and iOS.
-version: 3.0.0
+version: 3.1.0
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/weather
 
 environment:
-  sdk: ">=2.12.0 <4.0.0"
+  sdk: ">=2.17.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.1
+  http: ^1.1.0
 
 dev_dependencies:
   test: ^1.6.1
