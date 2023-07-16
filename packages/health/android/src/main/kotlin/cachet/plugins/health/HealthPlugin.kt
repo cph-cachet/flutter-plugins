@@ -87,6 +87,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var MOVE_MINUTES = "MOVE_MINUTES"
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
     private var WATER = "WATER"
+    private var RESTING_HEART_RATE = "RESTING_HEART_RATE"
+    private var BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
+    private var FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
 
     // TODO support unknown?
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
@@ -1748,6 +1751,33 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+            is RestingHeartRateRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.beatsPerMinute,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
+            is BasalMetabolicRateRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.basalMetabolicRate.inKilocaloriesPerDay,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
+            is FloorsClimbedRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.floors,
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
             // is ExerciseSessionRecord -> return listOf(mapOf<String, Any>("value" to ,
             //                                             "date_from" to ,
             //                                             "date_to" to ,
@@ -1883,7 +1913,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
-
+            RESTING_HEART_RATE -> RestingHeartRateRecord(
+                time = Instant.ofEpochMilli(startTime),
+                beatsPerMinute = value.toLong(),
+                zoneOffset = null,
+            )
+            BASAL_ENERGY_BURNED -> BasalMetabolicRateRecord(
+                time = Instant.ofEpochMilli(startTime),
+                basalMetabolicRate = Power.kilocaloriesPerDay(value),
+                zoneOffset = null,
+            )
+            FLIGHTS_CLIMBED -> FloorsClimbedRecord(
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                floors = value,
+                startZoneOffset = null,
+                endZoneOffset = null,
+            )
             // AGGREGATE_STEP_COUNT -> StepsRecord()
             BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
             BLOOD_PRESSURE_DIASTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
@@ -2037,6 +2083,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         SLEEP_OUT_OF_BED to SleepStageRecord::class,
         SLEEP_SESSION to SleepSessionRecord::class,
         WORKOUT to ExerciseSessionRecord::class,
+        RESTING_HEART_RATE to RestingHeartRateRecord::class,
+        BASAL_ENERGY_BURNED to BasalMetabolicRateRecord::class,
+        FLIGHTS_CLIMBED to FloorsClimbedRecord::class,
         // MOVE_MINUTES to TODO: Find alternative?
         // TODO: Implement remaining types
         // "ActiveCaloriesBurned" to ActiveCaloriesBurnedRecord::class,

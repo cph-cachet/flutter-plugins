@@ -134,6 +134,9 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.SLEEP_SESSION,
   HealthDataType.WATER,
   HealthDataType.WORKOUT,
+  HealthDataType.RESTING_HEART_RATE,
+  HealthDataType.FLIGHTS_CLIMBED,
+  HealthDataType.BASAL_ENERGY_BURNED,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
