@@ -11,7 +11,7 @@ class MovesPage extends StatelessWidget {
         margin: EdgeInsets.all(3),
         child: ListTile(
           leading: Text('Place ${m.stopFrom.placeId} → ${m.stopTo.placeId}'),
-          title: Text('${m.distance.toInt()} meters'),
+          title: Text('${m.distance?.toInt()} meters'),
           trailing: Text('${formatDuration(m.duration)}'),
         ));
   }
