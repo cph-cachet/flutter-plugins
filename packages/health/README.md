@@ -22,9 +22,9 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 ## Data Types
 
 | **Data Type**               | **Unit**                | **iOS** | **Android (Google Fit)** | **Android (Health Connect)** | **Comments**                           |
-| --------------------------- | ----------------------- | ------- | ------------------------ | ---------------------------- | -------------------------------------- |
+| --------------------------- | ----------------------- | ------- | ------------------------ |------------------------------| -------------------------------------- |
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes                      | yes                          |                                        |
-| BASAL_ENERGY_BURNED         | CALORIES                | yes     |                          |                              |                                        |
+| BASAL_ENERGY_BURNED         | CALORIES                | yes     |                          | yes                          |                                        |
 | BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes                      | yes                          |                                        |
 | BLOOD_OXYGEN                | PERCENTAGE              | yes     | yes                      | yes                          |                                        |
 | BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes     | yes                      | yes                          |                                        |
@@ -35,13 +35,13 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |                          |                              |                                        |
 | HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes                      | yes                          |                                        |
 | HEIGHT                      | METERS                  | yes     | yes                      | yes                          |                                        |
-| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                        |
+| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          | yes                          |                                        |
 | STEPS                       | COUNT                   | yes     | yes                      | yes                          |                                        |
 | WAIST_CIRCUMFERENCE         | METERS                  | yes     |                          |                              |                                        |
 | WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                        |
 | WEIGHT                      | KILOGRAMS               | yes     | yes                      | yes                          |                                        |
 | DISTANCE_WALKING_RUNNING    | METERS                  | yes     |                          |                              |                                        |
-| FLIGHTS_CLIMBED             | COUNT                   | yes     |                          |                              |                                        |
+| FLIGHTS_CLIMBED             | COUNT                   | yes     |                          | yes                          |                                        |
 | MOVE_MINUTES                | MINUTES                 |         | yes                      |                              |                                        |
 | DISTANCE_DELTA              | METERS                  |         | yes                      | yes                          |                                        |
 | MINDFULNESS                 | MINUTES                 | yes     |                          |                              |                                        |
