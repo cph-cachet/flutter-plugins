@@ -1936,11 +1936,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             WORKOUT -> throw IllegalArgumentException("You must use the [writeWorkoutData] API ")
             else -> throw IllegalArgumentException("The type $type was not supported by the Health plugin or you must use another API ")
         }
+        Log.i("HealthConnect", "Record: $record")
         scope.launch {
             try {
                 healthConnectClient.insertRecords(listOf(record))
+                Log.i("HealthConnect2", "Record: $record")
+
                 result.success(true)
             } catch (e: Exception) {
+                Log.i("HealthConnect2", "Record: $e.message")
                 result.success(false)
             }
         }

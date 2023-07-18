@@ -51,6 +51,7 @@ const List<HealthDataType> dataTypesIOS = [
 /// List of data types available on Android
 const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
   HealthDataType.BLOOD_OXYGEN,
   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
@@ -72,4 +73,6 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.SLEEP_SESSION,
   HealthDataType.WATER,
   HealthDataType.WORKOUT,
+  HealthDataType.RESTING_HEART_RATE,
+  HealthDataType.FLIGHTS_CLIMBED,
 ];
