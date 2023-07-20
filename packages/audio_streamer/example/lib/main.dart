@@ -14,7 +14,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  AudioStreamer _streamer = AudioStreamer();
+  // Note that AudioStreamer works as a singleton.
+  AudioStreamer streamer = AudioStreamer();
+
   bool _isRecording = false;
   List<double> _audio = [];
 
@@ -23,10 +25,10 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  void onAudio(List<double> buffer) {
+  void onAudio(List<double> buffer) async {
     _audio.addAll(buffer);
-    double secondsRecorded =
-        _audio.length.toDouble() / AudioStreamer.sampleRate.toDouble();
+    var sampleRate = await streamer.actualSampleRate;
+    double secondsRecorded = _audio.length.toDouble() / sampleRate;
     print('Max amp: ${buffer.reduce(max)}');
     print('Min amp: ${buffer.reduce(min)}');
     print('$secondsRecorded seconds recorded.');
@@ -43,7 +45,9 @@ class _MyAppState extends State<MyApp> {
 
   void start() async {
     try {
-      _streamer.start(onAudio, handleError);
+      // start streaming using default sample rate of 44100 Hz
+      streamer.start(onAudio, handleError);
+
       setState(() {
         _isRecording = true;
       });
@@ -53,7 +57,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void stop() async {
-    bool stopped = await _streamer.stop();
+    bool stopped = await streamer.stop();
     setState(() {
       _isRecording = stopped;
     });

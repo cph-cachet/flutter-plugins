@@ -13,22 +13,26 @@ class LightException implements Exception {
 }
 
 class Light {
+  static Light? _singleton;
   static const EventChannel _eventChannel =
       const EventChannel("light.eventChannel");
 
+  /// Constructs a singleton instance of [Light].
+  ///
+  /// [Light] is designed to work as a singleton.
+  factory Light() => _singleton ??= Light._();
+
+  Light._();
+
   Stream<int>? _lightSensorStream;
 
-  /// A stream of light events.
-  /// Throws an exception if device isn't on Android.
+  /// The stream of light events.
+  /// Throws a [LightException] if device isn't on Android.
   Stream<int> get lightSensorStream {
-    if (Platform.isAndroid) {
-      if (_lightSensorStream == null) {
-        _lightSensorStream =
-            _eventChannel.receiveBroadcastStream().map((lux) => lux);
-      }
-      return _lightSensorStream!;
-    }
+    if (!Platform.isAndroid)
+      throw LightException('Light sensor API only available on Android.');
 
-    throw LightException('Light sensor API exclusively available on Android!');
+    return _lightSensorStream ??=
+        _eventChannel.receiveBroadcastStream().map((lux) => lux);
   }
 }

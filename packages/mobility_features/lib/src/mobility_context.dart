@@ -26,9 +26,7 @@ class MobilityContext {
     this._stops,
     this._places,
     this._moves,
-    this._date, {
-    this.contexts,
-  }) {
+    this._date) {
     _timestamp = DateTime.now();
 
     // if contexts array is null, init to empty array

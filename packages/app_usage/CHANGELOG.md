@@ -1,3 +1,9 @@
+## 3.0.0
+
+- Updates Kotlin plugin and AGP
+- Upgrade of compileSdkVersion
+- Upgrade to Dart 3
+
 ## 2.1.1
 
 - check of Android OS version added when getting `lastForeground`.

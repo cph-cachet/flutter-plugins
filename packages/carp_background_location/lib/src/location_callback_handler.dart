@@ -1,23 +1,19 @@
 part of carp_background_location;
 
+@pragma('vm:entry-point')
 class LocationCallbackHandler {
-  static Future<void> initCallback(Map<dynamic, dynamic> params) async {
-    LocationServiceRepository myLocationCallbackRepository =
-        LocationServiceRepository();
-    await myLocationCallbackRepository.init(params);
-  }
+  @pragma('vm:entry-point')
+  static Future<void> initCallback(Map<dynamic, dynamic> params) async =>
+      await LocationServiceRepository().init(params);
 
-  static Future<void> disposeCallback() async {
-    LocationServiceRepository myLocationCallbackRepository =
-        LocationServiceRepository();
-    await myLocationCallbackRepository.dispose();
-  }
+  @pragma('vm:entry-point')
+  static Future<void> disposeCallback() async =>
+      await LocationServiceRepository().dispose();
 
-  static Future<void> callback(LocationDto locationDto) async {
-    LocationServiceRepository myLocationCallbackRepository =
-        LocationServiceRepository();
-    await myLocationCallbackRepository.callback(locationDto);
-  }
+  @pragma('vm:entry-point')
+  static Future<void> callback(LocationDto locationDto) async =>
+      await LocationServiceRepository().callback(locationDto);
 
+  @pragma('vm:entry-point')
   static Future<void> notificationCallback() async {}
 }

@@ -11,7 +11,8 @@
       android:launchMode="singleTop"
       android:name=".MainActivity"
       android:theme="@style/LaunchTheme"
-      android:windowSoftInputMode="adjustResize">
+      android:windowSoftInputMode="adjustResize"
+      android:exported="true">
       <!-- Specifies an Android theme to apply to this Activity as soon as
            the Android process has started. This theme is visible to the user
            while the Flutter UI initializes. After that, this theme continues
@@ -41,7 +42,8 @@
     <service
       android:label="notifications"
       android:name="dk.cachet.notifications.NotificationListener"
-      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+      android:exported="true">
       <intent-filter>
         <action android:name="android.service.notification.NotificationListenerService" />
       </intent-filter>

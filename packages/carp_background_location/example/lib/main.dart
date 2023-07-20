@@ -12,31 +12,9 @@ class MyApp extends StatefulWidget {
 
 enum LocationStatus { UNKNOWN, INITIALIZED, RUNNING, STOPPED }
 
-String dtoToString(LocationDto dto) =>
-    'Location ${dto.latitude}, ${dto.longitude} at ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
-
-Widget dtoWidget(LocationDto? dto) {
-  if (dto == null)
-    return Text("No location yet");
-  else
-    return Column(
-      children: <Widget>[
-        Text(
-          '${dto.latitude}, ${dto.longitude}',
-        ),
-        Text(
-          '@',
-        ),
-        Text('${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}')
-      ],
-    );
-}
-
 class _MyAppState extends State<MyApp> {
   String logStr = '';
-  LocationDto? lastLocation;
-  DateTime? lastTimeLocation;
-  Stream<LocationDto>? locationStream;
+  LocationDto? _lastLocation;
   StreamSubscription<LocationDto>? locationSubscription;
   LocationStatus _status = LocationStatus.UNKNOWN;
 
@@ -48,7 +26,6 @@ class _MyAppState extends State<MyApp> {
     LocationManager().distanceFilter = 0;
     LocationManager().notificationTitle = 'CARP Location Example';
     LocationManager().notificationMsg = 'CARP is tracking your location';
-    locationStream = LocationManager().locationStream;
 
     _status = LocationStatus.INITIALIZED;
   }
@@ -56,12 +33,10 @@ class _MyAppState extends State<MyApp> {
   void getCurrentLocation() async =>
       onData(await LocationManager().getCurrentLocation());
 
-  void onData(LocationDto dto) {
-    // print(dtoToString(dto));
-    print(dto);
+  void onData(LocationDto location) {
+    print('>> $location');
     setState(() {
-      lastLocation = dto;
-      lastTimeLocation = DateTime.now();
+      _lastLocation = location;
     });
   }
 
@@ -70,7 +45,7 @@ class _MyAppState extends State<MyApp> {
       await Permission.locationAlways.isGranted;
 
   /// Tries to ask for "location always" permissions from the user.
-  /// Returns `true` if successful, `false` othervise.
+  /// Returns `true` if successful, `false` otherwise.
   Future<bool> askForLocationAlwaysPermission() async {
     bool granted = await Permission.locationAlways.isGranted;
 
@@ -89,7 +64,7 @@ class _MyAppState extends State<MyApp> {
       await askForLocationAlwaysPermission();
 
     locationSubscription?.cancel();
-    locationSubscription = locationStream?.listen(onData);
+    locationSubscription = LocationManager().locationStream.listen(onData);
     await LocationManager().start();
     setState(() {
       _status = LocationStatus.RUNNING;
@@ -120,13 +95,7 @@ class _MyAppState extends State<MyApp> {
         ),
       );
 
-  Widget status() => Text("Status: ${_status.toString().split('.').last}");
-
-  Widget lastLoc() => Text(
-      lastLocation != null
-          ? dtoToString(lastLocation!)
-          : 'Unknown last location',
-      textAlign: TextAlign.center);
+  Widget statusText() => Text("Status: ${_status.toString().split('.').last}");
 
   Widget currentLocationButton() => SizedBox(
         width: double.maxFinite,
@@ -135,6 +104,24 @@ class _MyAppState extends State<MyApp> {
           onPressed: getCurrentLocation,
         ),
       );
+
+  Widget locationWidget() {
+    if (_lastLocation == null)
+      return Text("No location yet");
+    else
+      return Column(
+        children: <Widget>[
+          Text(
+            '${_lastLocation!.latitude}, ${_lastLocation!.longitude}',
+          ),
+          Text(
+            '@',
+          ),
+          Text(
+              '${DateTime.fromMillisecondsSinceEpoch(_lastLocation!.time ~/ 1)}')
+        ],
+      );
+  }
 
   @override
   void dispose() => super.dispose();
@@ -157,9 +144,9 @@ class _MyAppState extends State<MyApp> {
                 stopButton(),
                 currentLocationButton(),
                 Divider(),
-                status(),
+                statusText(),
                 Divider(),
-                dtoWidget(lastLocation),
+                locationWidget(),
               ],
             ),
           ),

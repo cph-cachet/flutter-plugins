@@ -36,6 +36,11 @@ enum HealthDataType {
   SLEEP_IN_BED,
   SLEEP_ASLEEP,
   SLEEP_AWAKE,
+  SLEEP_LIGHT,
+  SLEEP_DEEP,
+  SLEEP_REM,
+  SLEEP_OUT_OF_BED,
+  SLEEP_SESSION,
   EXERCISE_TIME,
   WORKOUT,
   HEADACHE_NOT_PRESENT,
@@ -52,6 +57,7 @@ enum HealthDataType {
   ELECTROCARDIOGRAM,
 }
 
+/// Access types for Health Data.
 enum HealthDataAccess {
   READ,
   WRITE,
@@ -95,6 +101,8 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.SLEEP_IN_BED,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
+  HealthDataType.SLEEP_DEEP,
+  HealthDataType.SLEEP_REM,
   HealthDataType.WATER,
   HealthDataType.EXERCISE_TIME,
   HealthDataType.WORKOUT,
@@ -124,9 +132,16 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.DISTANCE_DELTA,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
-  HealthDataType.SLEEP_IN_BED,
+  HealthDataType.SLEEP_DEEP,
+  HealthDataType.SLEEP_LIGHT,
+  HealthDataType.SLEEP_REM,
+  HealthDataType.SLEEP_OUT_OF_BED,
+  HealthDataType.SLEEP_SESSION,
   HealthDataType.WATER,
   HealthDataType.WORKOUT,
+  HealthDataType.RESTING_HEART_RATE,
+  HealthDataType.FLIGHTS_CLIMBED,
+  HealthDataType.BASAL_ENERGY_BURNED,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
@@ -165,6 +180,12 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.SLEEP_IN_BED: HealthDataUnit.MINUTE,
   HealthDataType.SLEEP_ASLEEP: HealthDataUnit.MINUTE,
   HealthDataType.SLEEP_AWAKE: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_DEEP: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_REM: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_OUT_OF_BED: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_LIGHT: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_SESSION: HealthDataUnit.MINUTE,
+
   HealthDataType.MINDFULNESS: HealthDataUnit.MINUTE,
   HealthDataType.EXERCISE_TIME: HealthDataUnit.MINUTE,
   HealthDataType.WORKOUT: HealthDataUnit.NO_UNIT,
@@ -428,6 +449,7 @@ enum HealthWorkoutActivityType {
   OTHER,
 }
 
+/// Classifications for ECG readings.
 enum ElectrocardiogramClassification {
   NOT_SET,
   SINUS_RHYTHM,
@@ -439,6 +461,7 @@ enum ElectrocardiogramClassification {
   UNRECOGNIZED,
 }
 
+/// Extension to assign numbers to [ElectrocardiogramClassification]s
 extension ElectrocardiogramClassificationValue
     on ElectrocardiogramClassification {
   int get value {
