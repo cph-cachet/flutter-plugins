@@ -1,3 +1,7 @@
+## 3.0.1
+
+- Updated pubspec.yaml
+
 ## 3.0.0
 
 - `Light()` implemented as singleton.
