@@ -1,6 +1,6 @@
 name: light
-description: Plugin for the light sensor (Android only)
-version: 3.0.0
+description: Plugin for collecting data from the ambient light sensor on Android.
+version: 3.0.1
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master
 
 environment:
@@ -19,4 +19,3 @@ flutter:
         pluginClass: LightPlugin
       ios:
         pluginClass: LightPlugin
-
