@@ -90,6 +90,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var RESTING_HEART_RATE = "RESTING_HEART_RATE"
     private var BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
     private var FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
+    private var RESPIRATORY_RATE = "RESPIRATORY_RATE"
 
     // TODO support unknown?
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
@@ -1778,6 +1779,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 )
             )
+            is RespiratoryRateRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.rate,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
             // is ExerciseSessionRecord -> return listOf(mapOf<String, Any>("value" to ,
             //                                             "date_from" to ,
             //                                             "date_to" to ,
@@ -1930,21 +1940,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
+            RESPIRATORY_RATE -> RespiratoryRateRecord(
+                time = Instant.ofEpochMilli(startTime),
+                rate = value,
+                zoneOffset = null,
+            )
             // AGGREGATE_STEP_COUNT -> StepsRecord()
             BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
             BLOOD_PRESSURE_DIASTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
             WORKOUT -> throw IllegalArgumentException("You must use the [writeWorkoutData] API ")
             else -> throw IllegalArgumentException("The type $type was not supported by the Health plugin or you must use another API ")
         }
-        Log.i("HealthConnect", "Record: $record")
         scope.launch {
             try {
                 healthConnectClient.insertRecords(listOf(record))
-                Log.i("HealthConnect2", "Record: $record")
-
                 result.success(true)
             } catch (e: Exception) {
-                Log.i("HealthConnect2", "Record: $e.message")
                 result.success(false)
             }
         }
@@ -2090,6 +2101,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         RESTING_HEART_RATE to RestingHeartRateRecord::class,
         BASAL_ENERGY_BURNED to BasalMetabolicRateRecord::class,
         FLIGHTS_CLIMBED to FloorsClimbedRecord::class,
+        RESPIRATORY_RATE to RespiratoryRateRecord::class,
         // MOVE_MINUTES to TODO: Find alternative?
         // TODO: Implement remaining types
         // "ActiveCaloriesBurned" to ActiveCaloriesBurnedRecord::class,
