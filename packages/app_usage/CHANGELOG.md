@@ -1,3 +1,8 @@
+## 3.0.1
+
+- Updated pubsec.yaml description
+- Fixed license file
+
 ## 3.0.0
 
 - Updates Kotlin plugin and AGP
