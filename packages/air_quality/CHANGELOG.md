@@ -1,3 +1,7 @@
+## 4.0.0
+
+- Upgraded to http 1.1.0
+
 ## 3.0.0
 
 - Updates Kotlin plugin and AGP
