@@ -35,7 +35,7 @@ class _HealthAppState extends State<HealthApp> {
   // NOTE: These are only the ones supported on Androids new API Health Connect.
   // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
   // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
-  static final types = dataTypesAndroid;
+  static final types = dataTypesIOS;
   // Or selected types
   // static final types = [
   //   HealthDataType.WEIGHT,
@@ -169,7 +169,7 @@ class _HealthAppState extends State<HealthApp> {
         0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
     success &= await health.writeHealthData(
         0.0, HealthDataType.SLEEP_DEEP, earlier, now);
-        */
+
 
     success &= await health.writeHealthData(
         50.0, HealthDataType.RESTING_HEART_RATE, earlier, now);
@@ -179,6 +179,12 @@ class _HealthAppState extends State<HealthApp> {
 
     success &= await health.writeHealthData(
         50, HealthDataType.BASAL_ENERGY_BURNED, earlier, now);
+
+        */
+    success &= await health.writeHealthData(
+        50, HealthDataType.RESPIRATORY_RATE, earlier, now);
+    success &= await health.writeHealthData(
+        50, HealthDataType.PERIPHERAL_PERFUSION_INDEX, earlier, now);
 
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
