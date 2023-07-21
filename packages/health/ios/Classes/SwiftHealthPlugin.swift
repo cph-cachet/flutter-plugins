@@ -47,9 +47,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
   let MINDFULNESS = "MINDFULNESS"
   let SLEEP_IN_BED = "SLEEP_IN_BED"
   let SLEEP_ASLEEP = "SLEEP_ASLEEP"
-  let SLEEP_AWAKE = "SLEEP_AWAKE"
+  let SLEEP_CORE = "SLEEP_CORE"
   let SLEEP_DEEP = "SLEEP_DEEP"
   let SLEEP_REM = "SLEEP_REM"
+ 
 
   let EXERCISE_TIME = "EXERCISE_TIME"
   let WORKOUT = "WORKOUT"
@@ -523,12 +524,17 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         if dataTypeKey == self.SLEEP_AWAKE {
           samplesCategory = samplesCategory.filter { $0.value == 2 }
         }
-        if dataTypeKey == self.SLEEP_DEEP {
-          samplesCategory = samplesCategory.filter { $0.value == 3 }
+
+        if (dataTypeKey == self.SLEEP_CORE) {
+            samplesCategory = samplesCategory.filter { $0.value == 3 }
         }
-        if dataTypeKey == self.SLEEP_REM {
-          samplesCategory = samplesCategory.filter { $0.value == 4 }
+        if (dataTypeKey == self.SLEEP_DEEP) {
+            samplesCategory = samplesCategory.filter { $0.value == 4 }
         }
+        if (dataTypeKey == self.SLEEP_REM) {
+            samplesCategory = samplesCategory.filter { $0.value == 5 }
+        }
+       
         if dataTypeKey == self.HEADACHE_UNSPECIFIED {
           samplesCategory = samplesCategory.filter { $0.value == 0 }
         }
@@ -851,6 +857,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     workoutActivityTypeMap["OTHER"] = .other
 
     // Set up iOS 13 specific types (ordinary health data types)
+        if #available(iOS 16.0, *) {
+            dataTypesDict[SLEEP_CORE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_DEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_REM] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+        }
+
     if #available(iOS 13.0, *) {
       dataTypesDict[ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(
         forIdentifier: .activeEnergyBurned)!

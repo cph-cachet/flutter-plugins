@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl: ^0.18.0
+  intl: any
   device_info_plus: ^9.0.0
 
 dev_dependencies:
