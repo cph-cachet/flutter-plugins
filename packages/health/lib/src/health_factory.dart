@@ -548,10 +548,12 @@ class HealthFactory {
         return 1;
       case HealthDataType.SLEEP_AWAKE:
         return 2;
-      case HealthDataType.SLEEP_DEEP:
+      case HealthDataType.SLEEP_CORE:
         return 3;
-      case HealthDataType.SLEEP_REM:
+      case HealthDataType.SLEEP_DEEP:
         return 4;
+      case HealthDataType.SLEEP_REM:
+        return 5;
       case HealthDataType.HEADACHE_UNSPECIFIED:
         return 0;
       case HealthDataType.HEADACHE_NOT_PRESENT:
