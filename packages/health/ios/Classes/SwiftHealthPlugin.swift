@@ -37,6 +37,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
   let IRREGULAR_HEART_RATE_EVENT = "IRREGULAR_HEART_RATE_EVENT"
   let LOW_HEART_RATE_EVENT = "LOW_HEART_RATE_EVENT"
   let RESTING_HEART_RATE = "RESTING_HEART_RATE"
+  let PUSH_COUNT = "PUSH_COUNT"
   let STEPS = "STEPS"
   let WAIST_CIRCUMFERENCE = "WAIST_CIRCUMFERENCE"
   let WALKING_HEART_RATE = "WALKING_HEART_RATE"
@@ -892,6 +893,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       dataTypesDict[FORCED_EXPIRATORY_VOLUME] = HKSampleType.quantityType(
         forIdentifier: .forcedExpiratoryVolume1)!
       dataTypesDict[HEART_RATE] = HKSampleType.quantityType(forIdentifier: .heartRate)!
+      dataTypesDict[PUSH_COUNT] = HKSampleType.quantityType(forIdentifier: .pushCount)!
       dataTypesDict[HEART_RATE_VARIABILITY_SDNN] = HKSampleType.quantityType(
         forIdentifier: .heartRateVariabilitySDNN)!
       dataTypesDict[HEIGHT] = HKSampleType.quantityType(forIdentifier: .height)!
