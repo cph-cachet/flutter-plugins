@@ -39,6 +39,7 @@ enum HealthDataType {
   SLEEP_LIGHT,
   SLEEP_DEEP,
   SLEEP_REM,
+  SLEEP_CORE,
   SLEEP_OUT_OF_BED,
   SLEEP_SESSION,
   EXERCISE_TIME,
@@ -189,6 +190,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.SLEEP_OUT_OF_BED: HealthDataUnit.MINUTE,
   HealthDataType.SLEEP_LIGHT: HealthDataUnit.MINUTE,
   HealthDataType.SLEEP_SESSION: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_CORE: HealthDataUnit.MINUTE,
 
   HealthDataType.MINDFULNESS: HealthDataUnit.MINUTE,
   HealthDataType.EXERCISE_TIME: HealthDataUnit.MINUTE,
