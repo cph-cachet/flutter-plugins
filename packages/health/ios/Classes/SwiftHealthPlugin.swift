@@ -53,8 +53,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
   let SLEEP_CORE = "SLEEP_CORE"
   let SLEEP_DEEP = "SLEEP_DEEP"
   let SLEEP_REM = "SLEEP_REM"
- 
-
+  let SLEEP_AWAKE = "SLEEP_AWAKE"
   let EXERCISE_TIME = "EXERCISE_TIME"
   let WORKOUT = "WORKOUT"
   let HEADACHE_UNSPECIFIED = "HEADACHE_UNSPECIFIED"
