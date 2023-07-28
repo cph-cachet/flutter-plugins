@@ -113,6 +113,7 @@ const List<HealthDataType> _dataTypeKeysIOS = [
 /// List of data types available on Android
 const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
   HealthDataType.BLOOD_OXYGEN,
   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
