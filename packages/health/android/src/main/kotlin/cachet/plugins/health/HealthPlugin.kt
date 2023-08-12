@@ -1,22 +1,32 @@
 package cachet.plugins.health
 
+// import androidx.compose.runtime.mutableStateOf
+
+// Health Connect
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Handler
 import android.os.Build
+import android.os.Handler
 import android.util.Log
 import androidx.annotation.NonNull
-// import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.*
+import androidx.health.connect.client.request.AggregateRequest
+import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.time.TimeRangeFilter
+import androidx.health.connect.client.units.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
-import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.DataDeleteRequest
+import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
@@ -33,21 +43,11 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import kotlinx.coroutines.*
+import java.time.*
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.*
-import java.util.concurrent.TimeUnit
-import java.time.*
 
-// Health Connect
-import androidx.health.connect.client.units.*
-import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.PermissionController
-import androidx.health.connect.client.request.ReadRecordsRequest
-import androidx.health.connect.client.time.TimeRangeFilter
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.*
-import androidx.health.connect.client.request.AggregateRequest
-import java.time.temporal.ChronoUnit
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val HEALTH_CONNECT_RESULT_CODE = 16969
@@ -404,6 +404,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
         if (requestCode == HEALTH_CONNECT_RESULT_CODE) {
             if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    if(data.extras?.containsKey("request_blocked") == true) {
+                        Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect) due to too many requests!")
+                        mResult?.success(false)
+                        return false
+                    }
+                }
                 Log.i("FLUTTER_HEALTH", "Access Granted (to Health Connect)!")
                 mResult?.success(true)
             } else if (resultCode == Activity.RESULT_CANCELED) {
@@ -1429,7 +1436,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     var healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
 
     fun checkAvailability() {
-        healthConnectStatus = HealthConnectClient.sdkStatus(context!!)
+        healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
         healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
     }
 
