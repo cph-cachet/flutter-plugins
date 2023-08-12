@@ -1608,16 +1608,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             ),
                         )
                     }
-                } /*else if (dataType == SLEEP_IN_BED) {
+                } else if (classType == SleepStageRecord::class) {
                     for (rec in response.records) {
                         if (rec is SleepStageRecord) {
-                            if (rec.stage != 3) {
+                            if (dataType == MapSleepStageToType[rec.stage]) {
                                 healthConnectData.addAll(convertRecord(rec, dataType))
                             }
                         }
                     }
                 }
-                */
                 else {
                     for (rec in response.records) {
                         healthConnectData.addAll(convertRecord(rec, dataType))
@@ -2081,6 +2080,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             }
         }
     }
+
+    val MapSleepStageToType = hashMapOf<Int, String>(
+        1 to SLEEP_AWAKE,
+        2 to SLEEP_ASLEEP,
+        3 to SLEEP_OUT_OF_BED,
+        4 to SLEEP_LIGHT,
+        5 to SLEEP_DEEP,
+        6 to SLEEP_REM,
+    )
 
     val MapToHCType = hashMapOf(
         BODY_FAT_PERCENTAGE to BodyFatRecord::class,
