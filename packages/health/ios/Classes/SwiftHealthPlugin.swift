@@ -285,7 +285,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         end: dateTo)
     }
 
-
     HKHealthStore().save(
       sample,
       withCompletion: { (success, error) in
@@ -477,7 +476,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
     let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
     let limit = (arguments?["limit"] as? Int) ?? HKObjectQueryNoLimit
-
 
     // Convert dates from milliseconds to Date()
     let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
@@ -864,7 +862,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       dataTypesDict[BLOOD_GLUCOSE] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
       dataTypesDict[BLOOD_OXYGEN] = HKSampleType.quantityType(forIdentifier: .oxygenSaturation)!
       dataTypesDict[RESPIRATORY_RATE] = HKSampleType.quantityType(forIdentifier: .respiratoryRate)!
-      dataTypesDict[PERIPHERAL_PERFUSION_INDEX] = HKSampleType.quantityType(forIdentifier: .peripheralPerfusionIndex)!
+      dataTypesDict[PERIPHERAL_PERFUSION_INDEX] = HKSampleType.quantityType(
+        forIdentifier: .peripheralPerfusionIndex)!
 
       dataTypesDict[BLOOD_PRESSURE_DIASTOLIC] = HKSampleType.quantityType(
         forIdentifier: .bloodPressureDiastolic)!

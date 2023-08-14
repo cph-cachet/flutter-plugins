@@ -1608,6 +1608,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             ),
                         )
                     }
+                // Filter sleep stages for requested stage
                 } else if (classType == SleepStageRecord::class) {
                     for (rec in response.records) {
                         if (rec is SleepStageRecord) {
