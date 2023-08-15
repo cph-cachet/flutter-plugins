@@ -1,22 +1,32 @@
 package cachet.plugins.health
 
+// import androidx.compose.runtime.mutableStateOf
+
+// Health Connect
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Handler
 import android.os.Build
+import android.os.Handler
 import android.util.Log
 import androidx.annotation.NonNull
-// import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.*
+import androidx.health.connect.client.request.AggregateRequest
+import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.time.TimeRangeFilter
+import androidx.health.connect.client.units.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
-import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.DataDeleteRequest
+import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
@@ -33,21 +43,11 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import kotlinx.coroutines.*
+import java.time.*
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.*
-import java.util.concurrent.TimeUnit
-import java.time.*
 
-// Health Connect
-import androidx.health.connect.client.units.*
-import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.PermissionController
-import androidx.health.connect.client.request.ReadRecordsRequest
-import androidx.health.connect.client.time.TimeRangeFilter
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.*
-import androidx.health.connect.client.request.AggregateRequest
-import java.time.temporal.ChronoUnit
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val HEALTH_CONNECT_RESULT_CODE = 16969
@@ -87,6 +87,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var MOVE_MINUTES = "MOVE_MINUTES"
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
     private var WATER = "WATER"
+    private var RESTING_HEART_RATE = "RESTING_HEART_RATE"
+    private var BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
+    private var FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
+    private var RESPIRATORY_RATE = "RESPIRATORY_RATE"
 
     // TODO support unknown?
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
@@ -400,6 +404,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
         if (requestCode == HEALTH_CONNECT_RESULT_CODE) {
             if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    if(data.extras?.containsKey("request_blocked") == true) {
+                        Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect) due to too many requests!")
+                        mResult?.success(false)
+                        return false
+                    }
+                }
                 Log.i("FLUTTER_HEALTH", "Access Granted (to Health Connect)!")
                 mResult?.success(true)
             } else if (resultCode == Activity.RESULT_CANCELED) {
@@ -1333,7 +1344,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             result.success(stepsInInterval)
         } catch (e: Exception) {
             Log.i("FLUTTER_HEALTH::ERROR", "unable to return steps")
-            result.success(false)
+            result.success(null)
         }
     }
 
@@ -1425,7 +1436,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     var healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
 
     fun checkAvailability() {
-        healthConnectStatus = HealthConnectClient.sdkStatus(context!!)
+        healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
         healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
     }
 
@@ -1597,16 +1608,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             ),
                         )
                     }
-                } /*else if (dataType == SLEEP_IN_BED) {
+                // Filter sleep stages for requested stage
+                } else if (classType == SleepStageRecord::class) {
                     for (rec in response.records) {
                         if (rec is SleepStageRecord) {
-                            if (rec.stage != 3) {
+                            if (dataType == MapSleepStageToType[rec.stage]) {
                                 healthConnectData.addAll(convertRecord(rec, dataType))
                             }
                         }
                     }
                 }
-                */
                 else {
                     for (rec in response.records) {
                         healthConnectData.addAll(convertRecord(rec, dataType))
@@ -1748,6 +1759,42 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+            is RestingHeartRateRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.beatsPerMinute,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
+            is BasalMetabolicRateRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.basalMetabolicRate.inKilocaloriesPerDay,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
+            is FloorsClimbedRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.floors,
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
+            is RespiratoryRateRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.rate,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
             // is ExerciseSessionRecord -> return listOf(mapOf<String, Any>("value" to ,
             //                                             "date_from" to ,
             //                                             "date_to" to ,
@@ -1883,7 +1930,28 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
-
+            RESTING_HEART_RATE -> RestingHeartRateRecord(
+                time = Instant.ofEpochMilli(startTime),
+                beatsPerMinute = value.toLong(),
+                zoneOffset = null,
+            )
+            BASAL_ENERGY_BURNED -> BasalMetabolicRateRecord(
+                time = Instant.ofEpochMilli(startTime),
+                basalMetabolicRate = Power.kilocaloriesPerDay(value),
+                zoneOffset = null,
+            )
+            FLIGHTS_CLIMBED -> FloorsClimbedRecord(
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                floors = value,
+                startZoneOffset = null,
+                endZoneOffset = null,
+            )
+            RESPIRATORY_RATE -> RespiratoryRateRecord(
+                time = Instant.ofEpochMilli(startTime),
+                rate = value,
+                zoneOffset = null,
+            )
             // AGGREGATE_STEP_COUNT -> StepsRecord()
             BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
             BLOOD_PRESSURE_DIASTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
@@ -2014,6 +2082,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
+    val MapSleepStageToType = hashMapOf<Int, String>(
+        1 to SLEEP_AWAKE,
+        2 to SLEEP_ASLEEP,
+        3 to SLEEP_OUT_OF_BED,
+        4 to SLEEP_LIGHT,
+        5 to SLEEP_DEEP,
+        6 to SLEEP_REM,
+    )
+
     val MapToHCType = hashMapOf(
         BODY_FAT_PERCENTAGE to BodyFatRecord::class,
         HEIGHT to HeightRecord::class,
@@ -2037,6 +2114,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         SLEEP_OUT_OF_BED to SleepStageRecord::class,
         SLEEP_SESSION to SleepSessionRecord::class,
         WORKOUT to ExerciseSessionRecord::class,
+        RESTING_HEART_RATE to RestingHeartRateRecord::class,
+        BASAL_ENERGY_BURNED to BasalMetabolicRateRecord::class,
+        FLIGHTS_CLIMBED to FloorsClimbedRecord::class,
+        RESPIRATORY_RATE to RespiratoryRateRecord::class,
         // MOVE_MINUTES to TODO: Find alternative?
         // TODO: Implement remaining types
         // "ActiveCaloriesBurned" to ActiveCaloriesBurnedRecord::class,
