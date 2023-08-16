@@ -408,11 +408,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             let calories = (arguments["caloriesConsumed"] as? Double),
             let carbs = (arguments["carbohydrates"] as? Double?) ?? 0,
             let protein = (arguments["protein"] as? Double?) ?? 0,
-            let fat = (arguments["fatTotal"] as? Double?) ?? 0,
-            let name = (arguments["name"] as? String?)
+            let fat = (arguments["fatTotal"] as? Double?) ?? 0
         else {
             throw PluginError(message: "Invalid Arguments")
         }
+        
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
         
@@ -428,10 +428,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         var metadata = ["HKFoodMeal": "\(mealType)"]
-        
-        if(name != nil) {
-            metadata[HKMetadataKeyFoodType] = "\(name!)"
-        }
         
         var nutrition = Set<HKSample>()
 
@@ -607,8 +603,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name
-                        // Ignore metadata as we don't need it and was the reason for crashing with Dexcom
-                        //"metadata": sample.metadata
                     ]
                 }
                 DispatchQueue.main.async {
