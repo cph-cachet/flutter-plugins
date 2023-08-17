@@ -125,14 +125,10 @@ class HealthFactory {
       for (int i = 0; i < types.length; i++) {
         final type = types[i];
         final permission = permissions[i];
-        if ((type == HealthDataType.ELECTROCARDIOGRAM ||
-                type == HealthDataType.HIGH_HEART_RATE_EVENT ||
-                type == HealthDataType.LOW_HEART_RATE_EVENT ||
-                type == HealthDataType.IRREGULAR_HEART_RATE_EVENT ||
-                type == HealthDataType.WALKING_HEART_RATE) &&
+        if (type == HealthDataType.ELECTROCARDIOGRAM &&
             permission != HealthDataAccess.READ) {
           throw ArgumentError(
-              'Requesting WRITE permission on ELECTROCARDIOGRAM / HIGH_HEART_RATE_EVENT / LOW_HEART_RATE_EVENT / IRREGULAR_HEART_RATE_EVENT / WALKING_HEART_RATE is not allowed.');
+              'Requesting WRITE permission on ELECTROCARDIOGRAM is not allowed.');
         }
       }
     }
