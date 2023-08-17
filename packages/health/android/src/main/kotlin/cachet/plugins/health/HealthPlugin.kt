@@ -1,16 +1,14 @@
 package cachet.plugins.health
 
-// import androidx.compose.runtime.mutableStateOf
-
-// Health Connect
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Handler
+import android.os.Build
 import android.util.Log
 import androidx.annotation.NonNull
+// import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
@@ -30,8 +28,8 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
-import com.google.android.gms.fitness.request.DataDeleteRequest
 import com.google.android.gms.fitness.request.DataReadRequest
+import com.google.android.gms.fitness.request.DataDeleteRequest
 import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
@@ -48,11 +46,21 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import kotlinx.coroutines.*
-import java.time.*
-import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
+import java.time.*
 
+// Health Connect
+import androidx.health.connect.client.units.*
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.time.TimeRangeFilter
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.*
+import androidx.health.connect.client.request.AggregateRequest
+import java.time.temporal.ChronoUnit
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
 const val HEALTH_CONNECT_RESULT_CODE = 16969
@@ -92,10 +100,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var MOVE_MINUTES = "MOVE_MINUTES"
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
     private var WATER = "WATER"
-    private var RESTING_HEART_RATE = "RESTING_HEART_RATE"
-    private var BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
-    private var FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
-    private var RESPIRATORY_RATE = "RESPIRATORY_RATE"
 
     // TODO support unknown?
     private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
@@ -1485,7 +1489,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             result.success(stepsInInterval)
         } catch (e: Exception) {
             Log.i("FLUTTER_HEALTH::ERROR", "unable to return steps")
-            result.success(null)
+            result.success(false)
         }
     }
 
@@ -1578,7 +1582,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     var healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
 
     fun checkAvailability() {
-        healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
+        healthConnectStatus = HealthConnectClient.sdkStatus(context!!)
         healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
     }
 
@@ -1754,7 +1758,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 } else if (classType == SleepStageRecord::class) {
                     for (rec in response.records) {
                         if (rec is SleepStageRecord) {
-                            if (dataType == MapSleepStageToType[rec.stage]) {
+                            if (rec.stage != 3) {
                                 healthConnectData.addAll(convertRecord(rec, dataType))
                             }
                         }
