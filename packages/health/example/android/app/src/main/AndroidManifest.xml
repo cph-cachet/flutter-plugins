@@ -49,16 +49,6 @@
     <uses-permission android:name="android.permission.health.WRITE_OXYGEN_SATURATION"/>
     <uses-permission android:name="android.permission.health.READ_HYDRATION"/>
     <uses-permission android:name="android.permission.health.WRITE_HYDRATION"/>
-    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE"/>
-    <uses-permission android:name="android.permission.health.WRITE_RESTING_HEART_RATE"/>
-    <uses-permission android:name="android.permission.health.WRITE_FLOORS_CLIMBED"/>
-    <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED"/>
-    <uses-permission android:name="android.permission.health.WRITE_BASAL_METABOLIC_RATE"/>
-    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE"/>
-    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE"/>
-    <uses-permission android:name="android.permission.health.WRITE_RESPIRATORY_RATE"/>
-
-
     <application android:label="health_example"
         android:icon="@mipmap/ic_launcher">
         <activity android:name=".MainActivity"
