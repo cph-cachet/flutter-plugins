@@ -8,33 +8,30 @@ import 'package:flutter/services.dart';
 
 /// Holds a decibel value for a noise level reading.
 class NoiseReading {
-  late double _meanDecibel, _maxDecibel;
+  late double _meanDecibel;
 
   NoiseReading(List<double> volumes) {
-    // sorted volumes such that the last element is max amplitude
-    volumes.sort();
+    double rms = 0.0;
 
-    // compute average peak-amplitude using the min and max amplitude
-    double min = volumes.first;
-    double max = volumes.last;
-    double mean = 0.5 * (min.abs() + max.abs());
+    for (var volume in volumes) {
+      rms += volume * volume;
+    }
 
-    // max amplitude is 2^15
-    double maxAmp = pow(2, 15) + 0.0;
+    rms = sqrt(rms / volumes.length);
 
-    _maxDecibel = 20 * log(maxAmp * max) * log10e;
-    _meanDecibel = 20 * log(maxAmp * mean) * log10e;
+    var dB = log(rms / 20e-6) / log10e;
+
+    _meanDecibel = dB;
   }
 
   /// Maximum measured decibel reading.
-  double get maxDecibel => _maxDecibel;
+  //double get maxDecibel => _maxDecibel;
 
   /// Mean decibel across readings.
   double get meanDecibel => _meanDecibel;
 
   @override
-  String toString() =>
-      '$runtimeType - mean (dB): $meanDecibel, max (dB): $maxDecibel';
+  String toString() => '$runtimeType - mean (dB): $meanDecibel';
 }
 
 /// A [NoiseMeter] provides continuous access to noise reading via the [noise] stream.

@@ -75,11 +75,6 @@ class _MyAppState extends State<MyApp> {
                 ),
                 margin: EdgeInsets.only(top: 20),
               ),
-              Container(
-                child: Text(
-                  'Max: ${_latestReading?.maxDecibel} dB',
-                ),
-              )
             ])),
       ];
 
