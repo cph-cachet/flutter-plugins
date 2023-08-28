@@ -1,3 +1,7 @@
+## 0.4.1
+
+- Lowered minSdkVersion to 23
+
 ## 0.4.0
 
 - Upgraded Kotlin and AGP
