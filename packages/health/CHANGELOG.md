@@ -1,3 +1,13 @@
+## 8.0.0
+
+- Fixed issue [#774](https://github.com/cph-cachet/flutter-plugins/issues/774), [#779](https://github.com/cph-cachet/flutter-plugins/issues/779)
+- Merged PR [#579](https://github.com/cph-cachet/flutter-plugins/pull/579), [#717](https://github.com/cph-cachet/flutter-plugins/pull/717), [#770](https://github.com/cph-cachet/flutter-plugins/pull/770)
+- Upgraded to mavenCentral, upgraded minSDK, compilSDK, targetSDK
+- Updated health connect client to 1.1.0
+- Added respiratory rate and peripheral perfusion index to HealthConnect
+- Minor fixes to requestAuthorization, sleep stage filtering
+
+
 ## 7.0.1
 
 - Updated dart doc
