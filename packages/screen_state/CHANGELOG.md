@@ -1,3 +1,7 @@
+## 3.0.1
+
+- Reduced minSdk version to 23
+
 ## 3.0.0
 
 - `Screen()` implemented as singleton.
