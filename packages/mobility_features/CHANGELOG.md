@@ -1,3 +1,8 @@
+## 4.0.1
+
+- Fixed formatting
+- Lowered minSdk
+
 ## 4.0.0
 
 - Updated kotlin and AGP

@@ -22,11 +22,7 @@ class MobilityContext {
   List<MobilityContext>? contexts;
 
   /// Private constructor, cannot be instantiated from outside
-  MobilityContext._(
-    this._stops,
-    this._places,
-    this._moves,
-    this._date) {
+  MobilityContext._(this._stops, this._places, this._moves, this._date) {
     _timestamp = DateTime.now();
 
     // if contexts array is null, init to empty array
