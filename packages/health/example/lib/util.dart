@@ -22,6 +22,8 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.HEART_RATE_VARIABILITY_SDNN,
   HealthDataType.HEIGHT,
   HealthDataType.HIGH_HEART_RATE_EVENT,
+  HealthDataType.RESPIRATORY_RATE,
+  HealthDataType.PERIPHERAL_PERFUSION_INDEX,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT,
   HealthDataType.LOW_HEART_RATE_EVENT,
   HealthDataType.RESTING_HEART_RATE,
@@ -52,6 +54,7 @@ const List<HealthDataType> dataTypesIOS = [
 /// List of data types available on Android
 const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
   HealthDataType.BLOOD_OXYGEN,
   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
@@ -65,6 +68,7 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.STEPS,
   // HealthDataType.MOVE_MINUTES, // TODO: Find alternative for Health Connect
   HealthDataType.DISTANCE_DELTA,
+  HealthDataType.RESPIRATORY_RATE,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
   HealthDataType.SLEEP_LIGHT,
