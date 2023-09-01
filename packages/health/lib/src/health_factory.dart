@@ -107,6 +107,15 @@ class HealthFactory {
     return result ?? false;
   }
 
+  /// Opens native system settings for:
+  /// - Health on iOS 
+  /// - Health Connect on Android
+  /// 
+  /// Throws if the application is not installed on the device.
+  Future<void> openSystemSettings() async {
+    await _channel.invokeMethod('openSystemSettings');
+  }
+
   /// Requests permissions to access data types in Apple Health or Google Fit.
   ///
   /// Returns true if successful, false otherwise
