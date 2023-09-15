@@ -147,6 +147,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       getTotalStepsInInterval(call: call, result: result)
     }
 
+    /// Handle writeMindfulnessData
+    else if call.method.elementsEqual("writeMindfulnessData") {
+      try! writeMindfulnessData(call: call, result: result)
+    }
+
     /// Handle writeData
     else if call.method.elementsEqual("writeData") {
       try! writeData(call: call, result: result)
@@ -255,6 +260,41 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       }
     } else {
       result(false)  // Handle the error here.
+    }
+  }
+
+  func writeMindfulnessData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+    guard let arguments = call.arguments as? NSDictionary,
+      let startTime = arguments["startTime"] as? NSNumber,
+      let endTime = arguments["endTime"] as? NSNumber
+    else {
+      throw PluginError(message: "Invalid Arguments")
+    }
+
+    let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+    let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+    guard let mindfulType = HKObjectType.categoryType(forIdentifier: .mindfulSession) else {
+      result(
+        FlutterError(
+          code: "UNAVAILABLE", message: "Mindful Session type is not available", details: nil))
+      return
+    }
+
+    let sample = HKCategorySample(
+      type: mindfulType,
+      value: 0,
+      start: dateFrom,
+      end: dateTo
+    )
+
+    HKHealthStore().save(sample) { (success, error) in
+      if let error = error {
+        print("Error Saving Mindfulness Sample: \(error.localizedDescription)")
+      }
+      DispatchQueue.main.async {
+        result(success)
+      }
     }
   }
 
