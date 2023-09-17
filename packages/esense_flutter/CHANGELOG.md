@@ -1,7 +1,13 @@
+## 1.0.0
+
+- first stable release
+- update to Bluetooth permissions in demo app
+- improved handling of disconnection
+
 ## 0.7.0
 
 - Upgrade of Kotlin and AGP
-- Ran dart fix
+- Dart fix
 
 ## 0.6.2
 
@@ -16,7 +22,7 @@
 
 - moved permission handling to app level
 - improved on iOS implementation
-- improvement to exampel app
+- improvement to example app
 - improvement to README
 
 ## 0.5.0

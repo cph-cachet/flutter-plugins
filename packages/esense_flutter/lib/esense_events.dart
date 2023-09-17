@@ -69,12 +69,23 @@ class SensorEvent {
     this.gyro,
   });
 
+  factory SensorEvent.empty() =>
+      SensorEvent(timestamp: DateTime.now(), packetIndex: -1);
+
   factory SensorEvent.fromMap(Map<dynamic, dynamic> map) {
-    //map.forEach((key, value) => print(' > map[$key] = $value'));
-    DateTime time = DateTime.fromMillisecondsSinceEpoch(map['timestamp']);
-    int index = map['packetIndex'] ?? -1;
-    List<int> accl = [map['accel.x'], map['accel.y'], map['accel.z']];
-    List<int> gyro = [map['gyro.x'], map['gyro.y'], map['gyro.z']];
+    DateTime time =
+        DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int);
+    int index = map['packetIndex'] as int? ?? -1;
+    List<int> accl = [
+      map['accel.x'] as int,
+      map['accel.y'] as int,
+      map['accel.z'] as int
+    ];
+    List<int> gyro = [
+      map['gyro.x'] as int,
+      map['gyro.y'] as int,
+      map['gyro.z'] as int
+    ];
 
     return SensorEvent(
       timestamp: time,
@@ -94,10 +105,10 @@ class ESenseEvent {
   ESenseEvent();
 
   factory ESenseEvent.fromMap(Map<dynamic, dynamic> map) {
-    final String type = map['type'];
+    final String type = map['type'] as String;
     switch (type) {
       case 'Listen':
-        return RegisterListenerEvent(map['success']);
+        return RegisterListenerEvent(map['success'] as bool);
       case 'DeviceNameRead':
         return DeviceNameRead.fromMap(map);
       case 'BatteryRead':
@@ -142,7 +153,8 @@ class AccelerometerOffsetRead extends ESenseEvent {
 
   AccelerometerOffsetRead(this.offsetX, this.offsetY, this.offsetZ) : super();
   factory AccelerometerOffsetRead.fromMap(Map<dynamic, dynamic> map) =>
-      AccelerometerOffsetRead(map['offsetX'], map['offsetY'], map['offsetZ']);
+      AccelerometerOffsetRead(
+          map['offsetX'] as int, map['offsetY'] as int, map['offsetZ'] as int);
 
   @override
   String toString() => '$runtimeType - '
@@ -175,10 +187,10 @@ class AdvertisementAndConnectionIntervalRead extends ESenseEvent {
   factory AdvertisementAndConnectionIntervalRead.fromMap(
           Map<dynamic, dynamic> map) =>
       AdvertisementAndConnectionIntervalRead(
-        map['minAdvertisementInterval'],
-        map['maxAdvertisementInterval'],
-        map['minConnectionInterval'],
-        map['maxConnectionInterval'],
+        map['minAdvertisementInterval'] as int?,
+        map['maxAdvertisementInterval'] as int?,
+        map['minConnectionInterval'] as int?,
+        map['maxConnectionInterval'] as int?,
       );
 
   @override
@@ -196,7 +208,7 @@ class BatteryRead extends ESenseEvent {
 
   BatteryRead(this.voltage) : super();
   factory BatteryRead.fromMap(Map<dynamic, dynamic> map) =>
-      BatteryRead(map['voltage']);
+      BatteryRead(map['voltage'] as double?);
 
   @override
   String toString() => '$runtimeType - voltage: $voltage';
@@ -209,7 +221,7 @@ class ButtonEventChanged extends ESenseEvent {
 
   ButtonEventChanged(this.pressed) : super();
   factory ButtonEventChanged.fromMap(Map<dynamic, dynamic> map) =>
-      ButtonEventChanged(map['pressed']);
+      ButtonEventChanged(map['pressed'] as bool);
 
   @override
   String toString() => '$runtimeType - pressed: $pressed';
@@ -222,7 +234,7 @@ class DeviceNameRead extends ESenseEvent {
 
   DeviceNameRead(this.deviceName) : super();
   factory DeviceNameRead.fromMap(Map<dynamic, dynamic> map) =>
-      DeviceNameRead(map['deviceName']);
+      DeviceNameRead(map['deviceName'] as String?);
 
   @override
   String toString() => '$runtimeType - name: $deviceName';
