@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
 
   void start() async {
     try {
-      // start streaming using default sample rate of 44100 Hz
+      // Start streaming using default sample rate of 44100 Hz
       streamer.start(onAudio, handleError);
 
       setState(() {
