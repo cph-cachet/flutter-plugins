@@ -56,7 +56,6 @@ Add this permission in the `Info.plist` file located in `ios/Runner`:
   <string>external-accessory</string>
   <string>fetch</string>
 </array>
-
 ```
 
 Note that on iOS, connecting to the eSense device may take several seconds.
