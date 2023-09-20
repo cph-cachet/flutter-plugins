@@ -25,7 +25,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.RESPIRATORY_RATE,
   HealthDataType.PERIPHERAL_PERFUSION_INDEX,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-  HealthDataType.LOW_HEART_RATE_EVENT,
+  // HealthDataType.LOW_HEART_RATE_EVENT,
   HealthDataType.RESTING_HEART_RATE,
   HealthDataType.STEPS,
   HealthDataType.WAIST_CIRCUMFERENCE,
@@ -33,6 +33,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.WEIGHT,
   HealthDataType.FLIGHTS_CLIMBED,
   HealthDataType.DISTANCE_WALKING_RUNNING,
+  HealthDataType.MENSTRUAL_FLOW,
   HealthDataType.MINDFULNESS,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
@@ -47,7 +48,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.HEADACHE_MODERATE,
   HealthDataType.HEADACHE_SEVERE,
   HealthDataType.HEADACHE_UNSPECIFIED,
-  //HealthDataType.ELECTROCARDIOGRAM,
+  // HealthDataType.ELECTROCARDIOGRAM,
 ];
 
 /// List of data types available on Android

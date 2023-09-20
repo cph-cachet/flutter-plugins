@@ -62,6 +62,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
   let HEADACHE_SEVERE = "HEADACHE_SEVERE"
   let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
 
+  let MENSTRUAL_FLOW = "MENSTRUAL_FLOW"
+
   // Health Unit types
   // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
   // MOLE_UNIT_WITH_PREFIX_MOLAR_MASS, // requires molar mass & prefix input - not supported yet
@@ -166,6 +168,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     else if call.method.elementsEqual("writeWorkoutData") {
       try! writeWorkoutData(call: call, result: result)
     }
+
+    // Handle writeMenstrualFlow
+    else if call.method.elementsEqual("writeMenstrualFlow") {
+      try! writeMenstrualFlow(call: call, result: result)
+    }
+
 
     /// Handle hasPermission
     else if call.method.elementsEqual("hasPermissions") {
@@ -276,13 +284,19 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
     if dataTypeLookUp(key: type).isKind(of: HKCategoryType.self) {
       sample = HKCategorySample(
-        type: dataTypeLookUp(key: type) as! HKCategoryType, value: Int(value), start: dateFrom,
-        end: dateTo)
+        type: dataTypeLookUp(key: type) as! HKCategoryType,
+        value: Int(value),
+        start: dateFrom,
+        end: dateTo
+      )
     } else {
       let quantity = HKQuantity(unit: unitDict[unit]!, doubleValue: value)
       sample = HKQuantitySample(
-        type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom,
-        end: dateTo)
+        type: dataTypeLookUp(key: type) as! HKQuantityType,
+        quantity: quantity,
+        start: dateFrom,
+        end: dateTo
+      )
     }
 
     HKHealthStore().save(
@@ -296,6 +310,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
       })
   }
+
 
   func writeAudiogram(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
     guard let arguments = call.arguments as? NSDictionary,
@@ -352,6 +367,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
   }
 
   func writeBloodPressure(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+    print("\(call.arguments)");
     guard let arguments = call.arguments as? NSDictionary,
       let systolic = (arguments["systolic"] as? Double),
       let diastolic = (arguments["diastolic"] as? Double),
@@ -429,6 +445,41 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       })
   }
 
+  func writeMenstrualFlow(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+    let type = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
+    guard let arguments = call.arguments as? NSDictionary,
+          let flowValue = (arguments["flow"] as? Double),
+          let time = (arguments["time"] as? NSNumber),
+          let startOfCycle = (arguments["startOfCycle"] as? Bool),
+          let selfReported = (arguments["selfReported"] as? Bool)
+    else {
+      throw PluginError(message: "Invalid Arguments")
+    }
+    let datetime = Date(timeIntervalSince1970: time.doubleValue / 1000)
+    let sample = HKCategorySample(
+      type: type,
+      value: Int(flowValue),
+      start: datetime,
+      end: datetime,
+      metadata: [
+        HKMetadataKeyMenstrualCycleStart: startOfCycle ? 1 : 0,
+        HKMetadataKeyWasUserEntered: selfReported ? 1 : 0
+      ]
+    )
+
+    HKHealthStore().save(
+      sample,
+      withCompletion: { (success, error) in
+        if let err = error {
+          print("Error Saving \(type) Sample: \(err.localizedDescription)")
+        }
+        DispatchQueue.main.async {
+          result(success)
+        }
+      }
+    )
+  }
+
   func delete(call: FlutterMethodCall, result: @escaping FlutterResult) {
     let arguments = call.arguments as? NSDictionary
     let dataTypeKey = (arguments?["dataTypeKey"] as? String)!
@@ -496,7 +547,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     ) {
       [self]
       x, samplesOrNil, error in
-
       switch samplesOrNil {
       case let (samples as [HKQuantitySample]) as Any:
         let dictionaries = samples.map { sample -> NSDictionary in
@@ -516,7 +566,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       case var (samplesCategory as [HKCategorySample]) as Any:
         if dataTypeKey == self.SLEEP_IN_BED {
           samplesCategory = samplesCategory.filter { $0.value == 0 }
-
         }
         if dataTypeKey == self.SLEEP_ASLEEP {
           samplesCategory = samplesCategory.filter { $0.value == 1 }
@@ -546,14 +595,26 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
           samplesCategory = samplesCategory.filter { $0.value == 4 }
         }
         let categories = samplesCategory.map { sample -> NSDictionary in
-          return [
-            "uuid": "\(sample.uuid)",
-            "value": sample.value,
-            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-            "source_id": sample.sourceRevision.source.bundleIdentifier,
-            "source_name": sample.sourceRevision.source.name,
-          ]
+         if dataTypeKey == self.MENSTRUAL_FLOW {
+            return [
+              "uuid": "\(sample.uuid)",
+              "value": sample.value - 1,
+              "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+              "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+              "source_id": sample.sourceRevision.source.bundleIdentifier,
+              "source_name": sample.sourceRevision.source.name,
+              "is_start_of_cycle":  sample.metadata?[HKMetadataKeyMenstrualCycleStart] as? Bool ?? false,
+            ]
+         } else {
+            return [
+              "uuid": "\(sample.uuid)",
+              "value": sample.value,
+              "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+              "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+              "source_id": sample.sourceRevision.source.bundleIdentifier,
+              "source_name": sample.sourceRevision.source.name,
+            ]
+         }
         }
         DispatchQueue.main.async {
           result(categories)
@@ -910,6 +971,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
       dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
       dataTypesDict[WORKOUT] = HKSampleType.workoutType()
+
+      dataTypesDict[MENSTRUAL_FLOW] = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
 
       healthDataTypes = Array(dataTypesDict.values)
     }
