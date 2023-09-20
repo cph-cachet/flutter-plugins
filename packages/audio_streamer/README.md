@@ -1,8 +1,10 @@
 # Audio Streamer
 
-Streaming of PCM audio from Android and iOS with a customizable sampling rate.
+Streaming of Pulse-code modulation (PCM) audio from Android and iOS with a customizable sampling rate.
 
 ## Permissions
+
+Using this plugin needs permission to access the microphone. Requesting this permission is **NOT** part of the plugin, but should be handled by the app. However, for the app to be able to access the microphone, the app need to have the following permission on Android and iOS.
 
 On **Android** add the audio recording permission to `AndroidManifest.xml`.
 
@@ -10,12 +12,12 @@ On **Android** add the audio recording permission to `AndroidManifest.xml`.
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
 
-On **iOS** enable the following:
+On **iOS** enable the following using XCode:
 
 - Capabilities > Background Modes > _Audio, AirPlay and Picture in Picture_
 - In the Runner Xcode project edit the `Info.plist` file. Add an entry for _'Privacy - Microphone Usage Description'_
 
-When editing the `Info.plist` file manually, the entries needed are:
+If editing the `Info.plist` file manually, the entries needed are:
 
 ```xml
 <key>NSMicrophoneUsageDescription</key>
@@ -26,7 +28,7 @@ When editing the `Info.plist` file manually, the entries needed are:
 </array>
 ```
 
-- Edit the `Podfile` to include the permission for the microphone:
+Edit the `Podfile` to include the permission for the microphone:
 
 ```ruby
 post_install do |installer|
@@ -43,48 +45,35 @@ post_install do |installer|
 end
 ```
 
-## Example
+## Using the plugin
 
-See the file `example/lib/main.dart` for a fully fledged example app using the plugin.
-Note that on iOS the sample rate will not necessarily change, as there is only the option to set a preferred one.
+The plugin works as a singleton and provide a simple `audioStream` to listen to.
 
 ```dart
-  // Note that AudioStreamer works as a singleton.
-  AudioStreamer streamer = AudioStreamer();
-  bool _isRecording = false;
-  List<double> _audio = [];
-
-  void onAudio(List<double> buffer) async {
-    _audio.addAll(buffer);
-    var sampleRate = await streamer.actualSampleRate;
-    double secondsRecorded = _audio.length.toDouble() / sampleRate;
+AudioStreamer().audioStream.listen(
+  (List<double> buffer) {
     print('Max amp: ${buffer.reduce(max)}');
     print('Min amp: ${buffer.reduce(min)}');
-    print('$secondsRecorded seconds recorded.');
-    print('-' * 50);
-  }
-
-  void handleError(PlatformException error) {
+  },
+  onError: (Object error) {
     print(error);
-  }
-
-  void start() async {
-    try {
-      // start streaming using default sample rate of 44100 Hz
-      streamer.start(onAudio, handleError);
-
-      setState(() {
-        _isRecording = true;
-      });
-    } catch (error) {
-      print(error);
-    }
-  }
-
-  void stop() async {
-    bool stopped = await streamer.stop();
-    setState(() {
-      _isRecording = stopped;
-    });
-  }
+  },
+  cancelOnError: true,
+);
 ```
+
+The sampling rate can be set and read using the `samplingRate` and `actualSampleRate` properties.
+
+```dart
+// Set the sampling rate. Must be done BEFORE listening to the audioStream.
+AudioStreamer().sampleRate = 22100;
+
+// Get the real sampling rate - may be different from the requested sampling rate.
+int sampleRate = await AudioStreamer().actualSampleRate;
+```
+
+## Example
+
+See the file `example/lib/main.dart` for an example app using the plugin.
+This app also illustrates how to ask for permission to access the microphone.
+Note that on iOS the sample rate will not necessarily change, as there is only the option to set a preferred one.

@@ -1,3 +1,9 @@
+## 4.0.0
+
+* removal of permission_handler dependency - handling permission should take place in the app, not the plugin.
+* major refactor of plugin code
+* update of example app to handle permissions to access the microphone and other improvements.
+
 ## 3.1.0
 
 * upgrade of permission_handler plugins
