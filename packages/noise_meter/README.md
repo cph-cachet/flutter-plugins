@@ -1,20 +1,20 @@
 # Noise Meter
 
-A noise meter package for iOS and Android.
+A noise meter plugin for iOS and Android.
 
 ## Install
 
 Add `noise_meter` as a dependency in `pubspec.yaml`.
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
-On _Android_ you need to add a permission to `AndroidManifest.xml`:
+On **Android** you need to add a permission to `AndroidManifest.xml`:
 
 ```xml
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
-On _iOS_ enable the following:
+On **iOS** enable the following in XCode:
 
 - Capabilities > Background Modes > _Audio, AirPlay and Picture in Picture_
 - In the Runner Xcode project edit the _Info.plist_ file. Add an entry for _'Privacy - Microphone Usage Description'_
@@ -36,72 +36,21 @@ end
 
 ## Usage
 
-See the full example app for how to use the plugin.
+See the example app for how to use the plugin. This app also illustrated how to obtain permission to access the microphone.
 
-### Initialization
-
-The example app uses these variables:
+Noise sampling happens by listening to the `noise` stream, like this:
 
 ```dart
-  bool _isRecording = false;
-  NoiseReading? _latestReading;
-  StreamSubscription<NoiseReading>? _noiseSubscription;
-  NoiseMeter? _noiseMeter;
-```
-
-### Start listening
-
-You listen to noise readings via the `noise` stream on the `NoiseMeter` instance.
-
-```dart
-  void start() {
-    try {
-      _noiseSubscription = _noiseMeter?.noise.listen(onData);
-    } catch (err) {
-      print(err);
-    }
-  }
-```
-
-### On data
-
-When data is streamed, it will be send to the `onData` method, specified when the subscription was created. The incoming data points are of type `NoiseReading` which holds the mean and maximum decibel reading.
-
-```dart
-  void onData(NoiseReading noiseReading) {
-    this.setState(() {
-      _latestReading = noiseReading;
-      if (!this._isRecording) this._isRecording = true;
-    });
-  }
-```
-
-### On errors
-
-Platform errors may occur when recording is interrupted. You must decide what happens if such an error occurs. The [onError] callback must be of type `void Function(Object error)` or `void Function(Object error, StackTrace trace)`.
-
-```dart
-  void onError(Object error) {
+NoiseMeter().noise.listen(
+  (NoiseReading noiseReading) {
+    print('Noise: ${noiseReading.meanDecibel} dB');
+    print('Max amp: ${noiseReading.maxDecibel} dB');
+  },
+  onError: (Object error) {
     print(error);
-    _isRecording = false;
-  }
-```
-
-### Stop listening
-
-To stop listening, the `cancel` method is called on the subscription object.
-
-```dart
-  void stop() {
-    try {
-      _noiseSubscription?.cancel();
-      this.setState(() {
-        this._isRecording = false;
-      });
-    } catch (err) {
-      print(err);
-    }
-  }
+  },
+  cancelOnError: true,
+);
 ```
 
 ## Technical documentation
