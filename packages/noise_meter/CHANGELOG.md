@@ -1,3 +1,8 @@
+## 5.0.0
+
+- upgrade to `audio_streamer: ^4.0.0`
+- update of example app to handle permissions to access the microphone and other improvements.
+
 ## 4.0.1
 
 - upgrade to `audio_streamer: ^3.0.0` ([PR #755](https://github.com/cph-cachet/flutter-plugins/pull/755))
