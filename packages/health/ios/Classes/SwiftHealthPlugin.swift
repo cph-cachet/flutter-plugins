@@ -455,10 +455,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     else {
       throw PluginError(message: "Invalid Arguments")
     }
+    if flowValue < 1 || flowValue > 4 {
+      throw PluginError(message: "Invalid Arguments - activityType, startTime or endTime invalid")
+    }
     let datetime = Date(timeIntervalSince1970: time.doubleValue / 1000)
     let sample = HKCategorySample(
       type: type,
-      value: Int(flowValue),
+      value: Int(flowValue + 1),
       start: datetime,
       end: datetime,
       metadata: [
