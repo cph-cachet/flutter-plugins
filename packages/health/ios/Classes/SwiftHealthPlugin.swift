@@ -136,6 +136,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     else if call.method.elementsEqual("requestAuthorization") {
       try! requestAuthorization(call: call, result: result)
     }
+      
+    else if call.method.elementsEqual("openSystemSettings") {
+      openSystemSettings(call: call, result: result)
+    }
 
     /// Handle getData
     else if call.method.elementsEqual("getData") {
@@ -181,6 +185,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
   func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
     result(HKHealthStore.isHealthDataAvailable())
+  }
+    
+  func openSystemSettings(call: FlutterMethodCall, result: @escaping FlutterResult) {
+    UIApplication.shared.open(URL(string: "x-apple-health://")!)
   }
 
   func hasPermissions(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
