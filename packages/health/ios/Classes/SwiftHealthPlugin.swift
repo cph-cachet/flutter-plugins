@@ -455,8 +455,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     else {
       throw PluginError(message: "Invalid Arguments")
     }
-    if flowValue < 1 || flowValue > 4 {
-      throw PluginError(message: "Invalid Arguments - activityType, startTime or endTime invalid")
+    if flowValue < 0 || flowValue > 4 {
+      throw PluginError(message: "Invalid Arguments - flow \(flowValue) is not a valid value")
     }
     let datetime = Date(timeIntervalSince1970: time.doubleValue / 1000)
     let sample = HKCategorySample(
@@ -497,7 +497,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let predicate = HKQuery.predicateForSamples(
       withStart: dateFrom, end: dateTo, options: .strictStartDate)
     let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-
+    print("Deleting \(dataType)   [\(dateFrom), \(dateTo)]...");
     let deleteQuery = HKSampleQuery(
       sampleType: dataType, predicate: predicate, limit: HKObjectQueryNoLimit,
       sortDescriptors: [sortDescriptor]
@@ -505,10 +505,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
       guard let samplesOrNil = samplesOrNil, error == nil else {
         // Handle the error if necessary
-        print("Error deleting \(dataType)")
+        print("Error retrieving \(dataType): \(error)")
         return
       }
 
+       print("Deleting \(samplesOrNil.count) data points")
       // Delete the retrieved objects from the HealthKit store
       HKHealthStore().delete(samplesOrNil) { (success, error) in
         if let err = error {

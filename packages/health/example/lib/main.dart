@@ -38,14 +38,14 @@ class _HealthAppState extends State<HealthApp> {
   // Or selected types
   static final types = [
     HealthDataType.WEIGHT,
-    HealthDataType.STEPS,
     HealthDataType.HEIGHT,
     HealthDataType.BLOOD_GLUCOSE,
     HealthDataType.WORKOUT,
     HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
     HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+    HealthDataType.STEPS,
     // Uncomment these lines on iOS - only available on iOS
-    HealthDataType.AUDIOGRAM,
+    // HealthDataType.AUDIOGRAM,
     HealthDataType.MENSTRUAL_FLOW,
   ];
 
@@ -93,7 +93,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(days: 30));
+    final yesterday = now.subtract(Duration(days: 3));
 
     // Clear old data points
     _healthDataList.clear();
@@ -129,25 +129,30 @@ class _HealthAppState extends State<HealthApp> {
     // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
     // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
     bool success = true;
-    // success &= await health.writeHealthData(1.925, HealthDataType.HEIGHT, earlier, now);
-    // success &= await health.writeHealthData(90, HealthDataType.WEIGHT, earlier, now);
-    // success &= await health.writeHealthData(90, HealthDataType.HEART_RATE, earlier, now);
-    // success &= await health.writeHealthData(90, HealthDataType.STEPS, earlier, now);
-    // success &= await health.writeHealthData(200, HealthDataType.ACTIVE_ENERGY_BURNED, earlier, now);
-    // success &= await health.writeHealthData(70, HealthDataType.HEART_RATE, earlier, now);
-    // success &= await health.writeHealthData(37, HealthDataType.BODY_TEMPERATURE, earlier, now);
-    // success &= await health.writeHealthData(105, HealthDataType.BLOOD_GLUCOSE, earlier, now);
-    // success &= await health.writeHealthData(1.8, HealthDataType.WATER, earlier, now);
-    // success &= await health.writeWorkoutData(
-    //     HealthWorkoutActivityType.AMERICAN_FOOTBALL, now.subtract(Duration(minutes: 15)), now,
-    //     totalDistance: 2430, totalEnergyBurned: 400);
-    // success &= await health.writeBloodPressure(90, 80, earlier, now);
-    // success &= await health.writeHealthData(0.0, HealthDataType.SLEEP_REM, earlier, now);
-    // success &= await health.writeHealthData(0.0, HealthDataType.SLEEP_ASLEEP, earlier, now);
-    // success &= await health.writeHealthData(0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
-    // success &= await health.writeHealthData(0.0, HealthDataType.SLEEP_DEEP, earlier, now);
-    // success &= await health.writeBloodOxygen(98, earlier, now, flowRate: 1.0);
-    success &= await health.writeMenstrualFlow(MenstrualFlow.medium, now, startOfCycle: true, selfReported: false);
+    success &= await health.writeHealthData(1.925, HealthDataType.HEIGHT, earlier, now);
+    success &= await health.writeHealthData(90, HealthDataType.WEIGHT, earlier, now);
+    success &= await health.writeHealthData(90, HealthDataType.HEART_RATE, earlier, now);
+    success &= await health.writeHealthData(90, HealthDataType.STEPS, earlier, now);
+    success &= await health.writeHealthData(200, HealthDataType.ACTIVE_ENERGY_BURNED, earlier, now);
+    success &= await health.writeHealthData(70, HealthDataType.HEART_RATE, earlier, now);
+    success &= await health.writeHealthData(37, HealthDataType.BODY_TEMPERATURE, earlier, now);
+    success &= await health.writeHealthData(105, HealthDataType.BLOOD_GLUCOSE, earlier, now);
+    success &= await health.writeHealthData(1.8, HealthDataType.WATER, earlier, now);
+    success &= await health.writeWorkoutData(
+        HealthWorkoutActivityType.AMERICAN_FOOTBALL, now.subtract(Duration(minutes: 15)), now,
+        totalDistance: 2430, totalEnergyBurned: 400);
+    success &= await health.writeBloodPressure(90, 80, earlier, now);
+    success &= await health.writeHealthData(0.0, HealthDataType.SLEEP_REM, earlier, now);
+    success &= await health.writeHealthData(0.0, HealthDataType.SLEEP_ASLEEP, earlier, now);
+    success &= await health.writeHealthData(0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
+    success &= await health.writeHealthData(0.0, HealthDataType.SLEEP_DEEP, earlier, now);
+    success &= await health.writeBloodOxygen(98, earlier, now, flowRate: 1.0);
+    // store menstrual flow
+    for (var i = 0; i < MenstrualFlow.values.length; i++) {
+      final flow = MenstrualFlow.values[i];
+      success &= await health.writeMenstrualFlow(flow, now.subtract(Duration(minutes: i)),
+          startOfCycle: flow == MenstrualFlow.unspecified, selfReported: i % 2 == 0);
+    }
 
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
@@ -175,7 +180,7 @@ class _HealthAppState extends State<HealthApp> {
   /// Delete some random health data.
   Future deleteData() async {
     final now = DateTime.now();
-    final earlier = now.subtract(Duration(hours: 24));
+    final earlier = now.subtract(Duration(days: 3));
 
     bool success = true;
     for (HealthDataType type in types) {
