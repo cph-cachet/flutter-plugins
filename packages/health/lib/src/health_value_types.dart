@@ -48,8 +48,7 @@ class AudiogramHealthValue extends HealthValue {
   List<num> _leftEarSensitivities;
   List<num> _rightEarSensitivities;
 
-  AudiogramHealthValue(this._frequencies, this._leftEarSensitivities,
-      this._rightEarSensitivities);
+  AudiogramHealthValue(this._frequencies, this._leftEarSensitivities, this._rightEarSensitivities);
 
   /// Array of frequencies of the test.
   List<num> get frequencies => _frequencies;
@@ -68,9 +67,7 @@ class AudiogramHealthValue extends HealthValue {
   }
 
   factory AudiogramHealthValue.fromJson(json) {
-    return AudiogramHealthValue(
-        List<num>.from(json['frequencies']),
-        List<num>.from(json['leftEarSensitivities']),
+    return AudiogramHealthValue(List<num>.from(json['frequencies']), List<num>.from(json['leftEarSensitivities']),
         List<num>.from(json['rightEarSensitivities']));
   }
 
@@ -89,8 +86,50 @@ class AudiogramHealthValue extends HealthValue {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(frequencies, leftEarSensitivities, rightEarSensitivities);
+  int get hashCode => Object.hash(frequencies, leftEarSensitivities, rightEarSensitivities);
+}
+
+enum MenstrualFlow { unspecified, light, medium, heavy, none }
+
+/// A [HealthValue] object for menstrual fllow
+///
+/// Parameters:
+/// * [flowValue] - the flow value
+/// * [isStartOfCycle] - indicator whether or not this occurence is the first day of the menstrual cycle
+class MenstrualFlowHealthValue extends HealthValue {
+  MenstrualFlow _flowValue;
+  bool _isStartOfCycle;
+
+  MenstrualFlowHealthValue(this._flowValue, {bool isStartOfCycle = false}) : _isStartOfCycle = isStartOfCycle;
+
+  MenstrualFlow get flowValue => _flowValue;
+  bool get isStartOfCycle => _isStartOfCycle;
+
+  @override
+  String toString() => "MenstrualFlow: ${_flowValue.name}, startOfCycle: $_isStartOfCycle";
+
+  factory MenstrualFlowHealthValue.fromJson(json) {
+    final flowValue = json['value'] ?? 0;
+    return MenstrualFlowHealthValue(
+      MenstrualFlow.values[flowValue],
+      isStartOfCycle: json['is_start_of_cycle'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'value': _flowValue.name,
+        'is_start_of_cycle': _isStartOfCycle,
+      };
+
+  @override
+  bool operator ==(Object o) {
+    return o is MenstrualFlowHealthValue &&
+        this._flowValue == o._flowValue &&
+        this._isStartOfCycle == o._isStartOfCycle;
+  }
+
+  @override
+  int get hashCode => Object.hash(_flowValue, _isStartOfCycle);
 }
 
 /// A [HealthValue] object for workouts
@@ -108,12 +147,8 @@ class WorkoutHealthValue extends HealthValue {
   int? _totalDistance;
   HealthDataUnit? _totalDistanceUnit;
 
-  WorkoutHealthValue(
-      this._workoutActivityType,
-      this._totalEnergyBurned,
-      this._totalEnergyBurnedUnit,
-      this._totalDistance,
-      this._totalDistanceUnit);
+  WorkoutHealthValue(this._workoutActivityType, this._totalEnergyBurned, this._totalEnergyBurnedUnit,
+      this._totalDistance, this._totalDistanceUnit);
 
   /// The type of the workout.
   HealthWorkoutActivityType get workoutActivityType => _workoutActivityType;
@@ -136,21 +171,14 @@ class WorkoutHealthValue extends HealthValue {
 
   factory WorkoutHealthValue.fromJson(json) {
     return WorkoutHealthValue(
-        HealthWorkoutActivityType.values.firstWhere(
-            (element) => element.name == json['workoutActivityType']),
-        json['totalEnergyBurned'] != null
-            ? (json['totalEnergyBurned'] as num).toInt()
-            : null,
+        HealthWorkoutActivityType.values.firstWhere((element) => element.name == json['workoutActivityType']),
+        json['totalEnergyBurned'] != null ? (json['totalEnergyBurned'] as num).toInt() : null,
         json['totalEnergyBurnedUnit'] != null
-            ? HealthDataUnit.values.firstWhere(
-                (element) => element.name == json['totalEnergyBurnedUnit'])
+            ? HealthDataUnit.values.firstWhere((element) => element.name == json['totalEnergyBurnedUnit'])
             : null,
-        json['totalDistance'] != null
-            ? (json['totalDistance'] as num).toInt()
-            : null,
+        json['totalDistance'] != null ? (json['totalDistance'] as num).toInt() : null,
         json['totalDistanceUnit'] != null
-            ? HealthDataUnit.values.firstWhere(
-                (element) => element.name == json['totalDistanceUnit'])
+            ? HealthDataUnit.values.firstWhere((element) => element.name == json['totalDistanceUnit'])
             : null);
   }
 
@@ -183,8 +211,8 @@ class WorkoutHealthValue extends HealthValue {
   }
 
   @override
-  int get hashCode => Object.hash(workoutActivityType, totalEnergyBurned,
-      totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
+  int get hashCode =>
+      Object.hash(workoutActivityType, totalEnergyBurned, totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
 }
 
 /// A [HealthValue] object for ECGs
@@ -215,20 +243,15 @@ class ElectrocardiogramHealthValue extends HealthValue {
   });
 
   /// Parses [ElectrocardiogramHealthValue] from JSON.
-  factory ElectrocardiogramHealthValue.fromJson(json) =>
-      ElectrocardiogramHealthValue(
-        voltageValues: (json['voltageValues'] as List)
-            .map((e) => ElectrocardiogramVoltageValue.fromJson(e))
-            .toList(),
+  factory ElectrocardiogramHealthValue.fromJson(json) => ElectrocardiogramHealthValue(
+        voltageValues: (json['voltageValues'] as List).map((e) => ElectrocardiogramVoltageValue.fromJson(e)).toList(),
         averageHeartRate: json['averageHeartRate'],
         samplingFrequency: json['samplingFrequency'],
-        classification: ElectrocardiogramClassification.values
-            .firstWhere((c) => c.value == json['classification']),
+        classification: ElectrocardiogramClassification.values.firstWhere((c) => c.value == json['classification']),
       );
 
   Map<String, dynamic> toJson() => {
-        'voltageValues':
-            voltageValues.map((e) => e.toJson()).toList(growable: false),
+        'voltageValues': voltageValues.map((e) => e.toJson()).toList(growable: false),
         'averageHeartRate': averageHeartRate,
         'samplingFrequency': samplingFrequency,
         'classification': classification.value,
@@ -243,12 +266,10 @@ class ElectrocardiogramHealthValue extends HealthValue {
       classification == o.classification;
 
   @override
-  int get hashCode => Object.hash(
-      voltageValues, averageHeartRate, samplingFrequency, classification);
+  int get hashCode => Object.hash(voltageValues, averageHeartRate, samplingFrequency, classification);
 
   @override
-  String toString() =>
-      '${voltageValues.length} values, $averageHeartRate BPM, $samplingFrequency HZ, $classification';
+  String toString() => '${voltageValues.length} values, $averageHeartRate BPM, $samplingFrequency HZ, $classification';
 }
 
 /// Single voltage value belonging to a [ElectrocardiogramHealthValue]
@@ -262,8 +283,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   ElectrocardiogramVoltageValue(this.voltage, this.timeSinceSampleStart);
 
   factory ElectrocardiogramVoltageValue.fromJson(json) =>
-      ElectrocardiogramVoltageValue(
-          json['voltage'], json['timeSinceSampleStart']);
+      ElectrocardiogramVoltageValue(json['voltage'], json['timeSinceSampleStart']);
 
   Map<String, dynamic> toJson() => {
         'voltage': voltage,
@@ -272,9 +292,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
 
   @override
   bool operator ==(Object o) =>
-      o is ElectrocardiogramVoltageValue &&
-      voltage == o.voltage &&
-      timeSinceSampleStart == o.timeSinceSampleStart;
+      o is ElectrocardiogramVoltageValue && voltage == o.voltage && timeSinceSampleStart == o.timeSinceSampleStart;
 
   @override
   int get hashCode => Object.hash(voltage, timeSinceSampleStart);
