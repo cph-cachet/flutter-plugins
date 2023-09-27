@@ -514,21 +514,21 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
 
       case var (samplesCategory as [HKCategorySample]) as Any:
+      
         if dataTypeKey == self.SLEEP_IN_BED {
           samplesCategory = samplesCategory.filter { $0.value == 0 }
-
-        }
-        if dataTypeKey == self.SLEEP_ASLEEP {
-          samplesCategory = samplesCategory.filter { $0.value == 1 }
         }
         if dataTypeKey == self.SLEEP_AWAKE {
           samplesCategory = samplesCategory.filter { $0.value == 2 }
         }
-        if dataTypeKey == self.SLEEP_DEEP {
+        if dataTypeKey == self.SLEEP_ASLEEP {
           samplesCategory = samplesCategory.filter { $0.value == 3 }
         }
-        if dataTypeKey == self.SLEEP_REM {
+        if dataTypeKey == self.SLEEP_DEEP {
           samplesCategory = samplesCategory.filter { $0.value == 4 }
+        }
+        if dataTypeKey == self.SLEEP_REM {
+          samplesCategory = samplesCategory.filter { $0.value == 5 }
         }
         if dataTypeKey == self.HEADACHE_UNSPECIFIED {
           samplesCategory = samplesCategory.filter { $0.value == 0 }
