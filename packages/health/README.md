@@ -69,7 +69,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |                          |                              |                                        |
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                          |                              |                                        |
 | ELECTROCARDIOGRAM           | VOLT                    | yes     |                          |                              | Requires Apple Watch to write the data |
-| VO2MAX                      | ?                       |         |                          | yes                          |                                        |
+| VO2MAX                      | VO2MAX_UNIT             |         |                          | yes                          |                                        |
 
 ## Setup
 
