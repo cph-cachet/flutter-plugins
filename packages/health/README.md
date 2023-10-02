@@ -22,7 +22,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 ## Data Types
 
 | **Data Type**               | **Unit**                | **iOS** | **Android (Google Fit)** | **Android (Health Connect)** | **Comments**                           |
-| --------------------------- | ----------------------- | ------- | ------------------------ |------------------------------| -------------------------------------- |
+|-----------------------------|-------------------------|---------| ------------------------ |------------------------------|----------------------------------------|
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes                      | yes                          |                                        |
 | BASAL_ENERGY_BURNED         | CALORIES                | yes     |                          | yes                          |                                        |
 | BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes                      | yes                          |                                        |
@@ -69,6 +69,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |                          |                              |                                        |
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                          |                              |                                        |
 | ELECTROCARDIOGRAM           | VOLT                    | yes     |                          |                              | Requires Apple Watch to write the data |
+| VO2MAX                      | ?                       |         |                          | yes                          |                                        |
 
 ## Setup
 
