@@ -501,7 +501,7 @@ class FlutterForegroundServicePlugin: FlutterPlugin, MethodCallHandler, IntentSe
   class NotificationHelper(val notificationId: Int = 1){
 
     //things that MUST be set for a notification to function property (probably)
-    
+
     //setContentTitle
     //setContentText
     //setSmallIcon

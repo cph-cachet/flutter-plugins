@@ -1,3 +1,11 @@
+## 3.0.0
+
+- Upgrade to flutter version 3.0.0
+
+## 2.0.0
+
+- Updated flutter version and Android AGP
+
 ## 1.2.0
 
 - Added `DeviceInformationService`, `BatteryLevel`, live `HeartRateMeasurement`and more `UserData` values.

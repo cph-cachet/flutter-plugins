@@ -14,9 +14,19 @@ class HealthFactory {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   String? _deviceId;
   final _deviceInfo = DeviceInfoPlugin();
+  late bool _useHealthConnectIfAvailable;
 
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+
+  /// The plugin was created to use Health Connect (if true) or Google Fit (if false).
+  bool get useHealthConnectIfAvailable => _useHealthConnectIfAvailable;
+
+  HealthFactory({bool useHealthConnectIfAvailable = false}) {
+    _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
+    if (_useHealthConnectIfAvailable)
+      _channel.invokeMethod('useHealthConnectIfAvailable');
+  }
 
   /// Check if a given data type is available on the platform
   bool isDataTypeAvailable(HealthDataType dataType) =>
@@ -47,7 +57,7 @@ class HealthFactory {
   ///   with a READ or READ_WRITE access.
   ///
   ///   On Android, this function returns true or false, depending on whether the specified access right has been granted.
-  static Future<bool?> hasPermissions(List<HealthDataType> types,
+  Future<bool?> hasPermissions(List<HealthDataType> types,
       {List<HealthDataAccess>? permissions}) async {
     if (permissions != null && permissions.length != types.length)
       throw ArgumentError(
@@ -68,11 +78,21 @@ class HealthFactory {
     });
   }
 
-  /// Revoke permissions obtained earlier.
+  /// Revokes permissions of all types.
+  /// Uses `disableFit()` on Google Fit.
   ///
-  /// Not supported on iOS and method does nothing.
-  static Future<void> revokePermissions() async {
-    return await _channel.invokeMethod('revokePermissions');
+  /// Not implemented on iOS as there is no way to programmatically remove access.
+  Future<void> revokePermissions() async {
+    try {
+      if (_platformType == PlatformType.IOS) {
+        throw UnsupportedError(
+            'Revoke permissions is not supported on iOS. Please revoke permissions manually in the settings.');
+      }
+      await _channel.invokeMethod('revokePermissions');
+      return;
+    } catch (e) {
+      print(e);
+    }
   }
 
   /// Requests permissions to access data types in Apple Health or Google Fit.
@@ -105,10 +125,14 @@ class HealthFactory {
       for (int i = 0; i < types.length; i++) {
         final type = types[i];
         final permission = permissions[i];
-        if (type == HealthDataType.ELECTROCARDIOGRAM &&
+        if ((type == HealthDataType.ELECTROCARDIOGRAM ||
+                type == HealthDataType.HIGH_HEART_RATE_EVENT ||
+                type == HealthDataType.LOW_HEART_RATE_EVENT ||
+                type == HealthDataType.IRREGULAR_HEART_RATE_EVENT ||
+                type == HealthDataType.WALKING_HEART_RATE) &&
             permission != HealthDataAccess.READ) {
           throw ArgumentError(
-              'Requesting WRITE permission on ELECTROCARDIOGRAM is not allowed.');
+              'Requesting WRITE permission on ELECTROCARDIOGRAM / HIGH_HEART_RATE_EVENT / LOW_HEART_RATE_EVENT / IRREGULAR_HEART_RATE_EVENT / WALKING_HEART_RATE is not allowed.');
         }
       }
     }
@@ -128,6 +152,7 @@ class HealthFactory {
     return isAuthorized ?? false;
   }
 
+  /// Obtains health and weight if BMI is requested on Android.
   static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
     final index = mTypes.indexOf(HealthDataType.BODY_MASS_INDEX);
 
@@ -197,6 +222,7 @@ class HealthFactory {
   /// * [endTime] - the end time when this [value] is measured.
   ///   + It must be equal to or later than [startTime].
   ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
+  /// * [unit] - <mark>(iOS ONLY)</mark> the unit the health data is measured in.
   ///
   /// Values for Sleep and Headache are ignored and will be automatically assigned the coresponding value.
   Future<bool> writeHealthData(
@@ -212,11 +238,12 @@ class HealthFactory {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
     if ({
-      HealthDataType.HIGH_HEART_RATE_EVENT,
-      HealthDataType.LOW_HEART_RATE_EVENT,
-      HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-      HealthDataType.ELECTROCARDIOGRAM,
-    }.contains(type))
+          HealthDataType.HIGH_HEART_RATE_EVENT,
+          HealthDataType.LOW_HEART_RATE_EVENT,
+          HealthDataType.IRREGULAR_HEART_RATE_EVENT,
+          HealthDataType.ELECTROCARDIOGRAM,
+        }.contains(type) &&
+        _platformType == PlatformType.IOS)
       throw ArgumentError(
           "$type - iOS doesnt support writing this data type in HealthKit");
 
@@ -228,6 +255,8 @@ class HealthFactory {
     if (type == HealthDataType.SLEEP_ASLEEP ||
         type == HealthDataType.SLEEP_AWAKE ||
         type == HealthDataType.SLEEP_IN_BED ||
+        type == HealthDataType.SLEEP_DEEP ||
+        type == HealthDataType.SLEEP_REM ||
         type == HealthDataType.HEADACHE_NOT_PRESENT ||
         type == HealthDataType.HEADACHE_MILD ||
         type == HealthDataType.HEADACHE_MODERATE ||
@@ -295,6 +324,41 @@ class HealthFactory {
       'endTime': endTime.millisecondsSinceEpoch
     };
     bool? success = await _channel.invokeMethod('writeBloodPressure', args);
+    return success ?? false;
+  }
+
+  /// Saves blood oxygen saturation record into Apple Health or Google Fit/Health Connect.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [saturation] - the saturation of the blood oxygen in percentage
+  /// * [flowRate] - optional supplemental oxygen flow rate, only supported on Google Fit (default 0.0)
+  /// * [startTime] - the start time when this [value] is measured.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when this [value] is measured.
+  ///   + It must be equal to or later than [startTime].
+  ///   + Simply set [endTime] equal to [startTime] if the blood oxygen saturation is measured only at a specific point in time.
+  Future<bool> writeBloodOxygen(
+      double saturation, DateTime startTime, DateTime endTime,
+      {double flowRate = 0.0}) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+    bool? success;
+
+    if (_platformType == PlatformType.IOS) {
+      success = await writeHealthData(
+          saturation, HealthDataType.BLOOD_OXYGEN, startTime, endTime);
+    } else if (_platformType == PlatformType.ANDROID) {
+      Map<String, dynamic> args = {
+        'value': saturation,
+        'flowRate': flowRate,
+        'startTime': startTime.millisecondsSinceEpoch,
+        'endTime': endTime.millisecondsSinceEpoch,
+        'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,
+      };
+      success = await _channel.invokeMethod('writeBloodOxygen', args);
+    }
     return success ?? false;
   }
 
@@ -424,7 +488,7 @@ class HealthFactory {
     return await _dataQuery(startTime, endTime, dataType);
   }
 
-  /// The main function for fetching health data
+  /// Fetches data points from Android/iOS native code.
   Future<List<HealthDataPoint>> _dataQuery(
       DateTime startTime, DateTime endTime, HealthDataType dataType) async {
     final args = <String, dynamic>{
@@ -434,6 +498,7 @@ class HealthFactory {
       'endTime': endTime.millisecondsSinceEpoch
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
+
     if (fetchedDataPoints != null) {
       final mesg = <String, dynamic>{
         "dataType": dataType,
@@ -452,6 +517,7 @@ class HealthFactory {
     }
   }
 
+  /// Parses the fetched data points into a list of [HealthDataPoint].
   static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
     final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
@@ -514,14 +580,19 @@ class HealthFactory {
     return stepsCount;
   }
 
+  /// Assigns numbers to specific [HealthDataType]s.
   int _alignValue(HealthDataType type) {
     switch (type) {
       case HealthDataType.SLEEP_IN_BED:
         return 0;
-      case HealthDataType.SLEEP_ASLEEP:
-        return 1;
       case HealthDataType.SLEEP_AWAKE:
         return 2;
+      case HealthDataType.SLEEP_ASLEEP:
+        return 3;
+      case HealthDataType.SLEEP_DEEP:
+        return 4;
+      case HealthDataType.SLEEP_REM:
+        return 5;
       case HealthDataType.HEADACHE_UNSPECIFIED:
         return 0;
       case HealthDataType.HEADACHE_NOT_PRESENT:

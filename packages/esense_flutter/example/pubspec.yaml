@@ -30,8 +30,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
-  # The eSense plugin requires persmissions to location and bluetooth.
-  permission_handler: ^9.2.0
+  # The eSense plugin requires permissions to location and bluetooth.
+  permission_handler: ^10.3.0  
 
 dev_dependencies:
   flutter_test:

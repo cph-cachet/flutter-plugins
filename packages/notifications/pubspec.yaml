@@ -1,10 +1,10 @@
 name: notifications
 description: A plugin for tracking notifications on the device. Works exclusively for Android.
-version: 2.0.1
+version: 3.0.0
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/notifications
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ">=3.0.5 <4.0.0"
   flutter: ">=1.20.0"
 
 dependencies:

@@ -1,26 +1,21 @@
-import 'package:noise_meter/noise_meter.dart';
-import 'package:flutter/material.dart';
 import 'dart:async';
 
-void main() {
-  runApp(new MyApp());
-}
+import 'package:noise_meter/noise_meter.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-class MyApp extends StatefulWidget {
+void main() => runApp(NoiseMeterApp());
+
+class NoiseMeterApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  _NoiseMeterAppState createState() => _NoiseMeterAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _NoiseMeterAppState extends State<NoiseMeterApp> {
   bool _isRecording = false;
+  NoiseReading? _latestReading;
   StreamSubscription<NoiseReading>? _noiseSubscription;
-  late NoiseMeter _noiseMeter;
-
-  @override
-  void initState() {
-    super.initState();
-    _noiseMeter = new NoiseMeter(onError);
-  }
+  NoiseMeter? noiseMeter;
 
   @override
   void dispose() {
@@ -28,67 +23,76 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-  void onData(NoiseReading noiseReading) {
-    this.setState(() {
-      if (!this._isRecording) {
-        this._isRecording = true;
-      }
-    });
-    print(noiseReading.toString());
-  }
+  void onData(NoiseReading noiseReading) =>
+      setState(() => _latestReading = noiseReading);
 
   void onError(Object error) {
-    print(error.toString());
-    _isRecording = false;
+    print(error);
+    stop();
   }
 
-  void start() async {
-    try {
-      _noiseSubscription = _noiseMeter.noiseStream.listen(onData);
-    } catch (err) {
-      print(err);
-    }
+  /// Check if microphone permission is granted.
+  Future<bool> checkPermission() async => await Permission.microphone.isGranted;
+
+  /// Request the microphone permission.
+  Future<void> requestPermission() async =>
+      await Permission.microphone.request();
+
+  /// Start noise sampling.
+  Future<void> start() async {
+    // Create a noise meter, if not already done.
+    noiseMeter ??= NoiseMeter();
+
+    // Check permission to use the microphone.
+    //
+    // Remember to update the AndroidManifest file (Android) and the
+    // Info.plist and pod files (iOS).
+    if (!(await checkPermission())) await requestPermission();
+
+    // Listen to the noise stream.
+    _noiseSubscription = noiseMeter?.noise.listen(onData, onError: onError);
+    setState(() => _isRecording = true);
   }
 
-  void stop() async {
-    try {
-      if (_noiseSubscription != null) {
-        _noiseSubscription!.cancel();
-        _noiseSubscription = null;
-      }
-      this.setState(() {
-        this._isRecording = false;
-      });
-    } catch (err) {
-      print('stopRecorder error: $err');
-    }
+  /// Stop sampling.
+  void stop() {
+    _noiseSubscription?.cancel();
+    setState(() => _isRecording = false);
   }
-
-  List<Widget> getContent() => <Widget>[
-        Container(
-            margin: EdgeInsets.all(25),
-            child: Column(children: [
-              Container(
-                child: Text(_isRecording ? "Mic: ON" : "Mic: OFF",
-                    style: TextStyle(fontSize: 25, color: Colors.blue)),
-                margin: EdgeInsets.only(top: 20),
-              )
-            ])),
-      ];
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: getContent())),
-        floatingActionButton: FloatingActionButton(
+  Widget build(BuildContext context) => MaterialApp(
+        home: Scaffold(
+          body: Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                Container(
+                    margin: EdgeInsets.all(25),
+                    child: Column(children: [
+                      Container(
+                        child: Text(_isRecording ? "Mic: ON" : "Mic: OFF",
+                            style: TextStyle(fontSize: 25, color: Colors.blue)),
+                        margin: EdgeInsets.only(top: 20),
+                      ),
+                      Container(
+                        child: Text(
+                          'Noise: ${_latestReading?.meanDecibel.toStringAsFixed(2)} dB',
+                        ),
+                        margin: EdgeInsets.only(top: 20),
+                      ),
+                      Container(
+                        child: Text(
+                          'Max: ${_latestReading?.maxDecibel.toStringAsFixed(2)} dB',
+                        ),
+                      )
+                    ])),
+              ])),
+          floatingActionButton: FloatingActionButton(
             backgroundColor: _isRecording ? Colors.red : Colors.green,
+            child: _isRecording ? Icon(Icons.stop) : Icon(Icons.mic),
             onPressed: _isRecording ? stop : start,
-            child: _isRecording ? Icon(Icons.stop) : Icon(Icons.mic)),
-      ),
-    );
-  }
+          ),
+        ),
+      );
 }

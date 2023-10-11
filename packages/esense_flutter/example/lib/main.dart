@@ -5,9 +5,11 @@ import 'dart:async';
 import 'package:esense_flutter/esense.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -33,19 +35,22 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _askForPermissions() async {
-    if (!(await Permission.bluetooth.request().isGranted)) {
+    if (!(await Permission.bluetoothScan.request().isGranted &&
+        await Permission.bluetoothConnect.request().isGranted)) {
       print(
           'WARNING - no permission to use Bluetooth granted. Cannot access eSense device.');
     }
-    if (!(await Permission.locationWhenInUse.request().isGranted)) {
-      print(
-          'WARNING - no permission to access location granted. Cannot access eSense device.');
+    // for some strange reason, Android requires permission to location for Bluetooth to work.....?
+    if (Platform.isAndroid) {
+      if (!(await Permission.locationWhenInUse.request().isGranted)) {
+        print(
+            'WARNING - no permission to access location granted. Cannot access eSense device.');
+      }
     }
   }
 
   Future<void> _listenToESense() async {
-    // for some strange reason, Android requires permission to location for the eSense to work????
-    if (Platform.isAndroid) await _askForPermissions();
+    await _askForPermissions();
 
     // if you want to get the connection events when connecting,
     // set up the listener BEFORE connecting...
@@ -67,6 +72,7 @@ class _MyAppState extends State<MyApp> {
             break;
           case ConnectionType.disconnected:
             _deviceStatus = 'disconnected';
+            sampling = false;
             break;
           case ConnectionType.device_found:
             _deviceStatus = 'device_found';
@@ -81,7 +87,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _connectToESense() async {
     if (!connected) {
-      print('connecting...');
+      print('Trying to connect to eSense device...');
       connected = await eSenseManager.connect();
 
       setState(() {
@@ -142,15 +148,15 @@ class _MyAppState extends State<MyApp> {
         const Duration(seconds: 4),
         () async =>
             await eSenseManager.getAdvertisementAndConnectionInterval());
-    Timer(const Duration(seconds: 5),
+    Timer(const Duration(seconds: 15),
         () async => await eSenseManager.getSensorConfig());
   }
 
   StreamSubscription? subscription;
   void _startListenToSensorEvents() async {
-    // any changes to the sampling frequency must be done BEFORE listening to sensor events
-    print('setting sampling frequency...');
-    await eSenseManager.setSamplingRate(10);
+    // // any changes to the sampling frequency must be done BEFORE listening to sensor events
+    // print('setting sampling frequency...');
+    // await eSenseManager.setSamplingRate(10);
 
     // subscribe to sensor event from the eSense device
     subscription = eSenseManager.sensorEvents.listen((event) {
