@@ -427,7 +427,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             mealType = "Dinner"
         }
         
-        var metadata = ["HKFoodMeal": "\(mealType)"]
+        var metadata = ["HKMetadataKeyFoodType": "\(mealType)"]
         
         var nutrition = Set<HKSample>()
 
@@ -450,7 +450,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         if #available(iOS 15.0, *){
-            let meal = HKCorrelation.init(type: HKCorrelationType.init(HKCorrelationTypeIdentifier.food), start: dateFrom, end: dateTo, objects: nutrition, metadata: metadata)
+            let type = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
+            let meal = HKCorrelation(type: type, start: dateFrom, end: dateTo, objects: nutrition, metadata: metadata)
             
             HKHealthStore().save(meal, withCompletion: { (success, error) in
                 if let err = error {
