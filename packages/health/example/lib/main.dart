@@ -35,7 +35,7 @@ class _HealthAppState extends State<HealthApp> {
   // NOTE: These are only the ones supported on Androids new API Health Connect.
   // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
   // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
-  static final types = dataTypesAndroid;
+  static final types = dataTypesIOS;
   // Or selected types
   // static final types = [
   //   HealthDataType.WEIGHT,
@@ -49,7 +49,7 @@ class _HealthAppState extends State<HealthApp> {
   //   // HealthDataType.AUDIOGRAM
   // ];
 
-  // with coresponsing permissions
+  // with corresponsing permissions
   // READ only
   // final permissions = types.map((e) => HealthDataAccess.READ).toList();
   // Or READ and WRITE
@@ -134,7 +134,7 @@ class _HealthAppState extends State<HealthApp> {
     // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
     // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
     bool success = true;
-    success &= await health.writeHealthData(
+/*     success &= await health.writeHealthData(
         1.925, HealthDataType.HEIGHT, earlier, now);
     success &=
         await health.writeHealthData(90, HealthDataType.WEIGHT, earlier, now);
@@ -168,7 +168,8 @@ class _HealthAppState extends State<HealthApp> {
         0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
     success &= await health.writeHealthData(
         0.0, HealthDataType.SLEEP_DEEP, earlier, now);
-
+ */
+    success &= await health.writeMeal(earlier, now, 1000, 50, 25, 50, "Banana");
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
@@ -276,6 +277,15 @@ class _HealthAppState extends State<HealthApp> {
                   "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
               trailing: Text(
                   '${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
+              subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+            );
+          }
+          if (p.value is NutritionHealthValue) {
+            return ListTile(
+              title: Text(
+                  "${p.typeString}: ${(p.value as NutritionHealthValue).name}"),
+              trailing:
+                  Text('${(p.value as NutritionHealthValue).calories} kcal'),
               subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
             );
           }

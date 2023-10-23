@@ -391,11 +391,11 @@ class HealthFactory {
     Map<String, dynamic> args = {
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
-      'caloriesConsumed' : caloriesConsumed,
-      'carbohydrates' : carbohydrates,
-      'protein' : protein,
-      'fatTotal' : fatTotal,
-      'name' : name,
+      'caloriesConsumed': caloriesConsumed,
+      'carbohydrates': carbohydrates,
+      'protein': protein,
+      'fatTotal': fatTotal,
+      'name': name,
     };
     bool? success = await _channel.invokeMethod('writeMeal', args);
     return success ?? false;
@@ -532,6 +532,8 @@ class HealthFactory {
         value = WorkoutHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.ELECTROCARDIOGRAM) {
         value = ElectrocardiogramHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.NUTRITION) {
+        value = NutritionHealthValue.fromJson(e);
       } else {
         value = NumericHealthValue(e['value']);
       }

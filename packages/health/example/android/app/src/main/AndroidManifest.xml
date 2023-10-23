@@ -57,7 +57,8 @@
     <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE"/>
     <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE"/>
     <uses-permission android:name="android.permission.health.WRITE_RESPIRATORY_RATE"/>
-
+    <uses-permission android:name="android.permission.health.WRITE_NUTRITION"/>
+    <uses-permission android:name="android.permission.health.READ_NUTRITION"/>
 
     <application android:label="health_example"
         android:icon="@mipmap/ic_launcher">
@@ -79,8 +80,8 @@
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
         </activity>
-        <!-- For versions starting Android 14, create an activity alias to show the rationale
-     of Health Connect permissions once users click the privacy policy link. -->
+<!--         For versions starting Android 14, create an activity alias to show the rationale
+     of Health Connect permissions once users click the privacy policy link. 
         <activity-alias
             android:name="ViewPermissionUsageActivity"
             android:exported="true"
@@ -92,7 +93,7 @@
             </intent-filter>
         </activity-alias>
 
-        <meta-data android:name="flutterEmbedding"
+ -->        <meta-data android:name="flutterEmbedding"
             android:value="2"/>
     </application>
 </manifest>

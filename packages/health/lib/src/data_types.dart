@@ -113,6 +113,7 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.HEADACHE_SEVERE,
   HealthDataType.HEADACHE_UNSPECIFIED,
   HealthDataType.ELECTROCARDIOGRAM,
+  HealthDataType.NUTRITION,
 ];
 
 /// List of data types available on Android

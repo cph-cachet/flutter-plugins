@@ -283,6 +283,79 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   String toString() => voltage.toString();
 }
 
+class NutritionHealthValue extends HealthValue {
+  /*
+          val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
+        val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
+        val calories = call.argument<Double>("caloriesConsumed")!! as Double
+        val carbs = call.argument<Double>("carbohydrates") as Double?
+        val protein = call.argument<Double>("protein") as Double?
+        val fat = call.argument<Double>("fatTotal") as Double?
+        val name = call.argument<String>("name")
+
+  */
+
+  double? _protein;
+  double? _calories;
+  double? _fat;
+  String? _name;
+  double? _carbs;
+
+  NutritionHealthValue(
+      this._protein, this._calories, this._fat, this._name, this._carbs);
+
+  /// The type of the workout.
+  double? get protein => _protein;
+
+  double? get calories => _calories;
+
+  double? get fat => _fat;
+
+  String? get name => _name;
+
+  double? get carbs => _carbs;
+
+  factory NutritionHealthValue.fromJson(json) {
+    return NutritionHealthValue(
+      json['protein'] != null ? (json['protein'] as num).toDouble() : null,
+      json['calories'] != null ? (json['calories'] as num).toDouble() : null,
+      json['fat'] != null ? (json['fat'] as num).toDouble() : null,
+      json['name'] != null ? (json['name'] as String) : null,
+      json['carbs'] != null ? (json['carbs'] as num).toDouble() : null,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'protein': _protein,
+        'calories': _calories,
+        'fat': _fat,
+        'name': _name,
+        'carbs': _carbs,
+      };
+
+  @override
+  String toString() {
+    return """protein: ${protein.toString()},
+    calories: ${calories.toString()},
+    fat: ${fat.toString()},
+    name: ${name.toString()},
+    carbs: ${carbs.toString()}""";
+  }
+
+  @override
+  bool operator ==(Object o) {
+    return o is NutritionHealthValue &&
+        o.protein == this.protein &&
+        o.calories == this.calories &&
+        o.fat == this.fat &&
+        o.name == this.name;
+  }
+
+  @override
+  int get hashCode => Object.hash(protein, calories, fat, name, carbs);
+}
+
 /// An abstract class for health values.
 abstract class HealthValue {
   Map<String, dynamic> toJson();

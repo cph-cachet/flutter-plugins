@@ -2,7 +2,7 @@ import 'package:health/health.dart';
 
 /// List of data types available on iOS
 const List<HealthDataType> dataTypesIOS = [
-  HealthDataType.ACTIVE_ENERGY_BURNED,
+/*   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.AUDIOGRAM,
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
@@ -47,7 +47,8 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.HEADACHE_MODERATE,
   HealthDataType.HEADACHE_SEVERE,
   HealthDataType.HEADACHE_UNSPECIFIED,
-  //HealthDataType.ELECTROCARDIOGRAM,
+ */  //HealthDataType.ELECTROCARDIOGRAM,
+ HealthDataType.NUTRITION,
 ];
 
 /// List of data types available on Android
@@ -78,4 +79,5 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.WORKOUT,
   HealthDataType.RESTING_HEART_RATE,
   HealthDataType.FLIGHTS_CLIMBED,
+  HealthDataType.NUTRITION,
 ];
