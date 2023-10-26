@@ -3,6 +3,7 @@ library health;
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io' show Platform;
+import 'package:collection/collection.dart';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
