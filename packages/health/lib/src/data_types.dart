@@ -455,6 +455,14 @@ enum HealthWorkoutActivityType {
   OTHER,
 }
 
+enum MealType {
+  BREAKFAST,
+  LUNCH,
+  DINNER,
+  SNACK,
+  UNKOWN,
+}
+
 /// Classifications for ECG readings.
 enum ElectrocardiogramClassification {
   NOT_SET,

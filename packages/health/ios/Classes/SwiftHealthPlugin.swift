@@ -421,29 +421,20 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         guard let arguments = call.arguments as? NSDictionary,
               let startTime = (arguments["startTime"] as? NSNumber),
               let endTime = (arguments["endTime"] as? NSNumber),
-              let calories = (arguments["caloriesConsumed"] as? Double),
+              let calories = (arguments["caloriesConsumed"] as? Double?) ?? 0,
               let carbs = (arguments["carbohydrates"] as? Double?) ?? 0,
               let protein = (arguments["protein"] as? Double?) ?? 0,
               let fat = (arguments["fatTotal"] as? Double?) ?? 0,
-              let name = (arguments["name"] as? String?)
+              let name = (arguments["name"] as? String?),
+              let mealType = (arguments["mealType"] as? String?)
         else {
             throw PluginError(message: "Invalid Arguments")
         }
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
-        
-        let hour = Calendar.current.component(.hour, from: dateFrom)
-        var mealType = "Snacks"
-        
-        if(hour > 5 && hour < 11) {
-            mealType = "Breakfast"
-        } else if(hour > 12 && hour < 15) {
-            mealType = "Lunch"
-        } else if(hour > 18 && hour < 22) {
-            mealType = "Dinner"
-        }
-        
-        var metadata = ["HKFoodMeal": "\(mealType)"]
+            
+        var mealTypeString = mealType ?? "UNKNOWN"
+        var metadata = ["HKFoodMeal": "\(mealTypeString)"]
         
         if(name != nil) {
             metadata[HKMetadataKeyFoodType] = "\(name!)"
@@ -471,7 +462,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         if #available(iOS 15.0, *){
             let meal = HKCorrelation.init(type: HKCorrelationType.init(HKCorrelationTypeIdentifier.food), start: dateFrom, end: dateTo, objects: nutrition, metadata: metadata)
-            print(meal)
             
             HKHealthStore().save(meal, withCompletion: { (success, error) in
                 if let err = error {
@@ -719,31 +709,25 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 var carbs = 0.0
                 var protein = 0.0
                 
-                var name = nutritionSample[0].metadata?[HKMetadataKeyFoodType] as! String
-            
+                let name = nutritionSample[0].metadata?[HKMetadataKeyFoodType] as! String
+                let mealType = nutritionSample[0].metadata?["HKFoodMeal"]
                 let samples = nutritionSample[0].objects
                 for sample in samples {
                     if let quantitySample = sample as? HKQuantitySample {
                         if (quantitySample.quantityType == HKObjectType.quantityType(forIdentifier: .dietaryEnergyConsumed)){
                             calories = quantitySample.quantity.doubleValue(for: HKUnit.kilocalorie())
-                            print(calories)
-                            
                         }
                         if (quantitySample.quantityType == HKObjectType.quantityType(forIdentifier: .dietaryCarbohydrates)){
                             carbs = quantitySample.quantity.doubleValue(for: HKUnit.gram())
-                            print(carbs)
                         }
                         if (quantitySample.quantityType == HKObjectType.quantityType(forIdentifier: .dietaryProtein)){
                             protein = quantitySample.quantity.doubleValue(for: HKUnit.gram())
-                            print(protein)
                         }
                         if (quantitySample.quantityType == HKObjectType.quantityType(forIdentifier: .dietaryFatTotal)){
                             fat = quantitySample.quantity.doubleValue(for: HKUnit.gram())
-                            print(fat)
                         }
                     }
                 }
-                print(fat)
                 
                 
                 let dictionaries = nutritionSample.map { sample -> NSDictionary in
@@ -754,6 +738,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "protein": protein,
                         "fat": fat,
                         "name": name,
+                        "mealType": mealType,
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,

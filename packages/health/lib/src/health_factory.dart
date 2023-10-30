@@ -377,14 +377,14 @@ class HealthFactory {
   /// * [fatTotal] - optional total fat information.
   /// * [name] - optional name information about this meal.
   Future<bool> writeMeal(
-    DateTime startTime,
-    DateTime endTime,
-    double caloriesConsumed,
-    double? carbohydrates,
-    double? protein,
-    double? fatTotal,
-    String? name,
-  ) async {
+      DateTime startTime,
+      DateTime endTime,
+      double? caloriesConsumed,
+      double? carbohydrates,
+      double? protein,
+      double? fatTotal,
+      String? name,
+      MealType mealType) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
 
@@ -396,6 +396,7 @@ class HealthFactory {
       'protein': protein,
       'fatTotal': fatTotal,
       'name': name,
+      'mealType': mealType.name,
     };
     bool? success = await _channel.invokeMethod('writeMeal', args);
     return success ?? false;

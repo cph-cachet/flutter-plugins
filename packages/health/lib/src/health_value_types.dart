@@ -283,37 +283,42 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   String toString() => voltage.toString();
 }
 
+/// A [HealthValue] object for nutrition
+/// Parameters:
+/// * [protein] - the amount of protein in grams
+/// * [calories] - the amount of calories in kcal
+/// * [fat] - the amount of fat in grams
+/// * [name] - the name of the food
+/// * [carbs] - the amount of carbs in grams
+/// * [mealType] - the type of meal
 class NutritionHealthValue extends HealthValue {
-  /*
-          val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
-        val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
-        val calories = call.argument<Double>("caloriesConsumed")!! as Double
-        val carbs = call.argument<Double>("carbohydrates") as Double?
-        val protein = call.argument<Double>("protein") as Double?
-        val fat = call.argument<Double>("fatTotal") as Double?
-        val name = call.argument<String>("name")
-
-  */
-
   double? _protein;
   double? _calories;
   double? _fat;
   String? _name;
   double? _carbs;
+  String _mealType;
 
-  NutritionHealthValue(
-      this._protein, this._calories, this._fat, this._name, this._carbs);
+  NutritionHealthValue(this._protein, this._calories, this._fat, this._name,
+      this._carbs, this._mealType);
 
-  /// The type of the workout.
+  /// The amount of protein in grams.
   double? get protein => _protein;
 
+  /// The amount of calories in kcal.
   double? get calories => _calories;
 
+  /// The amount of fat in grams.
   double? get fat => _fat;
 
+  /// The name of the food.
   String? get name => _name;
 
+  /// The amount of carbs in grams.
   double? get carbs => _carbs;
+
+  /// The type of meal.
+  String get mealType => _mealType;
 
   factory NutritionHealthValue.fromJson(json) {
     return NutritionHealthValue(
@@ -322,6 +327,7 @@ class NutritionHealthValue extends HealthValue {
       json['fat'] != null ? (json['fat'] as num).toDouble() : null,
       json['name'] != null ? (json['name'] as String) : null,
       json['carbs'] != null ? (json['carbs'] as num).toDouble() : null,
+      json['mealType'] as String,
     );
   }
 
@@ -332,6 +338,7 @@ class NutritionHealthValue extends HealthValue {
         'fat': _fat,
         'name': _name,
         'carbs': _carbs,
+        'mealType': _mealType,
       };
 
   @override
@@ -340,7 +347,8 @@ class NutritionHealthValue extends HealthValue {
     calories: ${calories.toString()},
     fat: ${fat.toString()},
     name: ${name.toString()},
-    carbs: ${carbs.toString()}""";
+    carbs: ${carbs.toString()},
+    mealType: $mealType""";
   }
 
   @override
@@ -349,7 +357,9 @@ class NutritionHealthValue extends HealthValue {
         o.protein == this.protein &&
         o.calories == this.calories &&
         o.fat == this.fat &&
-        o.name == this.name;
+        o.name == this.name &&
+        o.carbs == this.carbs &&
+        o.mealType == this.mealType;
   }
 
   @override

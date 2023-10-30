@@ -16,6 +16,11 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_BREAKFAST
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_DINNER
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_LUNCH
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_SNACK
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_UNKNOWN
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
@@ -58,11 +63,11 @@ const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
 const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
 
 class HealthPlugin(private var channel: MethodChannel? = null) :
-        MethodCallHandler,
-        ActivityResultListener,
-        Result,
-        ActivityAware,
-        FlutterPlugin {
+    MethodCallHandler,
+    ActivityResultListener,
+    Result,
+    ActivityAware,
+    FlutterPlugin {
     private var mResult: Result? = null
     private var handler: Handler? = null
     private var activity: Activity? = null
@@ -103,238 +108,244 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var SLEEP_OUT_OF_BED = "SLEEP_OUT_OF_BED"
     private var WORKOUT = "WORKOUT"
     private var NUTRITION = "NUTRITION"
+    private var BREAKFAST = "BREAKFAST"
+    private var LUNCH = "LUNCH"
+    private var DINNER = "DINNER"
+    private var SNACK = "SNACK"
+    private var MEAL_UNKNOWN = "UNKNOWN"
+
 
     val workoutTypeMap = mapOf(
-            "AEROBICS" to FitnessActivities.AEROBICS,
-            "AMERICAN_FOOTBALL" to FitnessActivities.FOOTBALL_AMERICAN,
-            "ARCHERY" to FitnessActivities.ARCHERY,
-            "AUSTRALIAN_FOOTBALL" to FitnessActivities.FOOTBALL_AUSTRALIAN,
-            "BADMINTON" to FitnessActivities.BADMINTON,
-            "BASEBALL" to FitnessActivities.BASEBALL,
-            "BASKETBALL" to FitnessActivities.BASKETBALL,
-            "BIATHLON" to FitnessActivities.BIATHLON,
-            "BIKING" to FitnessActivities.BIKING,
-            "BIKING_HAND" to FitnessActivities.BIKING_HAND,
-            "BIKING_MOUNTAIN" to FitnessActivities.BIKING_MOUNTAIN,
-            "BIKING_ROAD" to FitnessActivities.BIKING_ROAD,
-            "BIKING_SPINNING" to FitnessActivities.BIKING_SPINNING,
-            "BIKING_STATIONARY" to FitnessActivities.BIKING_STATIONARY,
-            "BIKING_UTILITY" to FitnessActivities.BIKING_UTILITY,
-            "BOXING" to FitnessActivities.BOXING,
-            "CALISTHENICS" to FitnessActivities.CALISTHENICS,
-            "CIRCUIT_TRAINING" to FitnessActivities.CIRCUIT_TRAINING,
-            "CRICKET" to FitnessActivities.CRICKET,
-            "CROSS_COUNTRY_SKIING" to FitnessActivities.SKIING_CROSS_COUNTRY,
-            "CROSS_FIT" to FitnessActivities.CROSSFIT,
-            "CURLING" to FitnessActivities.CURLING,
-            "DANCING" to FitnessActivities.DANCING,
-            "DIVING" to FitnessActivities.DIVING,
-            "DOWNHILL_SKIING" to FitnessActivities.SKIING_DOWNHILL,
-            "ELEVATOR" to FitnessActivities.ELEVATOR,
-            "ELLIPTICAL" to FitnessActivities.ELLIPTICAL,
-            "ERGOMETER" to FitnessActivities.ERGOMETER,
-            "ESCALATOR" to FitnessActivities.ESCALATOR,
-            "FENCING" to FitnessActivities.FENCING,
-            "FRISBEE_DISC" to FitnessActivities.FRISBEE_DISC,
-            "GARDENING" to FitnessActivities.GARDENING,
-            "GOLF" to FitnessActivities.GOLF,
-            "GUIDED_BREATHING" to FitnessActivities.GUIDED_BREATHING,
-            "GYMNASTICS" to FitnessActivities.GYMNASTICS,
-            "HANDBALL" to FitnessActivities.HANDBALL,
-            "HIGH_INTENSITY_INTERVAL_TRAINING" to FitnessActivities.HIGH_INTENSITY_INTERVAL_TRAINING,
-            "HIKING" to FitnessActivities.HIKING,
-            "HOCKEY" to FitnessActivities.HOCKEY,
-            "HORSEBACK_RIDING" to FitnessActivities.HORSEBACK_RIDING,
-            "HOUSEWORK" to FitnessActivities.HOUSEWORK,
-            "IN_VEHICLE" to FitnessActivities.IN_VEHICLE,
-            "ICE_SKATING" to FitnessActivities.ICE_SKATING,
-            "INTERVAL_TRAINING" to FitnessActivities.INTERVAL_TRAINING,
-            "JUMP_ROPE" to FitnessActivities.JUMP_ROPE,
-            "KAYAKING" to FitnessActivities.KAYAKING,
-            "KETTLEBELL_TRAINING" to FitnessActivities.KETTLEBELL_TRAINING,
-            "KICK_SCOOTER" to FitnessActivities.KICK_SCOOTER,
-            "KICKBOXING" to FitnessActivities.KICKBOXING,
-            "KITE_SURFING" to FitnessActivities.KITESURFING,
-            "MARTIAL_ARTS" to FitnessActivities.MARTIAL_ARTS,
-            "MEDITATION" to FitnessActivities.MEDITATION,
-            "MIXED_MARTIAL_ARTS" to FitnessActivities.MIXED_MARTIAL_ARTS,
-            "P90X" to FitnessActivities.P90X,
-            "PARAGLIDING" to FitnessActivities.PARAGLIDING,
-            "PILATES" to FitnessActivities.PILATES,
-            "POLO" to FitnessActivities.POLO,
-            "RACQUETBALL" to FitnessActivities.RACQUETBALL,
-            "ROCK_CLIMBING" to FitnessActivities.ROCK_CLIMBING,
-            "ROWING" to FitnessActivities.ROWING,
-            "ROWING_MACHINE" to FitnessActivities.ROWING_MACHINE,
-            "RUGBY" to FitnessActivities.RUGBY,
-            "RUNNING_JOGGING" to FitnessActivities.RUNNING_JOGGING,
-            "RUNNING_SAND" to FitnessActivities.RUNNING_SAND,
-            "RUNNING_TREADMILL" to FitnessActivities.RUNNING_TREADMILL,
-            "RUNNING" to FitnessActivities.RUNNING,
-            "SAILING" to FitnessActivities.SAILING,
-            "SCUBA_DIVING" to FitnessActivities.SCUBA_DIVING,
-            "SKATING_CROSS" to FitnessActivities.SKATING_CROSS,
-            "SKATING_INDOOR" to FitnessActivities.SKATING_INDOOR,
-            "SKATING_INLINE" to FitnessActivities.SKATING_INLINE,
-            "SKATING" to FitnessActivities.SKATING,
-            "SKIING" to FitnessActivities.SKIING,
-            "SKIING_BACK_COUNTRY" to FitnessActivities.SKIING_BACK_COUNTRY,
-            "SKIING_KITE" to FitnessActivities.SKIING_KITE,
-            "SKIING_ROLLER" to FitnessActivities.SKIING_ROLLER,
-            "SLEDDING" to FitnessActivities.SLEDDING,
-            "SNOWBOARDING" to FitnessActivities.SNOWBOARDING,
-            "SNOWMOBILE" to FitnessActivities.SNOWMOBILE,
-            "SNOWSHOEING" to FitnessActivities.SNOWSHOEING,
-            "SOCCER" to FitnessActivities.FOOTBALL_SOCCER,
-            "SOFTBALL" to FitnessActivities.SOFTBALL,
-            "SQUASH" to FitnessActivities.SQUASH,
-            "STAIR_CLIMBING_MACHINE" to FitnessActivities.STAIR_CLIMBING_MACHINE,
-            "STAIR_CLIMBING" to FitnessActivities.STAIR_CLIMBING,
-            "STANDUP_PADDLEBOARDING" to FitnessActivities.STANDUP_PADDLEBOARDING,
-            "STILL" to FitnessActivities.STILL,
-            "STRENGTH_TRAINING" to FitnessActivities.STRENGTH_TRAINING,
-            "SURFING" to FitnessActivities.SURFING,
-            "SWIMMING_OPEN_WATER" to FitnessActivities.SWIMMING_OPEN_WATER,
-            "SWIMMING_POOL" to FitnessActivities.SWIMMING_POOL,
-            "SWIMMING" to FitnessActivities.SWIMMING,
-            "TABLE_TENNIS" to FitnessActivities.TABLE_TENNIS,
-            "TEAM_SPORTS" to FitnessActivities.TEAM_SPORTS,
-            "TENNIS" to FitnessActivities.TENNIS,
-            "TILTING" to FitnessActivities.TILTING,
-            "VOLLEYBALL_BEACH" to FitnessActivities.VOLLEYBALL_BEACH,
-            "VOLLEYBALL_INDOOR" to FitnessActivities.VOLLEYBALL_INDOOR,
-            "VOLLEYBALL" to FitnessActivities.VOLLEYBALL,
-            "WAKEBOARDING" to FitnessActivities.WAKEBOARDING,
-            "WALKING_FITNESS" to FitnessActivities.WALKING_FITNESS,
-            "WALKING_PACED" to FitnessActivities.WALKING_PACED,
-            "WALKING_NORDIC" to FitnessActivities.WALKING_NORDIC,
-            "WALKING_STROLLER" to FitnessActivities.WALKING_STROLLER,
-            "WALKING_TREADMILL" to FitnessActivities.WALKING_TREADMILL,
-            "WALKING" to FitnessActivities.WALKING,
-            "WATER_POLO" to FitnessActivities.WATER_POLO,
-            "WEIGHTLIFTING" to FitnessActivities.WEIGHTLIFTING,
-            "WHEELCHAIR" to FitnessActivities.WHEELCHAIR,
-            "WINDSURFING" to FitnessActivities.WINDSURFING,
-            "YOGA" to FitnessActivities.YOGA,
-            "ZUMBA" to FitnessActivities.ZUMBA,
-            "OTHER" to FitnessActivities.OTHER,
+        "AEROBICS" to FitnessActivities.AEROBICS,
+        "AMERICAN_FOOTBALL" to FitnessActivities.FOOTBALL_AMERICAN,
+        "ARCHERY" to FitnessActivities.ARCHERY,
+        "AUSTRALIAN_FOOTBALL" to FitnessActivities.FOOTBALL_AUSTRALIAN,
+        "BADMINTON" to FitnessActivities.BADMINTON,
+        "BASEBALL" to FitnessActivities.BASEBALL,
+        "BASKETBALL" to FitnessActivities.BASKETBALL,
+        "BIATHLON" to FitnessActivities.BIATHLON,
+        "BIKING" to FitnessActivities.BIKING,
+        "BIKING_HAND" to FitnessActivities.BIKING_HAND,
+        "BIKING_MOUNTAIN" to FitnessActivities.BIKING_MOUNTAIN,
+        "BIKING_ROAD" to FitnessActivities.BIKING_ROAD,
+        "BIKING_SPINNING" to FitnessActivities.BIKING_SPINNING,
+        "BIKING_STATIONARY" to FitnessActivities.BIKING_STATIONARY,
+        "BIKING_UTILITY" to FitnessActivities.BIKING_UTILITY,
+        "BOXING" to FitnessActivities.BOXING,
+        "CALISTHENICS" to FitnessActivities.CALISTHENICS,
+        "CIRCUIT_TRAINING" to FitnessActivities.CIRCUIT_TRAINING,
+        "CRICKET" to FitnessActivities.CRICKET,
+        "CROSS_COUNTRY_SKIING" to FitnessActivities.SKIING_CROSS_COUNTRY,
+        "CROSS_FIT" to FitnessActivities.CROSSFIT,
+        "CURLING" to FitnessActivities.CURLING,
+        "DANCING" to FitnessActivities.DANCING,
+        "DIVING" to FitnessActivities.DIVING,
+        "DOWNHILL_SKIING" to FitnessActivities.SKIING_DOWNHILL,
+        "ELEVATOR" to FitnessActivities.ELEVATOR,
+        "ELLIPTICAL" to FitnessActivities.ELLIPTICAL,
+        "ERGOMETER" to FitnessActivities.ERGOMETER,
+        "ESCALATOR" to FitnessActivities.ESCALATOR,
+        "FENCING" to FitnessActivities.FENCING,
+        "FRISBEE_DISC" to FitnessActivities.FRISBEE_DISC,
+        "GARDENING" to FitnessActivities.GARDENING,
+        "GOLF" to FitnessActivities.GOLF,
+        "GUIDED_BREATHING" to FitnessActivities.GUIDED_BREATHING,
+        "GYMNASTICS" to FitnessActivities.GYMNASTICS,
+        "HANDBALL" to FitnessActivities.HANDBALL,
+        "HIGH_INTENSITY_INTERVAL_TRAINING" to FitnessActivities.HIGH_INTENSITY_INTERVAL_TRAINING,
+        "HIKING" to FitnessActivities.HIKING,
+        "HOCKEY" to FitnessActivities.HOCKEY,
+        "HORSEBACK_RIDING" to FitnessActivities.HORSEBACK_RIDING,
+        "HOUSEWORK" to FitnessActivities.HOUSEWORK,
+        "IN_VEHICLE" to FitnessActivities.IN_VEHICLE,
+        "ICE_SKATING" to FitnessActivities.ICE_SKATING,
+        "INTERVAL_TRAINING" to FitnessActivities.INTERVAL_TRAINING,
+        "JUMP_ROPE" to FitnessActivities.JUMP_ROPE,
+        "KAYAKING" to FitnessActivities.KAYAKING,
+        "KETTLEBELL_TRAINING" to FitnessActivities.KETTLEBELL_TRAINING,
+        "KICK_SCOOTER" to FitnessActivities.KICK_SCOOTER,
+        "KICKBOXING" to FitnessActivities.KICKBOXING,
+        "KITE_SURFING" to FitnessActivities.KITESURFING,
+        "MARTIAL_ARTS" to FitnessActivities.MARTIAL_ARTS,
+        "MEDITATION" to FitnessActivities.MEDITATION,
+        "MIXED_MARTIAL_ARTS" to FitnessActivities.MIXED_MARTIAL_ARTS,
+        "P90X" to FitnessActivities.P90X,
+        "PARAGLIDING" to FitnessActivities.PARAGLIDING,
+        "PILATES" to FitnessActivities.PILATES,
+        "POLO" to FitnessActivities.POLO,
+        "RACQUETBALL" to FitnessActivities.RACQUETBALL,
+        "ROCK_CLIMBING" to FitnessActivities.ROCK_CLIMBING,
+        "ROWING" to FitnessActivities.ROWING,
+        "ROWING_MACHINE" to FitnessActivities.ROWING_MACHINE,
+        "RUGBY" to FitnessActivities.RUGBY,
+        "RUNNING_JOGGING" to FitnessActivities.RUNNING_JOGGING,
+        "RUNNING_SAND" to FitnessActivities.RUNNING_SAND,
+        "RUNNING_TREADMILL" to FitnessActivities.RUNNING_TREADMILL,
+        "RUNNING" to FitnessActivities.RUNNING,
+        "SAILING" to FitnessActivities.SAILING,
+        "SCUBA_DIVING" to FitnessActivities.SCUBA_DIVING,
+        "SKATING_CROSS" to FitnessActivities.SKATING_CROSS,
+        "SKATING_INDOOR" to FitnessActivities.SKATING_INDOOR,
+        "SKATING_INLINE" to FitnessActivities.SKATING_INLINE,
+        "SKATING" to FitnessActivities.SKATING,
+        "SKIING" to FitnessActivities.SKIING,
+        "SKIING_BACK_COUNTRY" to FitnessActivities.SKIING_BACK_COUNTRY,
+        "SKIING_KITE" to FitnessActivities.SKIING_KITE,
+        "SKIING_ROLLER" to FitnessActivities.SKIING_ROLLER,
+        "SLEDDING" to FitnessActivities.SLEDDING,
+        "SNOWBOARDING" to FitnessActivities.SNOWBOARDING,
+        "SNOWMOBILE" to FitnessActivities.SNOWMOBILE,
+        "SNOWSHOEING" to FitnessActivities.SNOWSHOEING,
+        "SOCCER" to FitnessActivities.FOOTBALL_SOCCER,
+        "SOFTBALL" to FitnessActivities.SOFTBALL,
+        "SQUASH" to FitnessActivities.SQUASH,
+        "STAIR_CLIMBING_MACHINE" to FitnessActivities.STAIR_CLIMBING_MACHINE,
+        "STAIR_CLIMBING" to FitnessActivities.STAIR_CLIMBING,
+        "STANDUP_PADDLEBOARDING" to FitnessActivities.STANDUP_PADDLEBOARDING,
+        "STILL" to FitnessActivities.STILL,
+        "STRENGTH_TRAINING" to FitnessActivities.STRENGTH_TRAINING,
+        "SURFING" to FitnessActivities.SURFING,
+        "SWIMMING_OPEN_WATER" to FitnessActivities.SWIMMING_OPEN_WATER,
+        "SWIMMING_POOL" to FitnessActivities.SWIMMING_POOL,
+        "SWIMMING" to FitnessActivities.SWIMMING,
+        "TABLE_TENNIS" to FitnessActivities.TABLE_TENNIS,
+        "TEAM_SPORTS" to FitnessActivities.TEAM_SPORTS,
+        "TENNIS" to FitnessActivities.TENNIS,
+        "TILTING" to FitnessActivities.TILTING,
+        "VOLLEYBALL_BEACH" to FitnessActivities.VOLLEYBALL_BEACH,
+        "VOLLEYBALL_INDOOR" to FitnessActivities.VOLLEYBALL_INDOOR,
+        "VOLLEYBALL" to FitnessActivities.VOLLEYBALL,
+        "WAKEBOARDING" to FitnessActivities.WAKEBOARDING,
+        "WALKING_FITNESS" to FitnessActivities.WALKING_FITNESS,
+        "WALKING_PACED" to FitnessActivities.WALKING_PACED,
+        "WALKING_NORDIC" to FitnessActivities.WALKING_NORDIC,
+        "WALKING_STROLLER" to FitnessActivities.WALKING_STROLLER,
+        "WALKING_TREADMILL" to FitnessActivities.WALKING_TREADMILL,
+        "WALKING" to FitnessActivities.WALKING,
+        "WATER_POLO" to FitnessActivities.WATER_POLO,
+        "WEIGHTLIFTING" to FitnessActivities.WEIGHTLIFTING,
+        "WHEELCHAIR" to FitnessActivities.WHEELCHAIR,
+        "WINDSURFING" to FitnessActivities.WINDSURFING,
+        "YOGA" to FitnessActivities.YOGA,
+        "ZUMBA" to FitnessActivities.ZUMBA,
+        "OTHER" to FitnessActivities.OTHER,
     )
 
     // TODO: Update with new workout types when Health Connect becomes the standard.
     val workoutTypeMapHealthConnect = mapOf(
-            // "AEROBICS" to ExerciseSessionRecord.EXERCISE_TYPE_AEROBICS,
-            "AMERICAN_FOOTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AMERICAN,
-            // "ARCHERY" to ExerciseSessionRecord.EXERCISE_TYPE_ARCHERY,
-            "AUSTRALIAN_FOOTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AUSTRALIAN,
-            "BADMINTON" to ExerciseSessionRecord.EXERCISE_TYPE_BADMINTON,
-            "BASEBALL" to ExerciseSessionRecord.EXERCISE_TYPE_BASEBALL,
-            "BASKETBALL" to ExerciseSessionRecord.EXERCISE_TYPE_BASKETBALL,
-            // "BIATHLON" to ExerciseSessionRecord.EXERCISE_TYPE_BIATHLON,
-            "BIKING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
-            // "BIKING_HAND" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_HAND,
-            // "BIKING_MOUNTAIN" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
-            // "BIKING_ROAD" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_ROAD,
-            // "BIKING_SPINNING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_SPINNING,
-            // "BIKING_STATIONARY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
-            // "BIKING_UTILITY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_UTILITY,
-            "BOXING" to ExerciseSessionRecord.EXERCISE_TYPE_BOXING,
-            "CALISTHENICS" to ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS,
-            // "CIRCUIT_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_CIRCUIT_TRAINING,
-            "CRICKET" to ExerciseSessionRecord.EXERCISE_TYPE_CRICKET,
-            // "CROSS_COUNTRY_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_CROSS_COUNTRY,
-            // "CROSS_FIT" to ExerciseSessionRecord.EXERCISE_TYPE_CROSSFIT,
-            // "CURLING" to ExerciseSessionRecord.EXERCISE_TYPE_CURLING,
-            "DANCING" to ExerciseSessionRecord.EXERCISE_TYPE_DANCING,
-            // "DIVING" to ExerciseSessionRecord.EXERCISE_TYPE_DIVING,
-            // "DOWNHILL_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_DOWNHILL,
-            // "ELEVATOR" to ExerciseSessionRecord.EXERCISE_TYPE_ELEVATOR,
-            "ELLIPTICAL" to ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL,
-            // "ERGOMETER" to ExerciseSessionRecord.EXERCISE_TYPE_ERGOMETER,
-            // "ESCALATOR" to ExerciseSessionRecord.EXERCISE_TYPE_ESCALATOR,
-            "FENCING" to ExerciseSessionRecord.EXERCISE_TYPE_FENCING,
-            "FRISBEE_DISC" to ExerciseSessionRecord.EXERCISE_TYPE_FRISBEE_DISC,
-            // "GARDENING" to ExerciseSessionRecord.EXERCISE_TYPE_GARDENING,
-            "GOLF" to ExerciseSessionRecord.EXERCISE_TYPE_GOLF,
-            "GUIDED_BREATHING" to ExerciseSessionRecord.EXERCISE_TYPE_GUIDED_BREATHING,
-            "GYMNASTICS" to ExerciseSessionRecord.EXERCISE_TYPE_GYMNASTICS,
-            "HANDBALL" to ExerciseSessionRecord.EXERCISE_TYPE_HANDBALL,
-            "HIGH_INTENSITY_INTERVAL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
-            "HIKING" to ExerciseSessionRecord.EXERCISE_TYPE_HIKING,
-            // "HOCKEY" to ExerciseSessionRecord.EXERCISE_TYPE_HOCKEY,
-            // "HORSEBACK_RIDING" to ExerciseSessionRecord.EXERCISE_TYPE_HORSEBACK_RIDING,
-            // "HOUSEWORK" to ExerciseSessionRecord.EXERCISE_TYPE_HOUSEWORK,
-            // "IN_VEHICLE" to ExerciseSessionRecord.EXERCISE_TYPE_IN_VEHICLE,
-            "ICE_SKATING" to ExerciseSessionRecord.EXERCISE_TYPE_ICE_SKATING,
-            // "INTERVAL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_INTERVAL_TRAINING,
-            // "JUMP_ROPE" to ExerciseSessionRecord.EXERCISE_TYPE_JUMP_ROPE,
-            // "KAYAKING" to ExerciseSessionRecord.EXERCISE_TYPE_KAYAKING,
-            // "KETTLEBELL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_KETTLEBELL_TRAINING,
-            // "KICK_SCOOTER" to ExerciseSessionRecord.EXERCISE_TYPE_KICK_SCOOTER,
-            // "KICKBOXING" to ExerciseSessionRecord.EXERCISE_TYPE_KICKBOXING,
-            // "KITE_SURFING" to ExerciseSessionRecord.EXERCISE_TYPE_KITESURFING,
-            "MARTIAL_ARTS" to ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS,
-            // "MEDITATION" to ExerciseSessionRecord.EXERCISE_TYPE_MEDITATION,
-            // "MIXED_MARTIAL_ARTS" to ExerciseSessionRecord.EXERCISE_TYPE_MIXED_MARTIAL_ARTS,
-            // "P90X" to ExerciseSessionRecord.EXERCISE_TYPE_P90X,
-            "PARAGLIDING" to ExerciseSessionRecord.EXERCISE_TYPE_PARAGLIDING,
-            "PILATES" to ExerciseSessionRecord.EXERCISE_TYPE_PILATES,
-            // "POLO" to ExerciseSessionRecord.EXERCISE_TYPE_POLO,
-            "RACQUETBALL" to ExerciseSessionRecord.EXERCISE_TYPE_RACQUETBALL,
-            "ROCK_CLIMBING" to ExerciseSessionRecord.EXERCISE_TYPE_ROCK_CLIMBING,
-            "ROWING" to ExerciseSessionRecord.EXERCISE_TYPE_ROWING,
-            "ROWING_MACHINE" to ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
-            "RUGBY" to ExerciseSessionRecord.EXERCISE_TYPE_RUGBY,
-            // "RUNNING_JOGGING" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_JOGGING,
-            // "RUNNING_SAND" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_SAND,
-            "RUNNING_TREADMILL" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
-            "RUNNING" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
-            "SAILING" to ExerciseSessionRecord.EXERCISE_TYPE_SAILING,
-            "SCUBA_DIVING" to ExerciseSessionRecord.EXERCISE_TYPE_SCUBA_DIVING,
-            // "SKATING_CROSS" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_CROSS,
-            // "SKATING_INDOOR" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INDOOR,
-            // "SKATING_INLINE" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INLINE,
-            "SKATING" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING,
-            "SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING,
-            // "SKIING_BACK_COUNTRY" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_BACK_COUNTRY,
-            // "SKIING_KITE" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_KITE,
-            // "SKIING_ROLLER" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_ROLLER,
-            // "SLEDDING" to ExerciseSessionRecord.EXERCISE_TYPE_SLEDDING,
-            "SNOWBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWBOARDING,
-            // "SNOWMOBILE" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWMOBILE,
-            "SNOWSHOEING" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWSHOEING,
-            // "SOCCER" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_SOCCER,
-            "SOFTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_SOFTBALL,
-            "SQUASH" to ExerciseSessionRecord.EXERCISE_TYPE_SQUASH,
-            "STAIR_CLIMBING_MACHINE" to ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE,
-            "STAIR_CLIMBING" to ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING,
-            // "STANDUP_PADDLEBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_STANDUP_PADDLEBOARDING,
-            // "STILL" to ExerciseSessionRecord.EXERCISE_TYPE_STILL,
-            "STRENGTH_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
-            "SURFING" to ExerciseSessionRecord.EXERCISE_TYPE_SURFING,
-            "SWIMMING_OPEN_WATER" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER,
-            "SWIMMING_POOL" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL,
-            // "SWIMMING" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING,
-            "TABLE_TENNIS" to ExerciseSessionRecord.EXERCISE_TYPE_TABLE_TENNIS,
-            // "TEAM_SPORTS" to ExerciseSessionRecord.EXERCISE_TYPE_TEAM_SPORTS,
-            "TENNIS" to ExerciseSessionRecord.EXERCISE_TYPE_TENNIS,
-            // "TILTING" to ExerciseSessionRecord.EXERCISE_TYPE_TILTING,
-            // "VOLLEYBALL_BEACH" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_BEACH,
-            // "VOLLEYBALL_INDOOR" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_INDOOR,
-            "VOLLEYBALL" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL,
-            // "WAKEBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_WAKEBOARDING,
-            // "WALKING_FITNESS" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_FITNESS,
-            // "WALKING_PACED" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_PACED,
-            // "WALKING_NORDIC" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_NORDIC,
-            // "WALKING_STROLLER" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_STROLLER,
-            // "WALKING_TREADMILL" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_TREADMILL,
-            "WALKING" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
-            "WATER_POLO" to ExerciseSessionRecord.EXERCISE_TYPE_WATER_POLO,
-            "WEIGHTLIFTING" to ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
-            "WHEELCHAIR" to ExerciseSessionRecord.EXERCISE_TYPE_WHEELCHAIR,
-            // "WINDSURFING" to ExerciseSessionRecord.EXERCISE_TYPE_WINDSURFING,
-            "YOGA" to ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
-            // "ZUMBA" to ExerciseSessionRecord.EXERCISE_TYPE_ZUMBA,
-            // "OTHER" to ExerciseSessionRecord.EXERCISE_TYPE_OTHER,
+        // "AEROBICS" to ExerciseSessionRecord.EXERCISE_TYPE_AEROBICS,
+        "AMERICAN_FOOTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AMERICAN,
+        // "ARCHERY" to ExerciseSessionRecord.EXERCISE_TYPE_ARCHERY,
+        "AUSTRALIAN_FOOTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AUSTRALIAN,
+        "BADMINTON" to ExerciseSessionRecord.EXERCISE_TYPE_BADMINTON,
+        "BASEBALL" to ExerciseSessionRecord.EXERCISE_TYPE_BASEBALL,
+        "BASKETBALL" to ExerciseSessionRecord.EXERCISE_TYPE_BASKETBALL,
+        // "BIATHLON" to ExerciseSessionRecord.EXERCISE_TYPE_BIATHLON,
+        "BIKING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
+        // "BIKING_HAND" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_HAND,
+        // "BIKING_MOUNTAIN" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
+        // "BIKING_ROAD" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_ROAD,
+        // "BIKING_SPINNING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_SPINNING,
+        // "BIKING_STATIONARY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
+        // "BIKING_UTILITY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_UTILITY,
+        "BOXING" to ExerciseSessionRecord.EXERCISE_TYPE_BOXING,
+        "CALISTHENICS" to ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS,
+        // "CIRCUIT_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_CIRCUIT_TRAINING,
+        "CRICKET" to ExerciseSessionRecord.EXERCISE_TYPE_CRICKET,
+        // "CROSS_COUNTRY_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_CROSS_COUNTRY,
+        // "CROSS_FIT" to ExerciseSessionRecord.EXERCISE_TYPE_CROSSFIT,
+        // "CURLING" to ExerciseSessionRecord.EXERCISE_TYPE_CURLING,
+        "DANCING" to ExerciseSessionRecord.EXERCISE_TYPE_DANCING,
+        // "DIVING" to ExerciseSessionRecord.EXERCISE_TYPE_DIVING,
+        // "DOWNHILL_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_DOWNHILL,
+        // "ELEVATOR" to ExerciseSessionRecord.EXERCISE_TYPE_ELEVATOR,
+        "ELLIPTICAL" to ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL,
+        // "ERGOMETER" to ExerciseSessionRecord.EXERCISE_TYPE_ERGOMETER,
+        // "ESCALATOR" to ExerciseSessionRecord.EXERCISE_TYPE_ESCALATOR,
+        "FENCING" to ExerciseSessionRecord.EXERCISE_TYPE_FENCING,
+        "FRISBEE_DISC" to ExerciseSessionRecord.EXERCISE_TYPE_FRISBEE_DISC,
+        // "GARDENING" to ExerciseSessionRecord.EXERCISE_TYPE_GARDENING,
+        "GOLF" to ExerciseSessionRecord.EXERCISE_TYPE_GOLF,
+        "GUIDED_BREATHING" to ExerciseSessionRecord.EXERCISE_TYPE_GUIDED_BREATHING,
+        "GYMNASTICS" to ExerciseSessionRecord.EXERCISE_TYPE_GYMNASTICS,
+        "HANDBALL" to ExerciseSessionRecord.EXERCISE_TYPE_HANDBALL,
+        "HIGH_INTENSITY_INTERVAL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
+        "HIKING" to ExerciseSessionRecord.EXERCISE_TYPE_HIKING,
+        // "HOCKEY" to ExerciseSessionRecord.EXERCISE_TYPE_HOCKEY,
+        // "HORSEBACK_RIDING" to ExerciseSessionRecord.EXERCISE_TYPE_HORSEBACK_RIDING,
+        // "HOUSEWORK" to ExerciseSessionRecord.EXERCISE_TYPE_HOUSEWORK,
+        // "IN_VEHICLE" to ExerciseSessionRecord.EXERCISE_TYPE_IN_VEHICLE,
+        "ICE_SKATING" to ExerciseSessionRecord.EXERCISE_TYPE_ICE_SKATING,
+        // "INTERVAL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_INTERVAL_TRAINING,
+        // "JUMP_ROPE" to ExerciseSessionRecord.EXERCISE_TYPE_JUMP_ROPE,
+        // "KAYAKING" to ExerciseSessionRecord.EXERCISE_TYPE_KAYAKING,
+        // "KETTLEBELL_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_KETTLEBELL_TRAINING,
+        // "KICK_SCOOTER" to ExerciseSessionRecord.EXERCISE_TYPE_KICK_SCOOTER,
+        // "KICKBOXING" to ExerciseSessionRecord.EXERCISE_TYPE_KICKBOXING,
+        // "KITE_SURFING" to ExerciseSessionRecord.EXERCISE_TYPE_KITESURFING,
+        "MARTIAL_ARTS" to ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS,
+        // "MEDITATION" to ExerciseSessionRecord.EXERCISE_TYPE_MEDITATION,
+        // "MIXED_MARTIAL_ARTS" to ExerciseSessionRecord.EXERCISE_TYPE_MIXED_MARTIAL_ARTS,
+        // "P90X" to ExerciseSessionRecord.EXERCISE_TYPE_P90X,
+        "PARAGLIDING" to ExerciseSessionRecord.EXERCISE_TYPE_PARAGLIDING,
+        "PILATES" to ExerciseSessionRecord.EXERCISE_TYPE_PILATES,
+        // "POLO" to ExerciseSessionRecord.EXERCISE_TYPE_POLO,
+        "RACQUETBALL" to ExerciseSessionRecord.EXERCISE_TYPE_RACQUETBALL,
+        "ROCK_CLIMBING" to ExerciseSessionRecord.EXERCISE_TYPE_ROCK_CLIMBING,
+        "ROWING" to ExerciseSessionRecord.EXERCISE_TYPE_ROWING,
+        "ROWING_MACHINE" to ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
+        "RUGBY" to ExerciseSessionRecord.EXERCISE_TYPE_RUGBY,
+        // "RUNNING_JOGGING" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_JOGGING,
+        // "RUNNING_SAND" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_SAND,
+        "RUNNING_TREADMILL" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
+        "RUNNING" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
+        "SAILING" to ExerciseSessionRecord.EXERCISE_TYPE_SAILING,
+        "SCUBA_DIVING" to ExerciseSessionRecord.EXERCISE_TYPE_SCUBA_DIVING,
+        // "SKATING_CROSS" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_CROSS,
+        // "SKATING_INDOOR" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INDOOR,
+        // "SKATING_INLINE" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INLINE,
+        "SKATING" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING,
+        "SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING,
+        // "SKIING_BACK_COUNTRY" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_BACK_COUNTRY,
+        // "SKIING_KITE" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_KITE,
+        // "SKIING_ROLLER" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_ROLLER,
+        // "SLEDDING" to ExerciseSessionRecord.EXERCISE_TYPE_SLEDDING,
+        "SNOWBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWBOARDING,
+        // "SNOWMOBILE" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWMOBILE,
+        "SNOWSHOEING" to ExerciseSessionRecord.EXERCISE_TYPE_SNOWSHOEING,
+        // "SOCCER" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_SOCCER,
+        "SOFTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_SOFTBALL,
+        "SQUASH" to ExerciseSessionRecord.EXERCISE_TYPE_SQUASH,
+        "STAIR_CLIMBING_MACHINE" to ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE,
+        "STAIR_CLIMBING" to ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING,
+        // "STANDUP_PADDLEBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_STANDUP_PADDLEBOARDING,
+        // "STILL" to ExerciseSessionRecord.EXERCISE_TYPE_STILL,
+        "STRENGTH_TRAINING" to ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
+        "SURFING" to ExerciseSessionRecord.EXERCISE_TYPE_SURFING,
+        "SWIMMING_OPEN_WATER" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER,
+        "SWIMMING_POOL" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL,
+        // "SWIMMING" to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING,
+        "TABLE_TENNIS" to ExerciseSessionRecord.EXERCISE_TYPE_TABLE_TENNIS,
+        // "TEAM_SPORTS" to ExerciseSessionRecord.EXERCISE_TYPE_TEAM_SPORTS,
+        "TENNIS" to ExerciseSessionRecord.EXERCISE_TYPE_TENNIS,
+        // "TILTING" to ExerciseSessionRecord.EXERCISE_TYPE_TILTING,
+        // "VOLLEYBALL_BEACH" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_BEACH,
+        // "VOLLEYBALL_INDOOR" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_INDOOR,
+        "VOLLEYBALL" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL,
+        // "WAKEBOARDING" to ExerciseSessionRecord.EXERCISE_TYPE_WAKEBOARDING,
+        // "WALKING_FITNESS" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_FITNESS,
+        // "WALKING_PACED" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_PACED,
+        // "WALKING_NORDIC" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_NORDIC,
+        // "WALKING_STROLLER" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_STROLLER,
+        // "WALKING_TREADMILL" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING_TREADMILL,
+        "WALKING" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
+        "WATER_POLO" to ExerciseSessionRecord.EXERCISE_TYPE_WATER_POLO,
+        "WEIGHTLIFTING" to ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
+        "WHEELCHAIR" to ExerciseSessionRecord.EXERCISE_TYPE_WHEELCHAIR,
+        // "WINDSURFING" to ExerciseSessionRecord.EXERCISE_TYPE_WINDSURFING,
+        "YOGA" to ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
+        // "ZUMBA" to ExerciseSessionRecord.EXERCISE_TYPE_ZUMBA,
+        // "OTHER" to ExerciseSessionRecord.EXERCISE_TYPE_OTHER,
     )
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -346,7 +357,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         checkAvailability()
         if (healthConnectAvailable) {
             healthConnectClient =
-                    HealthConnectClient.getOrCreate(flutterPluginBinding.applicationContext)
+                HealthConnectClient.getOrCreate(flutterPluginBinding.applicationContext)
         }
     }
 
@@ -386,9 +397,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     override fun error(
-            errorCode: String,
-            errorMessage: String?,
-            errorDetails: Any?,
+        errorCode: String,
+        errorMessage: String?,
+        errorDetails: Any?,
     ) {
         handler?.post { mResult?.error(errorCode, errorMessage, errorDetails) }
     }
@@ -503,23 +514,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
 
         val dataSource = DataDeleteRequest.Builder()
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .addDataType(dataType)
-                .deleteAllSessions()
-                .build()
+            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+            .addDataType(dataType)
+            .deleteAllSessions()
+            .build()
 
         val fitnessOptions = typesBuilder.build()
 
         try {
             val googleSignInAccount =
-                    GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+                GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
             Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
-                    .deleteData(dataSource)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "Dataset deleted successfully!")
-                        result.success(true)
-                    }
-                    .addOnFailureListener(errHandler(result, "There was an error deleting the dataset"))
+                .deleteData(dataSource)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "Dataset deleted successfully!")
+                    result.success(true)
+                }
+                .addOnFailureListener(errHandler(result, "There was an error deleting the dataset"))
         } catch (e3: Exception) {
             result.success(false)
         }
@@ -548,39 +559,39 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
 
         val dataSource = DataSource.Builder()
-                .setDataType(dataType)
-                .setType(DataSource.TYPE_RAW)
-                .setDevice(Device.getLocalDevice(context!!.applicationContext))
-                .setAppPackageName(context!!.applicationContext)
-                .build()
+            .setDataType(dataType)
+            .setType(DataSource.TYPE_RAW)
+            .setDevice(Device.getLocalDevice(context!!.applicationContext))
+            .setAppPackageName(context!!.applicationContext)
+            .build()
 
         val builder = DataPoint.builder(dataSource)
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .setField(HealthFields.FIELD_BLOOD_PRESSURE_SYSTOLIC, systolic)
-                .setField(HealthFields.FIELD_BLOOD_PRESSURE_DIASTOLIC, diastolic)
-                .build()
+            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+            .setField(HealthFields.FIELD_BLOOD_PRESSURE_SYSTOLIC, systolic)
+            .setField(HealthFields.FIELD_BLOOD_PRESSURE_DIASTOLIC, diastolic)
+            .build()
 
         val dataPoint = builder
         val dataSet = DataSet.builder(dataSource)
-                .add(dataPoint)
-                .build()
+            .add(dataPoint)
+            .build()
 
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount =
-                    GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+                GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
             Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
-                    .insertData(dataSet)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "Blood Pressure added successfully!")
-                        result.success(true)
-                    }
-                    .addOnFailureListener(
-                            errHandler(
-                                    result,
-                                    "There was an error adding the blood pressure data!",
-                            ),
-                    )
+                .insertData(dataSet)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "Blood Pressure added successfully!")
+                    result.success(true)
+                }
+                .addOnFailureListener(
+                    errHandler(
+                        result,
+                        "There was an error adding the blood pressure data!",
+                    ),
+                )
         } catch (e3: Exception) {
             result.success(false)
         }
@@ -589,33 +600,40 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private fun writeMealHC(call: MethodCall, result: Result) {
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
-        val calories = call.argument<Double>("caloriesConsumed")!! as Double
+        val calories = call.argument<Double>("caloriesConsumed")
         val carbs = call.argument<Double>("carbohydrates") as Double?
         val protein = call.argument<Double>("protein") as Double?
         val fat = call.argument<Double>("fatTotal") as Double?
         val name = call.argument<String>("name")
+        val mealType = call.argument<String>("mealType")!!
 
         scope.launch {
             try {
                 val list = mutableListOf<Record>()
                 list.add(
-                        NutritionRecord(
-                                name = name, energy = calories.kilocalories, totalCarbohydrate = carbs?.grams, protein = protein?.grams, totalFat = fat?.grams, startTime = startTime,
-                                startZoneOffset = null,
-                                endTime = endTime,
-                                endZoneOffset = null,
-                        ),
+                    NutritionRecord(
+                        name = name,
+                        energy = calories?.kilocalories,
+                        totalCarbohydrate = carbs?.grams,
+                        protein = protein?.grams,
+                        totalFat = fat?.grams,
+                        startTime = startTime,
+                        startZoneOffset = null,
+                        endTime = endTime,
+                        endZoneOffset = null,
+                        mealType = MapMealTypeToTypeHC[mealType] ?: MEAL_TYPE_UNKNOWN,
+                    ),
                 )
                 healthConnectClient.insertRecords(
-                        list,
+                    list,
                 )
                 result.success(true)
                 Log.i("FLUTTER_HEALTH::SUCCESS", "[Health Connect] Meal was successfully added!")
 
             } catch (e: Exception) {
                 Log.w(
-                        "FLUTTER_HEALTH::ERROR",
-                        "[Health Connect] There was an error adding the meal",
+                    "FLUTTER_HEALTH::ERROR",
+                    "[Health Connect] There was an error adding the meal",
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
@@ -639,11 +657,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         val startTime = call.argument<Long>("startTime")!!
         val endTime = call.argument<Long>("endTime")!!
-        val calories = call.argument<Double>("caloriesConsumed")!! as Double
+        val calories = call.argument<Double>("caloriesConsumed")
         val carbs = call.argument<Double>("carbohydrates") as Double?
         val protein = call.argument<Double>("protein") as Double?
         val fat = call.argument<Double>("fatTotal") as Double?
         val name = call.argument<String>("name")
+        val mealType = call.argument<String>("mealType")!!
 
         val dataType = DataType.TYPE_NUTRITION
 
@@ -651,14 +670,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
 
         val dataSource = DataSource.Builder()
-                .setDataType(dataType)
-                .setType(DataSource.TYPE_RAW)
-                .setDevice(Device.getLocalDevice(context!!.applicationContext))
-                .setAppPackageName(context!!.applicationContext)
-                .build()
+            .setDataType(dataType)
+            .setType(DataSource.TYPE_RAW)
+            .setDevice(Device.getLocalDevice(context!!.applicationContext))
+            .setAppPackageName(context!!.applicationContext)
+            .build()
 
         val nutrients = mutableMapOf(
-                Field.NUTRIENT_CALORIES to calories.toFloat()
+            Field.NUTRIENT_CALORIES to calories?.toFloat()
         )
 
         if (carbs != null) {
@@ -674,56 +693,42 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
 
         val dataBuilder = DataPoint.builder(dataSource)
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .setField(Field.FIELD_NUTRIENTS, nutrients)
+            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+            .setField(Field.FIELD_NUTRIENTS, nutrients)
 
         if (name != null) {
             dataBuilder.setField(Field.FIELD_FOOD_ITEM, name as String)
         }
 
-        val calendar = Calendar.getInstance()
-        calendar.time = Date(startTime as Long)
 
-        when (calendar.get(Calendar.HOUR_OF_DAY)) {
-            in 5..11 -> {
-                dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_BREAKFAST)
-            }
+        dataBuilder.setField(
+            Field.FIELD_MEAL_TYPE,
+            MapMealTypeToType[mealType] ?: Field.MEAL_TYPE_UNKNOWN
+        )
 
-            in 12..15 -> {
-                dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_LUNCH)
-            }
-
-            in 18..22 -> {
-                dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_DINNER)
-            }
-
-            else -> {
-                dataBuilder.setField(Field.FIELD_MEAL_TYPE, Field.MEAL_TYPE_SNACK)
-            }
-        }
 
         val dataPoint = dataBuilder.build()
 
         val dataSet = DataSet.builder(dataSource)
-                .add(dataPoint)
-                .build()
+            .add(dataPoint)
+            .build()
 
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount =
-                    GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+                GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
             Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
-                    .insertData(dataSet)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "Meal added successfully!")
-                        result.success(true)
-                    }
-                    .addOnFailureListener(
-                            errHandler(
-                                    result,
-                                    "There was an error adding the meal data!"
-                            )
+                .insertData(dataSet)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "Meal added successfully!")
+                    result.success(true)
+                }
+                .addOnFailureListener(
+                    errHandler(
+                        result,
+                        "There was an error adding the meal data!"
                     )
+                )
         } catch (e3: Exception) {
             result.success(false)
         }
@@ -755,18 +760,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
 
         val dataSource = DataSource.Builder()
-                .setDataType(dataType)
-                .setType(DataSource.TYPE_RAW)
-                .setDevice(Device.getLocalDevice(context!!.applicationContext))
-                .setAppPackageName(context!!.applicationContext)
-                .build()
+            .setDataType(dataType)
+            .setType(DataSource.TYPE_RAW)
+            .setDevice(Device.getLocalDevice(context!!.applicationContext))
+            .setAppPackageName(context!!.applicationContext)
+            .build()
 
         val builder = if (startTime == endTime) {
             DataPoint.builder(dataSource)
-                    .setTimestamp(startTime, TimeUnit.MILLISECONDS)
+                .setTimestamp(startTime, TimeUnit.MILLISECONDS)
         } else {
             DataPoint.builder(dataSource)
-                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
         }
 
         // Conversion is needed because glucose is stored as mmoll in Google Fit;
@@ -774,14 +779,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val isGlucose = field == HealthFields.FIELD_BLOOD_GLUCOSE_LEVEL
         val dataPoint = if (!isIntField(dataSource, field)) {
             builder.setField(field, (if (!isGlucose) value else (value / MMOLL_2_MGDL).toFloat()))
-                    .build()
+                .build()
         } else {
             builder.setField(field, value.toInt()).build()
         }
 
         val dataSet = DataSet.builder(dataSource)
-                .add(dataPoint)
-                .build()
+            .add(dataPoint)
+            .build()
 
         if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
             typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
@@ -789,14 +794,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount =
-                    GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+                GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
             Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
-                    .insertData(dataSet)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "Dataset added successfully!")
-                        result.success(true)
-                    }
-                    .addOnFailureListener(errHandler(result, "There was an error adding the dataset"))
+                .insertData(dataSet)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "Dataset added successfully!")
+                    result.success(true)
+                }
+                .addOnFailureListener(errHandler(result, "There was an error adding the dataset"))
         } catch (e3: Exception) {
             result.success(false)
         }
@@ -827,18 +832,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
 
         val dataSource = DataSource.Builder()
-                .setDataType(dataType)
-                .setType(DataSource.TYPE_RAW)
-                .setDevice(Device.getLocalDevice(context!!.applicationContext))
-                .setAppPackageName(context!!.applicationContext)
-                .build()
+            .setDataType(dataType)
+            .setType(DataSource.TYPE_RAW)
+            .setDevice(Device.getLocalDevice(context!!.applicationContext))
+            .setAppPackageName(context!!.applicationContext)
+            .build()
 
         val builder = if (startTime == endTime) {
             DataPoint.builder(dataSource)
-                    .setTimestamp(startTime, TimeUnit.MILLISECONDS)
+                .setTimestamp(startTime, TimeUnit.MILLISECONDS)
         } else {
             DataPoint.builder(dataSource)
-                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
         }
 
         builder.setField(HealthFields.FIELD_SUPPLEMENTAL_OXYGEN_FLOW_RATE, flowRate)
@@ -846,25 +851,25 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         val dataPoint = builder.build()
         val dataSet = DataSet.builder(dataSource)
-                .add(dataPoint)
-                .build()
+            .add(dataPoint)
+            .build()
 
         val fitnessOptions = typesBuilder.build()
         try {
             val googleSignInAccount =
-                    GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+                GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
             Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
-                    .insertData(dataSet)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "Blood Oxygen added successfully!")
-                        result.success(true)
-                    }
-                    .addOnFailureListener(
-                            errHandler(
-                                    result,
-                                    "There was an error adding the blood oxygen data!",
-                            ),
-                    )
+                .insertData(dataSet)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "Blood Oxygen added successfully!")
+                    result.success(true)
+                }
+                .addOnFailureListener(
+                    errHandler(
+                        result,
+                        "There was an error adding the blood oxygen data!",
+                    ),
+                )
         } catch (e3: Exception) {
             result.success(false)
         }
@@ -892,75 +897,75 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val activityType = getActivityType(type)
         // Create the Activity Segment DataSource
         val activitySegmentDataSource = DataSource.Builder()
-                .setAppPackageName(context!!.packageName)
-                .setDataType(DataType.TYPE_ACTIVITY_SEGMENT)
-                .setStreamName("FLUTTER_HEALTH - Activity")
-                .setType(DataSource.TYPE_RAW)
-                .build()
+            .setAppPackageName(context!!.packageName)
+            .setDataType(DataType.TYPE_ACTIVITY_SEGMENT)
+            .setStreamName("FLUTTER_HEALTH - Activity")
+            .setType(DataSource.TYPE_RAW)
+            .build()
         // Create the Activity Segment
         val activityDataPoint = DataPoint.builder(activitySegmentDataSource)
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .setActivityField(Field.FIELD_ACTIVITY, activityType)
-                .build()
+            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+            .setActivityField(Field.FIELD_ACTIVITY, activityType)
+            .build()
         // Add DataPoint to DataSet
         val activitySegments = DataSet.builder(activitySegmentDataSource)
-                .add(activityDataPoint)
-                .build()
+            .add(activityDataPoint)
+            .build()
 
         // If distance is provided
         var distanceDataSet: DataSet? = null
         if (totalDistance != null) {
             // Create a data source
             val distanceDataSource = DataSource.Builder()
-                    .setAppPackageName(context!!.packageName)
-                    .setDataType(DataType.TYPE_DISTANCE_DELTA)
-                    .setStreamName("FLUTTER_HEALTH - Distance")
-                    .setType(DataSource.TYPE_RAW)
-                    .build()
+                .setAppPackageName(context!!.packageName)
+                .setDataType(DataType.TYPE_DISTANCE_DELTA)
+                .setStreamName("FLUTTER_HEALTH - Distance")
+                .setType(DataSource.TYPE_RAW)
+                .build()
 
             val distanceDataPoint = DataPoint.builder(distanceDataSource)
-                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                    .setField(Field.FIELD_DISTANCE, totalDistance.toFloat())
-                    .build()
+                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                .setField(Field.FIELD_DISTANCE, totalDistance.toFloat())
+                .build()
             // Create a data set
             distanceDataSet = DataSet.builder(distanceDataSource)
-                    .add(distanceDataPoint)
-                    .build()
+                .add(distanceDataPoint)
+                .build()
         }
         // If energyBurned is provided
         var energyDataSet: DataSet? = null
         if (totalEnergyBurned != null) {
             // Create a data source
             val energyDataSource = DataSource.Builder()
-                    .setAppPackageName(context!!.packageName)
-                    .setDataType(DataType.TYPE_CALORIES_EXPENDED)
-                    .setStreamName("FLUTTER_HEALTH - Calories")
-                    .setType(DataSource.TYPE_RAW)
-                    .build()
+                .setAppPackageName(context!!.packageName)
+                .setDataType(DataType.TYPE_CALORIES_EXPENDED)
+                .setStreamName("FLUTTER_HEALTH - Calories")
+                .setType(DataSource.TYPE_RAW)
+                .build()
 
             val energyDataPoint = DataPoint.builder(energyDataSource)
-                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                    .setField(Field.FIELD_CALORIES, totalEnergyBurned.toFloat())
-                    .build()
+                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                .setField(Field.FIELD_CALORIES, totalEnergyBurned.toFloat())
+                .build()
             // Create a data set
             energyDataSet = DataSet.builder(energyDataSource)
-                    .add(energyDataPoint)
-                    .build()
+                .add(energyDataPoint)
+                .build()
         }
 
         // Finish session setup
         val session = Session.Builder()
-                .setName(activityType) // TODO: Make a sensible name / allow user to set name
-                .setDescription("")
-                .setIdentifier(UUID.randomUUID().toString())
-                .setActivity(activityType)
-                .setStartTime(startTime, TimeUnit.MILLISECONDS)
-                .setEndTime(endTime, TimeUnit.MILLISECONDS)
-                .build()
+            .setName(activityType) // TODO: Make a sensible name / allow user to set name
+            .setDescription("")
+            .setIdentifier(UUID.randomUUID().toString())
+            .setActivity(activityType)
+            .setStartTime(startTime, TimeUnit.MILLISECONDS)
+            .setEndTime(endTime, TimeUnit.MILLISECONDS)
+            .build()
         // Build a session and add the values provided
         val sessionInsertRequestBuilder = SessionInsertRequest.Builder()
-                .setSession(session)
-                .addDataSet(activitySegments)
+            .setSession(session)
+            .addDataSet(activitySegments)
         if (totalDistance != null) {
             sessionInsertRequestBuilder.addDataSet(distanceDataSet!!)
         }
@@ -970,34 +975,34 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val insertRequest = sessionInsertRequestBuilder.build()
 
         val fitnessOptionsBuilder = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_WRITE)
+            .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_WRITE)
         if (totalDistance != null) {
             fitnessOptionsBuilder.addDataType(
-                    DataType.TYPE_DISTANCE_DELTA,
-                    FitnessOptions.ACCESS_WRITE,
+                DataType.TYPE_DISTANCE_DELTA,
+                FitnessOptions.ACCESS_WRITE,
             )
         }
         if (totalEnergyBurned != null) {
             fitnessOptionsBuilder.addDataType(
-                    DataType.TYPE_CALORIES_EXPENDED,
-                    FitnessOptions.ACCESS_WRITE,
+                DataType.TYPE_CALORIES_EXPENDED,
+                FitnessOptions.ACCESS_WRITE,
             )
         }
         val fitnessOptions = fitnessOptionsBuilder.build()
 
         try {
             val googleSignInAccount =
-                    GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+                GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
             Fitness.getSessionsClient(
-                    context!!.applicationContext,
-                    googleSignInAccount,
+                context!!.applicationContext,
+                googleSignInAccount,
             )
-                    .insertSession(insertRequest)
-                    .addOnSuccessListener {
-                        Log.i("FLUTTER_HEALTH::SUCCESS", "Workout was successfully added!")
-                        result.success(true)
-                    }
-                    .addOnFailureListener(errHandler(result, "There was an error adding the workout"))
+                .insertSession(insertRequest)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "Workout was successfully added!")
+                    result.success(true)
+                }
+                .addOnFailureListener(errHandler(result, "There was an error adding the workout"))
         } catch (e: Exception) {
             result.success(false)
         }
@@ -1031,107 +1036,107 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
         } else if (dataType == DataType.TYPE_ACTIVITY_SEGMENT) {
             typesBuilder.accessActivitySessions(FitnessOptions.ACCESS_READ)
-                    .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
-                    .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
         }
         val fitnessOptions = typesBuilder.build()
         val googleSignInAccount =
-                GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+            GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
         // Handle data types
         when (dataType) {
             DataType.TYPE_SLEEP_SEGMENT -> {
                 // request to the sessions for sleep data
                 val request = SessionReadRequest.Builder()
-                        .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                        .enableServerQueries()
-                        .readSessionsFromAllApps()
-                        .includeSleepSessions()
-                        .build()
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .enableServerQueries()
+                    .readSessionsFromAllApps()
+                    .includeSleepSessions()
+                    .build()
                 Fitness.getSessionsClient(context!!.applicationContext, googleSignInAccount)
-                        .readSession(request)
-                        .addOnSuccessListener(threadPoolExecutor!!, sleepDataHandler(type, result))
-                        .addOnFailureListener(
-                                errHandler(
-                                        result,
-                                        "There was an error getting the sleeping data!",
-                                ),
-                        )
+                    .readSession(request)
+                    .addOnSuccessListener(threadPoolExecutor!!, sleepDataHandler(type, result))
+                    .addOnFailureListener(
+                        errHandler(
+                            result,
+                            "There was an error getting the sleeping data!",
+                        ),
+                    )
             }
 
             DataType.TYPE_ACTIVITY_SEGMENT -> {
                 val readRequest: SessionReadRequest
                 val readRequestBuilder = SessionReadRequest.Builder()
-                        .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                        .enableServerQueries()
-                        .readSessionsFromAllApps()
-                        .includeActivitySessions()
-                        .read(dataType)
-                        .read(DataType.TYPE_CALORIES_EXPENDED)
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .enableServerQueries()
+                    .readSessionsFromAllApps()
+                    .includeActivitySessions()
+                    .read(dataType)
+                    .read(DataType.TYPE_CALORIES_EXPENDED)
 
                 // If fine location is enabled, read distance data
                 if (ContextCompat.checkSelfPermission(
-                                context!!.applicationContext,
-                                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                        ) == PackageManager.PERMISSION_GRANTED
+                        context!!.applicationContext,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    ) == PackageManager.PERMISSION_GRANTED
                 ) {
                     readRequestBuilder.read(DataType.TYPE_DISTANCE_DELTA)
                 }
                 readRequest = readRequestBuilder.build()
                 Fitness.getSessionsClient(context!!.applicationContext, googleSignInAccount)
-                        .readSession(readRequest)
-                        .addOnSuccessListener(threadPoolExecutor!!, workoutDataHandler(type, result))
-                        .addOnFailureListener(
-                                errHandler(
-                                        result,
-                                        "There was an error getting the workout data!",
-                                ),
-                        )
+                    .readSession(readRequest)
+                    .addOnSuccessListener(threadPoolExecutor!!, workoutDataHandler(type, result))
+                    .addOnFailureListener(
+                        errHandler(
+                            result,
+                            "There was an error getting the workout data!",
+                        ),
+                    )
             }
 
             else -> {
                 Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
-                        .readData(
-                                DataReadRequest.Builder()
-                                        .read(dataType)
-                                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                                        .build(),
-                        )
-                        .addOnSuccessListener(
-                                threadPoolExecutor!!,
-                                dataHandler(dataType, field, result),
-                        )
-                        .addOnFailureListener(
-                                errHandler(
-                                        result,
-                                        "There was an error getting the data!",
-                                ),
-                        )
+                    .readData(
+                        DataReadRequest.Builder()
+                            .read(dataType)
+                            .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                            .build(),
+                    )
+                    .addOnSuccessListener(
+                        threadPoolExecutor!!,
+                        dataHandler(dataType, field, result),
+                    )
+                    .addOnFailureListener(
+                        errHandler(
+                            result,
+                            "There was an error getting the data!",
+                        ),
+                    )
             }
         }
     }
 
     private fun dataHandler(dataType: DataType, field: Field, result: Result) =
-            OnSuccessListener { response: DataReadResponse ->
-                // / Fetch all data points for the specified DataType
-                val dataSet = response.getDataSet(dataType)
-                // / For each data point, extract the contents and send them to Flutter, along with date and unit.
-                val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
-                    return@mapIndexed hashMapOf(
-                            "value" to getHealthDataValue(dataPoint, field),
-                            "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                            "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                            "source_name" to (
-                                    dataPoint.originalDataSource.appPackageName
-                                            ?: (
-                                                    dataPoint.originalDataSource.device?.model
-                                                            ?: ""
-                                                    )
-                                    ),
-                            "source_id" to dataPoint.originalDataSource.streamIdentifier,
-                    )
-                }
-                Handler(context!!.mainLooper).run { result.success(healthData) }
+        OnSuccessListener { response: DataReadResponse ->
+            // / Fetch all data points for the specified DataType
+            val dataSet = response.getDataSet(dataType)
+            // / For each data point, extract the contents and send them to Flutter, along with date and unit.
+            val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
+                return@mapIndexed hashMapOf(
+                    "value" to getHealthDataValue(dataPoint, field),
+                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                    "source_name" to (
+                            dataPoint.originalDataSource.appPackageName
+                                ?: (
+                                        dataPoint.originalDataSource.device?.model
+                                            ?: ""
+                                        )
+                            ),
+                    "source_id" to dataPoint.originalDataSource.streamIdentifier,
+                )
             }
+            Handler(context!!.mainLooper).run { result.success(healthData) }
+        }
 
     private fun errHandler(result: Result, addMessage: String) = OnFailureListener { exception ->
         Handler(context!!.mainLooper).run { result.success(null) }
@@ -1141,146 +1146,146 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     private fun sleepDataHandler(type: String, result: Result) =
-            OnSuccessListener { response: SessionReadResponse ->
-                val healthData: MutableList<Map<String, Any?>> = mutableListOf()
-                for (session in response.sessions) {
-                    // Return sleep time in Minutes if requested ASLEEP data
-                    if (type == SLEEP_ASLEEP) {
-                        healthData.add(
-                                hashMapOf(
-                                        "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
-                                                TimeUnit.MINUTES,
-                                        ),
-                                        "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                                        "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                                        "unit" to "MINUTES",
-                                        "source_name" to session.appPackageName,
-                                        "source_id" to session.identifier,
-                                ),
-                        )
-                    }
+        OnSuccessListener { response: SessionReadResponse ->
+            val healthData: MutableList<Map<String, Any?>> = mutableListOf()
+            for (session in response.sessions) {
+                // Return sleep time in Minutes if requested ASLEEP data
+                if (type == SLEEP_ASLEEP) {
+                    healthData.add(
+                        hashMapOf(
+                            "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
+                                TimeUnit.MINUTES,
+                            ),
+                            "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                            "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                            "unit" to "MINUTES",
+                            "source_name" to session.appPackageName,
+                            "source_id" to session.identifier,
+                        ),
+                    )
+                }
 
-                    if (type == SLEEP_IN_BED) {
-                        val dataSets = response.getDataSet(session)
+                if (type == SLEEP_IN_BED) {
+                    val dataSets = response.getDataSet(session)
 
-                        // If the sleep session has finer granularity sub-components, extract them:
-                        if (dataSets.isNotEmpty()) {
-                            for (dataSet in dataSets) {
-                                for (dataPoint in dataSet.dataPoints) {
-                                    // searching OUT OF BED data
-                                    if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE)
-                                                    .asInt() != 3
-                                    ) {
-                                        healthData.add(
-                                                hashMapOf(
-                                                        "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
-                                                                TimeUnit.MINUTES,
-                                                        ),
-                                                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                                                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                                        "unit" to "MINUTES",
-                                                        "source_name" to (
-                                                                dataPoint.originalDataSource.appPackageName
-                                                                        ?: (
-                                                                                dataPoint.originalDataSource.device?.model
-                                                                                        ?: "unknown"
-                                                                                )
-                                                                ),
-                                                        "source_id" to dataPoint.originalDataSource.streamIdentifier,
-                                                ),
-                                        )
-                                    }
-                                }
-                            }
-                        } else {
-                            healthData.add(
-                                    hashMapOf(
-                                            "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
-                                                    TimeUnit.MINUTES,
-                                            ),
-                                            "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                                            "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                                            "unit" to "MINUTES",
-                                            "source_name" to session.appPackageName,
-                                            "source_id" to session.identifier,
-                                    ),
-                            )
-                        }
-                    }
-
-                    if (type == SLEEP_AWAKE) {
-                        val dataSets = response.getDataSet(session)
+                    // If the sleep session has finer granularity sub-components, extract them:
+                    if (dataSets.isNotEmpty()) {
                         for (dataSet in dataSets) {
                             for (dataPoint in dataSet.dataPoints) {
-                                // searching SLEEP AWAKE data
-                                if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1) {
+                                // searching OUT OF BED data
+                                if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE)
+                                        .asInt() != 3
+                                ) {
                                     healthData.add(
-                                            hashMapOf(
-                                                    "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
-                                                            TimeUnit.MINUTES,
-                                                    ),
-                                                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
-                                                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
-                                                    "unit" to "MINUTES",
-                                                    "source_name" to (
-                                                            dataPoint.originalDataSource.appPackageName
-                                                                    ?: (
-                                                                            dataPoint.originalDataSource.device?.model
-                                                                                    ?: "unknown"
-                                                                            )
-                                                            ),
-                                                    "source_id" to dataPoint.originalDataSource.streamIdentifier,
+                                        hashMapOf(
+                                            "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
+                                                TimeUnit.MINUTES,
                                             ),
+                                            "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                            "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                            "unit" to "MINUTES",
+                                            "source_name" to (
+                                                    dataPoint.originalDataSource.appPackageName
+                                                        ?: (
+                                                                dataPoint.originalDataSource.device?.model
+                                                                    ?: "unknown"
+                                                                )
+                                                    ),
+                                            "source_id" to dataPoint.originalDataSource.streamIdentifier,
+                                        ),
                                     )
                                 }
                             }
                         }
+                    } else {
+                        healthData.add(
+                            hashMapOf(
+                                "value" to session.getEndTime(TimeUnit.MINUTES) - session.getStartTime(
+                                    TimeUnit.MINUTES,
+                                ),
+                                "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                                "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                                "unit" to "MINUTES",
+                                "source_name" to session.appPackageName,
+                                "source_id" to session.identifier,
+                            ),
+                        )
                     }
                 }
-                Handler(context!!.mainLooper).run { result.success(healthData) }
+
+                if (type == SLEEP_AWAKE) {
+                    val dataSets = response.getDataSet(session)
+                    for (dataSet in dataSets) {
+                        for (dataPoint in dataSet.dataPoints) {
+                            // searching SLEEP AWAKE data
+                            if (dataPoint.getValue(Field.FIELD_SLEEP_SEGMENT_TYPE).asInt() == 1) {
+                                healthData.add(
+                                    hashMapOf(
+                                        "value" to dataPoint.getEndTime(TimeUnit.MINUTES) - dataPoint.getStartTime(
+                                            TimeUnit.MINUTES,
+                                        ),
+                                        "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                        "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                        "unit" to "MINUTES",
+                                        "source_name" to (
+                                                dataPoint.originalDataSource.appPackageName
+                                                    ?: (
+                                                            dataPoint.originalDataSource.device?.model
+                                                                ?: "unknown"
+                                                            )
+                                                ),
+                                        "source_id" to dataPoint.originalDataSource.streamIdentifier,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
             }
+            Handler(context!!.mainLooper).run { result.success(healthData) }
+        }
 
     private fun workoutDataHandler(type: String, result: Result) =
-            OnSuccessListener { response: SessionReadResponse ->
-                val healthData: MutableList<Map<String, Any?>> = mutableListOf()
-                for (session in response.sessions) {
-                    // Look for calories and distance if they
-                    var totalEnergyBurned = 0.0
-                    var totalDistance = 0.0
-                    for (dataSet in response.getDataSet(session)) {
-                        if (dataSet.dataType == DataType.TYPE_CALORIES_EXPENDED) {
-                            for (dataPoint in dataSet.dataPoints) {
-                                totalEnergyBurned += dataPoint.getValue(Field.FIELD_CALORIES).toString()
-                                        .toDouble()
-                            }
-                        }
-                        if (dataSet.dataType == DataType.TYPE_DISTANCE_DELTA) {
-                            for (dataPoint in dataSet.dataPoints) {
-                                totalDistance += dataPoint.getValue(Field.FIELD_DISTANCE).toString()
-                                        .toDouble()
-                            }
+        OnSuccessListener { response: SessionReadResponse ->
+            val healthData: MutableList<Map<String, Any?>> = mutableListOf()
+            for (session in response.sessions) {
+                // Look for calories and distance if they
+                var totalEnergyBurned = 0.0
+                var totalDistance = 0.0
+                for (dataSet in response.getDataSet(session)) {
+                    if (dataSet.dataType == DataType.TYPE_CALORIES_EXPENDED) {
+                        for (dataPoint in dataSet.dataPoints) {
+                            totalEnergyBurned += dataPoint.getValue(Field.FIELD_CALORIES).toString()
+                                .toDouble()
                         }
                     }
-                    healthData.add(
-                            hashMapOf(
-                                    "workoutActivityType" to (
-                                            workoutTypeMap.filterValues { it == session.activity }.keys.firstOrNull()
-                                                    ?: "OTHER"
-                                            ),
-                                    "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
-                                    "totalEnergyBurnedUnit" to "KILOCALORIE",
-                                    "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
-                                    "totalDistanceUnit" to "METER",
-                                    "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
-                                    "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
-                                    "unit" to "MINUTES",
-                                    "source_name" to session.appPackageName,
-                                    "source_id" to session.identifier,
-                            ),
-                    )
+                    if (dataSet.dataType == DataType.TYPE_DISTANCE_DELTA) {
+                        for (dataPoint in dataSet.dataPoints) {
+                            totalDistance += dataPoint.getValue(Field.FIELD_DISTANCE).toString()
+                                .toDouble()
+                        }
+                    }
                 }
-                Handler(context!!.mainLooper).run { result.success(healthData) }
+                healthData.add(
+                    hashMapOf(
+                        "workoutActivityType" to (
+                                workoutTypeMap.filterValues { it == session.activity }.keys.firstOrNull()
+                                    ?: "OTHER"
+                                ),
+                        "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
+                        "totalEnergyBurnedUnit" to "KILOCALORIE",
+                        "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
+                        "totalDistanceUnit" to "METER",
+                        "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                        "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                        "unit" to "MINUTES",
+                        "source_name" to session.appPackageName,
+                        "source_id" to session.identifier,
+                    ),
+                )
             }
+            Handler(context!!.mainLooper).run { result.success(healthData) }
+        }
 
     private fun callToHealthTypes(call: MethodCall): FitnessOptions {
         val typesBuilder = FitnessOptions.builder()
@@ -1347,8 +1352,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val optionsToRegister = callToHealthTypes(call)
 
         val isGranted = GoogleSignIn.hasPermissions(
-                GoogleSignIn.getLastSignedInAccount(context!!),
-                optionsToRegister,
+            GoogleSignIn.getLastSignedInAccount(context!!),
+            optionsToRegister,
         )
 
         result?.success(isGranted)
@@ -1378,10 +1383,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         // If not granted then ask for permission
         if (!isGranted && activity != null) {
             GoogleSignIn.requestPermissions(
-                    activity!!,
-                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(context!!),
-                    optionsToRegister,
+                activity!!,
+                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                GoogleSignIn.getLastSignedInAccount(context!!),
+                optionsToRegister,
             )
         } else { // / Permission already granted
             result?.success(true)
@@ -1405,15 +1410,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             return
         }
         Fitness.getConfigClient(activity!!, GoogleSignIn.getLastSignedInAccount(context!!)!!)
-                .disableFit()
-                .addOnSuccessListener {
-                    Log.i("Health", "Disabled Google Fit")
-                    result.success(true)
-                }
-                .addOnFailureListener { e ->
-                    Log.w("Health", "There was an error disabling Google Fit", e)
-                    result.success(false)
-                }
+            .disableFit()
+            .addOnSuccessListener {
+                Log.i("Health", "Disabled Google Fit")
+                result.success(true)
+            }
+            .addOnFailureListener { e ->
+                Log.w("Health", "There was an error disabling Google Fit", e)
+                result.success(false)
+            }
     }
 
     private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
@@ -1431,37 +1436,37 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val aggregatedDataType = keyToHealthDataType(AGGREGATE_STEP_COUNT)
 
         val fitnessOptions = FitnessOptions.builder()
-                .addDataType(stepsDataType)
-                .addDataType(aggregatedDataType)
-                .build()
+            .addDataType(stepsDataType)
+            .addDataType(aggregatedDataType)
+            .build()
         val gsa = GoogleSignIn.getAccountForExtension(context, fitnessOptions)
 
         val ds = DataSource.Builder()
-                .setAppPackageName("com.google.android.gms")
-                .setDataType(stepsDataType)
-                .setType(DataSource.TYPE_DERIVED)
-                .setStreamName("estimated_steps")
-                .build()
+            .setAppPackageName("com.google.android.gms")
+            .setDataType(stepsDataType)
+            .setType(DataSource.TYPE_DERIVED)
+            .setStreamName("estimated_steps")
+            .build()
 
         val duration = (end - start).toInt()
 
         val request = DataReadRequest.Builder()
-                .aggregate(ds)
-                .bucketByTime(duration, TimeUnit.MILLISECONDS)
-                .setTimeRange(start, end, TimeUnit.MILLISECONDS)
-                .build()
+            .aggregate(ds)
+            .bucketByTime(duration, TimeUnit.MILLISECONDS)
+            .setTimeRange(start, end, TimeUnit.MILLISECONDS)
+            .build()
 
         Fitness.getHistoryClient(context, gsa).readData(request)
-                .addOnFailureListener(
-                        errHandler(
-                                result,
-                                "There was an error getting the total steps in the interval!",
-                        ),
-                )
-                .addOnSuccessListener(
-                        threadPoolExecutor!!,
-                        getStepsInRange(start, end, aggregatedDataType, result),
-                )
+            .addOnFailureListener(
+                errHandler(
+                    result,
+                    "There was an error getting the total steps in the interval!",
+                ),
+            )
+            .addOnSuccessListener(
+                threadPoolExecutor!!,
+                getStepsInRange(start, end, aggregatedDataType, result),
+            )
     }
 
     private fun getStepsHealthConnect(start: Long, end: Long, result: Result) = scope.launch {
@@ -1469,10 +1474,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             val startInstant = Instant.ofEpochMilli(start)
             val endInstant = Instant.ofEpochMilli(end)
             val response = healthConnectClient.aggregate(
-                    AggregateRequest(
-                            metrics = setOf(StepsRecord.COUNT_TOTAL),
-                            timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant),
-                    ),
+                AggregateRequest(
+                    metrics = setOf(StepsRecord.COUNT_TOTAL),
+                    timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant),
+                ),
             )
             // The result may be null if no data is available in the time range.
             val stepsInInterval = response[StepsRecord.COUNT_TOTAL] ?: 0L
@@ -1485,38 +1490,38 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     private fun getStepsInRange(
-            start: Long,
-            end: Long,
-            aggregatedDataType: DataType,
-            result: Result,
+        start: Long,
+        end: Long,
+        aggregatedDataType: DataType,
+        result: Result,
     ) =
-            OnSuccessListener { response: DataReadResponse ->
-                val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
-                for (bucket in response.buckets) {
-                    val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
-                    if (dp != null) {
-                        val count = dp.getValue(aggregatedDataType.fields[0])
+        OnSuccessListener { response: DataReadResponse ->
+            val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
+            for (bucket in response.buckets) {
+                val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
+                if (dp != null) {
+                    val count = dp.getValue(aggregatedDataType.fields[0])
 
-                        val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
-                        val startDate = Date(startTime)
-                        val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
-                        Log.i(
-                                "FLUTTER_HEALTH::SUCCESS",
-                                "returning $count steps for $startDate - $endDate",
-                        )
-                        map[startTime] = count.asInt()
-                    } else {
-                        val startDay = Date(start)
-                        val endDay = Date(end)
-                        Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
-                    }
-                }
-
-                assert(map.size <= 1) { "getTotalStepsInInterval should return only one interval. Found: ${map.size}" }
-                Handler(context!!.mainLooper).run {
-                    result.success(map.values.firstOrNull())
+                    val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
+                    val startDate = Date(startTime)
+                    val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
+                    Log.i(
+                        "FLUTTER_HEALTH::SUCCESS",
+                        "returning $count steps for $startDate - $endDate",
+                    )
+                    map[startTime] = count.asInt()
+                } else {
+                    val startDay = Date(start)
+                    val endDay = Date(end)
+                    Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
                 }
             }
+
+            assert(map.size <= 1) { "getTotalStepsInInterval should return only one interval. Found: ${map.size}" }
+            Handler(context!!.mainLooper).run {
+                result.success(map.values.firstOrNull())
+            }
+        }
 
     private fun getActivityType(type: String): String {
         return workoutTypeMap[type] ?: FitnessActivities.UNKNOWN
@@ -1593,41 +1598,41 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             val dataType = MapToHCType[typeKey]!!
             if (access == 0) {
                 permList.add(
-                        HealthPermission.getReadPermission(dataType),
+                    HealthPermission.getReadPermission(dataType),
                 )
             } else {
                 permList.addAll(
-                        listOf(
-                                HealthPermission.getReadPermission(dataType),
-                                HealthPermission.getWritePermission(dataType),
-                        ),
+                    listOf(
+                        HealthPermission.getReadPermission(dataType),
+                        HealthPermission.getWritePermission(dataType),
+                    ),
                 )
             }
             // Workout also needs distance and total energy burned too
             if (typeKey == WORKOUT) {
                 if (access == 0) {
                     permList.addAll(
-                            listOf(
-                                    HealthPermission.getReadPermission(DistanceRecord::class),
-                                    HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
-                            ),
+                        listOf(
+                            HealthPermission.getReadPermission(DistanceRecord::class),
+                            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+                        ),
                     )
                 } else {
                     permList.addAll(
-                            listOf(
-                                    HealthPermission.getReadPermission(DistanceRecord::class),
-                                    HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
-                                    HealthPermission.getWritePermission(DistanceRecord::class),
-                                    HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class),
-                            ),
+                        listOf(
+                            HealthPermission.getReadPermission(DistanceRecord::class),
+                            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+                            HealthPermission.getWritePermission(DistanceRecord::class),
+                            HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class),
+                        ),
                     )
                 }
             }
         }
         scope.launch {
             result.success(
-                    healthConnectClient.permissionController.getGrantedPermissions()
-                            .containsAll(permList),
+                healthConnectClient.permissionController.getGrantedPermissions()
+                    .containsAll(permList),
             )
         }
     }
@@ -1643,33 +1648,33 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             val dataType = MapToHCType[typeKey]!!
             if (access == 0) {
                 permList.add(
-                        HealthPermission.getReadPermission(dataType),
+                    HealthPermission.getReadPermission(dataType),
                 )
             } else {
                 permList.addAll(
-                        listOf(
-                                HealthPermission.getReadPermission(dataType),
-                                HealthPermission.getWritePermission(dataType),
-                        ),
+                    listOf(
+                        HealthPermission.getReadPermission(dataType),
+                        HealthPermission.getWritePermission(dataType),
+                    ),
                 )
             }
             // Workout also needs distance and total energy burned too
             if (typeKey == WORKOUT) {
                 if (access == 0) {
                     permList.addAll(
-                            listOf(
-                                    HealthPermission.getReadPermission(DistanceRecord::class),
-                                    HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
-                            ),
+                        listOf(
+                            HealthPermission.getReadPermission(DistanceRecord::class),
+                            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+                        ),
                     )
                 } else {
                     permList.addAll(
-                            listOf(
-                                    HealthPermission.getReadPermission(DistanceRecord::class),
-                                    HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
-                                    HealthPermission.getWritePermission(DistanceRecord::class),
-                                    HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class),
-                            ),
+                        listOf(
+                            HealthPermission.getReadPermission(DistanceRecord::class),
+                            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+                            HealthPermission.getWritePermission(DistanceRecord::class),
+                            HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class),
+                        ),
                     )
                 }
             }
@@ -1687,8 +1692,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         scope.launch {
             MapToHCType[dataType]?.let { classType ->
                 val request = ReadRecordsRequest(
-                        recordType = classType,
-                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                    recordType = classType,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                 )
                 val response = healthConnectClient.readRecords(request)
 
@@ -1697,13 +1702,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     for (rec in response.records) {
                         val record = rec as ExerciseSessionRecord
                         val distanceRequest = healthConnectClient.readRecords(
-                                ReadRecordsRequest(
-                                        recordType = DistanceRecord::class,
-                                        timeRangeFilter = TimeRangeFilter.between(
-                                                record.startTime,
-                                                record.endTime,
-                                        ),
+                            ReadRecordsRequest(
+                                recordType = DistanceRecord::class,
+                                timeRangeFilter = TimeRangeFilter.between(
+                                    record.startTime,
+                                    record.endTime,
                                 ),
+                            ),
                         )
                         var totalDistance = 0.0
                         for (distanceRec in distanceRequest.records) {
@@ -1711,13 +1716,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         }
 
                         val energyBurnedRequest = healthConnectClient.readRecords(
-                                ReadRecordsRequest(
-                                        recordType = TotalCaloriesBurnedRecord::class,
-                                        timeRangeFilter = TimeRangeFilter.between(
-                                                record.startTime,
-                                                record.endTime,
-                                        ),
+                            ReadRecordsRequest(
+                                recordType = TotalCaloriesBurnedRecord::class,
+                                timeRangeFilter = TimeRangeFilter.between(
+                                    record.startTime,
+                                    record.endTime,
                                 ),
+                            ),
                         )
                         var totalEnergyBurned = 0.0
                         for (energyBurnedRec in energyBurnedRequest.records) {
@@ -1727,22 +1732,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         // val metadata = (rec as Record).metadata
                         // Add final datapoint
                         healthConnectData.add(
-                                // mapOf(
-                                mapOf<String, Any?>(
-                                        "workoutActivityType" to (
-                                                workoutTypeMapHealthConnect.filterValues { it == record.exerciseType }.keys.firstOrNull()
-                                                        ?: "OTHER"
-                                                ),
-                                        "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
-                                        "totalDistanceUnit" to "METER",
-                                        "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
-                                        "totalEnergyBurnedUnit" to "KILOCALORIE",
-                                        "unit" to "MINUTES",
-                                        "date_from" to rec.startTime.toEpochMilli(),
-                                        "date_to" to rec.endTime.toEpochMilli(),
-                                        "source_id" to "",
-                                        "source_name" to record.metadata.dataOrigin.packageName,
-                                ),
+                            // mapOf(
+                            mapOf<String, Any?>(
+                                "workoutActivityType" to (
+                                        workoutTypeMapHealthConnect.filterValues { it == record.exerciseType }.keys.firstOrNull()
+                                            ?: "OTHER"
+                                        ),
+                                "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
+                                "totalDistanceUnit" to "METER",
+                                "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
+                                "totalEnergyBurnedUnit" to "KILOCALORIE",
+                                "unit" to "MINUTES",
+                                "date_from" to rec.startTime.toEpochMilli(),
+                                "date_to" to rec.endTime.toEpochMilli(),
+                                "source_id" to "",
+                                "source_name" to record.metadata.dataOrigin.packageName,
+                            ),
                         )
                     }
                     // Filter sleep stages for requested stage
@@ -1769,198 +1774,199 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val metadata = (record as Record).metadata
         when (record) {
             is WeightRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.weight.inKilograms,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.weight.inKilograms,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is HeightRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.height.inMeters,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.height.inMeters,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is BodyFatRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.percentage.value,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.percentage.value,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is StepsRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.count,
-                            "date_from" to record.startTime.toEpochMilli(),
-                            "date_to" to record.endTime.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.count,
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is ActiveCaloriesBurnedRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.energy.inKilocalories,
-                            "date_from" to record.startTime.toEpochMilli(),
-                            "date_to" to record.endTime.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.energy.inKilocalories,
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is HeartRateRecord -> return record.samples.map {
                 mapOf<String, Any>(
-                        "value" to it.beatsPerMinute,
-                        "date_from" to it.time.toEpochMilli(),
-                        "date_to" to it.time.toEpochMilli(),
-                        "source_id" to "",
-                        "source_name" to metadata.dataOrigin.packageName,
+                    "value" to it.beatsPerMinute,
+                    "date_from" to it.time.toEpochMilli(),
+                    "date_to" to it.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
                 )
             }
 
             is BodyTemperatureRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.temperature.inCelsius,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.temperature.inCelsius,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is BloodPressureRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to if (dataType == BLOOD_PRESSURE_DIASTOLIC) record.diastolic.inMillimetersOfMercury else record.systolic.inMillimetersOfMercury,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to if (dataType == BLOOD_PRESSURE_DIASTOLIC) record.diastolic.inMillimetersOfMercury else record.systolic.inMillimetersOfMercury,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is OxygenSaturationRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.percentage.value,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.percentage.value,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is BloodGlucoseRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.level.inMilligramsPerDeciliter,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.level.inMilligramsPerDeciliter,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is DistanceRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.distance.inMeters,
-                            "date_from" to record.startTime.toEpochMilli(),
-                            "date_to" to record.endTime.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.distance.inMeters,
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is HydrationRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.volume.inLiters,
-                            "date_from" to record.startTime.toEpochMilli(),
-                            "date_to" to record.endTime.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "value" to record.volume.inLiters,
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is SleepSessionRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "date_from" to record.startTime.toEpochMilli(),
-                            "date_to" to record.endTime.toEpochMilli(),
-                            "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is SleepStageRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "stage" to record.stage,
-                            "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
-                            "date_from" to record.startTime.toEpochMilli(),
-                            "date_to" to record.endTime.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    ),
+                mapOf<String, Any>(
+                    "stage" to record.stage,
+                    "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
             )
 
             is RestingHeartRateRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.beatsPerMinute,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    )
+                mapOf<String, Any>(
+                    "value" to record.beatsPerMinute,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
             )
 
             is BasalMetabolicRateRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.basalMetabolicRate.inKilocaloriesPerDay,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    )
+                mapOf<String, Any>(
+                    "value" to record.basalMetabolicRate.inKilocaloriesPerDay,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
             )
 
             is FloorsClimbedRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.floors,
-                            "date_from" to record.startTime.toEpochMilli(),
-                            "date_to" to record.endTime.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    )
+                mapOf<String, Any>(
+                    "value" to record.floors,
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
             )
 
             is RespiratoryRateRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "value" to record.rate,
-                            "date_from" to record.time.toEpochMilli(),
-                            "date_to" to record.time.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    )
+                mapOf<String, Any>(
+                    "value" to record.rate,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
             )
 
             is NutritionRecord -> return listOf(
-                    mapOf<String, Any>(
-                            "calories" to record.energy!!.inKilocalories,
-                            "protein" to record.protein!!.inGrams,
-                            "carbs" to record.totalCarbohydrate!!.inGrams,
-                            "fat" to record.totalFat!!.inGrams,
-                            "name" to record.name!!,
-                            "date_from" to record.startTime.toEpochMilli(),
-                            "date_to" to record.endTime.toEpochMilli(),
-                            "source_id" to "",
-                            "source_name" to metadata.dataOrigin.packageName,
-                    )
+                mapOf<String, Any>(
+                    "calories" to record.energy!!.inKilocalories,
+                    "protein" to record.protein!!.inGrams,
+                    "carbs" to record.totalCarbohydrate!!.inGrams,
+                    "fat" to record.totalFat!!.inGrams,
+                    "name" to record.name!!,
+                    "mealType" to (MapTypeToMealTypeHC[record.mealType] ?: MEAL_TYPE_UNKNOWN),
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
             )
             // is ExerciseSessionRecord -> return listOf(mapOf<String, Any>("value" to ,
             //                                             "date_from" to ,
@@ -1978,166 +1984,166 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val value = call.argument<Double>("value")!!
         val record = when (type) {
             BODY_FAT_PERCENTAGE -> BodyFatRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    percentage = Percentage(value),
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                percentage = Percentage(value),
+                zoneOffset = null,
             )
 
             HEIGHT -> HeightRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    height = Length.meters(value),
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                height = Length.meters(value),
+                zoneOffset = null,
             )
 
             WEIGHT -> WeightRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    weight = Mass.kilograms(value),
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                weight = Mass.kilograms(value),
+                zoneOffset = null,
             )
 
             STEPS -> StepsRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    count = value.toLong(),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                count = value.toLong(),
+                startZoneOffset = null,
+                endZoneOffset = null,
             )
 
             ACTIVE_ENERGY_BURNED -> ActiveCaloriesBurnedRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    energy = Energy.kilocalories(value),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                energy = Energy.kilocalories(value),
+                startZoneOffset = null,
+                endZoneOffset = null,
             )
 
             HEART_RATE -> HeartRateRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    samples = listOf<HeartRateRecord.Sample>(
-                            HeartRateRecord.Sample(
-                                    time = Instant.ofEpochMilli(startTime),
-                                    beatsPerMinute = value.toLong(),
-                            ),
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                samples = listOf<HeartRateRecord.Sample>(
+                    HeartRateRecord.Sample(
+                        time = Instant.ofEpochMilli(startTime),
+                        beatsPerMinute = value.toLong(),
                     ),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
+                ),
+                startZoneOffset = null,
+                endZoneOffset = null,
             )
 
             BODY_TEMPERATURE -> BodyTemperatureRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    temperature = Temperature.celsius(value),
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                temperature = Temperature.celsius(value),
+                zoneOffset = null,
             )
 
             BLOOD_OXYGEN -> OxygenSaturationRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    percentage = Percentage(value),
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                percentage = Percentage(value),
+                zoneOffset = null,
             )
 
             BLOOD_GLUCOSE -> BloodGlucoseRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    level = BloodGlucose.milligramsPerDeciliter(value),
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                level = BloodGlucose.milligramsPerDeciliter(value),
+                zoneOffset = null,
             )
 
             DISTANCE_DELTA -> DistanceRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    distance = Length.meters(value),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                distance = Length.meters(value),
+                startZoneOffset = null,
+                endZoneOffset = null,
             )
 
             WATER -> HydrationRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    volume = Volume.liters(value),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                volume = Volume.liters(value),
+                startZoneOffset = null,
+                endZoneOffset = null,
             )
 
             SLEEP_ASLEEP -> SleepStageRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
-                    stage = SleepStageRecord.STAGE_TYPE_SLEEPING,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
+                stage = SleepStageRecord.STAGE_TYPE_SLEEPING,
             )
 
             SLEEP_LIGHT -> SleepStageRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
-                    stage = SleepStageRecord.STAGE_TYPE_LIGHT,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
+                stage = SleepStageRecord.STAGE_TYPE_LIGHT,
             )
 
             SLEEP_DEEP -> SleepStageRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
-                    stage = SleepStageRecord.STAGE_TYPE_DEEP,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
+                stage = SleepStageRecord.STAGE_TYPE_DEEP,
             )
 
             SLEEP_REM -> SleepStageRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
-                    stage = SleepStageRecord.STAGE_TYPE_REM,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
+                stage = SleepStageRecord.STAGE_TYPE_REM,
             )
 
             SLEEP_OUT_OF_BED -> SleepStageRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
-                    stage = SleepStageRecord.STAGE_TYPE_OUT_OF_BED,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
+                stage = SleepStageRecord.STAGE_TYPE_OUT_OF_BED,
             )
 
             SLEEP_AWAKE -> SleepStageRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
-                    stage = SleepStageRecord.STAGE_TYPE_AWAKE,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
+                stage = SleepStageRecord.STAGE_TYPE_AWAKE,
             )
 
 
             SLEEP_SESSION -> SleepSessionRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    startZoneOffset = null,
-                    endZoneOffset = null,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
             )
 
             RESTING_HEART_RATE -> RestingHeartRateRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    beatsPerMinute = value.toLong(),
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                beatsPerMinute = value.toLong(),
+                zoneOffset = null,
             )
 
             BASAL_ENERGY_BURNED -> BasalMetabolicRateRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    basalMetabolicRate = Power.kilocaloriesPerDay(value),
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                basalMetabolicRate = Power.kilocaloriesPerDay(value),
+                zoneOffset = null,
             )
 
             FLIGHTS_CLIMBED -> FloorsClimbedRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    floors = value,
-                    startZoneOffset = null,
-                    endZoneOffset = null,
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                floors = value,
+                startZoneOffset = null,
+                endZoneOffset = null,
             )
 
             RESPIRATORY_RATE -> RespiratoryRateRecord(
-                    time = Instant.ofEpochMilli(startTime),
-                    rate = value,
-                    zoneOffset = null,
+                time = Instant.ofEpochMilli(startTime),
+                rate = value,
+                zoneOffset = null,
             )
             // AGGREGATE_STEP_COUNT -> StepsRecord()
             BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
@@ -2168,46 +2174,46 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             try {
                 val list = mutableListOf<Record>()
                 list.add(
-                        ExerciseSessionRecord(
-                                startTime = startTime,
-                                startZoneOffset = null,
-                                endTime = endTime,
-                                endZoneOffset = null,
-                                exerciseType = workoutType,
-                                title = type,
-                        ),
+                    ExerciseSessionRecord(
+                        startTime = startTime,
+                        startZoneOffset = null,
+                        endTime = endTime,
+                        endZoneOffset = null,
+                        exerciseType = workoutType,
+                        title = type,
+                    ),
                 )
                 if (totalDistance != null) {
                     list.add(
-                            DistanceRecord(
-                                    startTime = startTime,
-                                    startZoneOffset = null,
-                                    endTime = endTime,
-                                    endZoneOffset = null,
-                                    distance = Length.meters(totalDistance.toDouble()),
-                            ),
+                        DistanceRecord(
+                            startTime = startTime,
+                            startZoneOffset = null,
+                            endTime = endTime,
+                            endZoneOffset = null,
+                            distance = Length.meters(totalDistance.toDouble()),
+                        ),
                     )
                 }
                 if (totalEnergyBurned != null) {
                     list.add(
-                            TotalCaloriesBurnedRecord(
-                                    startTime = startTime,
-                                    startZoneOffset = null,
-                                    endTime = endTime,
-                                    endZoneOffset = null,
-                                    energy = Energy.kilocalories(totalEnergyBurned.toDouble()),
-                            ),
+                        TotalCaloriesBurnedRecord(
+                            startTime = startTime,
+                            startZoneOffset = null,
+                            endTime = endTime,
+                            endZoneOffset = null,
+                            energy = Energy.kilocalories(totalEnergyBurned.toDouble()),
+                        ),
                     )
                 }
                 healthConnectClient.insertRecords(
-                        list,
+                    list,
                 )
                 result.success(true)
                 Log.i("FLUTTER_HEALTH::SUCCESS", "[Health Connect] Workout was successfully added!")
             } catch (e: Exception) {
                 Log.w(
-                        "FLUTTER_HEALTH::ERROR",
-                        "[Health Connect] There was an error adding the workout",
+                    "FLUTTER_HEALTH::ERROR",
+                    "[Health Connect] There was an error adding the workout",
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
@@ -2225,24 +2231,24 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         scope.launch {
             try {
                 healthConnectClient.insertRecords(
-                        listOf(
-                                BloodPressureRecord(
-                                        time = startTime,
-                                        systolic = Pressure.millimetersOfMercury(systolic),
-                                        diastolic = Pressure.millimetersOfMercury(diastolic),
-                                        zoneOffset = null,
-                                ),
+                    listOf(
+                        BloodPressureRecord(
+                            time = startTime,
+                            systolic = Pressure.millimetersOfMercury(systolic),
+                            diastolic = Pressure.millimetersOfMercury(diastolic),
+                            zoneOffset = null,
                         ),
+                    ),
                 )
                 result.success(true)
                 Log.i(
-                        "FLUTTER_HEALTH::SUCCESS",
-                        "[Health Connect] Blood pressure was successfully added!",
+                    "FLUTTER_HEALTH::SUCCESS",
+                    "[Health Connect] Blood pressure was successfully added!",
                 )
             } catch (e: Exception) {
                 Log.w(
-                        "FLUTTER_HEALTH::ERROR",
-                        "[Health Connect] There was an error adding the blood pressure",
+                    "FLUTTER_HEALTH::ERROR",
+                    "[Health Connect] There was an error adding the blood pressure",
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
@@ -2260,8 +2266,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         scope.launch {
             try {
                 healthConnectClient.deleteRecords(
-                        recordType = classType,
-                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                    recordType = classType,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                 )
                 result.success(true)
             } catch (e: Exception) {
@@ -2271,79 +2277,103 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     val MapSleepStageToType = hashMapOf<Int, String>(
-            1 to SLEEP_AWAKE,
-            2 to SLEEP_ASLEEP,
-            3 to SLEEP_OUT_OF_BED,
-            4 to SLEEP_LIGHT,
-            5 to SLEEP_DEEP,
-            6 to SLEEP_REM,
+        1 to SLEEP_AWAKE,
+        2 to SLEEP_ASLEEP,
+        3 to SLEEP_OUT_OF_BED,
+        4 to SLEEP_LIGHT,
+        5 to SLEEP_DEEP,
+        6 to SLEEP_REM,
+    )
+
+    private val MapMealTypeToTypeHC = hashMapOf<String, Int>(
+        BREAKFAST to MEAL_TYPE_BREAKFAST,
+        LUNCH to MEAL_TYPE_LUNCH,
+        DINNER to MEAL_TYPE_DINNER,
+        SNACK to MEAL_TYPE_SNACK,
+        MEAL_UNKNOWN to MEAL_TYPE_UNKNOWN,
+    )
+
+    private val MapTypeToMealTypeHC = hashMapOf<Int, String>(
+        MEAL_TYPE_BREAKFAST to BREAKFAST,
+        MEAL_TYPE_LUNCH to LUNCH,
+        MEAL_TYPE_DINNER to DINNER,
+        MEAL_TYPE_SNACK to SNACK,
+        MEAL_TYPE_UNKNOWN to MEAL_UNKNOWN,
+    )
+
+    private val MapMealTypeToType = hashMapOf<String, Int>(
+        BREAKFAST to Field.MEAL_TYPE_BREAKFAST,
+        LUNCH to Field.MEAL_TYPE_LUNCH,
+        DINNER to Field.MEAL_TYPE_DINNER,
+        SNACK to Field.MEAL_TYPE_SNACK,
+        MEAL_UNKNOWN to Field.MEAL_TYPE_UNKNOWN,
     )
 
     val MapToHCType = hashMapOf(
-            BODY_FAT_PERCENTAGE to BodyFatRecord::class,
-            HEIGHT to HeightRecord::class,
-            WEIGHT to WeightRecord::class,
-            STEPS to StepsRecord::class,
-            AGGREGATE_STEP_COUNT to StepsRecord::class,
-            ACTIVE_ENERGY_BURNED to ActiveCaloriesBurnedRecord::class,
-            HEART_RATE to HeartRateRecord::class,
-            BODY_TEMPERATURE to BodyTemperatureRecord::class,
-            BLOOD_PRESSURE_SYSTOLIC to BloodPressureRecord::class,
-            BLOOD_PRESSURE_DIASTOLIC to BloodPressureRecord::class,
-            BLOOD_OXYGEN to OxygenSaturationRecord::class,
-            BLOOD_GLUCOSE to BloodGlucoseRecord::class,
-            DISTANCE_DELTA to DistanceRecord::class,
-            WATER to HydrationRecord::class,
-            SLEEP_ASLEEP to SleepStageRecord::class,
-            SLEEP_AWAKE to SleepStageRecord::class,
-            SLEEP_LIGHT to SleepStageRecord::class,
-            SLEEP_DEEP to SleepStageRecord::class,
-            SLEEP_REM to SleepStageRecord::class,
-            SLEEP_OUT_OF_BED to SleepStageRecord::class,
-            SLEEP_SESSION to SleepSessionRecord::class,
-            WORKOUT to ExerciseSessionRecord::class,
-            NUTRITION to NutritionRecord::class,
-            RESTING_HEART_RATE to RestingHeartRateRecord::class,
-            BASAL_ENERGY_BURNED to BasalMetabolicRateRecord::class,
-            FLIGHTS_CLIMBED to FloorsClimbedRecord::class,
-            RESPIRATORY_RATE to RespiratoryRateRecord::class,
-            // MOVE_MINUTES to TODO: Find alternative?
-            // TODO: Implement remaining types
-            // "ActiveCaloriesBurned" to ActiveCaloriesBurnedRecord::class,
-            // "BasalBodyTemperature" to BasalBodyTemperatureRecord::class,
-            // "BasalMetabolicRate" to BasalMetabolicRateRecord::class,
-            // "BloodGlucose" to BloodGlucoseRecord::class,
-            // "BloodPressure" to BloodPressureRecord::class,
-            // "BodyFat" to BodyFatRecord::class,
-            // "BodyTemperature" to BodyTemperatureRecord::class,
-            // "BoneMass" to BoneMassRecord::class,
-            // "CervicalMucus" to CervicalMucusRecord::class,
-            // "CyclingPedalingCadence" to CyclingPedalingCadenceRecord::class,
-            // "Distance" to DistanceRecord::class,
-            // "ElevationGained" to ElevationGainedRecord::class,
-            // "ExerciseSession" to ExerciseSessionRecord::class,
-            // "FloorsClimbed" to FloorsClimbedRecord::class,
-            // "HeartRate" to HeartRateRecord::class,
-            // "Height" to HeightRecord::class,
-            // "Hydration" to HydrationRecord::class,
-            // "LeanBodyMass" to LeanBodyMassRecord::class,
-            // "MenstruationFlow" to MenstruationFlowRecord::class,
-            // "MenstruationPeriod" to MenstruationPeriodRecord::class,
-            // "Nutrition" to NutritionRecord::class,
-            // "OvulationTest" to OvulationTestRecord::class,
-            // "OxygenSaturation" to OxygenSaturationRecord::class,
-            // "Power" to PowerRecord::class,
-            // "RespiratoryRate" to RespiratoryRateRecord::class,
-            // "RestingHeartRate" to RestingHeartRateRecord::class,
-            // "SexualActivity" to SexualActivityRecord::class,
-            // "SleepSession" to SleepSessionRecord::class,
-            // "SleepStage" to SleepStageRecord::class,
-            // "Speed" to SpeedRecord::class,
-            // "StepsCadence" to StepsCadenceRecord::class,
-            // "Steps" to StepsRecord::class,
-            // "TotalCaloriesBurned" to TotalCaloriesBurnedRecord::class,
-            // "Vo2Max" to Vo2MaxRecord::class,
-            // "Weight" to WeightRecord::class,
-            // "WheelchairPushes" to WheelchairPushesRecord::class,
+        BODY_FAT_PERCENTAGE to BodyFatRecord::class,
+        HEIGHT to HeightRecord::class,
+        WEIGHT to WeightRecord::class,
+        STEPS to StepsRecord::class,
+        AGGREGATE_STEP_COUNT to StepsRecord::class,
+        ACTIVE_ENERGY_BURNED to ActiveCaloriesBurnedRecord::class,
+        HEART_RATE to HeartRateRecord::class,
+        BODY_TEMPERATURE to BodyTemperatureRecord::class,
+        BLOOD_PRESSURE_SYSTOLIC to BloodPressureRecord::class,
+        BLOOD_PRESSURE_DIASTOLIC to BloodPressureRecord::class,
+        BLOOD_OXYGEN to OxygenSaturationRecord::class,
+        BLOOD_GLUCOSE to BloodGlucoseRecord::class,
+        DISTANCE_DELTA to DistanceRecord::class,
+        WATER to HydrationRecord::class,
+        SLEEP_ASLEEP to SleepStageRecord::class,
+        SLEEP_AWAKE to SleepStageRecord::class,
+        SLEEP_LIGHT to SleepStageRecord::class,
+        SLEEP_DEEP to SleepStageRecord::class,
+        SLEEP_REM to SleepStageRecord::class,
+        SLEEP_OUT_OF_BED to SleepStageRecord::class,
+        SLEEP_SESSION to SleepSessionRecord::class,
+        WORKOUT to ExerciseSessionRecord::class,
+        NUTRITION to NutritionRecord::class,
+        RESTING_HEART_RATE to RestingHeartRateRecord::class,
+        BASAL_ENERGY_BURNED to BasalMetabolicRateRecord::class,
+        FLIGHTS_CLIMBED to FloorsClimbedRecord::class,
+        RESPIRATORY_RATE to RespiratoryRateRecord::class,
+        // MOVE_MINUTES to TODO: Find alternative?
+        // TODO: Implement remaining types
+        // "ActiveCaloriesBurned" to ActiveCaloriesBurnedRecord::class,
+        // "BasalBodyTemperature" to BasalBodyTemperatureRecord::class,
+        // "BasalMetabolicRate" to BasalMetabolicRateRecord::class,
+        // "BloodGlucose" to BloodGlucoseRecord::class,
+        // "BloodPressure" to BloodPressureRecord::class,
+        // "BodyFat" to BodyFatRecord::class,
+        // "BodyTemperature" to BodyTemperatureRecord::class,
+        // "BoneMass" to BoneMassRecord::class,
+        // "CervicalMucus" to CervicalMucusRecord::class,
+        // "CyclingPedalingCadence" to CyclingPedalingCadenceRecord::class,
+        // "Distance" to DistanceRecord::class,
+        // "ElevationGained" to ElevationGainedRecord::class,
+        // "ExerciseSession" to ExerciseSessionRecord::class,
+        // "FloorsClimbed" to FloorsClimbedRecord::class,
+        // "HeartRate" to HeartRateRecord::class,
+        // "Height" to HeightRecord::class,
+        // "Hydration" to HydrationRecord::class,
+        // "LeanBodyMass" to LeanBodyMassRecord::class,
+        // "MenstruationFlow" to MenstruationFlowRecord::class,
+        // "MenstruationPeriod" to MenstruationPeriodRecord::class,
+        // "Nutrition" to NutritionRecord::class,
+        // "OvulationTest" to OvulationTestRecord::class,
+        // "OxygenSaturation" to OxygenSaturationRecord::class,
+        // "Power" to PowerRecord::class,
+        // "RespiratoryRate" to RespiratoryRateRecord::class,
+        // "RestingHeartRate" to RestingHeartRateRecord::class,
+        // "SexualActivity" to SexualActivityRecord::class,
+        // "SleepSession" to SleepSessionRecord::class,
+        // "SleepStage" to SleepStageRecord::class,
+        // "Speed" to SpeedRecord::class,
+        // "StepsCadence" to StepsCadenceRecord::class,
+        // "Steps" to StepsRecord::class,
+        // "TotalCaloriesBurned" to TotalCaloriesBurnedRecord::class,
+        // "Vo2Max" to Vo2MaxRecord::class,
+        // "Weight" to WeightRecord::class,
+        // "WheelchairPushes" to WheelchairPushesRecord::class,
     )
 }
