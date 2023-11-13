@@ -460,7 +460,7 @@ enum MealType {
   LUNCH,
   DINNER,
   SNACK,
-  UNKOWN,
+  UNKNOWN,
 }
 
 /// Classifications for ECG readings.
