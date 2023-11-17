@@ -160,14 +160,14 @@ class _HealthAppState extends State<HealthApp> {
         totalDistance: 2430,
         totalEnergyBurned: 400);
     success &= await health.writeBloodPressure(90, 80, earlier, now);
-    success &= await health.writeHealthData(
-        0.0, HealthDataType.SLEEP_REM, earlier, now);
-    success &= await health.writeHealthData(
-        0.0, HealthDataType.SLEEP_ASLEEP, earlier, now);
-    success &= await health.writeHealthData(
-        0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
-    success &= await health.writeHealthData(
-        0.0, HealthDataType.SLEEP_DEEP, earlier, now);
+    // success &= await health.writeHealthData(
+    //     0.0, HealthDataType.SLEEP_REM, earlier, now);
+    // success &= await health.writeHealthData(
+    //     0.0, HealthDataType.SLEEP_ASLEEP, earlier, now);
+    // success &= await health.writeHealthData(
+    //     0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
+    // success &= await health.writeHealthData(
+    //     0.0, HealthDataType.SLEEP_DEEP, earlier, now);
 
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
