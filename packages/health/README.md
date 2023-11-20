@@ -133,6 +133,21 @@ Health Connect requires the following lines in the `AndroidManifest.xml` file (a
 </queries>
 ```
 
+In the Health Connect permissions activity there is a link to your privacy policy. You need to grant the Health Connect app access in order to link back to your privacy policy. In the example below, you should either replace `.MainActivity` with an activity that presents the privacy policy or have the Main Activity route the user to the policy. This step may be required to pass Google app review when requesting access to sensitive permissions.
+
+```
+<activity-alias
+     android:name="ViewPermissionUsageActivity"
+     android:exported="true"
+     android:targetActivity=".MainActivity"
+     android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+            <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+        </intent-filter>
+</activity-alias>
+```
+
 ### Android Permissions
 
 Starting from API level 28 (Android 9.0) acessing some fitness data (e.g. Steps) requires a special permission.
@@ -173,6 +188,22 @@ Follow the plugin setup instructions and add the following line before requsting
 ```
 await Permission.activityRecognition.request();
 await Permission.location.request();
+```
+
+### Android 14
+
+This plugin uses the new `registerForActivityResult` when requesting permissions from Health Connect. In order for that to work, the Main app's activity should extend `FlutterFragmentActivity` instead of `FlutterActivity`. This adjustment allows casting from `Activity` to `ComponentActivity` for accessing `registerForActivityResult`.
+
+In your MainActivity.kt file, update the `MainActivity` class so that it extends `FlutterFragmentActivity` instead of the default `FlutterActivity`:
+
+```
+...
+import io.flutter.embedding.android.FlutterFragmentActivity
+...
+
+class MainActivity: FlutterFragmentActivity() {
+...
+}
 ```
 
 ### Android X
