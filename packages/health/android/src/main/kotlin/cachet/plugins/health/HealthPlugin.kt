@@ -16,6 +16,11 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_BREAKFAST
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_DINNER
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_LUNCH
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_SNACK
+import androidx.health.connect.client.records.MealType.MEAL_TYPE_UNKNOWN
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
@@ -102,6 +107,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var SLEEP_REM = "SLEEP_REM"
     private var SLEEP_OUT_OF_BED = "SLEEP_OUT_OF_BED"
     private var WORKOUT = "WORKOUT"
+    private var NUTRITION = "NUTRITION"
+    private var BREAKFAST = "BREAKFAST"
+    private var LUNCH = "LUNCH"
+    private var DINNER = "DINNER"
+    private var SNACK = "SNACK"
+    private var MEAL_UNKNOWN = "UNKNOWN"
+
 
     val workoutTypeMap = mapOf(
         "AEROBICS" to FitnessActivities.AEROBICS,
@@ -402,24 +414,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 mResult?.success(false)
             }
         }
-        if (requestCode == HEALTH_CONNECT_RESULT_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    if(data.extras?.containsKey("request_blocked") == true) {
-                        Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect) due to too many requests!")
-                        mResult?.success(false)
-                        return false
-                    }
-                }
-                Log.i("FLUTTER_HEALTH", "Access Granted (to Health Connect)!")
-                mResult?.success(true)
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect)!")
-                mResult?.success(false)
-            }
-        }
         return false
     }
+
 
     private fun keyToHealthDataType(type: String): DataType {
         return when (type) {
@@ -442,6 +439,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
             WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
+            NUTRITION -> DataType.TYPE_NUTRITION
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
@@ -466,6 +464,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
             WORKOUT -> Field.FIELD_ACTIVITY
+            NUTRITION -> Field.FIELD_NUTRIENTS
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
     }
@@ -592,6 +591,143 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         result,
                         "There was an error adding the blood pressure data!",
                     ),
+                )
+        } catch (e3: Exception) {
+            result.success(false)
+        }
+    }
+
+    private fun writeMealHC(call: MethodCall, result: Result) {
+        val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
+        val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
+        val calories = call.argument<Double>("caloriesConsumed")
+        val carbs = call.argument<Double>("carbohydrates") as Double?
+        val protein = call.argument<Double>("protein") as Double?
+        val fat = call.argument<Double>("fatTotal") as Double?
+        val name = call.argument<String>("name")
+        val mealType = call.argument<String>("mealType")!!
+
+        scope.launch {
+            try {
+                val list = mutableListOf<Record>()
+                list.add(
+                    NutritionRecord(
+                        name = name,
+                        energy = calories?.kilocalories,
+                        totalCarbohydrate = carbs?.grams,
+                        protein = protein?.grams,
+                        totalFat = fat?.grams,
+                        startTime = startTime,
+                        startZoneOffset = null,
+                        endTime = endTime,
+                        endZoneOffset = null,
+                        mealType = MapMealTypeToTypeHC[mealType] ?: MEAL_TYPE_UNKNOWN,
+                    ),
+                )
+                healthConnectClient.insertRecords(
+                    list,
+                )
+                result.success(true)
+                Log.i("FLUTTER_HEALTH::SUCCESS", "[Health Connect] Meal was successfully added!")
+
+            } catch (e: Exception) {
+                Log.w(
+                    "FLUTTER_HEALTH::ERROR",
+                    "[Health Connect] There was an error adding the meal",
+                )
+                Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
+                Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
+                result.success(false)
+            }
+
+        }
+    }
+
+
+    private fun writeMeal(call: MethodCall, result: Result) {
+        if (useHealthConnectIfAvailable && healthConnectAvailable) {
+            writeMealHC(call, result)
+            return
+        }
+
+        if (context == null) {
+            result.success(false)
+            return
+        }
+
+        val startTime = call.argument<Long>("startTime")!!
+        val endTime = call.argument<Long>("endTime")!!
+        val calories = call.argument<Double>("caloriesConsumed")
+        val carbs = call.argument<Double>("carbohydrates") as Double?
+        val protein = call.argument<Double>("protein") as Double?
+        val fat = call.argument<Double>("fatTotal") as Double?
+        val name = call.argument<String>("name")
+        val mealType = call.argument<String>("mealType")!!
+
+        val dataType = DataType.TYPE_NUTRITION
+
+        val typesBuilder = FitnessOptions.builder()
+        typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
+        val dataSource = DataSource.Builder()
+            .setDataType(dataType)
+            .setType(DataSource.TYPE_RAW)
+            .setDevice(Device.getLocalDevice(context!!.applicationContext))
+            .setAppPackageName(context!!.applicationContext)
+            .build()
+
+        val nutrients = mutableMapOf(
+            Field.NUTRIENT_CALORIES to calories?.toFloat()
+        )
+
+        if (carbs != null) {
+            nutrients[Field.NUTRIENT_TOTAL_CARBS] = carbs.toFloat()
+        }
+
+        if (protein != null) {
+            nutrients[Field.NUTRIENT_PROTEIN] = protein.toFloat()
+        }
+
+        if (fat != null) {
+            nutrients[Field.NUTRIENT_TOTAL_FAT] = fat.toFloat()
+        }
+
+        val dataBuilder = DataPoint.builder(dataSource)
+            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+            .setField(Field.FIELD_NUTRIENTS, nutrients)
+
+        if (name != null) {
+            dataBuilder.setField(Field.FIELD_FOOD_ITEM, name as String)
+        }
+
+
+        dataBuilder.setField(
+            Field.FIELD_MEAL_TYPE,
+            MapMealTypeToType[mealType] ?: Field.MEAL_TYPE_UNKNOWN
+        )
+
+
+        val dataPoint = dataBuilder.build()
+
+        val dataSet = DataSet.builder(dataSource)
+            .add(dataPoint)
+            .build()
+
+        val fitnessOptions = typesBuilder.build()
+        try {
+            val googleSignInAccount =
+                GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+            Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
+                .insertData(dataSet)
+                .addOnSuccessListener {
+                    Log.i("FLUTTER_HEALTH::SUCCESS", "Meal added successfully!")
+                    result.success(true)
+                }
+                .addOnFailureListener(
+                    errHandler(
+                        result,
+                        "There was an error adding the meal data!"
+                    )
                 )
         } catch (e3: Exception) {
             result.success(false)
@@ -926,6 +1062,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     )
             }
+
             DataType.TYPE_ACTIVITY_SEGMENT -> {
                 val readRequest: SessionReadRequest
                 val readRequestBuilder = SessionReadRequest.Builder()
@@ -955,6 +1092,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     )
             }
+
             else -> {
                 Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
                     .readData(
@@ -988,12 +1126,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
                     "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
                     "source_name" to (
-                        dataPoint.originalDataSource.appPackageName
-                            ?: (
-                                dataPoint.originalDataSource.device?.model
-                                    ?: ""
-                                )
-                        ),
+                            dataPoint.originalDataSource.appPackageName
+                                ?: (
+                                        dataPoint.originalDataSource.device?.model
+                                            ?: ""
+                                        )
+                            ),
                     "source_id" to dataPoint.originalDataSource.streamIdentifier,
                 )
             }
@@ -1047,12 +1185,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                             "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
                                             "unit" to "MINUTES",
                                             "source_name" to (
-                                                dataPoint.originalDataSource.appPackageName
-                                                    ?: (
-                                                        dataPoint.originalDataSource.device?.model
-                                                            ?: "unknown"
-                                                        )
-                                                ),
+                                                    dataPoint.originalDataSource.appPackageName
+                                                        ?: (
+                                                                dataPoint.originalDataSource.device?.model
+                                                                    ?: "unknown"
+                                                                )
+                                                    ),
                                             "source_id" to dataPoint.originalDataSource.streamIdentifier,
                                         ),
                                     )
@@ -1090,12 +1228,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
                                         "unit" to "MINUTES",
                                         "source_name" to (
-                                            dataPoint.originalDataSource.appPackageName
-                                                ?: (
-                                                    dataPoint.originalDataSource.device?.model
-                                                        ?: "unknown"
-                                                    )
-                                            ),
+                                                dataPoint.originalDataSource.appPackageName
+                                                    ?: (
+                                                            dataPoint.originalDataSource.device?.model
+                                                                ?: "unknown"
+                                                            )
+                                                ),
                                         "source_id" to dataPoint.originalDataSource.streamIdentifier,
                                     ),
                                 )
@@ -1131,9 +1269,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 healthData.add(
                     hashMapOf(
                         "workoutActivityType" to (
-                            workoutTypeMap.filterValues { it == session.activity }.keys.firstOrNull()
-                                ?: "OTHER"
-                            ),
+                                workoutTypeMap.filterValues { it == session.activity }.keys.firstOrNull()
+                                    ?: "OTHER"
+                                ),
                         "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
                         "totalEnergyBurnedUnit" to "KILOCALORIE",
                         "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
@@ -1169,6 +1307,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_READ)
                     typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
                 }
+
                 else -> throw IllegalArgumentException("Unknown access type $access")
             }
             if (typeKey == SLEEP_ASLEEP || typeKey == SLEEP_AWAKE || typeKey == SLEEP_IN_BED) {
@@ -1180,6 +1319,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
                         typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_WRITE)
                     }
+
                     else -> throw IllegalArgumentException("Unknown access type $access")
                 }
             }
@@ -1191,6 +1331,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         typesBuilder.accessActivitySessions(FitnessOptions.ACCESS_READ)
                         typesBuilder.accessActivitySessions(FitnessOptions.ACCESS_WRITE)
                     }
+
                     else -> throw IllegalArgumentException("Unknown access type $access")
                 }
             }
@@ -1402,6 +1543,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "writeWorkoutData" -> writeWorkoutData(call, result)
             "writeBloodPressure" -> writeBloodPressure(call, result)
             "writeBloodOxygen" -> writeBloodOxygen(call, result)
+            "writeMeal" -> writeMeal(call, result)
             else -> result.notImplemented()
         }
     }
@@ -1593,9 +1735,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             // mapOf(
                             mapOf<String, Any?>(
                                 "workoutActivityType" to (
-                                    workoutTypeMapHealthConnect.filterValues { it == record.exerciseType }.keys.firstOrNull()
-                                        ?: "OTHER"
-                                    ),
+                                        workoutTypeMapHealthConnect.filterValues { it == record.exerciseType }.keys.firstOrNull()
+                                            ?: "OTHER"
+                                        ),
                                 "totalDistance" to if (totalDistance == 0.0) null else totalDistance,
                                 "totalDistanceUnit" to "METER",
                                 "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
@@ -1608,7 +1750,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             ),
                         )
                     }
-                // Filter sleep stages for requested stage
+                    // Filter sleep stages for requested stage
                 } else if (classType == SleepStageRecord::class) {
                     for (rec in response.records) {
                         if (rec is SleepStageRecord) {
@@ -1617,8 +1759,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     for (rec in response.records) {
                         healthConnectData.addAll(convertRecord(rec, dataType))
                     }
@@ -1641,6 +1782,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is HeightRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.height.inMeters,
@@ -1650,6 +1792,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is BodyFatRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.percentage.value,
@@ -1659,6 +1802,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is StepsRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.count,
@@ -1668,6 +1812,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is ActiveCaloriesBurnedRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.energy.inKilocalories,
@@ -1677,6 +1822,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is HeartRateRecord -> return record.samples.map {
                 mapOf<String, Any>(
                     "value" to it.beatsPerMinute,
@@ -1686,6 +1832,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 )
             }
+
             is BodyTemperatureRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.temperature.inCelsius,
@@ -1695,6 +1842,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is BloodPressureRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to if (dataType == BLOOD_PRESSURE_DIASTOLIC) record.diastolic.inMillimetersOfMercury else record.systolic.inMillimetersOfMercury,
@@ -1704,6 +1852,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is OxygenSaturationRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.percentage.value,
@@ -1713,6 +1862,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is BloodGlucoseRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.level.inMilligramsPerDeciliter,
@@ -1722,6 +1872,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is DistanceRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.distance.inMeters,
@@ -1731,6 +1882,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is HydrationRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.volume.inLiters,
@@ -1740,6 +1892,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is SleepSessionRecord -> return listOf(
                 mapOf<String, Any>(
                     "date_from" to record.startTime.toEpochMilli(),
@@ -1749,6 +1902,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is SleepStageRecord -> return listOf(
                 mapOf<String, Any>(
                     "stage" to record.stage,
@@ -1759,6 +1913,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
+
             is RestingHeartRateRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.beatsPerMinute,
@@ -1768,6 +1923,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 )
             )
+
             is BasalMetabolicRateRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.basalMetabolicRate.inKilocaloriesPerDay,
@@ -1777,6 +1933,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 )
             )
+
             is FloorsClimbedRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.floors,
@@ -1786,11 +1943,27 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 )
             )
+
             is RespiratoryRateRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.rate,
                     "date_from" to record.time.toEpochMilli(),
                     "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                )
+            )
+
+            is NutritionRecord -> return listOf(
+                mapOf<String, Any>(
+                    "calories" to record.energy!!.inKilocalories,
+                    "protein" to record.protein!!.inGrams,
+                    "carbs" to record.totalCarbohydrate!!.inGrams,
+                    "fat" to record.totalFat!!.inGrams,
+                    "name" to record.name!!,
+                    "mealType" to (MapTypeToMealTypeHC[record.mealType] ?: MEAL_TYPE_UNKNOWN),
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
                     "source_id" to "",
                     "source_name" to metadata.dataOrigin.packageName,
                 )
@@ -1815,16 +1988,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 percentage = Percentage(value),
                 zoneOffset = null,
             )
+
             HEIGHT -> HeightRecord(
                 time = Instant.ofEpochMilli(startTime),
                 height = Length.meters(value),
                 zoneOffset = null,
             )
+
             WEIGHT -> WeightRecord(
                 time = Instant.ofEpochMilli(startTime),
                 weight = Mass.kilograms(value),
                 zoneOffset = null,
             )
+
             STEPS -> StepsRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1832,6 +2008,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
+
             ACTIVE_ENERGY_BURNED -> ActiveCaloriesBurnedRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1839,6 +2016,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
+
             HEART_RATE -> HeartRateRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1851,21 +2029,25 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
+
             BODY_TEMPERATURE -> BodyTemperatureRecord(
                 time = Instant.ofEpochMilli(startTime),
                 temperature = Temperature.celsius(value),
                 zoneOffset = null,
             )
+
             BLOOD_OXYGEN -> OxygenSaturationRecord(
                 time = Instant.ofEpochMilli(startTime),
                 percentage = Percentage(value),
                 zoneOffset = null,
             )
+
             BLOOD_GLUCOSE -> BloodGlucoseRecord(
                 time = Instant.ofEpochMilli(startTime),
                 level = BloodGlucose.milligramsPerDeciliter(value),
                 zoneOffset = null,
             )
+
             DISTANCE_DELTA -> DistanceRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1873,6 +2055,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
+
             WATER -> HydrationRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1880,6 +2063,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
+
             SLEEP_ASLEEP -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1887,6 +2071,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 endZoneOffset = null,
                 stage = SleepStageRecord.STAGE_TYPE_SLEEPING,
             )
+
             SLEEP_LIGHT -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1894,6 +2079,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 endZoneOffset = null,
                 stage = SleepStageRecord.STAGE_TYPE_LIGHT,
             )
+
             SLEEP_DEEP -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1901,6 +2087,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 endZoneOffset = null,
                 stage = SleepStageRecord.STAGE_TYPE_DEEP,
             )
+
             SLEEP_REM -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1908,6 +2095,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 endZoneOffset = null,
                 stage = SleepStageRecord.STAGE_TYPE_REM,
             )
+
             SLEEP_OUT_OF_BED -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1915,6 +2103,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 endZoneOffset = null,
                 stage = SleepStageRecord.STAGE_TYPE_OUT_OF_BED,
             )
+
             SLEEP_AWAKE -> SleepStageRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1930,16 +2119,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
+
             RESTING_HEART_RATE -> RestingHeartRateRecord(
                 time = Instant.ofEpochMilli(startTime),
                 beatsPerMinute = value.toLong(),
                 zoneOffset = null,
             )
+
             BASAL_ENERGY_BURNED -> BasalMetabolicRateRecord(
                 time = Instant.ofEpochMilli(startTime),
                 basalMetabolicRate = Power.kilocaloriesPerDay(value),
                 zoneOffset = null,
             )
+
             FLIGHTS_CLIMBED -> FloorsClimbedRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -1947,6 +2139,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
+
             RESPIRATORY_RATE -> RespiratoryRateRecord(
                 time = Instant.ofEpochMilli(startTime),
                 rate = value,
@@ -1956,6 +2149,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
             BLOOD_PRESSURE_DIASTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
             WORKOUT -> throw IllegalArgumentException("You must use the [writeWorkoutData] API ")
+            NUTRITION -> throw IllegalArgumentException("You must use the [writeMeal] API ")
             else -> throw IllegalArgumentException("The type $type was not supported by the Health plugin or you must use another API ")
         }
         scope.launch {
@@ -2091,6 +2285,30 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         6 to SLEEP_REM,
     )
 
+    private val MapMealTypeToTypeHC = hashMapOf<String, Int>(
+        BREAKFAST to MEAL_TYPE_BREAKFAST,
+        LUNCH to MEAL_TYPE_LUNCH,
+        DINNER to MEAL_TYPE_DINNER,
+        SNACK to MEAL_TYPE_SNACK,
+        MEAL_UNKNOWN to MEAL_TYPE_UNKNOWN,
+    )
+
+    private val MapTypeToMealTypeHC = hashMapOf<Int, String>(
+        MEAL_TYPE_BREAKFAST to BREAKFAST,
+        MEAL_TYPE_LUNCH to LUNCH,
+        MEAL_TYPE_DINNER to DINNER,
+        MEAL_TYPE_SNACK to SNACK,
+        MEAL_TYPE_UNKNOWN to MEAL_UNKNOWN,
+    )
+
+    private val MapMealTypeToType = hashMapOf<String, Int>(
+        BREAKFAST to Field.MEAL_TYPE_BREAKFAST,
+        LUNCH to Field.MEAL_TYPE_LUNCH,
+        DINNER to Field.MEAL_TYPE_DINNER,
+        SNACK to Field.MEAL_TYPE_SNACK,
+        MEAL_UNKNOWN to Field.MEAL_TYPE_UNKNOWN,
+    )
+
     val MapToHCType = hashMapOf(
         BODY_FAT_PERCENTAGE to BodyFatRecord::class,
         HEIGHT to HeightRecord::class,
@@ -2114,6 +2332,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         SLEEP_OUT_OF_BED to SleepStageRecord::class,
         SLEEP_SESSION to SleepSessionRecord::class,
         WORKOUT to ExerciseSessionRecord::class,
+        NUTRITION to NutritionRecord::class,
         RESTING_HEART_RATE to RestingHeartRateRecord::class,
         BASAL_ENERGY_BURNED to BasalMetabolicRateRecord::class,
         FLIGHTS_CLIMBED to FloorsClimbedRecord::class,
