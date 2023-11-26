@@ -2,3 +2,11 @@ include: package:flutter_lints/flutter.yaml
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+
+linter:
+  rules:
+    cancel_subscriptions: true
+    constant_identifier_names: false
+    depend_on_referenced_packages: true
+    avoid_print: false
+    use_string_in_part_of_directives: false

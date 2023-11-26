@@ -1,4 +1,4 @@
-## 3.1.0
+## 3.1.1
 
 - Upgrade to flutter version 3.2.0
 - Upgrade to `flutter_blue_plus: ^1.29.0`
