@@ -48,6 +48,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.HEADACHE_SEVERE,
   HealthDataType.HEADACHE_UNSPECIFIED,
   //HealthDataType.ELECTROCARDIOGRAM,
+  HealthDataType.NUTRITION,
 ];
 
 /// List of data types available on Android
@@ -78,4 +79,5 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.WORKOUT,
   HealthDataType.RESTING_HEART_RATE,
   HealthDataType.FLIGHTS_CLIMBED,
+  HealthDataType.NUTRITION,
 ];

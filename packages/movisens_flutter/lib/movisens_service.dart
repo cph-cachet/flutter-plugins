@@ -58,7 +58,7 @@ abstract class StreamingMovisensService extends MovisensService {
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(true);
         _log.info(
-            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.remoteId.str}]");
       }
     }
   }
@@ -74,7 +74,7 @@ abstract class StreamingMovisensService extends MovisensService {
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(false);
         _log.info(
-            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.remoteId.str}]");
       }
     }
   }
@@ -122,27 +122,27 @@ class AmbientService extends StreamingMovisensService {
 
       // add light stream
       if (moviChar == MovisensBluetoothCharacteristics.light) {
-        _lightEvents = char.value
+        _lightEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => LightEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_lightEvents!);
       }
       // add light RGB stream
       else if (moviChar == MovisensBluetoothCharacteristics.lightRGB) {
-        _lightRGBEvents = char.value
+        _lightRGBEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => LightRGBEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_lightRGBEvents!);
       } // add sensor temperature stream
       else if (moviChar == MovisensBluetoothCharacteristics.sensorTemperature) {
-        _sensorTemperatureEvents = char.value
+        _sensorTemperatureEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => SensorTemperatureEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_sensorTemperatureEvents!);
       }
@@ -182,10 +182,10 @@ class EdaService extends StreamingMovisensService {
 
       // add eda scl stream
       if (moviChar == MovisensBluetoothCharacteristics.edaSclMean) {
-        _edaSclMeanEvents = char.value
+        _edaSclMeanEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => EdaSclMeanEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_edaSclMeanEvents!);
       }
@@ -218,7 +218,7 @@ class HrvService extends StreamingMovisensService {
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(true);
         _log.info(
-            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.remoteId.str}]");
       }
     }
   }
@@ -235,7 +235,7 @@ class HrvService extends StreamingMovisensService {
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(false);
         _log.info(
-            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.remoteId.str}]");
       }
     }
   }
@@ -281,27 +281,27 @@ class HrvService extends StreamingMovisensService {
 
       // add hrMean stream
       if (moviChar == MovisensBluetoothCharacteristics.hrMean) {
-        _hrMeanEvents = char.value
+        _hrMeanEvents = char.lastValueStream
             .skipWhile((element) => (element.isEmpty))
             .map((event) => HrMeanEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_hrMeanEvents!);
       }
       // add hrv is valid stream
       else if (moviChar == MovisensBluetoothCharacteristics.hrvIsValid) {
-        _hrvIsValidEvents = char.value
+        _hrvIsValidEvents = char.lastValueStream
             .skipWhile((element) => (element.isEmpty))
             .map((event) => HrvIsValidEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_hrvIsValidEvents!);
       } // add rmssd stream
       else if (moviChar == MovisensBluetoothCharacteristics.rmssd) {
-        _rmssdEvents = char.value
+        _rmssdEvents = char.lastValueStream
             .skipWhile((element) => (element.isEmpty))
             .map((event) => RmssdEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_rmssdEvents!);
       }
@@ -314,10 +314,10 @@ class HrvService extends StreamingMovisensService {
       MovisensBluetoothCharacteristics? moviChar =
           characteristicUUIDToMovisensBluetoothCharacteristics[charUuid];
       if (moviChar == MovisensBluetoothCharacteristics.heartRateMeasurement) {
-        _heartRateMeasurementEvents = char.value
+        _heartRateMeasurementEvents = char.lastValueStream
             .skipWhile((element) => (element.isEmpty))
             .map((event) => HeartRateMeasurementEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_heartRateMeasurementEvents!);
       }
@@ -358,10 +358,10 @@ class MarkerService extends StreamingMovisensService {
 
       // add hrMean stream
       if (moviChar == MovisensBluetoothCharacteristics.tapMarker) {
-        _tapMarkerEvents = char.value
+        _tapMarkerEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => TapMarkerEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_tapMarkerEvents!);
       }
@@ -399,7 +399,7 @@ class BatteryService extends StreamingMovisensService {
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(true);
         _log.info(
-            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+            "Enabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.remoteId.str}]");
       }
     }
   }
@@ -416,7 +416,7 @@ class BatteryService extends StreamingMovisensService {
           characteristic.properties.notify) {
         await characteristic.setNotifyValue(false);
         _log.info(
-            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.deviceId.id}]");
+            "Disabling [Notify] for [${enumToReadableString(characteristicUUIDToMovisensBluetoothCharacteristics[characteristic.uuid.toString()]!)}] in service [${enumToReadableString(serviceUUIDToName[uuid]!)}] Movisens device [${_bluetoothService.remoteId.str}]");
       }
     }
   }
@@ -443,10 +443,10 @@ class BatteryService extends StreamingMovisensService {
 
       // add charging stream
       if (moviChar == MovisensBluetoothCharacteristics.charging) {
-        _chargingEvents = char.value
+        _chargingEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => ChargingEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_chargingEvents!);
       }
@@ -462,10 +462,10 @@ class BatteryService extends StreamingMovisensService {
 
       // add charging stream
       if (moviChar == MovisensBluetoothCharacteristics.batteryLevel) {
-        _batteryLevelEvents = char.value
+        _batteryLevelEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => BatteryLevelEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_batteryLevelEvents!);
       }
@@ -840,51 +840,51 @@ class PhysicalActivityService extends StreamingMovisensService {
 
       // add body position stream
       if (moviChar == MovisensBluetoothCharacteristics.bodyPosition) {
-        _bodyPositionEvents = char.value
+        _bodyPositionEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => BodyPositionEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_bodyPositionEvents!);
       } // add inclination stream
       else if (moviChar == MovisensBluetoothCharacteristics.inclination) {
-        _inclinationEvents = char.value
+        _inclinationEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => InclinationEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_inclinationEvents!);
       } // add MET stream
       else if (moviChar == MovisensBluetoothCharacteristics.met) {
-        _metEvents = char.value
+        _metEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
-            .map((event) =>
-                MetEvent(bytes: event, deviceId: _bluetoothService.deviceId.id))
+            .map((event) => MetEvent(
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_metEvents!);
       } // add METLevel stream
       else if (moviChar == MovisensBluetoothCharacteristics.metLevel) {
-        _metLevelEvents = char.value
+        _metLevelEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => MetLevelEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_metLevelEvents!);
       } // add movementAcceleration stream
       else if (moviChar ==
           MovisensBluetoothCharacteristics.movementAcceleration) {
-        _movementAccelerationEvents = char.value
+        _movementAccelerationEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => MovementAccelerationEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_movementAccelerationEvents!);
       } // add steps stream
       else if (moviChar == MovisensBluetoothCharacteristics.steps) {
-        _stepsEvents = char.value
+        _stepsEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => StepsEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_stepsEvents!);
       }
@@ -925,10 +925,10 @@ class RespirationService extends StreamingMovisensService {
 
       // add respiratory movement stream
       if (moviChar == MovisensBluetoothCharacteristics.respiratoryMovement) {
-        _respiratoryMovementEvents = char.value
+        _respiratoryMovementEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => RespiratoryMovementEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_respiratoryMovementEvents!);
       }
@@ -1032,10 +1032,10 @@ class SensorControlService extends StreamingMovisensService {
         //   _activatedBufferedCharacteristics = char;
         //   break;
         case MovisensBluetoothCharacteristics.commandResult:
-          _commandResultEvents = char.value
+          _commandResultEvents = char.lastValueStream
               .skipWhile((element) => element.isEmpty)
               .map((event) => CommandResultEvent(
-                  bytes: event, deviceId: _bluetoothService.deviceId.id))
+                  bytes: event, deviceId: _bluetoothService.remoteId.str))
               .asBroadcastStream();
           nonNullStreams.add(_commandResultEvents!);
           break;
@@ -1044,10 +1044,10 @@ class SensorControlService extends StreamingMovisensService {
           break;
         case MovisensBluetoothCharacteristics.dataAvailable:
           _dataAvailable = char;
-          _dataAvailableEvents = char.value
+          _dataAvailableEvents = char.lastValueStream
               .skipWhile((element) => element.isEmpty)
               .map((event) => DataAvailableEvent(
-                  bytes: event, deviceId: _bluetoothService.deviceId.id))
+                  bytes: event, deviceId: _bluetoothService.remoteId.str))
               .asBroadcastStream();
           nonNullStreams.add(_dataAvailableEvents!);
           break;
@@ -1055,10 +1055,10 @@ class SensorControlService extends StreamingMovisensService {
           _deleteData = char;
           break;
         case MovisensBluetoothCharacteristics.measurementEnabled:
-          _measurementEnabledEvents = char.value
+          _measurementEnabledEvents = char.lastValueStream
               .skipWhile((element) => element.isEmpty)
               .map((event) => MeasurementEnabledEvent(
-                  bytes: event, deviceId: _bluetoothService.deviceId.id))
+                  bytes: event, deviceId: _bluetoothService.remoteId.str))
               .asBroadcastStream();
           nonNullStreams.add(_measurementEnabledEvents!);
           _measurementEnabled = char;
@@ -1068,10 +1068,10 @@ class SensorControlService extends StreamingMovisensService {
           break;
         case MovisensBluetoothCharacteristics.measurementStatus:
           _measurementStatus = char;
-          _measurementStatusEvents = char.value
+          _measurementStatusEvents = char.lastValueStream
               .skipWhile((element) => element.isEmpty)
               .map((event) => MeasurementStatusEvent(
-                  bytes: event, deviceId: _bluetoothService.deviceId.id))
+                  bytes: event, deviceId: _bluetoothService.remoteId.str))
               .asBroadcastStream();
           nonNullStreams.add(_measurementStatusEvents!);
           break;
@@ -1089,10 +1089,10 @@ class SensorControlService extends StreamingMovisensService {
           break;
         case MovisensBluetoothCharacteristics.storageLevel:
           _storageLevel = char;
-          _storageLevelEvents = char.value
+          _storageLevelEvents = char.lastValueStream
               .skipWhile((element) => element.isEmpty)
               .map((event) => StorageLevelEvent(
-                  bytes: event, deviceId: _bluetoothService.deviceId.id))
+                  bytes: event, deviceId: _bluetoothService.remoteId.str))
               .asBroadcastStream();
           nonNullStreams.add(_storageLevelEvents!);
           break;
@@ -1104,7 +1104,7 @@ class SensorControlService extends StreamingMovisensService {
           break;
         default:
           _log.warning(
-              "Characteristics uuid $charUuid is not recognized on movisens device [${char.deviceId.id}]");
+              "Characteristics uuid $charUuid is not recognized on movisens device [${char.remoteId.str}]");
           break;
       }
     }
@@ -1408,10 +1408,10 @@ class SkinTemperatureService extends StreamingMovisensService {
 
       // add Skin Temperature stream
       if (moviChar == MovisensBluetoothCharacteristics.skinTemperature) {
-        _skinTemperatureEvents = char.value
+        _skinTemperatureEvents = char.lastValueStream
             .skipWhile((element) => element.isEmpty)
             .map((event) => SkinTemperatureEvent(
-                bytes: event, deviceId: _bluetoothService.deviceId.id))
+                bytes: event, deviceId: _bluetoothService.remoteId.str))
             .asBroadcastStream();
         nonNullStreams.add(_skinTemperatureEvents!);
       }
@@ -1467,7 +1467,7 @@ class DeviceInformationService extends MovisensService {
           break;
         default:
           _log.warning(
-              "Characteristics uuid $charUuid is not recognized on movisens device [${char.deviceId.id}]");
+              "Characteristics uuid $charUuid is not recognized on movisens device [${char.remoteId.str}]");
           break;
       }
     }
