@@ -6,14 +6,21 @@
  */
 part of movisens_flutter;
 
-/// A representation of a Movisens device with services
+/// A representation of a Movisens device with services.
 ///
 /// It contains all the services that the Movisens device provides
 /// and the methods for handling device connection.
 class MovisensDevice {
-  late String name;
-  late String id;
   BluetoothDevice? _bluetoothDevice;
+
+  /// The name of the device. Used to connect to it.
+  ///
+  /// The default Movisens name of devices are `MOVISENS Sensor <serial>`, where
+  /// `serial` is the 5-digit serial number written on the back of the device.
+  String name;
+
+  /// The BLE id of the device. Only known after the device is connected.
+  String? id;
 
   /// Is the phone and app connected to the Movisens device
   bool get isConnected => _bluetoothDevice != null;
@@ -129,21 +136,22 @@ class MovisensDevice {
 
     // Scan for devices
     FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
-    late StreamSubscription subscription;
+    StreamSubscription? subscription;
     subscription = FlutterBluePlus.scanResults.listen((scanResults) async {
-      // Select only 1 device to connect to
-      ScanResult? scanResult =
+      // Select the first device to connect to
+      var firstDevice =
           (scanResults.any((element) => element.device.platformName == name))
               ? scanResults
                   .firstWhere((element) => element.device.platformName == name)
               : null;
+
       // connect, stop scanning and clean streams
-      if (scanResult != null) {
+      if (firstDevice != null) {
         await FlutterBluePlus.stopScan();
-        await scanResult.device.connect();
-        _bluetoothDevice = scanResult.device;
+        await firstDevice.device.connect();
+        _bluetoothDevice = firstDevice.device;
         await _discoverAndSetup();
-        await subscription.cancel();
+        await subscription?.cancel();
       }
     });
   }
@@ -153,8 +161,9 @@ class MovisensDevice {
     id = _bluetoothDevice!.remoteId.str;
     _log.info("Stored ID [$id] from Movisens device [$name]");
     _log.info("Discovering services on Movisens device [$id]");
+
     // Discover services
-    late List<BluetoothService> services;
+    List<BluetoothService> services;
     // Delay introduced as BluetoothDevice.connect could sometimes finish before the device was connected.
     await Future.delayed(const Duration(milliseconds: 500));
     services = await _bluetoothDevice!.discoverServices();
