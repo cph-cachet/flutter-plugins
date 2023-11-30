@@ -78,6 +78,10 @@ class HealthFactory {
     });
   }
 
+  Future<bool?> healthConnectAvailable() async {
+    return await _channel.invokeMethod('healthConnectAvailable');
+  }
+
   /// Revokes permissions of all types.
   /// Uses `disableFit()` on Google Fit.
   ///

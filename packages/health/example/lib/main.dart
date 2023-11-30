@@ -58,6 +58,19 @@ class _HealthAppState extends State<HealthApp> {
   // create a HealthFactory for use in the app
   HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
 
+  bool healthConnectInstalled = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    health.healthConnectAvailable().then((value) {
+      setState(() {
+        healthConnectInstalled = value ?? false;
+      });
+    });
+  }
+
   Future authorize() async {
     // If we are trying to read Step Count, Workout, Sleep or other data that requires
     // the ACTIVITY_RECOGNITION permission, we need to request the permission first.
@@ -96,7 +109,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(hours: 24));
+    final yesterday = now.subtract(Duration(days: 10));
 
     // Clear old data points
     _healthDataList.clear();
@@ -105,9 +118,11 @@ class _HealthAppState extends State<HealthApp> {
       // fetch health data
       List<HealthDataPoint> healthData =
           await health.getHealthDataFromTypes(yesterday, now, types);
+
+      healthData.sort(((a, b) => a.dateTo.compareTo(b.dateTo)));
+
       // save all the new data points (only the first 100)
-      _healthDataList.addAll(
-          (healthData.length < 100) ? healthData : healthData.sublist(0, 100));
+      _healthDataList.addAll(healthData.reversed);
     } catch (error) {
       print("Exception in getHealthDataFromTypes: $error");
     }
@@ -423,6 +438,7 @@ class _HealthAppState extends State<HealthApp> {
                       style: ButtonStyle(
                           backgroundColor:
                               MaterialStatePropertyAll(Colors.blue))),
+                  _healthConnectInstall()
                 ],
               ),
               Divider(thickness: 3),
@@ -432,5 +448,17 @@ class _HealthAppState extends State<HealthApp> {
         ),
       ),
     );
+  }
+
+  Widget _healthConnectInstall() {
+    if (!healthConnectInstalled) {
+      return TextButton(
+          onPressed: () {},
+          child: Text("Install health connect!",
+              style: TextStyle(color: Colors.white)),
+          style: ButtonStyle(
+              backgroundColor: MaterialStatePropertyAll(Colors.blue)));
+    }
+    return SizedBox();
   }
 }
