@@ -1506,8 +1506,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     }
 
     fun useHealthConnectIfAvailable(call: MethodCall, result: Result) {
-        useHealthConnectIfAvailable = true
-        result.success(null)
+       activity!!.runOnUiThread {
+            useHealthConnectIfAvailable = (call.argument<Boolean>("enable") == true)
+            result.success(useHealthConnectIfAvailable)
+        }
     }
 
     private fun hasPermissionsHC(call: MethodCall, result: Result) {

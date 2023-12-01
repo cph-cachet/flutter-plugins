@@ -22,10 +22,17 @@ class HealthFactory {
   /// The plugin was created to use Health Connect (if true) or Google Fit (if false).
   bool get useHealthConnectIfAvailable => _useHealthConnectIfAvailable;
 
-  HealthFactory({bool useHealthConnectIfAvailable = false}) {
+  HealthFactory() {}
+
+  Future<bool?> useHealthConnectIfAvailableIn(
+      bool useHealthConnectIfAvailable) async {
     _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
-    if (_useHealthConnectIfAvailable)
-      _channel.invokeMethod('useHealthConnectIfAvailable');
+    print("useHealthConnectIfAvailable $useHealthConnectIfAvailable");
+    final sss = await _channel.invokeMethod(
+        'useHealthConnectIfAvailable', {"enable": useHealthConnectIfAvailable});
+
+    print(sss);
+    return sss;
   }
 
   /// Check if a given data type is available on the platform
