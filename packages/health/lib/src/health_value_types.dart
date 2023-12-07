@@ -366,6 +366,49 @@ class NutritionHealthValue extends HealthValue {
   int get hashCode => Object.hash(protein, calories, fat, name, carbs);
 }
 
+enum MenstrualFlow { unspecified, light, medium, heavy, none }
+
+/// A [HealthValue] object for menstrual fllow
+///
+/// Parameters:
+/// * [flowValue] - the flow value
+/// * [isStartOfCycle] - indicator whether or not this occurence is the first day of the menstrual cycle
+class MenstrualFlowHealthValue extends HealthValue {
+  MenstrualFlow _flowValue;
+  bool _isStartOfCycle;
+
+  MenstrualFlowHealthValue(this._flowValue, {bool isStartOfCycle = false}) : _isStartOfCycle = isStartOfCycle;
+
+  MenstrualFlow get flowValue => _flowValue;
+  bool get isStartOfCycle => _isStartOfCycle;
+
+  @override
+  String toString() => "MenstrualFlow: ${_flowValue.name}, startOfCycle: $_isStartOfCycle";
+
+  factory MenstrualFlowHealthValue.fromJson(json) {
+    final flowValue = json['value'] ?? 0;
+    return MenstrualFlowHealthValue(
+      MenstrualFlow.values[flowValue - 1],
+      isStartOfCycle: json['is_start_of_cycle'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'value': _flowValue.name,
+    'is_start_of_cycle': _isStartOfCycle,
+  };
+
+  @override
+  bool operator ==(Object o) {
+    return o is MenstrualFlowHealthValue &&
+        this._flowValue == o._flowValue &&
+        this._isStartOfCycle == o._isStartOfCycle;
+  }
+
+  @override
+  int get hashCode => Object.hash(_flowValue, _isStartOfCycle);
+}
+
 /// An abstract class for health values.
 abstract class HealthValue {
   Map<String, dynamic> toJson();
