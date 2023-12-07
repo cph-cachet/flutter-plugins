@@ -500,9 +500,6 @@ class HealthFactory {
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
 
-    print('here');
-    print(fetchedDataPoints);
-
     if (fetchedDataPoints != null) {
       final mesg = <String, dynamic>{
         "dataType": dataType,
@@ -523,8 +520,6 @@ class HealthFactory {
 
   /// Parses the fetched data points into a list of [HealthDataPoint].
   static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
-    print('-----');
-    print(message);
     final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
     final device = message["deviceId"];
