@@ -1522,7 +1522,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         val install = call.argument<Boolean>("install")!!
 
-        val sdkStatus = HealthConnectClient.sdkStatus(activityLocal)
+        val sdkStatus = HealthConnectClient.getSdkStatus(activityLocal)
         val success = sdkStatus == HealthConnectClient.SDK_AVAILABLE
 
         if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED && install) {
