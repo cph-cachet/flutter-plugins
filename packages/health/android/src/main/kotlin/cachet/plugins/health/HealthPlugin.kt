@@ -1550,55 +1550,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         result.success(success)
     }
 
-    private fun hasPermissions(call: MethodCall, result: Result) {
-
-        if (activity == null) {
-            result.success(false)
-            return
-        }
-
-        val optionsToRegister = callToHealthTypes(call)
-        mResult = result
-
-        val isGranted = GoogleSignIn.hasPermissions(
-            GoogleSignIn.getLastSignedInAccount(activity),
-            optionsToRegister
-        )
-
-        mResult?.success(isGranted)
-    }
-
-    /// Called when the "requestAuthorization" is invoked from Flutter 
-    private fun requestAuthorization(call: MethodCall, result: Result) {
-        if (activity == null) {
-            result.success(false)
-            return
-        }
-
-        val optionsToRegister = callToHealthTypes(call)
-        mResult = result
-
-        val isGranted = GoogleSignIn.hasPermissions(
-            GoogleSignIn.getLastSignedInAccount(activity),
-            optionsToRegister
-        )
-        /// Not granted? Ask for permission
-        if (!isGranted && activity != null) {
-            GoogleSignIn.requestPermissions(
-                activity!!,
-                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                GoogleSignIn.getLastSignedInAccount(activity),
-                optionsToRegister
-            )
-            Log.i("FLUTTER_HEALTH::SUCCESS", "Ask permission!")
-        }
-        /// Permission already granted
-        else {
-            Log.i("FLUTTER_HEALTH::SUCCESS", "Permission already granted!")
-            mResult?.success(true)
-        }
-    }
-
     private fun requestHealthConnectPermission(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
@@ -1695,14 +1646,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val activityContext = activity
 
         when (call.method) {
-            "requestAuthorization" -> requestAuthorization(call, result)
             "getData" -> getData(call, result)
             "deleteData" -> deleteData(call, result)
             "deleteFoodData" -> deleteFoodData(call, result)
             "writeData" -> writeData(call, result)
             "writeFoodData" -> writeFoodData(call, result)
             "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
-            "hasPermissions" -> hasPermissions(call, result)
             "hasPermissionsHealthConnect" -> hasPermissionHealthConnect(call, result)
             "writeDataHealthConnect" -> writeDataHealthConnect(call, result)
             "getHealthConnectData" -> getHealthConnectData(call, result)
