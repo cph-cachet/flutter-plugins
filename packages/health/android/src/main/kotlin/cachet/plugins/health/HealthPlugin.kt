@@ -6,7 +6,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.util.Log
-import androidx.annotation.ChecksSdkIntAtLeast
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.NonNull
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
@@ -21,7 +22,6 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Mass
 import androidx.health.connect.client.units.Percentage
-import androidx.health.connect.client.units.grams
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -71,6 +71,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var handler: Handler? = null
     private var activity: Activity? = null
     private var threadPoolExecutor: ExecutorService? = null
+    private var healthConnectRequestPermissionsLauncher: ActivityResultLauncher<Set<String>>? = null
     private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
     private var HEIGHT = "HEIGHT"
     private var WEIGHT = "WEIGHT"
@@ -1514,6 +1515,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
+    var healthConnectAvailable = false
+
     private fun isHealthConnectAvailable(activityLocal: Activity?, call: MethodCall, result: Result) {
         if (activityLocal == null) {
             result.success(false)
@@ -1524,6 +1527,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         val sdkStatus = HealthConnectClient.getSdkStatus(activityLocal)
         val success = sdkStatus == HealthConnectClient.SDK_AVAILABLE
+
+        healthConnectAvailable = success;
+
+        Log.i("FLUTTER_HEALTH", "isHealthConnectAvailable")
+        Log.i("FLUTTER_HEALTH", healthConnectAvailable.toString())
 
         if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED && install) {
             try {
@@ -1558,9 +1566,27 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         mResult = result
         val permissionList = callToHealthConnectTypes(call)
 
-        val contract = PermissionController.createRequestPermissionResultContract()
-        val intent = contract.createIntent(activity!!.applicationContext, permissionList.toSet())
-        activity!!.startActivityForResult(intent, HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE)
+        if(healthConnectRequestPermissionsLauncher == null) {
+            result.success(false)
+            Log.i("FLUTTER_HEALTH", "Permission launcher not found")
+            return;
+        }
+
+
+        healthConnectRequestPermissionsLauncher!!.launch(permissionList.toSet());
+    }
+
+    private  fun onHealthConnectPermissionCallback(permissionGranted: Set<String>)
+    {
+        if(permissionGranted.isEmpty()) {
+            mResult?.success(false);
+            Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect)!")
+
+        }else {
+            mResult?.success(true);
+            Log.i("FLUTTER_HEALTH", "Access Granted (to Health Connect)!")
+        }
+
     }
 
 
@@ -1669,10 +1695,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
         binding.addActivityResultListener(this)
         activity = binding.activity
+
+        Log.i("FLUTTER_HEALTH", "onAttachedToActivity")
+        Log.i("FLUTTER_HEALTH", healthConnectAvailable.toString())
+
+        if (healthConnectAvailable) {
+            val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
+
+            healthConnectRequestPermissionsLauncher =(activity as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
+                onHealthConnectPermissionCallback(granted);
+            }
+        }
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         onDetachedFromActivity()
+        healthConnectRequestPermissionsLauncher = null;
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
