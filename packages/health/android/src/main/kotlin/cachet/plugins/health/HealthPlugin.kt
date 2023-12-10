@@ -64,6 +64,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         threadPoolExecutor = Executors.newFixedThreadPool(4)
     }
 
+    fun checkAvailability() {
+        val healthConnectStatus = HealthConnectClient.getSdkStatus(activity!!.applicationContext)
+        healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
+
+        Log.i("FLUTTER_HEALTH", "checkAvailability")
+        Log.i("FLUTTER_HEALTH", healthConnectAvailable.toString())
+    }
+
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel = null
         activity = null
@@ -918,6 +926,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         Log.i("FLUTTER_HEALTH", "onAttachedToActivity")
         Log.i("FLUTTER_HEALTH", healthConnectAvailable.toString())
+
+        checkAvailability()
 
         if (healthConnectAvailable) {
             val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
