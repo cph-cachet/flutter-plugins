@@ -527,16 +527,25 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             })
     }
 
-    func writeMenstrualFlow(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
-        let type = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
-        guard let arguments = call.arguments as? NSDictionary,
-              let flowValue = (arguments["flow"] as? Double),
+func writeMenstrualFlow(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+    let type = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
+
+    guard let argumentsList = call.arguments as? [NSDictionary] else {
+        throw PluginError(message: "Invalid Arguments - arguments should be a list of dictionaries")
+    }
+
+    var samples = [HKCategorySample]()
+
+    for arguments in argumentsList {
+         print(arguments)
+        guard let flowValue = (arguments["flow"] as? Int),
               let time = (arguments["time"] as? NSNumber),
-              let startOfCycle = (arguments["startOfCycle"] as? Bool),
-              let selfReported = (arguments["selfReported"] as? Bool)
+              let startOfCycle = (arguments["is_start_of_cycle"] as? Bool),
+              let selfReported = (arguments["self_reported"] as? Bool)
         else {
-          throw PluginError(message: "Invalid Arguments")
+          throw PluginError(message: "Invalid Arguments in a dictionary")
         }
+
         if flowValue < 0 || flowValue > 4 {
           throw PluginError(message: "Invalid Arguments - flow \(flowValue) is not a valid value")
         }
@@ -551,19 +560,21 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             HKMetadataKeyWasUserEntered: selfReported ? 1 : 0
           ]
         )
-
-        HKHealthStore().save(
-          sample,
-          withCompletion: { (success, error) in
-            if let err = error {
-              print("Error Saving \(type) Sample: \(err.localizedDescription)")
-            }
-            DispatchQueue.main.async {
-              result(success)
-            }
-          }
-        )
+        samples.append(sample)
     }
+
+    HKHealthStore().save(
+      samples,
+      withCompletion: { (success, error) in
+        if let err = error {
+          print("Error Saving \(type) Samples: \(err.localizedDescription)")
+        }
+        DispatchQueue.main.async {
+          result(success)
+        }
+      }
+    )
+}
     
     func delete(call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? NSDictionary
@@ -683,6 +694,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 }
                 let categories = samplesCategory.map { sample -> NSDictionary in
                     if dataTypeKey == self.MENSTRUAL_FLOW {
+                        print("in swift")
+                        print(sample)
                         return [
                           "uuid": "\(sample.uuid)",
                           "value": sample.value,

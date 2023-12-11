@@ -667,19 +667,14 @@ class HealthFactory {
   ///   + It must be equal to or earlier than [endTime].
   /// * [isStartOfCycle] - indicates whether or not this measurement is done on the first day of the menstrual cycle.
   Future<bool> writeMenstrualFlow(
-    MenstrualFlow flow,
-    DateTime datetime, {
-    bool startOfCycle = false,
-    bool selfReported = true,
-  }) async {
+    Iterable<MenstrualFlowHealthValue>
+        flows,
+  ) async {
     if (_platformType != PlatformType.IOS)
       throw ArgumentError("MenstrualFlow is only supported in HealthKit");
-    Map<String, dynamic> args = {
-      'flow': flow.index,
-      'time': datetime.millisecondsSinceEpoch,
-      'startOfCycle': startOfCycle,
-      'selfReported': selfReported,
-    };
+
+    final args = flows.map((e) => e.toJson()).toList();
+
     bool? success = await _channel.invokeMethod('writeMenstrualFlow', args);
     return success ?? false;
   }

@@ -374,39 +374,49 @@ enum MenstrualFlow { unspecified, light, medium, heavy, none }
 /// * [flowValue] - the flow value
 /// * [isStartOfCycle] - indicator whether or not this occurence is the first day of the menstrual cycle
 class MenstrualFlowHealthValue extends HealthValue {
-  MenstrualFlow _flowValue;
-  bool _isStartOfCycle;
+  final MenstrualFlow flowValue;
+  final bool isStartOfCycle;
+  final DateTime datetime;
+  final bool selfReported;
 
-  MenstrualFlowHealthValue(this._flowValue, {bool isStartOfCycle = false}) : _isStartOfCycle = isStartOfCycle;
-
-  MenstrualFlow get flowValue => _flowValue;
-  bool get isStartOfCycle => _isStartOfCycle;
+  MenstrualFlowHealthValue(
+      {required this.flowValue,
+      required this.isStartOfCycle,
+      required this.datetime,
+      required this.selfReported});
 
   @override
-  String toString() => "MenstrualFlow: ${_flowValue.name}, startOfCycle: $_isStartOfCycle";
+  String toString() =>
+      "MenstrualFlow: ${flowValue.name}, startOfCycle: $isStartOfCycle";
 
   factory MenstrualFlowHealthValue.fromJson(json) {
     final flowValue = json['value'] ?? 0;
     return MenstrualFlowHealthValue(
-      MenstrualFlow.values[flowValue - 1],
-      isStartOfCycle: json['is_start_of_cycle'] ?? false,
-    );
+        flowValue: MenstrualFlow.values[flowValue - 1],
+        isStartOfCycle: json['is_start_of_cycle'] ?? false,
+        datetime: DateTime.fromMillisecondsSinceEpoch(json['date_from']),
+        selfReported: json['self_reported'] ?? false);
   }
 
   Map<String, dynamic> toJson() => {
-    'value': _flowValue.name,
-    'is_start_of_cycle': _isStartOfCycle,
-  };
+        'flow': flowValue.index,
+        'is_start_of_cycle': isStartOfCycle,
+        'time': datetime.millisecondsSinceEpoch,
+        'self_reported': selfReported,
+      };
 
   @override
   bool operator ==(Object o) {
     return o is MenstrualFlowHealthValue &&
-        this._flowValue == o._flowValue &&
-        this._isStartOfCycle == o._isStartOfCycle;
+        this.flowValue == o.flowValue &&
+        this.isStartOfCycle == o.isStartOfCycle &&
+        this.datetime == o.datetime &&
+        this.selfReported == o.selfReported;
   }
 
   @override
-  int get hashCode => Object.hash(_flowValue, _isStartOfCycle);
+  int get hashCode =>
+      Object.hash(flowValue, isStartOfCycle, datetime, selfReported);
 }
 
 /// An abstract class for health values.
