@@ -62,7 +62,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
     let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
     let NUTRITION = "NUTRITION"
-    
+    let STAND_TIME = "STAND_TIME"
+
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
     // MOLE_UNIT_WITH_PREFIX_MOLAR_MASS, // requires molar mass & prefix input - not supported yet
@@ -1052,6 +1053,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[WORKOUT] = HKSampleType.workoutType()
             dataTypesDict[NUTRITION] = HKSampleType.correlationType(
                 forIdentifier: .food)!
+            dataTypesDict[STAND_TIME] = HKSampleType.quantityType(forIdentifier: .appleStandTime)
             
             healthDataTypes = Array(dataTypesDict.values)
         }
