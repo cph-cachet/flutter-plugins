@@ -36,11 +36,16 @@ class HealthDataPoint {
         type == HealthDataType.HEADACHE_SEVERE ||
         type == HealthDataType.SLEEP_IN_BED ||
         type == HealthDataType.SLEEP_ASLEEP ||
-        type == HealthDataType.SLEEP_AWAKE) {
+        type == HealthDataType.SLEEP_AWAKE ||
+        type == HealthDataType.SLEEP_DEEP ||
+        type == HealthDataType.SLEEP_LIGHT ||
+        type == HealthDataType.SLEEP_REM ||
+        type == HealthDataType.SLEEP_OUT_OF_BED) {
       this._value = _convertMinutes();
     }
   }
 
+  /// Converts dateTo - dateFrom to minutes.
   NumericHealthValue _convertMinutes() {
     int ms = dateTo.millisecondsSinceEpoch - dateFrom.millisecondsSinceEpoch;
     return NumericHealthValue(ms / (1000 * 60));
@@ -89,7 +94,7 @@ class HealthDataPoint {
       };
 
   @override
-  String toString() => """${this.runtimeType} - 
+  String toString() => """${this.runtimeType} -
     value: ${value.toString()},
     unit: ${unit.name},
     dateFrom: $dateFrom,
@@ -101,7 +106,7 @@ class HealthDataPoint {
     sourceName: $sourceName
     metadata: $metadata""";
 
-  // / The quantity value of the data point
+  /// The quantity value of the data point
   HealthValue get value => _value;
 
   /// The start of the time interval

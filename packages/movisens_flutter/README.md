@@ -6,26 +6,40 @@ A plugin for connecting and collecting data from a Movisens sensor. Works for bo
 
 ## Install
 
-Add `movisens_flutter` as a dependency in `pubspec.yaml`.
-For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
+Add `movisens_flutter` as a dependency in `pubspec.yaml`. For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
+
+This plugin uses the [flutter_blue_plus](https://pub.dev/packages/flutter_blue_plus) plugin and apps using this plugin should follow the [setup guide for flutter_blue](https://pub.dev/packages/flutter_blue_plus#getting-started).
 
 ### Android
 
 Add the following to your `android/app/src/main/AndroidManifest.xml` :
 
-```dart
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+```xml
+<!-- Tell Google Play Store that your app uses Bluetooth LE
+     Set android:required="true" if bluetooth is necessary -->
+<uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+
+<!-- New Bluetooth permissions in Android 12
+https://developer.android.com/about/versions/12/features/bluetooth-permissions -->
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+<!-- legacy for Android 11 or lower -->
+<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30"/>
+
+<!-- legacy for Android 9 or lower -->
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="28" />
 ```
 
-Update the `android/app/build.gradle` to `minSdkVersion` at least 19
+Update the `android/app/build.gradle` to `minSdkVersion` at least 21.
 
 ```gradle
 android {
   defaultConfig {
       ...
-      minSdkVersion 19
+      minSdkVersion 21
       ...
   }
 }
@@ -61,7 +75,7 @@ As illustrated below, each service has a 1 or more `MovisensBluetoothCharacteris
 
 ### Undocumented API
 
-4 services and 9 characterisics are not documented in Movisens' documentation as they are part of the general Bluetooth GATT specifications but have been added to this plugin.
+4 services and 9 characteristics are not documented in Movisens' documentation as they are part of the general Bluetooth GATT specifications but have been added to this plugin.
 Below is a list of their names and UUIDs. The battery service, heart rate service and user data service have been added to the movisens specific implementations for simplicity of the plugin API.
 
 - SERVICE: 0000180f-0000-1000-8000-00805f9b34fb // **_BATTERY SERVICE_** (added to the Battery Service)

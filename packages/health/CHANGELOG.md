@@ -1,3 +1,44 @@
+## 8.1.0
+- Fixed sleep stages on iOS, Issue [#803](https://github.com/cph-cachet/flutter-plugins/issues/803)
+- Added Nutrition data type, includes PR [#679](https://github.com/cph-cachet/flutter-plugins/pull/679)
+- Lowered minSDK, Issue [#809](https://github.com/cph-cachet/flutter-plugins/issues/809)
+
+## 8.0.0
+
+- Fixed issue [#774](https://github.com/cph-cachet/flutter-plugins/issues/774), [#779](https://github.com/cph-cachet/flutter-plugins/issues/779)
+- Merged PR [#579](https://github.com/cph-cachet/flutter-plugins/pull/579), [#717](https://github.com/cph-cachet/flutter-plugins/pull/717), [#770](https://github.com/cph-cachet/flutter-plugins/pull/770)
+- Upgraded to mavenCentral, upgraded minSDK, compilSDK, targetSDK
+- Updated health connect client to 1.1.0
+- Added respiratory rate and peripheral perfusion index to HealthConnect
+- Minor fixes to requestAuthorization, sleep stage filtering
+
+
+## 7.0.1
+
+- Updated dart doc
+
+## 7.0.0
+
+- Merged PR #722
+- Added deep, light, REM, and out of bed sleep to iOS and Android HealthConnect
+
+## 6.0.0
+
+- Fixed issues #[694](https://github.com/cph-cachet/flutter-plugins/issues/694), #[696](https://github.com/cph-cachet/flutter-plugins/issues/696), #[697](https://github.com/cph-cachet/flutter-plugins/issues/697), #[698](https://github.com/cph-cachet/flutter-plugins/issues/698)
+- added totalSteps for HealthConnect
+- added supplemental oxygen flow rate for blood oxygen saturation on Android
+
+## 5.0.0
+
+- Added initial support for the new Health Connect API, as Google Fit is being deprecated.
+  - Does not yet support `revokePermissions`, `getTotalStepsInInterval`.
+- Changed Intl package version dependancy to `^0.17.0` to work with flutter stable version.
+- Updated the example app to handle more buttons.
+
+## 4.6.0
+
+- Added method for revoking permissions. On Android it uses `disableFit()` to remove access to Google Fit - `revokePermissions`. Documented lack of methods for iOS.
+
 ## 4.5.0
 
 - Updated android sdk, gradle

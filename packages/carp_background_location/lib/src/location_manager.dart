@@ -52,7 +52,7 @@ class LocationManager {
       Stream<dynamic> dataStream = _port.asBroadcastStream();
       _locationStream = dataStream
           .where((event) => event != null)
-          .map((location) => location as LocationDto);
+          .map((json) => LocationDto.fromJson(json));
     }
     return _locationStream!;
   }
@@ -77,6 +77,8 @@ class LocationManager {
 
       await BackgroundLocator.registerLocationUpdate(
         LocationCallbackHandler.callback,
+        initCallback: LocationCallbackHandler.initCallback,
+        disposeCallback: LocationCallbackHandler.disposeCallback,
         autoStop: false,
         androidSettings: AndroidSettings(
             accuracy: _accuracy,
@@ -103,24 +105,24 @@ class LocationManager {
 
   /// Set the title of the notification for the background service.
   /// Android only.
-  set notificationTitle(value) => _notificationTitle = value;
+  set notificationTitle(String title) => _notificationTitle = title;
 
   /// Set the message of the notification for the background service.
   /// Android only.
-  set notificationMsg(value) => _notificationMsg = value;
+  set notificationMsg(String message) => _notificationMsg = message;
 
   /// Set the long message of the notification for the background service.
   /// Android only.
-  set notificationBigMsg(value) => _notificationBigMsg = value;
+  set notificationBigMsg(String message) => _notificationBigMsg = message;
 
   /// Set the update interval in seconds.
   /// Android only.
-  set interval(int value) => _interval = value;
+  set interval(int interval) => _interval = interval;
 
   /// Set the update distance, i.e. the distance the user needs to move
   /// before an update is fired.
-  set distanceFilter(double value) => _distanceFilter = value;
+  set distanceFilter(double distance) => _distanceFilter = distance;
 
   /// Set the update accuracy. See [LocationAccuracy] for options.
-  set accuracy(LocationAccuracy value) => _accuracy = value;
+  set accuracy(LocationAccuracy accuracy) => _accuracy = accuracy;
 }
