@@ -283,6 +283,10 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   String toString() => voltage.toString();
 }
 
+/// A [HealthValue] object from insulin delivery (iOS only)
+/// Parameters:
+/// * [units] - the amount of units of insulin taken
+/// * [reason] - if it's basal, bolus or unknown reason for insulin dosage
 class InsulinDeliveryHealthValue extends HealthValue {
   double units;
   InsulinDeliveryReason reason;
