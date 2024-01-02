@@ -1,3 +1,13 @@
+## 4.0.0
+
+- Upgraded to http 1.1.0
+
+## 3.0.0
+
+- Updates Kotlin plugin and AGP
+- Upgrade of compileSdkVersion
+- Upgrade of android embeddings
+
 ## 2.0.0
 
 - Migration to null safety

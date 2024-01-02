@@ -1,85 +1,53 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-/*
- * A [AudioStreamer] object is reponsible for connecting
- * to the native environment and streaming audio from the microphone.*
- */
 const String EVENT_CHANNEL_NAME = 'audio_streamer.eventChannel';
+const String METHOD_CHANNEL_NAME = 'audio_streamer.methodChannel';
 
+/// API for streaming raw audio data.
 class AudioStreamer {
-  bool _isRecording = false;
-
-  static int get sampleRate => 44100;
-
   static const EventChannel _noiseEventChannel =
       EventChannel(EVENT_CHANNEL_NAME);
+  static const MethodChannel _sampleRateChannel =
+      MethodChannel(METHOD_CHANNEL_NAME);
+  static const int DEFAULT_SAMPLING_RATE = 44100;
 
+  int _sampleRate = DEFAULT_SAMPLING_RATE;
   Stream<List<double>>? _stream;
-  StreamSubscription<List<dynamic>>? _subscription;
+  static AudioStreamer? _instance;
 
-  Stream<List<double>> _makeAudioStream(Function handleErrorFunction) {
-    if (_stream == null) {
-      _stream = _noiseEventChannel
-          .receiveBroadcastStream()
-          .handleError((error) {
-            _isRecording = false;
-            _stream = null;
-            handleErrorFunction(error);
-          })
-          .map((buffer) => buffer as List<dynamic>?)
-          .map((list) => list!.map((e) => double.parse('$e')).toList());
-    }
-    return _stream!;
+  /// Constructs a singleton instance of [AudioStreamer].
+  ///
+  /// [AudioStreamer] is designed to work as a singleton.
+  // When a second instance is created, the first instance will not be able to listen to the
+  // audio because it is overridden. Forcing the class to be a singleton class can prevent
+  // misuse of creating a second instance from a programmer.
+  factory AudioStreamer() => _instance ??= AudioStreamer._();
+
+  AudioStreamer._();
+
+  /// The sampling rate in Hz. Must be set before the [audioStream] is used.
+  /// Default sample rate of is 44100 Hz.
+  /// Note that sampling rate can only be set on Android, not on iOS.
+  int get sampleRate => _sampleRate;
+  set sampleRate(int rate) {
+    _sampleRate = rate;
+    _stream = null;
   }
 
-  /// Verify that it was granted
-  static Future<bool> checkPermission() async =>
-      Permission.microphone.request().isGranted;
+  /// The actual sampling rate.
+  ///
+  /// The actual sampling rate may be different from the requested sampling rate.
+  /// Only available after sampling has started.
+  Future<int> get actualSampleRate async =>
+      await _sampleRateChannel.invokeMethod<int>('getSampleRate') ??
+      DEFAULT_SAMPLING_RATE;
 
-  /// Request the microphone permission
-  static Future<void> requestPermission() async =>
-      Permission.microphone.request();
-
-  Future<bool> start(Function onData, Function handleError) async {
-    if (_isRecording) {
-      print('AudioStreamer: Already recording!');
-      return _isRecording;
-    } else {
-      bool granted = await AudioStreamer.checkPermission();
-
-      if (granted) {
-        try {
-          final stream = _makeAudioStream(handleError);
-          _subscription = stream.listen(onData as void Function(List<double>)?);
-          _isRecording = true;
-        } catch (err) {
-          debugPrint('AudioStreamer: startRecorder() error: $err');
-        }
-      }
-
-      /// If permission wasn't yet given, then
-      /// ask for it, and then try recording again.
-      else {
-        await AudioStreamer.requestPermission();
-        start(onData, handleError);
-      }
-    }
-    return _isRecording;
-  }
-
-  Future<bool> stop() async {
-    try {
-      if (_subscription != null) {
-        _subscription!.cancel();
-        _subscription = null;
-      }
-      _isRecording = false;
-    } catch (err) {
-      debugPrint('AudioStreamer: stopRecorder() error: $err');
-    }
-    return _isRecording;
-  }
+  /// The stream of audio samples.
+  Stream<List<double>> get audioStream => _stream ??= _noiseEventChannel
+      .receiveBroadcastStream({"sampleRate": sampleRate})
+      .map((buffer) => buffer as List<dynamic>?)
+      .map((list) => (list != null && list.isNotEmpty && list[0] is double)
+          ? list.cast<double>()
+          : list!.map((e) => e is double ? e : double.parse('$e')).toList());
 }

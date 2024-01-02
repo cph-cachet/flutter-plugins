@@ -21,38 +21,35 @@ class ScreenStateEventEntry {
 
 class _MyAppState extends State<MyApp> {
   Screen _screen = Screen();
-  late StreamSubscription<ScreenStateEvent> _subscription;
+  StreamSubscription<ScreenStateEvent>? _subscription;
   bool started = false;
   List<ScreenStateEventEntry> _log = [];
 
   void initState() {
     super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
     startListening();
   }
 
-  void onData(ScreenStateEvent event) {
-    setState(() {
-      _log.add(ScreenStateEventEntry(event));
-    });
-    print(event);
-  }
-
+  /// Start listening to screen events
   void startListening() {
     try {
-      _subscription = _screen.screenStateStream!.listen(onData);
+      _subscription = _screen.screenStateStream!.listen(_onData);
       setState(() => started = true);
     } on ScreenStateException catch (exception) {
       print(exception);
     }
   }
 
+  void _onData(ScreenStateEvent event) {
+    setState(() {
+      _log.add(ScreenStateEventEntry(event));
+    });
+    print(event);
+  }
+
+  /// Stop listening to screen events
   void stopListening() {
-    _subscription.cancel();
+    _subscription?.cancel();
     setState(() => started = false);
   }
 
@@ -61,7 +58,7 @@ class _MyAppState extends State<MyApp> {
     return new MaterialApp(
       home: new Scaffold(
         appBar: new AppBar(
-          title: const Text('Screen State Example app'),
+          title: const Text('Screen State Example'),
         ),
         body: new Center(
             child: new ListView.builder(
@@ -75,7 +72,7 @@ class _MyAppState extends State<MyApp> {
                 })),
         floatingActionButton: new FloatingActionButton(
           onPressed: started ? stopListening : startListening,
-          tooltip: 'Start/Stop sensing',
+          tooltip: 'Start/Stop Listening',
           child: started ? Icon(Icons.stop) : Icon(Icons.play_arrow),
         ),
       ),
