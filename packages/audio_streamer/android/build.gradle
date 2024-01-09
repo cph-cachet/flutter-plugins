@@ -2,7 +2,7 @@ group 'plugins.cachet.audio_streamer'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.20'
+    ext.kotlin_version = '1.9.22'
     repositories {
         google()
         mavenCentral()
@@ -37,9 +37,14 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
-    namespace "plugins.cachet.audio_streamer"
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    if (project.android.hasProperty("namespace")) {
+        namespace 'plugins.cachet.audio_streamer'
+    }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
