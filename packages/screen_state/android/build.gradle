@@ -31,11 +31,12 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
     defaultConfig {
-        minSdkVersion 31
+        minSdkVersion 23
     }
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "dk.cachet.screen_state"
 }
 
 dependencies {
