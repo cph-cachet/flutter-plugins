@@ -8,6 +8,7 @@ environment:
   flutter: ">=3.0.0"
 
 dependencies:
+  permission_handler: ^11.0.0
   flutter:
     sdk: flutter
 
