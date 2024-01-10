@@ -436,6 +436,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else {
             throw PluginError(message: "Invalid Arguments")
         }
+        
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
             
@@ -467,7 +468,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         if #available(iOS 15.0, *){
-            let meal = HKCorrelation.init(type: HKCorrelationType.init(HKCorrelationTypeIdentifier.food), start: dateFrom, end: dateTo, objects: nutrition, metadata: metadata)
+            let type = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
+            let meal = HKCorrelation(type: type, start: dateFrom, end: dateTo, objects: nutrition, metadata: metadata)
             
             HKHealthStore().save(meal, withCompletion: { (success, error) in
                 if let err = error {
