@@ -633,9 +633,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
-                        "source_name": sample.sourceRevision.source.name
-                        // TODO: temp fix for crash with Dexcom
-                        //"metadata": sample.metadata
+                        "source_name": sample.sourceRevision.source.name,
                     ]
                 }
                 DispatchQueue.main.async {
