@@ -107,11 +107,14 @@ class HealthFactory {
   ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
   ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
   ///
-  ///  Caveat:
+  ///  Caveats:
   ///
-  ///   As Apple HealthKit will not disclose if READ access has been granted for a data type due to privacy concern,
-  ///   this method will return **true if the window asking for permission was showed to the user without errors**
-  ///   if it is called on iOS with a READ or READ_WRITE access.
+  ///  * This method may block if permissions are already granted. Hence, check
+  ///    [hasPermissions] before calling this method.
+  ///  * As Apple HealthKit will not disclose if READ access has been granted for
+  ///    a data type due to privacy concern, this method will return **true if
+  ///    the window asking for permission was showed to the user without errors**
+  ///    if it is called on iOS with a READ or READ_WRITE access.
   Future<bool> requestAuthorization(
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
@@ -147,8 +150,11 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => e.name).toList();
+    print(
+        '>> trying to get permissions for $keys with permissions $mPermissions');
     final bool? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
+    print('>> isAuthorized: $isAuthorized');
     return isAuthorized ?? false;
   }
 
