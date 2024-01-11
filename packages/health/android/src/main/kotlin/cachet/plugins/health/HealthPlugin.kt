@@ -456,6 +456,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
+            SLEEP_LIGHT -> DataType.TYPE_SLEEP_SEGMENT
+            SLEEP_REM -> DataType.TYPE_SLEEP_SEGMENT
+            SLEEP_DEEP -> DataType.TYPE_SLEEP_SEGMENT
             WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
@@ -480,6 +483,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             SLEEP_ASLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            SLEEP_LIGHT -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            SLEEP_REM -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            SLEEP_DEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             WORKOUT -> Field.FIELD_ACTIVITY
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
         }
@@ -1641,11 +1647,24 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         )
                     }
                 // Filter sleep stages for requested stage
-                } else if (classType == SleepStageRecord::class) {
+                }
+                else if (classType == SleepSessionRecord::class) {
                     for (rec in response.records) {
-                        if (rec is SleepStageRecord) {
-                            if (dataType == MapSleepStageToType[rec.stage]) {
+                        if (rec is SleepSessionRecord) {
+                            if (dataType == SLEEP_SESSION) {
                                 healthConnectData.addAll(convertRecord(rec, dataType))
+                            }
+                            else {
+                                for (recStage in rec.stages) {
+                                    if (dataType == MapSleepStageToType[recStage.stage]) {
+                                        healthConnectData.addAll(
+                                            convertRecordStage(
+                                                recStage, dataType,
+                                                rec.metadata.dataOrigin.packageName
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -1658,6 +1677,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             }
             Handler(context!!.mainLooper).run { result.success(healthConnectData) }
         }
+    }
+
+    fun convertRecordStage(stage: SleepSessionRecord.Stage, dataType: String, sourceName: String):
+            List<Map<String, Any>> {
+        return listOf(
+            mapOf<String, Any>(
+                "stage" to stage.stage,
+                "value" to ChronoUnit.MINUTES.between(stage.startTime, stage.endTime),
+                "date_from" to stage.startTime.toEpochMilli(),
+                "date_to" to stage.endTime.toEpochMilli(),
+                "source_id" to "",
+                "source_name" to sourceName,
+            ),
+        );
     }
 
     // TODO: Find alternative to SOURCE_ID or make it nullable?
@@ -1777,16 +1810,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "date_from" to record.startTime.toEpochMilli(),
                     "date_to" to record.endTime.toEpochMilli(),
                     "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
-                    "source_id" to "",
-                    "source_name" to metadata.dataOrigin.packageName,
-                ),
-            )
-            is SleepStageRecord -> return listOf(
-                mapOf<String, Any>(
-                    "stage" to record.stage,
-                    "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
-                    "date_from" to record.startTime.toEpochMilli(),
-                    "date_to" to record.endTime.toEpochMilli(),
                     "source_id" to "",
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
@@ -2138,12 +2161,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         BLOOD_GLUCOSE to BloodGlucoseRecord::class,
         DISTANCE_DELTA to DistanceRecord::class,
         WATER to HydrationRecord::class,
-        SLEEP_ASLEEP to SleepStageRecord::class,
-        SLEEP_AWAKE to SleepStageRecord::class,
-        SLEEP_LIGHT to SleepStageRecord::class,
-        SLEEP_DEEP to SleepStageRecord::class,
-        SLEEP_REM to SleepStageRecord::class,
-        SLEEP_OUT_OF_BED to SleepStageRecord::class,
+        SLEEP_ASLEEP to SleepSessionRecord::class,
+        SLEEP_AWAKE to SleepSessionRecord::class,
+        SLEEP_LIGHT to SleepSessionRecord::class,
+        SLEEP_DEEP to SleepSessionRecord::class,
+        SLEEP_REM to SleepSessionRecord::class,
+        SLEEP_OUT_OF_BED to SleepSessionRecord::class,
         SLEEP_SESSION to SleepSessionRecord::class,
         WORKOUT to ExerciseSessionRecord::class,
         RESTING_HEART_RATE to RestingHeartRateRecord::class,
