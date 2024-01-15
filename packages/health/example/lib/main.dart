@@ -49,7 +49,7 @@ class _HealthAppState extends State<HealthApp> {
   //   // HealthDataType.AUDIOGRAM
   // ];
 
-  // with corresponsing permissions
+  // with corresponding permissions
   // READ only
   // final permissions = types.map((e) => HealthDataAccess.READ).toList();
   // Or READ and WRITE
