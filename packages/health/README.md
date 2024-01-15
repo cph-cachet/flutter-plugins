@@ -76,7 +76,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 
 ### Apple Health (iOS)
 
-Step 1: Append the Info.plist with the following 2 entries
+Step 1: Append the `Info.plist` with the following 2 entries
 
 ```xml
 <key>NSHealthShareUsageDescription</key>
@@ -89,7 +89,7 @@ Step 2: Open your Flutter project in Xcode by right clicking on the "ios" folder
 
 ### Google Fit (Android option 1)
 
-Follow the guide at https://developers.google.com/fit/android/get-api-key
+Follow the guide at <https://developers.google.com/fit/android/get-api-key>
 
 Below is an example of following the guide:
 
@@ -118,7 +118,7 @@ Certificate fingerprints:
      Version: 3
 ```
 
-Follow the instructions at https://developers.google.com/fit/android/get-api-key for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
+Follow the instructions at <https://developers.google.com/fit/android/get-api-key> for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
 
 The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`.
 
@@ -126,53 +126,70 @@ The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.co
 
 Health Connect requires the following lines in the `AndroidManifest.xml` file (also seen in the example app):
 
-```
+```xml
+<!-- Check whether Health Connect is installed or not -->
 <queries>
-    <package android:name="com.google.android.apps.healthdata" />
-        <intent>
-            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
-        </intent>
+  <package android:name="com.google.android.apps.healthdata" />
+  <intent>
+    <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+  </intent>
 </queries>
 ```
 
 ### Android Permissions
 
-Starting from API level 28 (Android 9.0) acessing some fitness data (e.g. Steps) requires a special permission.
+Starting from API level 28 (Android 9.0) accessing some fitness data (e.g. Steps) requires a special permission.
 
 To set it add the following line to your `AndroidManifest.xml` file.
 
-```
+```xml
 <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 ```
 
 #### Health Connect
 
-If using Health Connect on Android it requires speciel permissions in the `AndroidManifest.xml` file.
-The permissions can be found here: https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types
+If using Health Connect on Android it requires special permissions in the `AndroidManifest.xml` file. The permissions can be found here: <https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types>
 
 Example shown here (can also be found in the example app):
 
-```
+```xml
 <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
 <uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
+...
+```
+
+Furthermore, an `intent-filter` needs to be added to the `.MainActivity` activity.
+
+```xml
+<activity
+  android:name=".MainActivity"
+  android:exported="true"
+
+  ....
+
+  <!-- Intention to show Permissions screen for Health Connect API -->
+  <intent-filter>
+    <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+  </intent-filter>
+</activity>
 ```
 
 #### Workout permissions
 
 Additionally, for Workouts: If the distance of a workout is requested then the location permissions below are needed.
 
-```
+```xml
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 ```
 
 There's a `debug`, `main` and `profile` version which are chosen depending on how you start your app. In general, it's sufficient to add permission only to the `main` version.
 
-Beacuse this is labled as a `dangerous` protection level, the permission system will not grant it automaticlly and it requires the user's action.
+Because this is labeled as a `dangerous` protection level, the permission system will not grant it automatically and it requires the user's action.
 You can prompt the user for it using the [permission_handler](https://pub.dev/packages/permission_handler) plugin.
-Follow the plugin setup instructions and add the following line before requsting the data:
+Follow the plugin setup instructions and add the following line before requesting the data:
 
-```
+```dart
 await Permission.activityRecognition.request();
 await Permission.location.request();
 ```
@@ -256,7 +273,7 @@ NB for iOS: The device must be unlocked before Health data can be requested, oth
 
 ```
 flutter: Health Plugin Error:
-flutter: 	PlatformException(FlutterHealth, Results are null, Optional(Error Domain=com.apple.healthkit Code=6 "Protected health data is inaccessible" UserInfo={NSLocalizedDescription=Protected health data is inaccessible}))
+flutter:  PlatformException(FlutterHealth, Results are null, Optional(Error Domain=com.apple.healthkit Code=6 "Protected health data is inaccessible" UserInfo={NSLocalizedDescription=Protected health data is inaccessible}))
 ```
 
 ### Filtering out duplicates
