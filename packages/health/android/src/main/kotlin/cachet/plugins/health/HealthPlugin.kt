@@ -55,7 +55,7 @@ import java.util.concurrent.*
 
 
 const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1111
-const val HEALTH_CONNECT_RESULT_CODE = 16969
+const val HEALTH_CONNECT_REQUEST_CODE = 16969
 const val CHANNEL_NAME = "flutter_health"
 const val MMOLL_2_MGDL = 18.0 // 1 mmoll= 18 mgdl
 
@@ -405,7 +405,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
+        if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE || requestCode == HEALTH_CONNECT_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 Log.i("FLUTTER_HEALTH", "Access Granted!")
                 mResult?.success(true)
@@ -1681,7 +1681,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
         val contract = PermissionController.createRequestPermissionResultContract()
         val intent = contract.createIntent(activity!!, permList.toSet())
-        activity!!.startActivityForResult(intent, HEALTH_CONNECT_RESULT_CODE)
+        activity!!.startActivityForResult(intent, HEALTH_CONNECT_REQUEST_CODE)
     }
 
     fun getHCData(call: MethodCall, result: Result) {
