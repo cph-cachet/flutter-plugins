@@ -498,6 +498,8 @@ class HealthFactory {
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch
     };
+    print("Flutter end time ${endTime.millisecondsSinceEpoch}");
+
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
 
     if (fetchedDataPoints != null) {

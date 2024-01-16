@@ -537,7 +537,6 @@ func writeMenstrualFlow(call: FlutterMethodCall, result: @escaping FlutterResult
     var samples = [HKCategorySample]()
 
     for arguments in argumentsList {
-         print(arguments)
         guard let flowValue = (arguments["flow"] as? Int),
               let time = (arguments["time"] as? NSNumber),
               let startOfCycle = (arguments["is_start_of_cycle"] as? Bool),
@@ -617,13 +616,14 @@ func writeMenstrualFlow(call: FlutterMethodCall, result: @escaping FlutterResult
     }
     
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+
         let arguments = call.arguments as? NSDictionary
         let dataTypeKey = (arguments?["dataTypeKey"] as? String)!
         let dataUnitKey = (arguments?["dataUnitKey"] as? String)
         let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
         let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
         let limit = (arguments?["limit"] as? Int) ?? HKObjectQueryNoLimit
-        
+
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
@@ -694,8 +694,6 @@ func writeMenstrualFlow(call: FlutterMethodCall, result: @escaping FlutterResult
                 }
                 let categories = samplesCategory.map { sample -> NSDictionary in
                     if dataTypeKey == self.MENSTRUAL_FLOW {
-                        print("in swift")
-                        print(sample)
                         return [
                           "uuid": "\(sample.uuid)",
                           "value": sample.value,
@@ -878,7 +876,7 @@ func writeMenstrualFlow(call: FlutterMethodCall, result: @escaping FlutterResult
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
-        
+
         let sampleType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         let predicate = HKQuery.predicateForSamples(
             withStart: dateFrom, end: dateTo, options: .strictStartDate)
