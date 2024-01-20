@@ -929,12 +929,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         checkAvailability()
 
-        if (healthConnectAvailable) {
-            val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
+        val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
 
-            healthConnectRequestPermissionsLauncher =(activity as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
-                onHealthConnectPermissionCallback(granted);
-            }
+        healthConnectRequestPermissionsLauncher =(activity as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
+            onHealthConnectPermissionCallback(granted);
         }
     }
 
