@@ -255,6 +255,8 @@ class HealthFactory {
     if (type == HealthDataType.SLEEP_ASLEEP ||
         type == HealthDataType.SLEEP_AWAKE ||
         type == HealthDataType.SLEEP_IN_BED ||
+        type == HealthDataType.SLEEP_DEEP ||
+        type == HealthDataType.SLEEP_REM ||
         type == HealthDataType.HEADACHE_NOT_PRESENT ||
         type == HealthDataType.HEADACHE_MILD ||
         type == HealthDataType.HEADACHE_MODERATE ||
@@ -357,6 +359,46 @@ class HealthFactory {
       };
       success = await _channel.invokeMethod('writeBloodOxygen', args);
     }
+    return success ?? false;
+  }
+
+  /// Saves meal record into Apple Health or Google Fit.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [startTime] - the start time when the meal was consumed.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when the meal was consumed.
+  ///   + It must be equal to or later than [startTime].
+  /// * [caloriesConsumed] - total calories consumed with this meal.
+  /// * [carbohydrates] - optional carbohydrates information.
+  /// * [protein] - optional protein information.
+  /// * [fatTotal] - optional total fat information.
+  /// * [name] - optional name information about this meal.
+  Future<bool> writeMeal(
+      DateTime startTime,
+      DateTime endTime,
+      double? caloriesConsumed,
+      double? carbohydrates,
+      double? protein,
+      double? fatTotal,
+      String? name,
+      MealType mealType) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+
+    Map<String, dynamic> args = {
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch,
+      'caloriesConsumed': caloriesConsumed,
+      'carbohydrates': carbohydrates,
+      'protein': protein,
+      'fatTotal': fatTotal,
+      'name': name,
+      'mealType': mealType.name,
+    };
+    bool? success = await _channel.invokeMethod('writeMeal', args);
     return success ?? false;
   }
 
@@ -491,6 +533,8 @@ class HealthFactory {
         value = WorkoutHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.ELECTROCARDIOGRAM) {
         value = ElectrocardiogramHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.NUTRITION) {
+        value = NutritionHealthValue.fromJson(e);
       } else {
         value = NumericHealthValue(e['value']);
       }
@@ -544,14 +588,14 @@ class HealthFactory {
     switch (type) {
       case HealthDataType.SLEEP_IN_BED:
         return 0;
-      case HealthDataType.SLEEP_ASLEEP:
-        return 1;
       case HealthDataType.SLEEP_AWAKE:
         return 2;
-      case HealthDataType.SLEEP_DEEP:
+      case HealthDataType.SLEEP_ASLEEP:
         return 3;
-      case HealthDataType.SLEEP_REM:
+      case HealthDataType.SLEEP_DEEP:
         return 4;
+      case HealthDataType.SLEEP_REM:
+        return 5;
       case HealthDataType.HEADACHE_UNSPECIFIED:
         return 0;
       case HealthDataType.HEADACHE_NOT_PRESENT:

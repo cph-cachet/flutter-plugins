@@ -31,13 +31,14 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
     defaultConfig {
-        minSdkVersion 28
-        targetSdkVersion 33
+        minSdkVersion 26
+        targetSdkVersion 34
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "cachet.plugins.health"
 }
 
 dependencies {

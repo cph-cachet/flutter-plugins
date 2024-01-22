@@ -1,3 +1,7 @@
+## 4.1.1
+
+* enable AGP 8.0
+
 ## 4.0.0
 
 * removal of permission_handler dependency - handling permission should take place in the app, not the plugin.

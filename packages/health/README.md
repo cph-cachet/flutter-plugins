@@ -10,6 +10,7 @@ The plugin supports:
 - reading health data using the `getHealthDataFromTypes` method.
 - writing health data using the `writeHealthData` method.
 - writing workouts using the `writeWorkout` method.
+- writing meals on iOS (Apple Health) & Android (Google Fit) using the `writeMeal` method.
 - writing audiograms on iOS using the `writeAudiogram` method.
 - writing blood pressure data using the `writeBloodPressure` method.
 - accessing total step counts using the `getTotalStepsInInterval` method.
@@ -69,6 +70,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |                          |                              |                                        |
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                          |                              |                                        |
 | ELECTROCARDIOGRAM           | VOLT                    | yes     |                          |                              | Requires Apple Watch to write the data |
+| NUTRITION                   | NO_UNIT                 | yes     | yes                      | yes                          |                                        |
 
 ## Setup
 

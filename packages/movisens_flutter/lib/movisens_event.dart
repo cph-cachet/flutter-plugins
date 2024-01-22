@@ -8,14 +8,15 @@ part of movisens_flutter;
 
 /// A basic Movisens Event.
 abstract class MovisensEvent {
+  late DateTime _time;
+  final String _deviceId;
+
   /// Get the UUID of this [type].
   String get uuid => charToUuid[type]!;
-  late DateTime _time;
 
   /// The type of characteristic which emitted this event
   /// as enum [MovisensBluetoothCharacteristics].
   abstract MovisensBluetoothCharacteristics type;
-  final String _deviceId;
 
   /// Constructing an event requires an ID of the device.
   MovisensEvent(this._deviceId) {
@@ -31,9 +32,8 @@ abstract class MovisensEvent {
   String get deviceId => _deviceId;
 
   @override
-  String toString() {
-    return "Device ID: $deviceId, Type: ${enumToReadableString(type)}, Time: $time";
-  }
+  String toString() =>
+      "Device ID: $deviceId, Type: ${enumToReadableString(type)}, Time: $time";
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.light].
@@ -63,9 +63,7 @@ class LightEvent extends MovisensEvent {
   int get ir => _ir;
 
   @override
-  String toString() {
-    return '${super.toString()}, Clear: $clear, ir: $ir';
-  }
+  String toString() => '${super.toString()}, Clear: $clear, ir: $ir';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.lightRGB].
@@ -100,9 +98,8 @@ class LightRGBEvent extends MovisensEvent {
   int get blue => _blue;
 
   @override
-  String toString() {
-    return '${super.toString()}, Red: $red, Green: $green, Blue: $blue';
-  }
+  String toString() =>
+      '${super.toString()}, Red: $red, Green: $green, Blue: $blue';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.sensorTemperature].
@@ -127,9 +124,8 @@ class SensorTemperatureEvent extends MovisensEvent {
   double get sensorTemperature => _sensorTemperature;
 
   @override
-  String toString() {
-    return '${super.toString()}, Sensor Temperature: $sensorTemperature';
-  }
+  String toString() =>
+      '${super.toString()}, Sensor Temperature: $sensorTemperature';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.edaSclMean].
@@ -157,9 +153,7 @@ class EdaSclMeanEvent extends MovisensEvent {
   double get edaSclMean => _edaSclMean;
 
   @override
-  String toString() {
-    return '${super.toString()}, EdaSclMean: $edaSclMean';
-  }
+  String toString() => '${super.toString()}, EdaSclMean: $edaSclMean';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.hrMean]
@@ -184,9 +178,7 @@ class HrMeanEvent extends MovisensEvent {
   int get hrMean => _hrMean;
 
   @override
-  String toString() {
-    return '${super.toString()}, HrMean: $hrMean';
-  }
+  String toString() => '${super.toString()}, HrMean: $hrMean';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.hrvIsValid]
@@ -209,9 +201,7 @@ class HrvIsValidEvent extends MovisensEvent {
   bool get hrvIsValid => _hrvIsValid;
 
   @override
-  String toString() {
-    return '${super.toString()}, HrvIsValid: $hrvIsValid';
-  }
+  String toString() => '${super.toString()}, HrvIsValid: $hrvIsValid';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.rmssd]
@@ -239,9 +229,7 @@ class RmssdEvent extends MovisensEvent {
   int get rmssd => _rmssd;
 
   @override
-  String toString() {
-    return '${super.toString()}, Rmssd: $rmssd';
-  }
+  String toString() => '${super.toString()}, Rmssd: $rmssd';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.tapMarker]
@@ -266,9 +254,7 @@ class TapMarkerEvent extends MovisensEvent {
   int get tapMarkerValue => _tapMarkerValue;
 
   @override
-  String toString() {
-    return '${super.toString()}, TapMarkerValue: $tapMarkerValue';
-  }
+  String toString() => '${super.toString()}, TapMarkerValue: $tapMarkerValue';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.charging]
@@ -291,9 +277,7 @@ class ChargingEvent extends MovisensEvent {
   bool get charging => _charging;
 
   @override
-  String toString() {
-    return '${super.toString()}, Charging: $charging';
-  }
+  String toString() => '${super.toString()}, Charging: $charging';
 }
 
 /// Body position enum
@@ -362,9 +346,8 @@ class BodyPositionEvent extends MovisensEvent {
   BodyPosition get bodyPosition => _bodyPosition;
 
   @override
-  String toString() {
-    return '${super.toString()}, BodyPosition: ${enumToReadableString(bodyPosition)}';
-  }
+  String toString() =>
+      '${super.toString()}, BodyPosition: ${enumToReadableString(bodyPosition)}';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.inclination]
@@ -404,9 +387,7 @@ class InclinationEvent extends MovisensEvent {
   int get z => _z;
 
   @override
-  String toString() {
-    return '${super.toString()}, x: $x, y: $y, z: $z';
-  }
+  String toString() => '${super.toString()}, x: $x, y: $y, z: $z';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.met]
@@ -433,9 +414,7 @@ class MetEvent extends MovisensEvent {
   int get met => _met;
 
   @override
-  String toString() {
-    return '${super.toString()}, Met: $met';
-  }
+  String toString() => '${super.toString()}, Met: $met';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.metLevel]
@@ -487,9 +466,8 @@ class MetLevelEvent extends MovisensEvent {
   int get vigorous => _vigorous;
 
   @override
-  String toString() {
-    return '${super.toString()}, Sedentary: $sedentary, Light: $light, Moderate: $moderate, Vigorous: $vigorous';
-  }
+  String toString() =>
+      '${super.toString()}, Sedentary: $sedentary, Light: $light, Moderate: $moderate, Vigorous: $vigorous';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.movementAcceleration]
@@ -520,9 +498,8 @@ class MovementAccelerationEvent extends MovisensEvent {
   double get movementAcceleration => _movementAcceleration;
 
   @override
-  String toString() {
-    return '${super.toString()}, MovementAcceleration: $movementAcceleration';
-  }
+  String toString() =>
+      '${super.toString()}, MovementAcceleration: $movementAcceleration';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.steps]
@@ -547,9 +524,7 @@ class StepsEvent extends MovisensEvent {
   int get steps => _steps;
 
   @override
-  String toString() {
-    return '${super.toString()}, Steps: $steps';
-  }
+  String toString() => '${super.toString()}, Steps: $steps';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.respiratoryMovement]
@@ -573,12 +548,10 @@ class RespiratoryMovementEvent extends MovisensEvent {
   int get values => _values;
 
   @override
-  String toString() {
-    return '${super.toString()}, Values: $values';
-  }
+  String toString() => '${super.toString()}, Values: $values';
 }
 
-/// Enum for Command result
+/// Movisens command results.
 enum CommandResult {
   ok,
   notStartedBatteryLow,
@@ -633,9 +606,8 @@ class CommandResultEvent extends MovisensEvent {
   CommandResult get commandResult => _commandResult;
 
   @override
-  String toString() {
-    return '${super.toString()}, Command Result: ${enumToReadableString(commandResult)}';
-  }
+  String toString() =>
+      '${super.toString()}, Command Result: ${enumToReadableString(commandResult)}';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.dataAvailable]
@@ -658,9 +630,7 @@ class DataAvailableEvent extends MovisensEvent {
   bool get dataAvailable => _dataAvailable;
 
   @override
-  String toString() {
-    return '${super.toString()}, Data Available: $dataAvailable';
-  }
+  String toString() => '${super.toString()}, Data Available: $dataAvailable';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.measurementEnabled]
@@ -683,13 +653,13 @@ class MeasurementEnabledEvent extends MovisensEvent {
   bool get measurementEnabled => _measurementEnabled;
 
   @override
-  String toString() {
-    return '${super.toString()}, Measurement Enabled: $measurementEnabled';
-  }
+  String toString() =>
+      '${super.toString()}, Measurement Enabled: $measurementEnabled';
 }
 
 /// Status of the measurement
 enum MeasurementStatus {
+  unknown,
   stoppedDurationReached,
   stoppedUserUsb,
   stoppedBatteryEmpty,
@@ -751,9 +721,8 @@ class MeasurementStatusEvent extends MovisensEvent {
   MeasurementStatus get measurementStatus => _measurementStatus;
 
   @override
-  String toString() {
-    return '${super.toString()}, Measurement Status: ${enumToReadableString(measurementStatus)}';
-  }
+  String toString() =>
+      '${super.toString()}, Measurement Status: ${enumToReadableString(measurementStatus)}';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.storageLevel]
@@ -776,9 +745,7 @@ class StorageLevelEvent extends MovisensEvent {
   int get storageLevel => _storageLevel;
 
   @override
-  String toString() {
-    return '${super.toString()}, Storage Level: $storageLevel';
-  }
+  String toString() => '${super.toString()}, Storage Level: $storageLevel';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.skinTemperature]
@@ -799,14 +766,12 @@ class SkinTemperatureEvent extends MovisensEvent {
   MovisensBluetoothCharacteristics type =
       MovisensBluetoothCharacteristics.skinTemperature;
 
-  /// Temperature of the skin.
-  /// Measured in Celcius (C)
+  /// Temperature of the skin in Celcius (C).
   double get skinTemperature => _skinTemperature;
 
   @override
-  String toString() {
-    return '${super.toString()}, Skin Temperature: $skinTemperature';
-  }
+  String toString() =>
+      '${super.toString()}, Skin Temperature: $skinTemperature';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.heartRateMeasurement]
@@ -828,14 +793,11 @@ class HeartRateMeasurementEvent extends MovisensEvent {
   MovisensBluetoothCharacteristics type =
       MovisensBluetoothCharacteristics.heartRateMeasurement;
 
-  /// The calculated heart rate at the time
-  /// in beats per minute.
+  /// The calculated heart rate at the time in beats per minute.
   int get heartRateMeasurement => _heartRateMeasurement;
 
   @override
-  String toString() {
-    return '${super.toString()}, Heart Rate Measurement: $heartRateMeasurement beats per minute';
-  }
+  String toString() => '${super.toString()}, HR: $heartRateMeasurement BPM';
 }
 
 /// An event of type [MovisensBluetoothCharacteristics.batteryLevel]
@@ -858,7 +820,5 @@ class BatteryLevelEvent extends MovisensEvent {
   int get batteryLevel => _batteryLevel;
 
   @override
-  String toString() {
-    return '${super.toString()}, Battery Level: $batteryLevel%';
-  }
+  String toString() => '${super.toString()}, Battery Level: $batteryLevel%';
 }

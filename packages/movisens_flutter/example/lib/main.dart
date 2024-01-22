@@ -39,7 +39,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late MovisensDevice device;
+  MovisensDevice? device;
 
   @override
   void initState() {
@@ -54,59 +54,59 @@ class _MyHomePageState extends State<MyHomePage> {
       "MOVISENS Sensor 01234"; // Example: "MOVISENS Sensor 04421"
 
   void connect() async {
-    await device.connect();
+    await device?.connect();
 
-    device.state?.listen((event) {
+    device?.state?.listen((event) {
       print('Connection event: $event');
     });
   }
 
   void listen() async {
     // Enable the device to emit all event for each service:
-    await device.ambientService?.enableNotify();
-    await device.edaService?.enableNotify();
-    await device.hrvService?.enableNotify();
-    await device.markerService?.enableNotify();
-    await device.batteryService?.enableNotify();
-    await device.physicalActivityService?.enableNotify();
-    await device.respirationService?.enableNotify();
-    await device.sensorControlService?.enableNotify();
-    await device.skinTemperatureService?.enableNotify();
+    await device?.ambientService?.enableNotify();
+    await device?.edaService?.enableNotify();
+    await device?.hrvService?.enableNotify();
+    await device?.markerService?.enableNotify();
+    await device?.batteryService?.enableNotify();
+    await device?.physicalActivityService?.enableNotify();
+    await device?.respirationService?.enableNotify();
+    await device?.sensorControlService?.enableNotify();
+    await device?.skinTemperatureService?.enableNotify();
 
     // Listen to all characteristics
-    device.ambientService?.events.listen((event) {
+    device?.ambientService?.events.listen((event) {
       print("all ambient events stream -- event : $event");
     });
-    device.edaService?.events.listen((event) {
+    device?.edaService?.events.listen((event) {
       print("all eda events stream -- event : $event");
     });
-    device.hrvService?.events.listen((event) {
+    device?.hrvService?.events.listen((event) {
       print("all hrv events stream -- event : $event");
     });
-    device.markerService?.events.listen((event) {
+    device?.markerService?.events.listen((event) {
       print("all marker events stream -- event : $event");
     });
-    device.batteryService?.events.listen((event) {
+    device?.batteryService?.events.listen((event) {
       print("all battery events stream -- event : $event");
     });
-    device.physicalActivityService?.events.listen((event) {
+    device?.physicalActivityService?.events.listen((event) {
       print("all physical events stream -- event : $event");
     });
-    device.respirationService?.events.listen((event) {
+    device?.respirationService?.events.listen((event) {
       print("all respiration events stream -- event : $event");
     });
-    device.sensorControlService?.events.listen((event) {
+    device?.sensorControlService?.events.listen((event) {
       print("all sensor control events stream -- event : $event");
     });
-    device.skinTemperatureService?.events.listen((event) {
+    device?.skinTemperatureService?.events.listen((event) {
       print("all skin temp events stream -- event : $event");
     });
 
     // Or listen to individual characteristics:
-    device.ambientService?.sensorTemperatureEvents?.listen((event) {
+    device?.ambientService?.sensorTemperatureEvents?.listen((event) {
       print("Sensor temp listen : event: $event");
     });
-    device.skinTemperatureService?.skinTemperatureEvents?.listen((event) {
+    device?.skinTemperatureService?.skinTemperatureEvents?.listen((event) {
       print("Skin temp listen : event: $event");
     });
   }
@@ -114,31 +114,31 @@ class _MyHomePageState extends State<MyHomePage> {
   void startMeasurement() async {
     // Test start and stop of measurement
     MeasurementStatus? ms =
-        await device.sensorControlService?.getMeasurementStatus();
-    bool? me = await device.sensorControlService?.getMeasurementEnabled();
+        await device?.sensorControlService?.getMeasurementStatus();
+    bool? me = await device?.sensorControlService?.getMeasurementEnabled();
     String s = (ms != null) ? enumToReadableString(ms) : "null";
     print("Measurement status:: $s");
     print("Measurement enabled:: $me");
     // Start a measurement that last 120 seconds or a indefinite one
     // Certain data has a delay of 60 - 84 seconds, so preferably a measurement longer than that.
-    await device.sensorControlService?.setStartMeasurement(120);
-    // await device.sensorControlService?.setMeasurementEnabled(true);
+    await device?.sensorControlService?.setStartMeasurement(120);
+    // await device?.sensorControlService?.setMeasurementEnabled(true);
     // Delay 1 second for device to complete the task
     await Future.delayed(const Duration(seconds: 1));
-    ms = await device.sensorControlService?.getMeasurementStatus();
-    me = await device.sensorControlService?.getMeasurementEnabled();
+    ms = await device?.sensorControlService?.getMeasurementStatus();
+    me = await device?.sensorControlService?.getMeasurementEnabled();
     s = (ms != null) ? enumToReadableString(ms) : "null";
     print("Measurement status after start:: $s");
     print("Measurement enabled after start:: $me");
   }
 
   void stopMeasurement() async {
-    await device.sensorControlService?.setMeasurementEnabled(false);
+    await device?.sensorControlService?.setMeasurementEnabled(false);
     // Wait 2 seconds for device to complete task
     await Future.delayed(const Duration(seconds: 2));
     MeasurementStatus? ms =
-        await device.sensorControlService?.getMeasurementStatus();
-    bool? me = await device.sensorControlService?.getMeasurementEnabled();
+        await device?.sensorControlService?.getMeasurementStatus();
+    bool? me = await device?.sensorControlService?.getMeasurementEnabled();
     String s = (ms != null) ? enumToReadableString(ms) : "null";
     print("Measurement status after stop:: $s");
     print("Measurement enabled after stop:: $me");
@@ -146,12 +146,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void deleteData() async {
     // Test deletion of data
-    bool? da = await device.sensorControlService?.getDataAvailable();
+    bool? da = await device?.sensorControlService?.getDataAvailable();
     print('Data available :: $da');
-    await device.sensorControlService?.setDeleteData(true);
+    await device?.sensorControlService?.setDeleteData(true);
     // Delay 1 second for device to complete the task
     await Future.delayed(const Duration(seconds: 1));
-    da = await device.sensorControlService?.getDataAvailable();
+    da = await device?.sensorControlService?.getDataAvailable();
     print('Data available after delete :: $da');
   }
 
@@ -161,75 +161,75 @@ class _MyHomePageState extends State<MyHomePage> {
     // Set and get current time MS
     try {
       int currentTimeMs = DateTime.now().millisecondsSinceEpoch;
-      await device.sensorControlService?.setCurrentTimeMs(currentTimeMs);
+      await device?.sensorControlService?.setCurrentTimeMs(currentTimeMs);
     } catch (e) {
       print('Error setting Current Time MS::  $e');
     }
     // Delay 1 second for device to complete the task
     await Future.delayed(const Duration(seconds: 1));
     try {
-      int? x = await device.sensorControlService?.getCurrentTimeMs();
+      int? x = await device?.sensorControlService?.getCurrentTimeMs();
       print("Current time MS:: $x");
     } catch (e) {
       print('Error getting Current Time MS::  $e');
     }
 
     // Get status
-    int? sta = await device.sensorControlService?.getStatus();
+    int? sta = await device?.sensorControlService?.getStatus();
     print('Status:: $sta');
 
     // Test storage level
-    int? sl = await device.sensorControlService?.getStorageLevel();
+    int? sl = await device?.sensorControlService?.getStorageLevel();
     print('Storage level :: $sl');
 
     // set age
-    await device.userDataService?.setAgeFloat(41.5);
+    await device?.userDataService?.setAgeFloat(41.5);
     // get age
-    double? age = await device.userDataService?.getAgeFloat();
+    double? age = await device?.userDataService?.getAgeFloat();
     print('Age:: $age');
 
     // set sensor location
-    await device.userDataService?.setSensorLocation(SensorLocation.chest);
+    await device?.userDataService?.setSensorLocation(SensorLocation.chest);
     // get sensor location
     SensorLocation? sensorloc =
-        await device.userDataService?.getSensorLocation();
+        await device?.userDataService?.getSensorLocation();
     print('Sensor location:: $sensorloc');
 
     // set gender
-    await device.userDataService?.setGender(Gender.male);
+    await device?.userDataService?.setGender(Gender.male);
     // get gender
-    Gender? gender = await device.userDataService?.getGender();
+    Gender? gender = await device?.userDataService?.getGender();
     print('gender:: $gender');
 
     // set height
-    await device.userDataService?.setHeight(182);
+    await device?.userDataService?.setHeight(182);
     // get height
-    int? height = await device.userDataService?.getHeight();
+    int? height = await device?.userDataService?.getHeight();
     print('height:: $height cm');
 
     // set weight
-    await device.userDataService?.setWeight(84.5);
+    await device?.userDataService?.setWeight(84.5);
     // get weight
-    double? weight = await device.userDataService?.getWeight();
+    double? weight = await device?.userDataService?.getWeight();
     print('weight:: $weight kg');
 
     // Device information:
     String? firmwareRevisionString =
-        await device.deviceInformationService?.getFirmwareRevisionString();
+        await device?.deviceInformationService?.getFirmwareRevisionString();
     print(firmwareRevisionString);
     String? manufacturerNameString =
-        await device.deviceInformationService?.getManufacturerNameString();
+        await device?.deviceInformationService?.getManufacturerNameString();
     print(manufacturerNameString);
     String? modelNumberString =
-        await device.deviceInformationService?.getModelNumberString();
+        await device?.deviceInformationService?.getModelNumberString();
     print(modelNumberString);
     String? serialNumberString =
-        await device.deviceInformationService?.getSerialNumberString();
+        await device?.deviceInformationService?.getSerialNumberString();
     print(serialNumberString);
   }
 
   void disconnect() async {
-    await device.disconnect();
+    await device?.disconnect();
   }
 
   @override

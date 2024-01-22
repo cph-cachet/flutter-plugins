@@ -36,6 +36,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "dk.cachet.flutter_foreground_service"
 }
 
 dependencies {

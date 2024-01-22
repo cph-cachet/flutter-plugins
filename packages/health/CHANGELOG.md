@@ -1,3 +1,8 @@
+## 8.1.0
+- Fixed sleep stages on iOS, Issue [#803](https://github.com/cph-cachet/flutter-plugins/issues/803)
+- Added Nutrition data type, includes PR [#679](https://github.com/cph-cachet/flutter-plugins/pull/679)
+- Lowered minSDK, Issue [#809](https://github.com/cph-cachet/flutter-plugins/issues/809)
+
 ## 8.0.0
 
 - Fixed issue [#774](https://github.com/cph-cachet/flutter-plugins/issues/774), [#779](https://github.com/cph-cachet/flutter-plugins/issues/779)
