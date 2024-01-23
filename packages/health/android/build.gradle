@@ -2,14 +2,14 @@ group 'cachet.plugins.health'
 version '1.2'
 
 buildscript {
-    ext.kotlin_version = '1.7.22'
+    ext.kotlin_version = '1.9.22'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.1.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -27,7 +27,14 @@ apply plugin: 'kotlin-android'
 android {
     compileSdkVersion 34
 
-    namespace "cachet.plugins.health"
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
@@ -52,7 +59,7 @@ dependencies {
 
     // The new health connect api
     implementation("androidx.health.connect:connect-client:1.1.0-alpha06")
-
     def fragment_version = "1.6.2"
     implementation "androidx.fragment:fragment-ktx:$fragment_version"
+
 }
