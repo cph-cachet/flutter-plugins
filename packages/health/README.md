@@ -152,7 +152,7 @@ In the Health Connect permissions activity there is a link to your privacy polic
 
 ### Android Permissions
 
-Starting from API level 28 (Android 9.0) acessing some fitness data (e.g. Steps) requires a special permission.
+Starting from API level 28 (Android 9.0) accessing some fitness data (e.g. Steps) requires a special permission.
 
 To set it add the following line to your `AndroidManifest.xml` file.
 
@@ -162,7 +162,7 @@ To set it add the following line to your `AndroidManifest.xml` file.
 
 #### Health Connect
 
-If using Health Connect on Android it requires speciel permissions in the `AndroidManifest.xml` file.
+If using Health Connect on Android it requires special permissions in the `AndroidManifest.xml` file.
 The permissions can be found here: https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types
 
 Example shown here (can also be found in the example app):
@@ -183,7 +183,7 @@ Additionally, for Workouts: If the distance of a workout is requested then the l
 
 There's a `debug`, `main` and `profile` version which are chosen depending on how you start your app. In general, it's sufficient to add permission only to the `main` version.
 
-Beacuse this is labled as a `dangerous` protection level, the permission system will not grant it automaticlly and it requires the user's action.
+Because this is labeled as a `dangerous` protection level, the permission system will not grant it automaticlly and it requires the user's action.
 You can prompt the user for it using the [permission_handler](https://pub.dev/packages/permission_handler) plugin.
 Follow the plugin setup instructions and add the following line before requsting the data:
 
@@ -194,7 +194,9 @@ await Permission.location.request();
 
 ### Android 14
 
-This plugin uses the new `registerForActivityResult` when requesting permissions from Health Connect. In order for that to work, the Main app's activity should extend `FlutterFragmentActivity` instead of `FlutterActivity`. This adjustment allows casting from `Activity` to `ComponentActivity` for accessing `registerForActivityResult`.
+This plugin uses the new `registerForActivityResult` when requesting permissions from Health Connect.
+In order for that to work, the Main app's activity should extend `FlutterFragmentActivity` instead of `FlutterActivity`. 
+This adjustment allows casting from `Activity` to `ComponentActivity` for accessing `registerForActivityResult`.
 
 In your MainActivity.kt file, update the `MainActivity` class so that it extends `FlutterFragmentActivity` instead of the default `FlutterActivity`:
 
