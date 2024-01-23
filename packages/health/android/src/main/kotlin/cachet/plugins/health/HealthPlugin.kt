@@ -1697,7 +1697,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 var request = ReadRecordsRequest(
                     recordType = classType,
                     // Define the maximum amount of data that HealthConnect can return in a single request
-                    pageSize = 5000,
                     timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                 )
                 
@@ -1708,10 +1707,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 records.addAll(response.records)
 
                 // Continue making requests and fetching records while there is a page token
-                while (pageToken != null) {
+                while (!pageToken.isNullOrEmpty()) {
                     request = ReadRecordsRequest(
                         recordType = classType,
-                        pageSize = 5000,
                         timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                         pageToken = pageToken
                     )
