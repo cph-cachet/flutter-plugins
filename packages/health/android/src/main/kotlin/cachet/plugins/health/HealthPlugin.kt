@@ -1858,7 +1858,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             else -> throw IllegalArgumentException("Health data type not supported") // TODO: Exception or error?
         }
     }
-
+    //TODO rewrite sleep to fit new update better --> compare with Apple and see if we should not adopt a single type with attached stages approach
     fun writeHCData(call: MethodCall, result: Result) {
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = call.argument<Long>("startTime")!!
@@ -1935,50 +1935,48 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
-            SLEEP_ASLEEP -> SleepStageRecord(
+            SLEEP_ASLEEP -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_SLEEPING,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_SLEEPING)),
             )
-            SLEEP_LIGHT -> SleepStageRecord(
+            SLEEP_LIGHT -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_LIGHT,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_LIGHT)),
             )
-            SLEEP_DEEP -> SleepStageRecord(
+            SLEEP_DEEP -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_DEEP,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_DEEP)),
             )
-            SLEEP_REM -> SleepStageRecord(
+            SLEEP_REM -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_REM,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_REM)),
             )
-            SLEEP_OUT_OF_BED -> SleepStageRecord(
+            SLEEP_OUT_OF_BED -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_OUT_OF_BED,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_OUT_OF_BED)),
             )
-            SLEEP_AWAKE -> SleepStageRecord(
+            SLEEP_AWAKE -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_AWAKE,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_AWAKE)),
             )
-
-
             SLEEP_SESSION -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
