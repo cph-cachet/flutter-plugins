@@ -49,4 +49,5 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "dk.cachet.light"
 }
