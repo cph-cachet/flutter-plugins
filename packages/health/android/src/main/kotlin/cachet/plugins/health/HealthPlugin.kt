@@ -1730,15 +1730,37 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val healthConnectData = mutableListOf<Map<String, Any?>>()
         scope.launch {
             MapToHCType[dataType]?.let { classType ->
-                val request = ReadRecordsRequest(
+                val records = mutableListOf<Record>()
+
+                // Set up the initial request to read health records with specified parameters
+                var request = ReadRecordsRequest(
                     recordType = classType,
+                    // Define the maximum amount of data that HealthConnect can return in a single request
                     timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                 )
-                val response = healthConnectClient.readRecords(request)
+                
+                var response = healthConnectClient.readRecords(request)
+                var pageToken = response.pageToken
+                
+                // Add the records from the initial response to the records list
+                records.addAll(response.records)
+
+                // Continue making requests and fetching records while there is a page token
+                while (!pageToken.isNullOrEmpty()) {
+                    request = ReadRecordsRequest(
+                        recordType = classType,
+                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                        pageToken = pageToken
+                    )
+                    response = healthConnectClient.readRecords(request)
+
+                    pageToken = response.pageToken
+                    records.addAll(response.records)
+                }
 
                 // Workout needs distance and total calories burned too
                 if (dataType == WORKOUT) {
-                    for (rec in response.records) {
+                    for (rec in records) {
                         val record = rec as ExerciseSessionRecord
                         val distanceRequest = healthConnectClient.readRecords(
                             ReadRecordsRequest(
@@ -1812,7 +1834,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         }
                     }
                 } else {
-                    for (rec in response.records) {
+                    for (rec in records) {
                         healthConnectData.addAll(convertRecord(rec, dataType))
                     }
                 }
