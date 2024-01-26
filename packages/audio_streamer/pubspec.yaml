@@ -1,6 +1,6 @@
 name: audio_streamer
 description: Streaming of Pulse-code modulation (PCM) audio from Android and iOS
-version: 4.0.0
+version: 4.1.1
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/
 
 environment:
@@ -8,6 +8,7 @@ environment:
   flutter: ">=3.0.0"
 
 dependencies:
+  permission_handler: ^11.0.0
   flutter:
     sdk: flutter
 
