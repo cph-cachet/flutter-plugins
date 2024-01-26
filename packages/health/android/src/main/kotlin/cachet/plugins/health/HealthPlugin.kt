@@ -1627,7 +1627,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         var permList = mutableListOf<String>()
         for ((i, typeKey) in types.withIndex()) {
-            val access = permissions[i]!!
+            if(!MapToHCType.containsKey(typeKey)) {
+                Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + typeKey + " not found in HC")
+                result.success(false)
+                return
+            }
+            val access = permissions[i]
             val dataType = MapToHCType[typeKey]!!
             if (access == 0) {
                 permList.add(
@@ -1677,6 +1682,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         var permList = mutableListOf<String>()
         for ((i, typeKey) in types.withIndex()) {
+            if(!MapToHCType.containsKey(typeKey)) {
+                Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + typeKey + " not found in HC")
+                result.success(false)
+                return
+            }
             val access = permissions[i]!!
             val dataType = MapToHCType[typeKey]!!
             if (access == 0) {
