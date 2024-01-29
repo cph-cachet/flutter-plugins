@@ -2344,6 +2344,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
+        if(!MapToHCType.containsKey(type)) {
+            Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + type + " not found in HC")
+            result.success(false)
+            return
+        }
         val classType = MapToHCType[type]!!
 
         scope.launch {
