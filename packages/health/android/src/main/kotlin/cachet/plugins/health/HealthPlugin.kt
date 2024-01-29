@@ -243,7 +243,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         // "BIATHLON" to ExerciseSessionRecord.EXERCISE_TYPE_BIATHLON,
         "BIKING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
         // "BIKING_HAND" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_HAND,
-        // "BIKING_MOUNTAIN" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
+        //"BIKING_MOUNTAIN" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
         // "BIKING_ROAD" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_ROAD,
         // "BIKING_SPINNING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_SPINNING,
         // "BIKING_STATIONARY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
@@ -2168,6 +2168,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val totalEnergyBurned = call.argument<Int>("totalEnergyBurned")
         val totalDistance = call.argument<Int>("totalDistance")
+        if(workoutTypeMapHealthConnect.containsKey(type) == false) {
+            result.success(false)
+            Log.w("FLUTTER_HEALTH::ERROR", "[Health Connect] Workout type not supported")
+            return
+        }
         val workoutType = workoutTypeMapHealthConnect[type]!!
 
         scope.launch {

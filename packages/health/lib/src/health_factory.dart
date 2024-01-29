@@ -787,8 +787,9 @@ class HealthFactory {
       HealthWorkoutActivityType.WALKING,
       HealthWorkoutActivityType.WATER_POLO,
       HealthWorkoutActivityType.YOGA,
-      
+
       // Android only
+      // Once Google Fit is removed, this list needs to be changed
       HealthWorkoutActivityType.AEROBICS,
       HealthWorkoutActivityType.BIATHLON,
       HealthWorkoutActivityType.BIKING_HAND,
@@ -822,13 +823,13 @@ class HealthFactory {
       HealthWorkoutActivityType.P90X,
       HealthWorkoutActivityType.PARAGLIDING,
       HealthWorkoutActivityType.POLO,
-      HealthWorkoutActivityType.ROCK_CLIMBING, 
+      HealthWorkoutActivityType.ROCK_CLIMBING,
       HealthWorkoutActivityType.ROWING_MACHINE,
       HealthWorkoutActivityType.RUNNING_JOGGING,
-      HealthWorkoutActivityType.RUNNING_SAND, 
+      HealthWorkoutActivityType.RUNNING_SAND,
       HealthWorkoutActivityType.RUNNING_TREADMILL,
       HealthWorkoutActivityType.SCUBA_DIVING,
-      HealthWorkoutActivityType.SKATING_CROSS, 
+      HealthWorkoutActivityType.SKATING_CROSS,
       HealthWorkoutActivityType.SKATING_INDOOR,
       HealthWorkoutActivityType.SKATING_INLINE,
       HealthWorkoutActivityType.SKIING,
