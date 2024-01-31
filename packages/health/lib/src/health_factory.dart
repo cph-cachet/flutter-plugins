@@ -107,11 +107,14 @@ class HealthFactory {
   ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
   ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
   ///
-  ///  Caveat:
+  ///  Caveats:
   ///
-  ///   As Apple HealthKit will not disclose if READ access has been granted for a data type due to privacy concern,
-  ///   this method will return **true if the window asking for permission was showed to the user without errors**
-  ///   if it is called on iOS with a READ or READ_WRITE access.
+  ///  * This method may block if permissions are already granted. Hence, check
+  ///    [hasPermissions] before calling this method.
+  ///  * As Apple HealthKit will not disclose if READ access has been granted for
+  ///    a data type due to privacy concern, this method will return **true if
+  ///    the window asking for permission was showed to the user without errors**
+  ///    if it is called on iOS with a READ or READ_WRITE access.
   Future<bool> requestAuthorization(
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
@@ -147,8 +150,11 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => e.name).toList();
+    print(
+        '>> trying to get permissions for $keys with permissions $mPermissions');
     final bool? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
+    print('>> isAuthorized: $isAuthorized');
     return isAuthorized ?? false;
   }
 
@@ -744,6 +750,7 @@ class HealthFactory {
   bool _isOnAndroid(HealthWorkoutActivityType type) {
     // Returns true if the type is part of the Android set
     return {
+      // Both
       HealthWorkoutActivityType.ARCHERY,
       HealthWorkoutActivityType.BADMINTON,
       HealthWorkoutActivityType.BASEBALL,
@@ -786,8 +793,17 @@ class HealthFactory {
       HealthWorkoutActivityType.WALKING,
       HealthWorkoutActivityType.WATER_POLO,
       HealthWorkoutActivityType.YOGA,
+
+      // Android only
+      // Once Google Fit is removed, this list needs to be changed
       HealthWorkoutActivityType.AEROBICS,
       HealthWorkoutActivityType.BIATHLON,
+      HealthWorkoutActivityType.BIKING_HAND,
+      HealthWorkoutActivityType.BIKING_MOUNTAIN,
+      HealthWorkoutActivityType.BIKING_ROAD,
+      HealthWorkoutActivityType.BIKING_SPINNING,
+      HealthWorkoutActivityType.BIKING_STATIONARY,
+      HealthWorkoutActivityType.BIKING_UTILITY,
       HealthWorkoutActivityType.CALISTHENICS,
       HealthWorkoutActivityType.CIRCUIT_TRAINING,
       HealthWorkoutActivityType.CROSS_FIT,
@@ -803,6 +819,7 @@ class HealthFactory {
       HealthWorkoutActivityType.HOUSEWORK,
       HealthWorkoutActivityType.INTERVAL_TRAINING,
       HealthWorkoutActivityType.IN_VEHICLE,
+      HealthWorkoutActivityType.ICE_SKATING,
       HealthWorkoutActivityType.KAYAKING,
       HealthWorkoutActivityType.KETTLEBELL_TRAINING,
       HealthWorkoutActivityType.KICK_SCOOTER,
@@ -813,6 +830,7 @@ class HealthFactory {
       HealthWorkoutActivityType.PARAGLIDING,
       HealthWorkoutActivityType.POLO,
       HealthWorkoutActivityType.ROCK_CLIMBING,
+      HealthWorkoutActivityType.ROWING_MACHINE,
       HealthWorkoutActivityType.RUNNING_JOGGING,
       HealthWorkoutActivityType.RUNNING_SAND,
       HealthWorkoutActivityType.RUNNING_TREADMILL,
@@ -820,10 +838,13 @@ class HealthFactory {
       HealthWorkoutActivityType.SKATING_CROSS,
       HealthWorkoutActivityType.SKATING_INDOOR,
       HealthWorkoutActivityType.SKATING_INLINE,
+      HealthWorkoutActivityType.SKIING,
       HealthWorkoutActivityType.SKIING_BACK_COUNTRY,
       HealthWorkoutActivityType.SKIING_KITE,
       HealthWorkoutActivityType.SKIING_ROLLER,
       HealthWorkoutActivityType.SLEDDING,
+      HealthWorkoutActivityType.SNOWMOBILE,
+      HealthWorkoutActivityType.SNOWSHOEING,
       HealthWorkoutActivityType.STAIR_CLIMBING_MACHINE,
       HealthWorkoutActivityType.STANDUP_PADDLEBOARDING,
       HealthWorkoutActivityType.STILL,

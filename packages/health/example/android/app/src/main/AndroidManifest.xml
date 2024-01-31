@@ -8,6 +8,7 @@
             <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
         </intent>
     </queries>
+
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide
@@ -76,12 +77,12 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- Intention to show Permissions screen for Health Connect API -->
             <intent-filter>
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
         </activity>
-<!--         For versions starting Android 14, create an activity alias to show the rationale
-     of Health Connect permissions once users click the privacy policy link. 
         <activity-alias
             android:name="ViewPermissionUsageActivity"
             android:exported="true"
@@ -92,8 +93,7 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity-alias>
-
- -->        <meta-data android:name="flutterEmbedding"
+        <meta-data android:name="flutterEmbedding"
             android:value="2"/>
     </application>
 </manifest>
