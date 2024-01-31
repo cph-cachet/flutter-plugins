@@ -1,8 +1,5 @@
 package cachet.plugins.health
 
-// import androidx.compose.runtime.mutableStateOf
-
-// Health Connect
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -665,7 +662,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
-
+     /**
+     * Save a Nutrition measurement with calories, carbs, protein, fat, name and mealType
+     */
     private fun writeMeal(call: MethodCall, result: Result) {
         if (useHealthConnectIfAvailable && healthConnectAvailable) {
             writeMealHC(call, result)
@@ -2062,6 +2061,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             else -> throw IllegalArgumentException("Health data type not supported") // TODO: Exception or error?
         }
     }
+
     //TODO rewrite sleep to fit new update better --> compare with Apple and see if we should not adopt a single type with attached stages approach
     fun writeHCData(call: MethodCall, result: Result) {
         val type = call.argument<String>("dataTypeKey")!!

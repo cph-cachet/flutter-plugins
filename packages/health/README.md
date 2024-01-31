@@ -2,7 +2,7 @@
 
 Enables reading and writing health data from/to Apple Health, Google Fit and Health Connect.
 
-> Google Fitness API is being deprecated and Health Connect the plugin will transition into the API as the Health Connect
+> Google Fitness API is deprecated and will be turned down in 2024, thus this package will also transition to only support Health Connect.
 
 The plugin supports:
 
@@ -10,7 +10,7 @@ The plugin supports:
 - reading health data using the `getHealthDataFromTypes` method.
 - writing health data using the `writeHealthData` method.
 - writing workouts using the `writeWorkout` method.
-- writing meals on iOS (Apple Health) & Android (Google Fit) using the `writeMeal` method.
+- writing meals on iOS (Apple Health) & Android using the `writeMeal` method.
 - writing audiograms on iOS using the `writeAudiogram` method.
 - writing blood pressure data using the `writeBloodPressure` method.
 - accessing total step counts using the `getTotalStepsInInterval` method.
