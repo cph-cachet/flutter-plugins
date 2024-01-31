@@ -750,6 +750,7 @@ class HealthFactory {
   bool _isOnAndroid(HealthWorkoutActivityType type) {
     // Returns true if the type is part of the Android set
     return {
+      // Both
       HealthWorkoutActivityType.ARCHERY,
       HealthWorkoutActivityType.BADMINTON,
       HealthWorkoutActivityType.BASEBALL,
@@ -792,8 +793,17 @@ class HealthFactory {
       HealthWorkoutActivityType.WALKING,
       HealthWorkoutActivityType.WATER_POLO,
       HealthWorkoutActivityType.YOGA,
+
+      // Android only
+      // Once Google Fit is removed, this list needs to be changed
       HealthWorkoutActivityType.AEROBICS,
       HealthWorkoutActivityType.BIATHLON,
+      HealthWorkoutActivityType.BIKING_HAND,
+      HealthWorkoutActivityType.BIKING_MOUNTAIN,
+      HealthWorkoutActivityType.BIKING_ROAD,
+      HealthWorkoutActivityType.BIKING_SPINNING,
+      HealthWorkoutActivityType.BIKING_STATIONARY,
+      HealthWorkoutActivityType.BIKING_UTILITY,
       HealthWorkoutActivityType.CALISTHENICS,
       HealthWorkoutActivityType.CIRCUIT_TRAINING,
       HealthWorkoutActivityType.CROSS_FIT,
@@ -809,6 +819,7 @@ class HealthFactory {
       HealthWorkoutActivityType.HOUSEWORK,
       HealthWorkoutActivityType.INTERVAL_TRAINING,
       HealthWorkoutActivityType.IN_VEHICLE,
+      HealthWorkoutActivityType.ICE_SKATING,
       HealthWorkoutActivityType.KAYAKING,
       HealthWorkoutActivityType.KETTLEBELL_TRAINING,
       HealthWorkoutActivityType.KICK_SCOOTER,
@@ -819,6 +830,7 @@ class HealthFactory {
       HealthWorkoutActivityType.PARAGLIDING,
       HealthWorkoutActivityType.POLO,
       HealthWorkoutActivityType.ROCK_CLIMBING,
+      HealthWorkoutActivityType.ROWING_MACHINE,
       HealthWorkoutActivityType.RUNNING_JOGGING,
       HealthWorkoutActivityType.RUNNING_SAND,
       HealthWorkoutActivityType.RUNNING_TREADMILL,
@@ -826,10 +838,13 @@ class HealthFactory {
       HealthWorkoutActivityType.SKATING_CROSS,
       HealthWorkoutActivityType.SKATING_INDOOR,
       HealthWorkoutActivityType.SKATING_INLINE,
+      HealthWorkoutActivityType.SKIING,
       HealthWorkoutActivityType.SKIING_BACK_COUNTRY,
       HealthWorkoutActivityType.SKIING_KITE,
       HealthWorkoutActivityType.SKIING_ROLLER,
       HealthWorkoutActivityType.SLEDDING,
+      HealthWorkoutActivityType.SNOWMOBILE,
+      HealthWorkoutActivityType.SNOWSHOEING,
       HealthWorkoutActivityType.STAIR_CLIMBING_MACHINE,
       HealthWorkoutActivityType.STANDUP_PADDLEBOARDING,
       HealthWorkoutActivityType.STILL,

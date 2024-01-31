@@ -50,7 +50,6 @@ class _HealthAppState extends State<HealthApp> {
   // ];
 
   // Set up corresponding permissions
-
   // READ only
   // final permissions = types.map((e) => HealthDataAccess.READ).toList();
 
@@ -164,13 +163,8 @@ class _HealthAppState extends State<HealthApp> {
         totalEnergyBurned: 400);
     success &= await health.writeBloodPressure(90, 80, earlier, now);
     success &= await health.writeHealthData(
-        0.0, HealthDataType.SLEEP_REM, earlier, now);
-    success &= await health.writeHealthData(
-        0.0, HealthDataType.SLEEP_ASLEEP, earlier, now);
-    success &= await health.writeHealthData(
-        0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
-    success &= await health.writeHealthData(
         0.0, HealthDataType.SLEEP_DEEP, earlier, now);
+    print(success);
 
     success &= await health.writeMeal(
         earlier, now, 1000, 50, 25, 50, "Banana", MealType.SNACK);

@@ -10,6 +10,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
 import androidx.health.connect.client.HealthConnectClient
@@ -74,6 +76,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var context: Context? = null
     private var threadPoolExecutor: ExecutorService? = null
     private var useHealthConnectIfAvailable: Boolean = false
+    private var healthConnectRequestPermissionsLauncher:  ActivityResultLauncher<Set<String>>? = null
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var scope: CoroutineScope
 
@@ -243,7 +246,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         // "BIATHLON" to ExerciseSessionRecord.EXERCISE_TYPE_BIATHLON,
         "BIKING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
         // "BIKING_HAND" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_HAND,
-        // "BIKING_MOUNTAIN" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
+        //"BIKING_MOUNTAIN" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
         // "BIKING_ROAD" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_ROAD,
         // "BIKING_SPINNING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_SPINNING,
         // "BIKING_STATIONARY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
@@ -418,6 +421,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
 
+    private  fun onHealthConnectPermissionCallback(permissionGranted: Set<String>)
+    {
+        if(permissionGranted.isEmpty()) {
+            mResult?.success(false);
+            Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect)!")
+
+        }else {
+            mResult?.success(true);
+            Log.i("FLUTTER_HEALTH", "Access Granted (to Health Connect)!")
+        }
+
+    }
+    
     private fun keyToHealthDataType(type: String): DataType {
         return when (type) {
             BODY_FAT_PERCENTAGE -> DataType.TYPE_BODY_FAT_PERCENTAGE
@@ -438,6 +454,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_IN_BED -> DataType.TYPE_SLEEP_SEGMENT
+            SLEEP_LIGHT -> DataType.TYPE_SLEEP_SEGMENT
+            SLEEP_REM -> DataType.TYPE_SLEEP_SEGMENT
+            SLEEP_DEEP -> DataType.TYPE_SLEEP_SEGMENT
             WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
             NUTRITION -> DataType.TYPE_NUTRITION
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
@@ -463,6 +482,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             SLEEP_ASLEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_AWAKE -> Field.FIELD_SLEEP_SEGMENT_TYPE
             SLEEP_IN_BED -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            SLEEP_LIGHT -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            SLEEP_REM -> Field.FIELD_SLEEP_SEGMENT_TYPE
+            SLEEP_DEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
             WORKOUT -> Field.FIELD_ACTIVITY
             NUTRITION -> Field.FIELD_NUTRIENTS
             else -> throw IllegalArgumentException("Unsupported dataType: $type")
@@ -1554,6 +1576,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
         binding.addActivityResultListener(this)
         activity = binding.activity
+
+
+        if ( healthConnectAvailable) {
+            val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
+
+            healthConnectRequestPermissionsLauncher =(activity as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
+                onHealthConnectPermissionCallback(granted);
+            }
+        }
+
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -1569,6 +1601,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             return
         }
         activity = null
+        healthConnectRequestPermissionsLauncher = null;
     }
 
     /**
@@ -1594,7 +1627,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         var permList = mutableListOf<String>()
         for ((i, typeKey) in types.withIndex()) {
-            val access = permissions[i]!!
+            if(!MapToHCType.containsKey(typeKey)) {
+                Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + typeKey + " not found in HC")
+                result.success(false)
+                return
+            }
+            val access = permissions[i]
             val dataType = MapToHCType[typeKey]!!
             if (access == 0) {
                 permList.add(
@@ -1644,6 +1682,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         var permList = mutableListOf<String>()
         for ((i, typeKey) in types.withIndex()) {
+            if(!MapToHCType.containsKey(typeKey)) {
+                Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + typeKey + " not found in HC")
+                result.success(false)
+                return
+            }
             val access = permissions[i]!!
             val dataType = MapToHCType[typeKey]!!
             if (access == 0) {
@@ -1679,9 +1722,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 }
             }
         }
-        val contract = PermissionController.createRequestPermissionResultContract()
-        val intent = contract.createIntent(activity!!, permList.toSet())
-        activity!!.startActivityForResult(intent, HEALTH_CONNECT_RESULT_CODE)
+        
+        if(healthConnectRequestPermissionsLauncher == null) {
+            result.success(false)
+            Log.i("FLUTTER_HEALTH", "Permission launcher not found")
+            return;
+        }
+
+
+        healthConnectRequestPermissionsLauncher!!.launch(permList.toSet());
     }
 
     fun getHCData(call: MethodCall, result: Result) {
@@ -1691,15 +1740,37 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val healthConnectData = mutableListOf<Map<String, Any?>>()
         scope.launch {
             MapToHCType[dataType]?.let { classType ->
-                val request = ReadRecordsRequest(
+                val records = mutableListOf<Record>()
+
+                // Set up the initial request to read health records with specified parameters
+                var request = ReadRecordsRequest(
                     recordType = classType,
+                    // Define the maximum amount of data that HealthConnect can return in a single request
                     timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                 )
-                val response = healthConnectClient.readRecords(request)
+                
+                var response = healthConnectClient.readRecords(request)
+                var pageToken = response.pageToken
+                
+                // Add the records from the initial response to the records list
+                records.addAll(response.records)
+
+                // Continue making requests and fetching records while there is a page token
+                while (!pageToken.isNullOrEmpty()) {
+                    request = ReadRecordsRequest(
+                        recordType = classType,
+                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                        pageToken = pageToken
+                    )
+                    response = healthConnectClient.readRecords(request)
+
+                    pageToken = response.pageToken
+                    records.addAll(response.records)
+                }
 
                 // Workout needs distance and total calories burned too
                 if (dataType == WORKOUT) {
-                    for (rec in response.records) {
+                    for (rec in records) {
                         val record = rec as ExerciseSessionRecord
                         val distanceRequest = healthConnectClient.readRecords(
                             ReadRecordsRequest(
@@ -1750,23 +1821,50 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             ),
                         )
                     }
-                    // Filter sleep stages for requested stage
-                } else if (classType == SleepStageRecord::class) {
+                // Filter sleep stages for requested stage
+                }
+                else if (classType == SleepSessionRecord::class) {
                     for (rec in response.records) {
-                        if (rec is SleepStageRecord) {
-                            if (dataType == MapSleepStageToType[rec.stage]) {
+                        if (rec is SleepSessionRecord) {
+                            if (dataType == SLEEP_SESSION) {
                                 healthConnectData.addAll(convertRecord(rec, dataType))
+                            }
+                            else {
+                                for (recStage in rec.stages) {
+                                    if (dataType == MapSleepStageToType[recStage.stage]) {
+                                        healthConnectData.addAll(
+                                            convertRecordStage(
+                                                recStage, dataType,
+                                                rec.metadata.dataOrigin.packageName
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 } else {
-                    for (rec in response.records) {
+                    for (rec in records) {
                         healthConnectData.addAll(convertRecord(rec, dataType))
                     }
                 }
             }
             Handler(context!!.mainLooper).run { result.success(healthConnectData) }
         }
+    }
+
+    fun convertRecordStage(stage: SleepSessionRecord.Stage, dataType: String, sourceName: String):
+            List<Map<String, Any>> {
+        return listOf(
+            mapOf<String, Any>(
+                "stage" to stage.stage,
+                "value" to ChronoUnit.MINUTES.between(stage.startTime, stage.endTime),
+                "date_from" to stage.startTime.toEpochMilli(),
+                "date_to" to stage.endTime.toEpochMilli(),
+                "source_id" to "",
+                "source_name" to sourceName,
+            ),
+        );
     }
 
     // TODO: Find alternative to SOURCE_ID or make it nullable?
@@ -1902,18 +2000,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "source_name" to metadata.dataOrigin.packageName,
                 ),
             )
-
-            is SleepStageRecord -> return listOf(
-                mapOf<String, Any>(
-                    "stage" to record.stage,
-                    "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
-                    "date_from" to record.startTime.toEpochMilli(),
-                    "date_to" to record.endTime.toEpochMilli(),
-                    "source_id" to "",
-                    "source_name" to metadata.dataOrigin.packageName,
-                ),
-            )
-
             is RestingHeartRateRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to record.beatsPerMinute,
@@ -1976,7 +2062,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             else -> throw IllegalArgumentException("Health data type not supported") // TODO: Exception or error?
         }
     }
-
+    //TODO rewrite sleep to fit new update better --> compare with Apple and see if we should not adopt a single type with attached stages approach
     fun writeHCData(call: MethodCall, result: Result) {
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = call.argument<Long>("startTime")!!
@@ -2063,56 +2149,48 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 startZoneOffset = null,
                 endZoneOffset = null,
             )
-
-            SLEEP_ASLEEP -> SleepStageRecord(
+            SLEEP_ASLEEP -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_SLEEPING,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_SLEEPING)),
             )
-
-            SLEEP_LIGHT -> SleepStageRecord(
+            SLEEP_LIGHT -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_LIGHT,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_LIGHT)),
             )
-
-            SLEEP_DEEP -> SleepStageRecord(
+            SLEEP_DEEP -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_DEEP,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_DEEP)),
             )
-
-            SLEEP_REM -> SleepStageRecord(
+            SLEEP_REM -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_REM,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_REM)),
             )
-
-            SLEEP_OUT_OF_BED -> SleepStageRecord(
+            SLEEP_OUT_OF_BED -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_OUT_OF_BED,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_OUT_OF_BED)),
             )
-
-            SLEEP_AWAKE -> SleepStageRecord(
+            SLEEP_AWAKE -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stage = SleepStageRecord.STAGE_TYPE_AWAKE,
+                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_AWAKE)),
             )
-
-
             SLEEP_SESSION -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
@@ -2168,6 +2246,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val totalEnergyBurned = call.argument<Int>("totalEnergyBurned")
         val totalDistance = call.argument<Int>("totalDistance")
+        if(workoutTypeMapHealthConnect.containsKey(type) == false) {
+            result.success(false)
+            Log.w("FLUTTER_HEALTH::ERROR", "[Health Connect] Workout type not supported")
+            return
+        }
         val workoutType = workoutTypeMapHealthConnect[type]!!
 
         scope.launch {
@@ -2261,6 +2344,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
+        if(!MapToHCType.containsKey(type)) {
+            Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + type + " not found in HC")
+            result.success(false)
+            return
+        }
         val classType = MapToHCType[type]!!
 
         scope.launch {
@@ -2324,12 +2412,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         BLOOD_GLUCOSE to BloodGlucoseRecord::class,
         DISTANCE_DELTA to DistanceRecord::class,
         WATER to HydrationRecord::class,
-        SLEEP_ASLEEP to SleepStageRecord::class,
-        SLEEP_AWAKE to SleepStageRecord::class,
-        SLEEP_LIGHT to SleepStageRecord::class,
-        SLEEP_DEEP to SleepStageRecord::class,
-        SLEEP_REM to SleepStageRecord::class,
-        SLEEP_OUT_OF_BED to SleepStageRecord::class,
+        SLEEP_ASLEEP to SleepSessionRecord::class,
+        SLEEP_AWAKE to SleepSessionRecord::class,
+        SLEEP_LIGHT to SleepSessionRecord::class,
+        SLEEP_DEEP to SleepSessionRecord::class,
+        SLEEP_REM to SleepSessionRecord::class,
+        SLEEP_OUT_OF_BED to SleepSessionRecord::class,
         SLEEP_SESSION to SleepSessionRecord::class,
         WORKOUT to ExerciseSessionRecord::class,
         NUTRITION to NutritionRecord::class,
