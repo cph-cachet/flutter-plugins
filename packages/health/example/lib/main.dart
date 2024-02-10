@@ -34,7 +34,7 @@ class _HealthAppState extends State<HealthApp> {
   // Define the types to get.
 
   // Use the entire list on e.g. Android.
-  static final types = dataTypesAndroid;
+  static final types = dataTypesIOS;
 
   // Or specify specific types
   // static final types = [
@@ -51,10 +51,10 @@ class _HealthAppState extends State<HealthApp> {
 
   // Set up corresponding permissions
   // READ only
-  // final permissions = types.map((e) => HealthDataAccess.READ).toList();
+  final permissions = types.map((e) => HealthDataAccess.READ).toList();
 
   // Or both READ and WRITE
-  final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
+  // final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
 
   // create a HealthFactory for use in the app
   HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
