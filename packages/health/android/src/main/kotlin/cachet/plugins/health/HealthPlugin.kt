@@ -354,11 +354,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         channel?.setMethodCallHandler(this)
         context = flutterPluginBinding.applicationContext
         threadPoolExecutor = Executors.newFixedThreadPool(4)
-        checkAvailability()
-        if (healthConnectAvailable) {
-            healthConnectClient =
-                HealthConnectClient.getOrCreate(flutterPluginBinding.applicationContext)
-        }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -1576,15 +1571,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         binding.addActivityResultListener(this)
         activity = binding.activity
 
+        val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
 
-        if ( healthConnectAvailable) {
-            val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
-
-            healthConnectRequestPermissionsLauncher =(activity as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
-                onHealthConnectPermissionCallback(granted);
-            }
+        healthConnectRequestPermissionsLauncher =(activity as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
+            onHealthConnectPermissionCallback(granted);
         }
-
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -1609,13 +1600,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     var healthConnectAvailable = false
     var healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
 
-    fun checkAvailability() {
-        healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
-        healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
-    }
-
     fun useHealthConnectIfAvailable(call: MethodCall, result: Result) {
         useHealthConnectIfAvailable = true
+        try {
+            healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
+            healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
+            healthConnectClient = HealthConnectClient.getOrCreate(context!!.applicationContext)
+        } catch(e: Throwable) {
+            Log.i("FLUTTER_HEALTH", "HealthConnectClient not available")
+            healthConnectAvailable = false
+            healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
+        }
         result.success(null)
     }
 
