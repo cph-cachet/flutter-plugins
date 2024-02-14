@@ -148,6 +148,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             getTotalStepsInInterval(call: call, result: result)
         }
         
+        /// Handle getTotalCaloriesInInterval
+        else if call.method.elementsEqual("getTotalCaloriesInInterval") {
+            getTotalCaloriesInInterval(call: call, result: result)
+        }
+        
+        /// Handle getTotalDistanceInInterval
+        else if call.method.elementsEqual("getTotalDistanceInInterval") {
+            getTotalDistanceInInterval(call: call, result: result)
+        }
+        
         /// Handle writeData
         else if call.method.elementsEqual("writeData") {
             try! writeData(call: call, result: result)
@@ -802,6 +812,18 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
     
     func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        getTotalInInterval(call: call, result: result, identifier: HKQuantityTypeIdentifier.stepCount, unit: HKUnit.count(), asInt: true)
+    }
+    
+    func getTotalCaloriesInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        getTotalInInterval(call: call, result: result, identifier: HKQuantityTypeIdentifier.activeEnergyBurned, unit: HKUnit.kilocalorie(), asInt: false)
+    }
+    
+    func getTotalDistanceInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        getTotalInInterval(call: call, result: result, identifier: HKQuantityTypeIdentifier.distanceWalkingRunning, unit: HKUnit.meter(), asInt: false)
+    }
+    
+    private func getTotalInInterval(call: FlutterMethodCall, result: @escaping FlutterResult, identifier: HKQuantityTypeIdentifier, unit: HKUnit, asInt: Bool) {
         let arguments = call.arguments as? NSDictionary
         let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
         let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
@@ -810,7 +832,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
         
-        let sampleType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+        let sampleType = HKQuantityType.quantityType(forIdentifier: identifier)!
         let predicate = HKQuery.predicateForSamples(
             withStart: dateFrom, end: dateTo, options: .strictStartDate)
         
@@ -822,7 +844,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             
             guard let queryResult = queryResult else {
                 let error = error! as NSError
-                print("Error getting total steps in interval \(error.localizedDescription)")
+                print("Error getting total in interval \(error.localizedDescription)")
                 
                 DispatchQueue.main.async {
                     result(nil)
@@ -830,16 +852,14 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 return
             }
             
-            var steps = 0.0
+            var total = 0.0
             
             if let quantity = queryResult.sumQuantity() {
-                let unit = HKUnit.count()
-                steps = quantity.doubleValue(for: unit)
+                total = quantity.doubleValue(for: unit)
             }
             
-            let totalSteps = Int(steps)
             DispatchQueue.main.async {
-                result(totalSteps)
+                result(asInt ? Int(total) : total)
             }
         }
         
