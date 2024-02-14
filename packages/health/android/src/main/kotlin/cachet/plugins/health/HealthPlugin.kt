@@ -1581,8 +1581,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     start,
                     end,
                     DistanceRecord.DISTANCE_TOTAL
-                )?.inKilometers ?: 0.0
-                Log.i("FLUTTER_HEALTH::SUCCESS", "returning $distanceInInterval km")
+                )?.inMeters ?: 0.0
+                Log.i("FLUTTER_HEALTH::SUCCESS", "returning $distanceInInterval meters")
                 result.success(distanceInInterval)
             } catch (e: Exception) {
                 Log.i("FLUTTER_HEALTH::ERROR", "unable to return distance, $e")
