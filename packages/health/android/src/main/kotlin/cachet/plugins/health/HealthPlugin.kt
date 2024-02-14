@@ -13,6 +13,7 @@ import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_BREAKFAST
@@ -73,7 +74,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var context: Context? = null
     private var threadPoolExecutor: ExecutorService? = null
     private var useHealthConnectIfAvailable: Boolean = false
-    private var healthConnectRequestPermissionsLauncher:  ActivityResultLauncher<Set<String>>? = null
+    private var healthConnectRequestPermissionsLauncher: ActivityResultLauncher<Set<String>>? = null
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var scope: CoroutineScope
 
@@ -83,6 +84,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var STEPS = "STEPS"
     private var AGGREGATE_STEP_COUNT = "AGGREGATE_STEP_COUNT"
     private var ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
+    private var AGGREGATE_CALORIES_COUNT = "AGGREGATE_CALORIES_COUNT"
     private var HEART_RATE = "HEART_RATE"
     private var BODY_TEMPERATURE = "BODY_TEMPERATURE"
     private var BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
@@ -91,6 +93,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
     private var MOVE_MINUTES = "MOVE_MINUTES"
     private var DISTANCE_DELTA = "DISTANCE_DELTA"
+    private var AGGREGATE_DISTANCE_COUNT = "AGGREGATE_DISTANCE_COUNT"
     private var WATER = "WATER"
     private var RESTING_HEART_RATE = "RESTING_HEART_RATE"
     private var BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
@@ -418,19 +421,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
 
-    private  fun onHealthConnectPermissionCallback(permissionGranted: Set<String>)
-    {
-        if(permissionGranted.isEmpty()) {
+    private fun onHealthConnectPermissionCallback(permissionGranted: Set<String>) {
+        if (permissionGranted.isEmpty()) {
             mResult?.success(false);
             Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect)!")
 
-        }else {
+        } else {
             mResult?.success(true);
             Log.i("FLUTTER_HEALTH", "Access Granted (to Health Connect)!")
         }
 
     }
-    
+
     private fun keyToHealthDataType(type: String): DataType {
         return when (type) {
             BODY_FAT_PERCENTAGE -> DataType.TYPE_BODY_FAT_PERCENTAGE
@@ -439,6 +441,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             STEPS -> DataType.TYPE_STEP_COUNT_DELTA
             AGGREGATE_STEP_COUNT -> DataType.AGGREGATE_STEP_COUNT_DELTA
             ACTIVE_ENERGY_BURNED -> DataType.TYPE_CALORIES_EXPENDED
+            AGGREGATE_CALORIES_COUNT -> DataType.AGGREGATE_CALORIES_EXPENDED
             HEART_RATE -> DataType.TYPE_HEART_RATE_BPM
             BODY_TEMPERATURE -> HealthDataTypes.TYPE_BODY_TEMPERATURE
             BLOOD_PRESSURE_SYSTOLIC -> HealthDataTypes.TYPE_BLOOD_PRESSURE
@@ -447,6 +450,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             BLOOD_GLUCOSE -> HealthDataTypes.TYPE_BLOOD_GLUCOSE
             MOVE_MINUTES -> DataType.TYPE_MOVE_MINUTES
             DISTANCE_DELTA -> DataType.TYPE_DISTANCE_DELTA
+            AGGREGATE_DISTANCE_COUNT -> DataType.AGGREGATE_DISTANCE_DELTA
             WATER -> DataType.TYPE_HYDRATION
             SLEEP_ASLEEP -> DataType.TYPE_SLEEP_SEGMENT
             SLEEP_AWAKE -> DataType.TYPE_SLEEP_SEGMENT
@@ -662,7 +666,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
-     /**
+    /**
      * Save a Nutrition measurement with calories, carbs, protein, fat, name and mealType
      */
     private fun writeMeal(call: MethodCall, result: Result) {
@@ -1451,10 +1455,62 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             return
         }
 
+        getTotalInInterval(start, end, result, STEPS, AGGREGATE_STEP_COUNT, "estimated_steps", true)
+    }
+
+    private fun getTotalCaloriesInInterval(call: MethodCall, result: Result) {
+        val start = call.argument<Long>("startTime")!!
+        val end = call.argument<Long>("endTime")!!
+
+        if (useHealthConnectIfAvailable && healthConnectAvailable) {
+            getCaloriesHealthConnect(start, end, result)
+            return
+        }
+
+        getTotalInInterval(
+            start,
+            end,
+            result,
+            ACTIVE_ENERGY_BURNED,
+            AGGREGATE_CALORIES_COUNT,
+            "calories",
+            false
+        )
+    }
+
+    private fun getTotalDistanceInInterval(call: MethodCall, result: Result) {
+        val start = call.argument<Long>("startTime")!!
+        val end = call.argument<Long>("endTime")!!
+
+        if (useHealthConnectIfAvailable && healthConnectAvailable) {
+            getDistanceHealthConnect(start, end, result)
+            return
+        }
+
+        getTotalInInterval(
+            start,
+            end,
+            result,
+            DISTANCE_DELTA,
+            AGGREGATE_DISTANCE_COUNT,
+            "distance",
+            false
+        )
+    }
+
+    private fun getTotalInInterval(
+        start: Long,
+        end: Long,
+        result: Result,
+        dataType: String,
+        aggregateDataType: String,
+        streamName: String,
+        asInt: Boolean
+    ) {
         val context = context ?: return
 
-        val stepsDataType = keyToHealthDataType(STEPS)
-        val aggregatedDataType = keyToHealthDataType(AGGREGATE_STEP_COUNT)
+        val stepsDataType = keyToHealthDataType(dataType)
+        val aggregatedDataType = keyToHealthDataType(aggregateDataType)
 
         val fitnessOptions = FitnessOptions.builder()
             .addDataType(stepsDataType)
@@ -1466,7 +1522,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             .setAppPackageName("com.google.android.gms")
             .setDataType(stepsDataType)
             .setType(DataSource.TYPE_DERIVED)
-            .setStreamName("estimated_steps")
+            .setStreamName(streamName)
             .build()
 
         val duration = (end - start).toInt()
@@ -1481,43 +1537,84 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             .addOnFailureListener(
                 errHandler(
                     result,
-                    "There was an error getting the total steps in the interval!",
+                    "There was an error getting the total $dataType in the interval!",
                 ),
             )
             .addOnSuccessListener(
                 threadPoolExecutor!!,
-                getStepsInRange(start, end, aggregatedDataType, result),
+                getAggregatedInRange(start, end, aggregatedDataType, result, asInt),
             )
     }
 
     private fun getStepsHealthConnect(start: Long, end: Long, result: Result) = scope.launch {
         try {
-            val startInstant = Instant.ofEpochMilli(start)
-            val endInstant = Instant.ofEpochMilli(end)
-            val response = healthConnectClient.aggregate(
-                AggregateRequest(
-                    metrics = setOf(StepsRecord.COUNT_TOTAL),
-                    timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant),
-                ),
-            )
-            // The result may be null if no data is available in the time range.
-            val stepsInInterval = response[StepsRecord.COUNT_TOTAL] ?: 0L
+            val stepsInInterval =
+                getAggregatedHealthConnectMetric(start, end, StepsRecord.COUNT_TOTAL) ?: 0L
             Log.i("FLUTTER_HEALTH::SUCCESS", "returning $stepsInInterval steps")
             result.success(stepsInInterval)
         } catch (e: Exception) {
-            Log.i("FLUTTER_HEALTH::ERROR", "unable to return steps")
+            Log.i("FLUTTER_HEALTH::ERROR", "unable to return steps, $e")
             result.success(null)
         }
     }
 
-    private fun getStepsInRange(
+    private fun getCaloriesHealthConnect(start: Long, end: Long, result: Result) =
+        scope.launch {
+            try {
+                val caloriesInInterval = getAggregatedHealthConnectMetric<Energy>(
+                    start,
+                    end,
+                    TotalCaloriesBurnedRecord.ENERGY_TOTAL
+                )?.inKilocalories ?: 0.0
+                Log.i("FLUTTER_HEALTH::SUCCESS", "returning $caloriesInInterval kilocalories")
+                result.success(caloriesInInterval)
+            } catch (e: Exception) {
+                Log.i("FLUTTER_HEALTH::ERROR", "unable to return kilocalories, $e")
+                result.success(null)
+            }
+        }
+
+    private fun getDistanceHealthConnect(start: Long, end: Long, result: Result) =
+        scope.launch {
+            try {
+                val distanceInInterval = getAggregatedHealthConnectMetric<Length>(
+                    start,
+                    end,
+                    DistanceRecord.DISTANCE_TOTAL
+                )?.inKilometers ?: 0.0
+                Log.i("FLUTTER_HEALTH::SUCCESS", "returning $distanceInInterval km")
+                result.success(distanceInInterval)
+            } catch (e: Exception) {
+                Log.i("FLUTTER_HEALTH::ERROR", "unable to return distance, $e")
+                result.success(null)
+            }
+        }
+
+    suspend fun <T : Any> getAggregatedHealthConnectMetric(
+        start: Long,
+        end: Long,
+        recordMetric: AggregateMetric<T>
+    ): T? {
+        val startInstant = Instant.ofEpochMilli(start)
+        val endInstant = Instant.ofEpochMilli(end)
+        val response = healthConnectClient.aggregate(
+            AggregateRequest(
+                metrics = setOf(recordMetric),
+                timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant),
+            ),
+        )
+        return response[recordMetric]
+    }
+
+    private fun getAggregatedInRange(
         start: Long,
         end: Long,
         aggregatedDataType: DataType,
         result: Result,
+        asInt: Boolean
     ) =
         OnSuccessListener { response: DataReadResponse ->
-            val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
+            val map = HashMap<Long, Any>() // need to return to Dart so can't use sparse array
             for (bucket in response.buckets) {
                 val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
                 if (dp != null) {
@@ -1528,17 +1625,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
                     Log.i(
                         "FLUTTER_HEALTH::SUCCESS",
-                        "returning $count steps for $startDate - $endDate",
+                        "returning $count for $startDate - $endDate",
                     )
-                    map[startTime] = count.asInt()
+                    map[startTime] = if (asInt) count.asInt() else count.asFloat()
                 } else {
                     val startDay = Date(start)
                     val endDay = Date(end)
-                    Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
+                    Log.i("FLUTTER_HEALTH::ERROR", "no data for $startDay - $endDay")
                 }
             }
 
-            assert(map.size <= 1) { "getTotalStepsInInterval should return only one interval. Found: ${map.size}" }
+            assert(map.size <= 1) { "getTotalInInterval should return only one interval. Found: ${map.size}" }
             Handler(context!!.mainLooper).run {
                 result.success(map.values.firstOrNull())
             }
@@ -1561,6 +1658,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "writeData" -> writeData(call, result)
             "delete" -> delete(call, result)
             "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
+            "getTotalCaloriesInInterval" -> getTotalCaloriesInInterval(call, result)
+            "getTotalDistanceInInterval" -> getTotalDistanceInInterval(call, result)
             "writeWorkoutData" -> writeWorkoutData(call, result)
             "writeBloodPressure" -> writeBloodPressure(call, result)
             "writeBloodOxygen" -> writeBloodOxygen(call, result)
@@ -1577,12 +1676,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         activity = binding.activity
 
 
-        if ( healthConnectAvailable) {
-            val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
+        if (healthConnectAvailable) {
+            val requestPermissionActivityContract =
+                PermissionController.createRequestPermissionResultContract()
 
-            healthConnectRequestPermissionsLauncher =(activity as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
-                onHealthConnectPermissionCallback(granted);
-            }
+            healthConnectRequestPermissionsLauncher =
+                (activity as ComponentActivity).registerForActivityResult(
+                    requestPermissionActivityContract
+                ) { granted ->
+                    onHealthConnectPermissionCallback(granted);
+                }
         }
 
     }
@@ -1626,7 +1729,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         var permList = mutableListOf<String>()
         for ((i, typeKey) in types.withIndex()) {
-            if(!MapToHCType.containsKey(typeKey)) {
+            if (!MapToHCType.containsKey(typeKey)) {
                 Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + typeKey + " not found in HC")
                 result.success(false)
                 return
@@ -1681,7 +1784,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         var permList = mutableListOf<String>()
         for ((i, typeKey) in types.withIndex()) {
-            if(!MapToHCType.containsKey(typeKey)) {
+            if (!MapToHCType.containsKey(typeKey)) {
                 Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + typeKey + " not found in HC")
                 result.success(false)
                 return
@@ -1721,8 +1824,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 }
             }
         }
-        
-        if(healthConnectRequestPermissionsLauncher == null) {
+
+        if (healthConnectRequestPermissionsLauncher == null) {
             result.success(false)
             Log.i("FLUTTER_HEALTH", "Permission launcher not found")
             return;
@@ -1747,10 +1850,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     // Define the maximum amount of data that HealthConnect can return in a single request
                     timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                 )
-                
+
                 var response = healthConnectClient.readRecords(request)
                 var pageToken = response.pageToken
-                
+
                 // Add the records from the initial response to the records list
                 records.addAll(response.records)
 
@@ -1820,15 +1923,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             ),
                         )
                     }
-                // Filter sleep stages for requested stage
-                }
-                else if (classType == SleepSessionRecord::class) {
+                    // Filter sleep stages for requested stage
+                } else if (classType == SleepSessionRecord::class) {
                     for (rec in response.records) {
                         if (rec is SleepSessionRecord) {
                             if (dataType == SLEEP_SESSION) {
                                 healthConnectData.addAll(convertRecord(rec, dataType))
-                            }
-                            else {
+                            } else {
                                 for (recStage in rec.stages) {
                                     if (dataType == MapSleepStageToType[recStage.stage]) {
                                         healthConnectData.addAll(
@@ -2154,42 +2255,78 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_SLEEPING)),
+                stages = listOf(
+                    SleepSessionRecord.Stage(
+                        Instant.ofEpochMilli(startTime),
+                        Instant.ofEpochMilli(endTime),
+                        SleepSessionRecord.STAGE_TYPE_SLEEPING
+                    )
+                ),
             )
             SLEEP_LIGHT -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_LIGHT)),
+                stages = listOf(
+                    SleepSessionRecord.Stage(
+                        Instant.ofEpochMilli(startTime),
+                        Instant.ofEpochMilli(endTime),
+                        SleepSessionRecord.STAGE_TYPE_LIGHT
+                    )
+                ),
             )
             SLEEP_DEEP -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_DEEP)),
+                stages = listOf(
+                    SleepSessionRecord.Stage(
+                        Instant.ofEpochMilli(startTime),
+                        Instant.ofEpochMilli(endTime),
+                        SleepSessionRecord.STAGE_TYPE_DEEP
+                    )
+                ),
             )
             SLEEP_REM -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_REM)),
+                stages = listOf(
+                    SleepSessionRecord.Stage(
+                        Instant.ofEpochMilli(startTime),
+                        Instant.ofEpochMilli(endTime),
+                        SleepSessionRecord.STAGE_TYPE_REM
+                    )
+                ),
             )
             SLEEP_OUT_OF_BED -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_OUT_OF_BED)),
+                stages = listOf(
+                    SleepSessionRecord.Stage(
+                        Instant.ofEpochMilli(startTime),
+                        Instant.ofEpochMilli(endTime),
+                        SleepSessionRecord.STAGE_TYPE_OUT_OF_BED
+                    )
+                ),
             )
             SLEEP_AWAKE -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
                 endTime = Instant.ofEpochMilli(endTime),
                 startZoneOffset = null,
                 endZoneOffset = null,
-                stages = listOf(SleepSessionRecord.Stage(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime), SleepSessionRecord.STAGE_TYPE_AWAKE)),
+                stages = listOf(
+                    SleepSessionRecord.Stage(
+                        Instant.ofEpochMilli(startTime),
+                        Instant.ofEpochMilli(endTime),
+                        SleepSessionRecord.STAGE_TYPE_AWAKE
+                    )
+                ),
             )
             SLEEP_SESSION -> SleepSessionRecord(
                 startTime = Instant.ofEpochMilli(startTime),
@@ -2246,7 +2383,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val totalEnergyBurned = call.argument<Int>("totalEnergyBurned")
         val totalDistance = call.argument<Int>("totalDistance")
-        if(workoutTypeMapHealthConnect.containsKey(type) == false) {
+        if (workoutTypeMapHealthConnect.containsKey(type) == false) {
             result.success(false)
             Log.w("FLUTTER_HEALTH::ERROR", "[Health Connect] Workout type not supported")
             return
@@ -2344,7 +2481,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
-        if(!MapToHCType.containsKey(type)) {
+        if (!MapToHCType.containsKey(type)) {
             Log.w("FLUTTER_HEALTH::ERROR", "Datatype " + type + " not found in HC")
             result.success(false)
             return
