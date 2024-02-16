@@ -33,6 +33,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEART_RATE = "HEART_RATE"
     let HEART_RATE_VARIABILITY_SDNN = "HEART_RATE_VARIABILITY_SDNN"
     let HEIGHT = "HEIGHT"
+    let INSULIN_DELIVERY = "INSULIN_DELIVERY"
     let HIGH_HEART_RATE_EVENT = "HIGH_HEART_RATE_EVENT"
     let IRREGULAR_HEART_RATE_EVENT = "IRREGULAR_HEART_RATE_EVENT"
     let LOW_HEART_RATE_EVENT = "LOW_HEART_RATE_EVENT"
@@ -166,6 +167,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         /// Handle writeMeal
         else if (call.method.elementsEqual("writeMeal")){
             try! writeMeal(call: call, result: result)
+        }
+
+        /// Handle writeInsulinDelivery
+        else if (call.method.elementsEqual("writeInsulinDelivery")){
+            try! writeInsulinDelivery(call: call, result: result)
         }
         
         /// Handle writeWorkoutData
@@ -430,6 +436,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else {
             throw PluginError(message: "Invalid Arguments")
         }
+        
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
             
@@ -461,7 +468,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         if #available(iOS 15.0, *){
-            let meal = HKCorrelation.init(type: HKCorrelationType.init(HKCorrelationTypeIdentifier.food), start: dateFrom, end: dateTo, objects: nutrition, metadata: metadata)
+            let type = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
+            let meal = HKCorrelation(type: type, start: dateFrom, end: dateTo, objects: nutrition, metadata: metadata)
             
             HKHealthStore().save(meal, withCompletion: { (success, error) in
                 if let err = error {
@@ -474,6 +482,33 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         } else {
             result(false)
         }
+    }
+    func writeInsulinDelivery(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+            let units = (arguments["units"] as? Double),
+            let reason = (arguments["reason"] as? NSNumber),
+            let startTime = (arguments["startTime"] as? NSNumber),
+            let endTime = (arguments["endTime"] as? NSNumber)
+        else {
+            throw PluginError(message: "Invalid Arguments")
+        }
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let type = HKSampleType.quantityType(forIdentifier: .insulinDelivery)!
+        let quantity = HKQuantity(unit: HKUnit.internationalUnit(), doubleValue: units)
+        let metadata = [HKMetadataKeyInsulinDeliveryReason: reason]
+
+        let insulin_sample = HKQuantitySample(type: type, quantity: quantity, start: dateFrom, end: dateTo, metadata: metadata)
+        
+        HKHealthStore().save(insulin_sample, withCompletion: { (success, error) in
+            if let err = error {
+                print("Error Saving Insulin Delivery Sample: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
+        })
     }
     
     func writeWorkoutData(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
@@ -594,11 +629,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 let dictionaries = samples.map { sample -> NSDictionary in
                     return [
                         "uuid": "\(sample.uuid)",
-                        "value": sample.quantity.doubleValue(for: unit!),
+                        "value": sample.quantity.doubleValue(for: unit ?? HKUnit.internationalUnit()),
                         "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
+                        "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil
                     ]
                 }
                 DispatchQueue.main.async {
@@ -1029,6 +1065,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[HEART_RATE_VARIABILITY_SDNN] = HKSampleType.quantityType(
                 forIdentifier: .heartRateVariabilitySDNN)!
             dataTypesDict[HEIGHT] = HKSampleType.quantityType(forIdentifier: .height)!
+            dataTypesDict[INSULIN_DELIVERY] = HKSampleType.quantityType(forIdentifier: .insulinDelivery)!
             dataTypesDict[RESTING_HEART_RATE] = HKSampleType.quantityType(
                 forIdentifier: .restingHeartRate)!
             dataTypesDict[STEPS] = HKSampleType.quantityType(forIdentifier: .stepCount)!

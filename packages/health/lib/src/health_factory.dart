@@ -201,15 +201,17 @@ class HealthFactory {
           (weights[i].value as NumericHealthValue).numericValue.toDouble() /
               (h * h);
       final x = HealthDataPoint(
-          NumericHealthValue(bmiValue),
-          dataType,
-          unit,
-          weights[i].dateFrom,
-          weights[i].dateTo,
-          _platformType,
-          _deviceId!,
-          '',
-          '');
+        NumericHealthValue(bmiValue),
+        dataType,
+        unit,
+        weights[i].dateFrom,
+        weights[i].dateTo,
+        _platformType,
+        _deviceId!,
+        '',
+        '',
+        null,
+      );
 
       bmiHealthPoints.add(x);
     }
@@ -455,6 +457,29 @@ class HealthFactory {
     return success ?? false;
   }
 
+  Future<bool> writeInsulinDelivery(
+    double units,
+    InsulinDeliveryReason reason,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+
+    if (reason == InsulinDeliveryReason.NOT_SET)
+      throw ArgumentError("set a valid insulin delivery reason");
+
+    Map<String, dynamic> args = {
+      'units': units,
+      'reason': reason.index,
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+
+    bool? success = await _channel.invokeMethod('writeInsulinDelivery', args);
+    return success ?? false;
+  }
+
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
       DateTime startTime, DateTime endTime, List<HealthDataType> types) async {
@@ -541,6 +566,8 @@ class HealthFactory {
         value = ElectrocardiogramHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.NUTRITION) {
         value = NutritionHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.INSULIN_DELIVERY) {
+        value = InsulinDeliveryHealthValue.fromJson(e);
       } else {
         value = NumericHealthValue(e['value']);
       }
@@ -548,6 +575,9 @@ class HealthFactory {
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
       final String sourceName = e["source_name"];
+      final Map<String, dynamic>? metadata = e["metadata"] == null
+          ? null
+          : Map<String, dynamic>.from(e["metadata"]);
       return HealthDataPoint(
         value,
         dataType,
@@ -558,6 +588,7 @@ class HealthFactory {
         device,
         sourceId,
         sourceName,
+        metadata,
       );
     }).toList();
 

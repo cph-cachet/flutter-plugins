@@ -71,6 +71,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                          |                              |                                        |
 | ELECTROCARDIOGRAM           | VOLT                    | yes     |                          |                              | Requires Apple Watch to write the data |
 | NUTRITION                   | NO_UNIT                 | yes     | yes                      | yes                          |                                        |
+| INSULIN_DELIVERY            | INTERNATIONAL_UNIT      | yes     |                          |                              |                                        |
 
 ## Setup
 

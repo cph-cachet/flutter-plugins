@@ -283,6 +283,50 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   String toString() => voltage.toString();
 }
 
+/// A [HealthValue] object from insulin delivery (iOS only)
+/// Parameters:
+/// * [units] - the amount of units of insulin taken
+/// * [reason] - if it's basal, bolus or unknown reason for insulin dosage
+class InsulinDeliveryHealthValue extends HealthValue {
+  double units;
+  InsulinDeliveryReason reason;
+
+  InsulinDeliveryHealthValue({
+    required this.units,
+    required this.reason,
+  });
+
+  factory InsulinDeliveryHealthValue.fromJson(json) {
+    final units = json['value'];
+
+    final metadata = json['metadata'] == null
+        ? null
+        : Map<String, dynamic>.from(json['metadata']);
+    final reasonIndex =
+        metadata == null || !metadata.containsKey('HKInsulinDeliveryReason')
+            ? 0
+            : metadata['HKInsulinDeliveryReason'] as double;
+    final reason = InsulinDeliveryReason.values[reasonIndex.toInt()];
+
+    return InsulinDeliveryHealthValue(units: units, reason: reason);
+  }
+
+  Map<String, dynamic> toJson() => {
+        'value': units.toString(),
+        'reason': reason.index,
+      };
+
+  @override
+  bool operator ==(Object o) =>
+      o is InsulinDeliveryHealthValue && units == o.units && reason == o.reason;
+
+  @override
+  int get hashCode => Object.hash(units, reason);
+
+  @override
+  String toString() => '$units units, $reason reason';
+}
+
 /// A [HealthValue] object for nutrition
 /// Parameters:
 /// * [protein] - the amount of protein in grams
