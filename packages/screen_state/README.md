@@ -41,4 +41,5 @@ The stream can also be cancelled again by calling the `cancel()` method:
 ## Limitations
 
 #### iOS:
-This package will exclusively detect screen unlocks on iOS devices that are protected with a passcode. If the device lacks a passcode, it will solely detect the screen's on/off state.
+- This package will exclusively detect screen unlocks on iOS devices that are protected with a passcode. If the device lacks a passcode, it will solely detect the screen's on/off state;
+- The detection doesn't function when the app is running in the iOS simulator. The plugin will only return a 'Screen_On' event.
