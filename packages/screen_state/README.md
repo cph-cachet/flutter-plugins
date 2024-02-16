@@ -37,3 +37,8 @@ The stream can also be cancelled again by calling the `cancel()` method:
     _subscription.cancel();
   }
 ```
+
+## Limitations
+
+#### iOS:
+This package will exclusively detect screen unlocks on iOS devices that are protected with a passcode. If the device lacks a passcode, it will solely detect the screen's on/off state.
