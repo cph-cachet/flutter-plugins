@@ -74,30 +74,20 @@ class Screen {
   /// Each event is streamed as it occurs on the phone.
   /// Only Android [ScreenStateEvent] are streamed.
   Stream<ScreenStateEvent>? get screenStateStream {
-    if (Platform.isAndroid) {
-      if (_screenStateStream == null) {
-        _screenStateStream = _eventChannel.receiveBroadcastStream().map(
-              (event) => ScreenStateEvent.fromName(
-                event,
-              ),
-            );
-      }
-      return _screenStateStream;
-    } else if (Platform.isIOS) {
-      if (_screenStateStream == null) {
-        _screenStateStream = _eventChannel.receiveBroadcastStream([]).map(
-          (event) {
-            final screenState = ScreenStateEvent.fromName(
-              event,
-            );
-            _lastScreenState = screenState;
-            return screenState;
-          },
-        );
-      }
-      return _screenStateStream;
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      throw ScreenStateException(
+        'Screen State API only available on Android and iOS.',
+      );
     }
-    throw ScreenStateException(
-        'Screen State API only available on Android and iOS.');
+
+    if (_screenStateStream == null) {
+      _screenStateStream = _eventChannel.receiveBroadcastStream().map(
+            (event) => ScreenStateEvent.fromName(
+              event,
+            ),
+          );
+    }
+
+    return _screenStateStream;
   }
 }
