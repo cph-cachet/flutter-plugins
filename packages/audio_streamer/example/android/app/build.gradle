@@ -56,6 +56,9 @@ android {
     lint {
         disable 'InvalidPackage'
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
     namespace 'plugins.cachet.audio_streamer_example'
 }
 
