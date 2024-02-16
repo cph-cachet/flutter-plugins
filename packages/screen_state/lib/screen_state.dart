@@ -3,7 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 
 /// The type of screen state events coming from Android or iOS.
-enum ScreenStateEvent { SCREEN_LOCKED, SCREEN_UNLOCKED, SCREEN_ON, SCREEN_OFF }
+enum ScreenStateEvent { SCREEN_UNLOCKED, SCREEN_ON, SCREEN_OFF }
 
 /// Custom Exception for the `screen_state` plugin, used whenever the plugin
 class ScreenStateException implements Exception {
@@ -85,8 +85,6 @@ class Screen {
         return ScreenStateEvent.SCREEN_ON;
       case 'UNLOCKED':
         return ScreenStateEvent.SCREEN_UNLOCKED;
-      case 'LOCKED':
-        return ScreenStateEvent.SCREEN_LOCKED;
       default:
         throw new ArgumentError('$event was not recognized.');
     }
@@ -100,8 +98,6 @@ class Screen {
         return 'SCREEN_ON';
       case ScreenStateEvent.SCREEN_UNLOCKED:
         return 'UNLOCKED';
-      case ScreenStateEvent.SCREEN_LOCKED:
-        return 'LOCKED';
       default:
         throw new ArgumentError('$event was not recognized.');
     }

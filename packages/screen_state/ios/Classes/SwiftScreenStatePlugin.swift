@@ -18,7 +18,6 @@ enum ScreenState: String {
     case on = "SCREEN_ON"
     case off = "SCREEN_OFF"
     case unlock = "UNLOCKED"
-    case lock = "LOCKED"
     case unknown = "UNKNOWN"
 
     init(fromString string: String) {
@@ -29,8 +28,6 @@ enum ScreenState: String {
             self = .off
         case "UNLOCKED":
             self = .unlock
-        case "LOCKED":
-            self = .lock
         default:
             self = .unknown
         }
@@ -40,52 +37,48 @@ enum ScreenState: String {
 
 public class ScreenStateDetector: NSObject, FlutterStreamHandler {
     private var eventSink: FlutterEventSink?
-    private var lastState: ScreenState?
-    private var timer: Timer?
+    private var lastState: ScreenState = .unknown
 
     private func handleEvent(screenState: ScreenState) {
-        // If no eventSink to emit events to, do nothing (wait)
-        if (eventSink == nil) {
+        if (screenState == .unknown || eventSink == nil) {
             return
         }
-        // Emit step count event to Flutter
+
         eventSink!(screenState.rawValue)
     }
 
     @objc
-    private func handleScreenStateChanged() {
-        DispatchQueue.main.async { [weak self] in
-            guard let strongSelf = self else { return }
-            var screenState: ScreenState
+    private func handleStateChange() {
+        if UIApplication.shared.isProtectedDataAvailable {
+            let screenState: ScreenState = UIScreen.main.brightness > 0 ? .on : .off
 
-            if UIApplication.shared.isProtectedDataAvailable {
-                if strongSelf.lastState == .lock {
-                    screenState = .unlock
-                } else {
-                    if UIScreen.main.brightness == 0.0 {
-                        screenState = .off
-                    } else {
-                        screenState = .on
-                    }
-                }
-            } else {
-                screenState = .lock
+            if(screenState == .on && lastState == .unlock) {
+                return
             }
 
-            if screenState != strongSelf.lastState {
-                strongSelf.lastState = screenState
-                strongSelf.handleEvent(screenState: screenState)
+            if screenState != lastState {
+                 lastState = screenState
+               handleEvent(screenState: screenState)
+            }
+        }
+    }
+
+    @objc
+    private func handleScreenLockChanged() {
+        if UIApplication.shared.isProtectedDataAvailable {
+            if (lastState == .on) {
+                lastState = .unlock
+                handleEvent(screenState: .unlock)
             }
         }
     }
 
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = events
-        self.lastState = .init(fromString: arguments as? String ?? "")
 
-        if timer == nil {
-            timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(handleScreenStateChanged), userInfo: nil, repeats: true)
-        }
+        NotificationCenter.default.addObserver(self, selector: #selector(handleStateChange), name: UIScreen.brightnessDidChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleScreenLockChanged), name: UIApplication.protectedDataDidBecomeAvailableNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleScreenLockChanged), name: UIApplication.protectedDataWillBecomeUnavailableNotification, object: nil)
 
         return nil
     }
@@ -93,8 +86,6 @@ public class ScreenStateDetector: NSObject, FlutterStreamHandler {
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         NotificationCenter.default.removeObserver(self)
         eventSink = nil
-        timer?.invalidate()
-        timer = nil
         return nil
     }
 }
