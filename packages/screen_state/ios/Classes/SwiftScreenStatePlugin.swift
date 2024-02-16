@@ -17,7 +17,7 @@ public class SwiftScreenStatePlugin: NSObject, FlutterPlugin {
 enum ScreenState: String {
     case on = "SCREEN_ON"
     case off = "SCREEN_OFF"
-    case unlock = "UNLOCKED"
+    case unlock = "SCREEN_UNLOCKED"
     case unknown = "UNKNOWN"
 
     init(fromString string: String) {
@@ -26,7 +26,7 @@ enum ScreenState: String {
             self = .on
         case "SCREEN_OFF":
             self = .off
-        case "UNLOCKED":
+        case "SCREEN_UNLOCKED":
             self = .unlock
         default:
             self = .unknown
