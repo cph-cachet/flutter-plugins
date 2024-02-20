@@ -72,8 +72,7 @@ class Screen {
 
   /// Stream of [ScreenStateEvent]s.
   /// Each event is streamed as it occurs on the phone.
-  /// Only Android [ScreenStateEvent] are streamed.
-  Stream<ScreenStateEvent>? get screenStateStream {
+  Stream<ScreenStateEvent> get screenStateStream {
     if (!Platform.isAndroid && !Platform.isIOS) {
       throw ScreenStateException(
         'Screen State API only available on Android and iOS.',
@@ -88,6 +87,6 @@ class Screen {
           );
     }
 
-    return _screenStateStream;
+    return _screenStateStream!;
   }
 }
