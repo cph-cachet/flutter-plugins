@@ -599,6 +599,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
+                        "wasUserEntered": sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool ?? false,
+                        
                     ]
                 }
                 DispatchQueue.main.async {
@@ -667,6 +669,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
+                        "wasUserEntered": sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool,
+                        "duration": sample.duration,
                     ]
                 }
                 
