@@ -106,6 +106,7 @@ class WorkoutHealthValue extends HealthValue {
   int? _totalEnergyBurned;
   HealthDataUnit? _totalEnergyBurnedUnit;
   int? _totalDistance;
+  int? _duration;
   HealthDataUnit? _totalDistanceUnit;
 
   WorkoutHealthValue(
@@ -113,7 +114,8 @@ class WorkoutHealthValue extends HealthValue {
       this._totalEnergyBurned,
       this._totalEnergyBurnedUnit,
       this._totalDistance,
-      this._totalDistanceUnit);
+      this._totalDistanceUnit,
+      this._duration);
 
   /// The type of the workout.
   HealthWorkoutActivityType get workoutActivityType => _workoutActivityType;
@@ -134,6 +136,10 @@ class WorkoutHealthValue extends HealthValue {
   /// Might not be available for all workouts.
   HealthDataUnit? get totalDistanceUnit => _totalDistanceUnit;
 
+  /// The unit of workout duration.
+  /// Might not be available for all workouts.
+  int? get duration => _duration;
+
   factory WorkoutHealthValue.fromJson(json) {
     return WorkoutHealthValue(
         HealthWorkoutActivityType.values.firstWhere(
@@ -151,7 +157,8 @@ class WorkoutHealthValue extends HealthValue {
         json['totalDistanceUnit'] != null
             ? HealthDataUnit.values.firstWhere(
                 (element) => element.name == json['totalDistanceUnit'])
-            : null);
+            : null,
+        json['duration'] != null ? (json['duration'] as num).toInt() : null);
   }
 
   @override
@@ -161,6 +168,7 @@ class WorkoutHealthValue extends HealthValue {
         'totalEnergyBurnedUnit': _totalEnergyBurnedUnit?.name,
         'totalDistance': _totalDistance,
         'totalDistanceUnit': _totalDistanceUnit?.name,
+        'duration': _duration,
       };
 
   @override
@@ -169,7 +177,8 @@ class WorkoutHealthValue extends HealthValue {
            totalEnergyBurned: $totalEnergyBurned,
            totalEnergyBurnedUnit: ${totalEnergyBurnedUnit?.name},
            totalDistance: $totalDistance,
-           totalDistanceUnit: ${totalDistanceUnit?.name}""";
+           totalDistanceUnit: ${totalDistanceUnit?.name}
+           duration: ${duration}""";
   }
 
   @override
@@ -179,12 +188,13 @@ class WorkoutHealthValue extends HealthValue {
         this.totalEnergyBurned == o.totalEnergyBurned &&
         this.totalEnergyBurnedUnit == o.totalEnergyBurnedUnit &&
         this.totalDistance == o.totalDistance &&
-        this.totalDistanceUnit == o.totalDistanceUnit;
+        this.totalDistanceUnit == o.totalDistanceUnit &&
+        this.duration == o.duration;
   }
 
   @override
   int get hashCode => Object.hash(workoutActivityType, totalEnergyBurned,
-      totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
+      totalEnergyBurnedUnit, totalDistance, totalDistanceUnit, duration);
 }
 
 /// A [HealthValue] object for ECGs
