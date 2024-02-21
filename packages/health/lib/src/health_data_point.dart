@@ -12,7 +12,7 @@ class HealthDataPoint {
   String _deviceId;
   String _sourceId;
   String _sourceName;
-  String _uuid;
+  String? _uuid;
   bool? _wasUserEntered;
 
   HealthDataPoint(
@@ -144,7 +144,7 @@ class HealthDataPoint {
   String get sourceName => _sourceName;
 
   /// The uniq identifier of health data from Apple HealthKit
-  String get uuid => _uuid;
+  String? get uuid => _uuid;
 
   // HKMetadataKeyWasUserEntered from AppleHealthKit
   bool? get wasUserEntered => _wasUserEntered;
