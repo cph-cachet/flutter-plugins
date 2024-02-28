@@ -15,6 +15,7 @@ enum AndroidDataSource { HealthConnect, GoogleFit }
 class HealthFactory {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   String? _deviceId;
+  final _deviceInfo = DeviceInfoPlugin();
 
   static PlatformType _platformType = Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
@@ -287,6 +288,11 @@ class HealthFactory {
 
   /// Prepares a query, i.e. checks if the types are available, etc.
   Future<List<HealthDataPoint>> _prepareQuery(DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+    // Ask for device ID only once
+    _deviceId ??= _platformType == PlatformType.ANDROID
+        ? (await _deviceInfo.androidInfo).id
+        : (await _deviceInfo.iosInfo).identifierForVendor;
+
     // If not implemented on platform, throw an exception
     if (!isDataTypeAvailable(dataType)) {
       throw HealthException(dataType, 'Not available on platform $_platformType');
@@ -312,7 +318,7 @@ class HealthFactory {
       final mesg = <String, dynamic>{
         "dataType": dataType,
         "dataPoints": fetchedDataPoints,
-        "deviceId": _deviceId!,
+        "deviceId": '$_deviceId',
       };
       const thresHold = 100;
       // If the no. of data points are larger than the threshold,
