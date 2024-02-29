@@ -64,7 +64,7 @@ String dtoToString(LocationDto dto) =>
     '${dto.latitude}, ${dto.longitude} @ ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
@@ -77,12 +77,12 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
   // Location Streaming
-  Stream<LocationDto> locationStream;
-  StreamSubscription<LocationDto> locationSubscription;
+  late Stream<LocationDto> locationStream;
+  late StreamSubscription<LocationDto> locationSubscription;
 
   // Mobility Features stream
-  StreamSubscription<MobilityContext> mobilitySubscription;
-  MobilityContext _mobilityContext;
+  late StreamSubscription<MobilityContext> mobilitySubscription;
+  late MobilityContext _mobilityContext;
 
   @override
   void initState() {
@@ -108,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
     locationStream = LocationManager().locationStream;
 
     // subscribe to location stream - in case this is needed in the app
-    if (locationSubscription != null) locationSubscription.cancel();
+    //locationSubscription.cancel();
     locationSubscription = locationStream.listen(onLocationUpdate);
 
     // start the location service (specific to carp_background_location)
@@ -144,7 +144,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    mobilitySubscription?.cancel();
+    mobilitySubscription.cancel();
+    locationSubscription.cancel();
     super.dispose();
   }
 
@@ -157,21 +158,21 @@ class _MyHomePageState extends State<MyHomePage> {
             "${_mobilityContext.numberOfSignificantPlaces}", placeIcon),
         entry(
             "Home Stay",
-            _mobilityContext.homeStay < 0
+            _mobilityContext.homeStay! < 0
                 ? "?"
-                : "${(_mobilityContext.homeStay * 100).toStringAsFixed(1)}%",
+                : "${(_mobilityContext.homeStay! * 100).toStringAsFixed(1)}%",
             homeStayIcon),
         entry(
             "Distance Travelled",
-            "${(_mobilityContext.distanceTravelled / 1000).toStringAsFixed(2)} km",
+            "${(_mobilityContext.distanceTravelled! / 1000).toStringAsFixed(2)} km",
             distanceTravelledIcon),
         entry(
             "Normalized Entropy",
-            "${_mobilityContext.normalizedEntropy.toStringAsFixed(2)}",
+            "${_mobilityContext.normalizedEntropy?.toStringAsFixed(2)}",
             entropyIcon),
         entry(
             "Location Variance",
-            "${(111.133 * _mobilityContext.locationVariance).toStringAsFixed(5)} km",
+            "${(111.133 * _mobilityContext.locationVariance!).toStringAsFixed(5)} km",
             varianceIcon),
       ],
     );
@@ -241,7 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Move> moves = [];
     List<Place> places = [];
 
-    if (_mobilityContext != null) {
+    if (_state == AppState.FEATURES_READY) {
       for (var x in _mobilityContext.stops) print(x);
       for (var x in _mobilityContext.moves) {
         print(x);

@@ -1,10 +1,10 @@
 name: mobility_features_example
 description: An example app for the Mobility Features package.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 3.1.0
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.17.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -12,10 +12,11 @@ dependencies:
 
   mobility_features:
     path: ../
-  carp_background_location: ^3.0.1
+  carp_background_location:
+    ^4.0.0
     # path: ../../carp_background_location
 
-  cupertino_icons: ^0.1.3
+  cupertino_icons: ^1.0.5
 
 dev_dependencies:
   flutter_test:

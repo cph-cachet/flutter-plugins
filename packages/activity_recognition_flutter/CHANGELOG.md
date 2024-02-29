@@ -1,31 +1,45 @@
+## 5.0.0
+
+- upgraded Android SDK level
+- upgraded flutter version
+- upgraded AGP
+
 ## 4.2.0
-* small refactor and improvement of docs
-* using `ActivityRecognition()` when creating a singleton -- standard practice in Dart.
+
+- small refactor and improvement of docs
+- using `ActivityRecognition()` when creating a singleton -- standard practice in Dart.
 
 ## 4.1.0
-* [PR #474](https://github.com/cph-cachet/flutter-plugins/pull/474) - Android 12 intent-flag
-* the name of the stream has been changed from `startStream` to `activityStream`
-* cleanup in example app
+
+- [PR #474](https://github.com/cph-cachet/flutter-plugins/pull/474) - Android 12 intent-flag
+- the name of the stream has been changed from `startStream` to `activityStream`
+- cleanup in example app
 
 ## 4.0.5+1
-* [PR #408](https://github.com/cph-cachet/flutter-plugins/pull/408)
+
+- [PR #408](https://github.com/cph-cachet/flutter-plugins/pull/408)
 
 ## 4.0.4
-* improvements to documentation
+
+- improvements to documentation
 
 ## 4.0.3
-* [PR #358](https://github.com/cph-cachet/flutter-plugins/pull/358)
+
+- [PR #358](https://github.com/cph-cachet/flutter-plugins/pull/358)
 
 ## 4.0.2
-* [PR #302](https://github.com/cph-cachet/flutter-plugins/pull/302)
-* [PR #351](https://github.com/cph-cachet/flutter-plugins/pull/351)
+
+- [PR #302](https://github.com/cph-cachet/flutter-plugins/pull/302)
+- [PR #351](https://github.com/cph-cachet/flutter-plugins/pull/351)
 
 ## 4.0.1
-* Fix of issue #309, i.e. a null pointer that occurs when running the plugin on API 30.
-* Replaced the deprecated `IntentService` with a `JobIntentService`. 
-* [PR #314](https://github.com/cph-cachet/flutter-plugins/pull/314)
+
+- Fix of issue #309, i.e. a null pointer that occurs when running the plugin on API 30.
+- Replaced the deprecated `IntentService` with a `JobIntentService`.
+- [PR #314](https://github.com/cph-cachet/flutter-plugins/pull/314)
 
 ## 4.0.0
+
 - Null safety migration
 - Updated swift code
 

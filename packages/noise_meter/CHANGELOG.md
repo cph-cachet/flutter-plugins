@@ -1,3 +1,16 @@
+## 5.0.2
+
+- upgrade to `audio_streamer: ^4.0.0`
+- update of example app to handle permissions to access the microphone and other improvements.
+- improvement to documentation
+
+## 4.0.1
+
+- upgrade to `audio_streamer: ^3.0.0` ([PR #755](https://github.com/cph-cachet/flutter-plugins/pull/755))
+- updates Android AGP
+- upgrade to Dart 3
+- improvement to documentation and example app
+
 ## 3.2.0
 
 - upgrade to `audio_streamer: ^2.3.0`
@@ -40,7 +53,7 @@
 
 ## 1.1.0
 
-- Moved native source code to the AudioStreamer plugin (https://pub.dev/packages/audio_streamer).
+- Moved native source code to the AudioStreamer plugin (<https://pub.dev/packages/audio_streamer>).
 
 ## 1.0.0
 

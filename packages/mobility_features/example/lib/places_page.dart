@@ -6,8 +6,8 @@ class PlacesPage extends StatelessWidget {
   PlacesPage(this.places);
 
   Widget placeEntry(Place p) {
-    String lat = p.geoLocation.latitude.toStringAsFixed(4);
-    String lon = p.geoLocation.longitude.toStringAsFixed(4);
+    String lat = p.geoLocation!.latitude.toStringAsFixed(4);
+    String lon = p.geoLocation!.longitude.toStringAsFixed(4);
 
     return Container(
         padding: const EdgeInsets.all(2),

@@ -1,91 +1,102 @@
+import 'dart:math';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:audio_streamer/audio_streamer.dart';
-import 'dart:math';
+import 'package:permission_handler/permission_handler.dart';
 
-import 'package:flutter/services.dart';
+void main() => runApp(new AudioStreamingApp());
 
-void main() {
-  runApp(new MyApp());
+class AudioStreamingApp extends StatefulWidget {
+  @override
+  AudioStreamingAppState createState() => new AudioStreamingAppState();
 }
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => new _MyAppState();
-}
+class AudioStreamingAppState extends State<AudioStreamingApp> {
+  int? sampleRate;
+  bool isRecording = false;
+  List<double> audio = [];
+  List<double>? latestBuffer;
+  double? recordingTime;
+  StreamSubscription<List<double>>? audioSubscription;
 
-class _MyAppState extends State<MyApp> {
-  AudioStreamer _streamer = AudioStreamer();
-  bool _isRecording = false;
-  List<double> _audio = [];
+  /// Check if microphone permission is granted.
+  Future<bool> checkPermission() async => await Permission.microphone.isGranted;
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  /// Request the microphone permission.
+  Future<void> requestPermission() async =>
+      await Permission.microphone.request();
 
+  /// Call-back on audio sample.
   void onAudio(List<double> buffer) async {
-    _audio.addAll(buffer);
-    var sampleRate = await AudioStreamer.currSampleRate;
-    double secondsRecorded = _audio.length.toDouble() / sampleRate;
-    print('Max amp: ${buffer.reduce(max)}');
-    print('Min amp: ${buffer.reduce(min)}');
-    print('$secondsRecorded seconds recorded.');
-    print('-' * 50);
+    audio.addAll(buffer);
+
+    // Get the actual sampling rate, if not already known.
+    sampleRate ??= await AudioStreamer().actualSampleRate;
+    recordingTime = audio.length / sampleRate!;
+
+    setState(() => latestBuffer = buffer);
   }
 
-  void handleError(PlatformException error) {
-    setState(() {
-      _isRecording = false;
-    });
-    print(error.message);
-    print(error.details);
+  /// Call-back on error.
+  void handleError(Object error) {
+    setState(() => isRecording = false);
+    print(error);
   }
 
+  /// Start audio sampling.
   void start() async {
-    try {
-      //_streamer.start(onAudio, handleError, sampleRate: 16000); //uses custom sample rate
-      _streamer.start(
-          onAudio, handleError); //uses default sample rate of 44100 Hz
-      setState(() {
-        _isRecording = true;
-      });
-    } catch (error) {
-      print(error);
+    // Check permission to use the microphone.
+    //
+    // Remember to update the AndroidManifest file (Android) and the
+    // Info.plist and pod files (iOS).
+    if (!(await checkPermission())) {
+      await requestPermission();
     }
+
+    // Set the sampling rate - works only on Android.
+    AudioStreamer().sampleRate = 22100;
+
+    // Start listening to the audio stream.
+    audioSubscription =
+        AudioStreamer().audioStream.listen(onAudio, onError: handleError);
+
+    setState(() => isRecording = true);
   }
 
+  /// Stop audio sampling.
   void stop() async {
-    bool stopped = await _streamer.stop();
-    setState(() {
-      _isRecording = stopped;
-    });
+    audioSubscription?.cancel();
+    setState(() => isRecording = false);
   }
-
-  List<Widget> getContent() => <Widget>[
-        Container(
-            margin: EdgeInsets.all(25),
-            child: Column(children: [
-              Container(
-                child: Text(_isRecording ? "Mic: ON" : "Mic: OFF",
-                    style: TextStyle(fontSize: 25, color: Colors.blue)),
-                margin: EdgeInsets.only(top: 20),
-              )
-            ])),
-      ];
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: getContent())),
-        floatingActionButton: FloatingActionButton(
-            backgroundColor: _isRecording ? Colors.red : Colors.green,
-            onPressed: _isRecording ? stop : start,
-            child: _isRecording ? Icon(Icons.stop) : Icon(Icons.mic)),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => MaterialApp(
+        home: Scaffold(
+          body: Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                Container(
+                    margin: EdgeInsets.all(25),
+                    child: Column(children: [
+                      Container(
+                        child: Text(isRecording ? "Mic: ON" : "Mic: OFF",
+                            style: TextStyle(fontSize: 25, color: Colors.blue)),
+                        margin: EdgeInsets.only(top: 20),
+                      ),
+                      Text(''),
+                      Text('Max amp: ${latestBuffer?.reduce(max)}'),
+                      Text('Min amp: ${latestBuffer?.reduce(min)}'),
+                      Text(
+                          '${recordingTime?.toStringAsFixed(2)} seconds recorded.'),
+                    ])),
+              ])),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: isRecording ? Colors.red : Colors.green,
+            child: isRecording ? Icon(Icons.stop) : Icon(Icons.mic),
+            onPressed: isRecording ? stop : start,
+          ),
+        ),
+      );
 }

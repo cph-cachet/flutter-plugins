@@ -2,7 +2,7 @@
 
 Enables reading and writing health data from/to Apple Health, Google Fit and Health Connect.
 
-> Google Fitness API is being deprecated and Health Connect the plugin will transition into the API as the Health Connect
+> Google Fitness API is deprecated and will be turned down in 2024, thus this package will also transition to only support Health Connect.
 
 The plugin supports:
 
@@ -10,6 +10,7 @@ The plugin supports:
 - reading health data using the `getHealthDataFromTypes` method.
 - writing health data using the `writeHealthData` method.
 - writing workouts using the `writeWorkout` method.
+- writing meals on iOS (Apple Health) & Android using the `writeMeal` method.
 - writing audiograms on iOS using the `writeAudiogram` method.
 - writing blood pressure data using the `writeBloodPressure` method.
 - accessing total step counts using the `getTotalStepsInInterval` method.
@@ -22,9 +23,9 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 ## Data Types
 
 | **Data Type**               | **Unit**                | **iOS** | **Android (Google Fit)** | **Android (Health Connect)** | **Comments**                           |
-| --------------------------- | ----------------------- | ------- | ------------------------ | ---------------------------- | -------------------------------------- |
+| --------------------------- | ----------------------- | ------- | ------------------------ |------------------------------| -------------------------------------- |
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes                      | yes                          |                                        |
-| BASAL_ENERGY_BURNED         | CALORIES                | yes     |                          |                              |                                        |
+| BASAL_ENERGY_BURNED         | CALORIES                | yes     |                          | yes                          |                                        |
 | BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes                      | yes                          |                                        |
 | BLOOD_OXYGEN                | PERCENTAGE              | yes     | yes                      | yes                          |                                        |
 | BLOOD_PRESSURE_DIASTOLIC    | MILLIMETER_OF_MERCURY   | yes     | yes                      | yes                          |                                        |
@@ -35,19 +36,26 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |                          |                              |                                        |
 | HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes                      | yes                          |                                        |
 | HEIGHT                      | METERS                  | yes     | yes                      | yes                          |                                        |
-| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                        |
+| RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          | yes                          |                                        |
+| RESPIRATORY_RATE            | RESPIRATIONS_PER_MINUTE | yes     |                          | yes                                                                   |
+| PERIPHERAL_PERFUSION_INDEX  | PERCENTAGE              | yes     |                          |                                                             |
 | STEPS                       | COUNT                   | yes     | yes                      | yes                          |                                        |
 | WAIST_CIRCUMFERENCE         | METERS                  | yes     |                          |                              |                                        |
 | WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                        |
 | WEIGHT                      | KILOGRAMS               | yes     | yes                      | yes                          |                                        |
 | DISTANCE_WALKING_RUNNING    | METERS                  | yes     |                          |                              |                                        |
-| FLIGHTS_CLIMBED             | COUNT                   | yes     |                          |                              |                                        |
+| FLIGHTS_CLIMBED             | COUNT                   | yes     |                          | yes                          |                                        |
 | MOVE_MINUTES                | MINUTES                 |         | yes                      |                              |                                        |
 | DISTANCE_DELTA              | METERS                  |         | yes                      | yes                          |                                        |
 | MINDFULNESS                 | MINUTES                 | yes     |                          |                              |                                        |
-| SLEEP_IN_BED                | MINUTES                 | yes     | yes                      |                              |                                        |
-| SLEEP_ASLEEP                | MINUTES                 | yes     | yes                      |                              |                                        |
-| SLEEP_AWAKE                 | MINUTES                 | yes     | yes                      |                              |                                        |
+| SLEEP_IN_BED                | MINUTES                 | yes     |                          |                              |                                        |
+| SLEEP_ASLEEP                | MINUTES                 | yes     |                          | yes                          |                                        |
+| SLEEP_AWAKE                 | MINUTES                 | yes     |                          | yes                          |                                        |
+| SLEEP_DEEP                  | MINUTES                 | yes     |                          | yes                          |                                        |
+| SLEEP_LIGHT                 | MINUTES                 |         |                          | yes                          |                                        |
+| SLEEP_REM                   | MINUTES                 | yes     |                          | yes                          |                                        |
+| SLEEP_OUT_OF_BED            | MINUTES                 |         |                          | yes                          |                                        |
+| SLEEP_SESSION               | MINUTES                 |         |                          | yes                          |                                        |
 | WATER                       | LITER                   | yes     | yes                      | yes                          |                                        |
 | EXERCISE_TIME               | MINUTES                 | yes     |                          |                              |                                        |
 | WORKOUT                     | NO_UNIT                 | yes     | yes                      | yes                          | (Has other workout types)              |
@@ -62,12 +70,13 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | HEADACHE_UNSPECIFIED        | MINUTES                 | yes     |                          |                              |                                        |
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                          |                              |                                        |
 | ELECTROCARDIOGRAM           | VOLT                    | yes     |                          |                              | Requires Apple Watch to write the data |
+| NUTRITION                   | NO_UNIT                 | yes     | yes                      | yes                          |                                        |
 
 ## Setup
 
 ### Apple Health (iOS)
 
-Step 1: Append the Info.plist with the following 2 entries
+Step 1: Append the `Info.plist` with the following 2 entries
 
 ```xml
 <key>NSHealthShareUsageDescription</key>
@@ -80,7 +89,7 @@ Step 2: Open your Flutter project in Xcode by right clicking on the "ios" folder
 
 ### Google Fit (Android option 1)
 
-Follow the guide at https://developers.google.com/fit/android/get-api-key
+Follow the guide at <https://developers.google.com/fit/android/get-api-key>
 
 Below is an example of following the guide:
 
@@ -109,7 +118,7 @@ Certificate fingerprints:
      Version: 3
 ```
 
-Follow the instructions at https://developers.google.com/fit/android/get-api-key for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
+Follow the instructions at <https://developers.google.com/fit/android/get-api-key> for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
 
 The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`.
 
@@ -117,52 +126,106 @@ The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.co
 
 Health Connect requires the following lines in the `AndroidManifest.xml` file (also seen in the example app):
 
-```
+```xml
+<!-- Check whether Health Connect is installed or not -->
 <queries>
-    <package android:name="com.google.android.apps.healthdata" />
+  <package android:name="com.google.android.apps.healthdata" />
+  <intent>
+    <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+  </intent>
 </queries>
+```
+
+In the Health Connect permissions activity there is a link to your privacy policy. You need to grant the Health Connect app access in order to link back to your privacy policy. In the example below, you should either replace `.MainActivity` with an activity that presents the privacy policy or have the Main Activity route the user to the policy. This step may be required to pass Google app review when requesting access to sensitive permissions.
+
+```
+<activity-alias
+     android:name="ViewPermissionUsageActivity"
+     android:exported="true"
+     android:targetActivity=".MainActivity"
+     android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+            <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+        </intent-filter>
+</activity-alias>
 ```
 
 ### Android Permissions
 
-Starting from API level 28 (Android 9.0) acessing some fitness data (e.g. Steps) requires a special permission.
+Starting from API level 28 (Android 9.0) accessing some fitness data (e.g. Steps) requires a special permission.
 
 To set it add the following line to your `AndroidManifest.xml` file.
 
-```
+```xml
 <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 ```
 
 #### Health Connect
 
-If using Health Connect on Android it requires speciel permissions in the `AndroidManifest.xml` file.
-The permissions can be found here: https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types
+If using Health Connect on Android it requires special permissions in the `AndroidManifest.xml` file. The permissions can be found here: <https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types>
 
 Example shown here (can also be found in the example app):
 
-```
+```xml
 <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
 <uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
+...
+```
+
+Furthermore, an `intent-filter` needs to be added to the `.MainActivity` activity.
+
+```xml
+<activity
+  android:name=".MainActivity"
+  android:exported="true"
+
+  ....
+
+  <!-- Intention to show Permissions screen for Health Connect API -->
+  <intent-filter>
+    <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+  </intent-filter>
+</activity>
 ```
 
 #### Workout permissions
 
 Additionally, for Workouts: If the distance of a workout is requested then the location permissions below are needed.
 
-```
+```xml
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 ```
 
 There's a `debug`, `main` and `profile` version which are chosen depending on how you start your app. In general, it's sufficient to add permission only to the `main` version.
 
-Beacuse this is labled as a `dangerous` protection level, the permission system will not grant it automaticlly and it requires the user's action.
-You can prompt the user for it using the [permission_handler](https://pub.dev/packages/permission_handler) plugin.
-Follow the plugin setup instructions and add the following line before requsting the data:
+Because this is labeled as a `dangerous` protection level, the permission system will not grant it automatically and it requires the user's action.
 
-```
+You can prompt the user for it using the [permission_handler](https://pub.dev/packages/permission_handler) plugin.
+Follow the plugin setup instructions and add the following line before requesting the data:
+
+```dart
 await Permission.activityRecognition.request();
 await Permission.location.request();
+```
+
+### Android 14
+
+This plugin uses the new `registerForActivityResult` when requesting permissions from Health Connect.
+In order for that to work, the Main app's activity should extend `FlutterFragmentActivity` instead of `FlutterActivity`. 
+This adjustment allows casting from `Activity` to `ComponentActivity` for accessing `registerForActivityResult`.
+
+In your MainActivity.kt file, update the `MainActivity` class so that it extends `FlutterFragmentActivity` instead of the default `FlutterActivity`:
+
+```
+...
+import io.flutter.embedding.android.FlutterFragmentActivity
+...
+
+class MainActivity: FlutterFragmentActivity() {
+...
+}
 ```
 
 ### Android X
@@ -183,8 +246,8 @@ The Health plugin is used via the `HealthFactory` class using the different meth
 Below is a simplified flow of how to use the plugin.
 
 ```dart
-  // create a HealthFactory for use in the app
-  HealthFactory health = HealthFactory();
+  // create a HealthFactory for use in the app, choose if HealthConnect should be used or not
+  HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
 
   // define the types to get
   var types = [
@@ -244,7 +307,7 @@ NB for iOS: The device must be unlocked before Health data can be requested, oth
 
 ```
 flutter: Health Plugin Error:
-flutter: 	PlatformException(FlutterHealth, Results are null, Optional(Error Domain=com.apple.healthkit Code=6 "Protected health data is inaccessible" UserInfo={NSLocalizedDescription=Protected health data is inaccessible}))
+flutter:  PlatformException(FlutterHealth, Results are null, Optional(Error Domain=com.apple.healthkit Code=6 "Protected health data is inaccessible" UserInfo={NSLocalizedDescription=Protected health data is inaccessible}))
 ```
 
 ### Filtering out duplicates

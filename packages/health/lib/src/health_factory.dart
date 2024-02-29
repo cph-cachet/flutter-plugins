@@ -19,7 +19,7 @@ class HealthFactory {
   static PlatformType _platformType =
       Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
-  // The plugin was created to use Health Connect (if true) or Google Fit (if false).
+  /// The plugin was created to use Health Connect (if true) or Google Fit (if false).
   bool get useHealthConnectIfAvailable => _useHealthConnectIfAvailable;
 
   HealthFactory({bool useHealthConnectIfAvailable = false}) {
@@ -83,7 +83,16 @@ class HealthFactory {
   ///
   /// Not implemented on iOS as there is no way to programmatically remove access.
   Future<void> revokePermissions() async {
-    return await _channel.invokeMethod('revokePermissions');
+    try {
+      if (_platformType == PlatformType.IOS) {
+        throw UnsupportedError(
+            'Revoke permissions is not supported on iOS. Please revoke permissions manually in the settings.');
+      }
+      await _channel.invokeMethod('revokePermissions');
+      return;
+    } catch (e) {
+      print(e);
+    }
   }
 
   /// Requests permissions to access data types in Apple Health or Google Fit.
@@ -98,11 +107,14 @@ class HealthFactory {
   ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
   ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
   ///
-  ///  Caveat:
+  ///  Caveats:
   ///
-  ///   As Apple HealthKit will not disclose if READ access has been granted for a data type due to privacy concern,
-  ///   this method will return **true if the window asking for permission was showed to the user without errors**
-  ///   if it is called on iOS with a READ or READ_WRITE access.
+  ///  * This method may block if permissions are already granted. Hence, check
+  ///    [hasPermissions] before calling this method.
+  ///  * As Apple HealthKit will not disclose if READ access has been granted for
+  ///    a data type due to privacy concern, this method will return **true if
+  ///    the window asking for permission was showed to the user without errors**
+  ///    if it is called on iOS with a READ or READ_WRITE access.
   Future<bool> requestAuthorization(
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
@@ -116,10 +128,14 @@ class HealthFactory {
       for (int i = 0; i < types.length; i++) {
         final type = types[i];
         final permission = permissions[i];
-        if (type == HealthDataType.ELECTROCARDIOGRAM &&
+        if ((type == HealthDataType.ELECTROCARDIOGRAM ||
+                type == HealthDataType.HIGH_HEART_RATE_EVENT ||
+                type == HealthDataType.LOW_HEART_RATE_EVENT ||
+                type == HealthDataType.IRREGULAR_HEART_RATE_EVENT ||
+                type == HealthDataType.WALKING_HEART_RATE) &&
             permission != HealthDataAccess.READ) {
           throw ArgumentError(
-              'Requesting WRITE permission on ELECTROCARDIOGRAM is not allowed.');
+              'Requesting WRITE permission on ELECTROCARDIOGRAM / HIGH_HEART_RATE_EVENT / LOW_HEART_RATE_EVENT / IRREGULAR_HEART_RATE_EVENT / WALKING_HEART_RATE is not allowed.');
         }
       }
     }
@@ -134,11 +150,15 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => e.name).toList();
+    print(
+        '>> trying to get permissions for $keys with permissions $mPermissions');
     final bool? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
+    print('>> isAuthorized: $isAuthorized');
     return isAuthorized ?? false;
   }
 
+  /// Obtains health and weight if BMI is requested on Android.
   static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
     final index = mTypes.indexOf(HealthDataType.BODY_MASS_INDEX);
 
@@ -241,6 +261,8 @@ class HealthFactory {
     if (type == HealthDataType.SLEEP_ASLEEP ||
         type == HealthDataType.SLEEP_AWAKE ||
         type == HealthDataType.SLEEP_IN_BED ||
+        type == HealthDataType.SLEEP_DEEP ||
+        type == HealthDataType.SLEEP_REM ||
         type == HealthDataType.HEADACHE_NOT_PRESENT ||
         type == HealthDataType.HEADACHE_MILD ||
         type == HealthDataType.HEADACHE_MODERATE ||
@@ -308,6 +330,81 @@ class HealthFactory {
       'endTime': endTime.millisecondsSinceEpoch
     };
     bool? success = await _channel.invokeMethod('writeBloodPressure', args);
+    return success ?? false;
+  }
+
+  /// Saves blood oxygen saturation record into Apple Health or Google Fit/Health Connect.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [saturation] - the saturation of the blood oxygen in percentage
+  /// * [flowRate] - optional supplemental oxygen flow rate, only supported on Google Fit (default 0.0)
+  /// * [startTime] - the start time when this [value] is measured.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when this [value] is measured.
+  ///   + It must be equal to or later than [startTime].
+  ///   + Simply set [endTime] equal to [startTime] if the blood oxygen saturation is measured only at a specific point in time.
+  Future<bool> writeBloodOxygen(
+      double saturation, DateTime startTime, DateTime endTime,
+      {double flowRate = 0.0}) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+    bool? success;
+
+    if (_platformType == PlatformType.IOS) {
+      success = await writeHealthData(
+          saturation, HealthDataType.BLOOD_OXYGEN, startTime, endTime);
+    } else if (_platformType == PlatformType.ANDROID) {
+      Map<String, dynamic> args = {
+        'value': saturation,
+        'flowRate': flowRate,
+        'startTime': startTime.millisecondsSinceEpoch,
+        'endTime': endTime.millisecondsSinceEpoch,
+        'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,
+      };
+      success = await _channel.invokeMethod('writeBloodOxygen', args);
+    }
+    return success ?? false;
+  }
+
+  /// Saves meal record into Apple Health or Google Fit.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  /// * [startTime] - the start time when the meal was consumed.
+  ///   + It must be equal to or earlier than [endTime].
+  /// * [endTime] - the end time when the meal was consumed.
+  ///   + It must be equal to or later than [startTime].
+  /// * [caloriesConsumed] - total calories consumed with this meal.
+  /// * [carbohydrates] - optional carbohydrates information.
+  /// * [protein] - optional protein information.
+  /// * [fatTotal] - optional total fat information.
+  /// * [name] - optional name information about this meal.
+  Future<bool> writeMeal(
+      DateTime startTime,
+      DateTime endTime,
+      double? caloriesConsumed,
+      double? carbohydrates,
+      double? protein,
+      double? fatTotal,
+      String? name,
+      MealType mealType) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+
+    Map<String, dynamic> args = {
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch,
+      'caloriesConsumed': caloriesConsumed,
+      'carbohydrates': carbohydrates,
+      'protein': protein,
+      'fatTotal': fatTotal,
+      'name': name,
+      'mealType': mealType.name,
+    };
+    bool? success = await _channel.invokeMethod('writeMeal', args);
     return success ?? false;
   }
 
@@ -398,7 +495,7 @@ class HealthFactory {
     return await _dataQuery(startTime, endTime, dataType);
   }
 
-  /// The main function for fetching health data
+  /// Fetches data points from Android/iOS native code.
   Future<List<HealthDataPoint>> _dataQuery(
       DateTime startTime, DateTime endTime, HealthDataType dataType) async {
     final args = <String, dynamic>{
@@ -408,6 +505,7 @@ class HealthFactory {
       'endTime': endTime.millisecondsSinceEpoch
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
+
     if (fetchedDataPoints != null) {
       final mesg = <String, dynamic>{
         "dataType": dataType,
@@ -426,6 +524,7 @@ class HealthFactory {
     }
   }
 
+  /// Parses the fetched data points into a list of [HealthDataPoint].
   static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
     final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
@@ -440,6 +539,8 @@ class HealthFactory {
         value = WorkoutHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.ELECTROCARDIOGRAM) {
         value = ElectrocardiogramHealthValue.fromJson(e);
+      } else if (dataType == HealthDataType.NUTRITION) {
+        value = NutritionHealthValue.fromJson(e);
       } else {
         value = NumericHealthValue(e['value']);
       }
@@ -488,14 +589,19 @@ class HealthFactory {
     return stepsCount;
   }
 
+  /// Assigns numbers to specific [HealthDataType]s.
   int _alignValue(HealthDataType type) {
     switch (type) {
       case HealthDataType.SLEEP_IN_BED:
         return 0;
-      case HealthDataType.SLEEP_ASLEEP:
-        return 1;
       case HealthDataType.SLEEP_AWAKE:
         return 2;
+      case HealthDataType.SLEEP_ASLEEP:
+        return 3;
+      case HealthDataType.SLEEP_DEEP:
+        return 4;
+      case HealthDataType.SLEEP_REM:
+        return 5;
       case HealthDataType.HEADACHE_UNSPECIFIED:
         return 0;
       case HealthDataType.HEADACHE_NOT_PRESENT:
@@ -644,6 +750,7 @@ class HealthFactory {
   bool _isOnAndroid(HealthWorkoutActivityType type) {
     // Returns true if the type is part of the Android set
     return {
+      // Both
       HealthWorkoutActivityType.ARCHERY,
       HealthWorkoutActivityType.BADMINTON,
       HealthWorkoutActivityType.BASEBALL,
@@ -686,8 +793,17 @@ class HealthFactory {
       HealthWorkoutActivityType.WALKING,
       HealthWorkoutActivityType.WATER_POLO,
       HealthWorkoutActivityType.YOGA,
+
+      // Android only
+      // Once Google Fit is removed, this list needs to be changed
       HealthWorkoutActivityType.AEROBICS,
       HealthWorkoutActivityType.BIATHLON,
+      HealthWorkoutActivityType.BIKING_HAND,
+      HealthWorkoutActivityType.BIKING_MOUNTAIN,
+      HealthWorkoutActivityType.BIKING_ROAD,
+      HealthWorkoutActivityType.BIKING_SPINNING,
+      HealthWorkoutActivityType.BIKING_STATIONARY,
+      HealthWorkoutActivityType.BIKING_UTILITY,
       HealthWorkoutActivityType.CALISTHENICS,
       HealthWorkoutActivityType.CIRCUIT_TRAINING,
       HealthWorkoutActivityType.CROSS_FIT,
@@ -703,6 +819,7 @@ class HealthFactory {
       HealthWorkoutActivityType.HOUSEWORK,
       HealthWorkoutActivityType.INTERVAL_TRAINING,
       HealthWorkoutActivityType.IN_VEHICLE,
+      HealthWorkoutActivityType.ICE_SKATING,
       HealthWorkoutActivityType.KAYAKING,
       HealthWorkoutActivityType.KETTLEBELL_TRAINING,
       HealthWorkoutActivityType.KICK_SCOOTER,
@@ -713,6 +830,7 @@ class HealthFactory {
       HealthWorkoutActivityType.PARAGLIDING,
       HealthWorkoutActivityType.POLO,
       HealthWorkoutActivityType.ROCK_CLIMBING,
+      HealthWorkoutActivityType.ROWING_MACHINE,
       HealthWorkoutActivityType.RUNNING_JOGGING,
       HealthWorkoutActivityType.RUNNING_SAND,
       HealthWorkoutActivityType.RUNNING_TREADMILL,
@@ -720,10 +838,13 @@ class HealthFactory {
       HealthWorkoutActivityType.SKATING_CROSS,
       HealthWorkoutActivityType.SKATING_INDOOR,
       HealthWorkoutActivityType.SKATING_INLINE,
+      HealthWorkoutActivityType.SKIING,
       HealthWorkoutActivityType.SKIING_BACK_COUNTRY,
       HealthWorkoutActivityType.SKIING_KITE,
       HealthWorkoutActivityType.SKIING_ROLLER,
       HealthWorkoutActivityType.SLEDDING,
+      HealthWorkoutActivityType.SNOWMOBILE,
+      HealthWorkoutActivityType.SNOWSHOEING,
       HealthWorkoutActivityType.STAIR_CLIMBING_MACHINE,
       HealthWorkoutActivityType.STANDUP_PADDLEBOARDING,
       HealthWorkoutActivityType.STILL,

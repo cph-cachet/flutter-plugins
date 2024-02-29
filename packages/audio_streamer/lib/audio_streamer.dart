@@ -1,108 +1,53 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-/*
- * A [AudioStreamer] object is reponsible for connecting
- * to the native environment and streaming audio from the microphone.*
- */
 const String EVENT_CHANNEL_NAME = 'audio_streamer.eventChannel';
 const String METHOD_CHANNEL_NAME = 'audio_streamer.methodChannel';
 
+/// API for streaming raw audio data.
 class AudioStreamer {
-  bool _isRecording = false;
-
-  static Future<int> get currSampleRate => _getActualSampleRate();
-
   static const EventChannel _noiseEventChannel =
       EventChannel(EVENT_CHANNEL_NAME);
-
   static const MethodChannel _sampleRateChannel =
       MethodChannel(METHOD_CHANNEL_NAME);
+  static const int DEFAULT_SAMPLING_RATE = 44100;
 
+  int _sampleRate = DEFAULT_SAMPLING_RATE;
   Stream<List<double>>? _stream;
-  StreamSubscription<List<dynamic>>? _subscription;
+  static AudioStreamer? _instance;
 
-  /// Use MethodChannel to get the current sample rate, may be different from requested sample rate
-  static Future<int> _getActualSampleRate() async {
-    var currSampleRate = await _sampleRateChannel.invokeMethod('getSampleRate');
-    return currSampleRate;
-  }
-
-  /// Use EventChannel to receive audio stream from native
-  Stream<List<double>> _makeAudioStream(
-      Function handleErrorFunction, int sampleRate) {
-    if (_stream == null) {
-      _stream = _noiseEventChannel
-          .receiveBroadcastStream({"sampleRate": sampleRate})
-          .handleError((error) {
-            _isRecording = false;
-            _stream = null;
-            handleErrorFunction(error);
-          })
-          .map((buffer) => buffer as List<dynamic>?)
-          .map((list) => list!.map((e) => double.parse('$e')).toList());
-    }
-    return _stream!;
-  }
-
-  /// Verify that microphone permission was granted
-  static Future<bool> checkPermission() async =>
-      await Permission.microphone.request().isGranted;
-
-  /// Request the microphone permission
-  static Future<void> requestPermission() async =>
-      await Permission.microphone.request();
-
-  /// Start recording if microphone permission was granted
+  /// Constructs a singleton instance of [AudioStreamer].
   ///
-  /// Parameters:
+  /// [AudioStreamer] is designed to work as a singleton.
+  // When a second instance is created, the first instance will not be able to listen to the
+  // audio because it is overridden. Forcing the class to be a singleton class can prevent
+  // misuse of creating a second instance from a programmer.
+  factory AudioStreamer() => _instance ??= AudioStreamer._();
+
+  AudioStreamer._();
+
+  /// The sampling rate in Hz. Must be set before the [audioStream] is used.
+  /// Default sample rate of is 44100 Hz.
+  /// Note that sampling rate can only be set on Android, not on iOS.
+  int get sampleRate => _sampleRate;
+  set sampleRate(int rate) {
+    _sampleRate = rate;
+    _stream = null;
+  }
+
+  /// The actual sampling rate.
   ///
-  /// * [onData] - A callback function that will be called to handle the audio stream.
-  /// * [handleError] - A callback function that will be called to handle any errors.
-  /// * [sampleRate] - Optional.
-  ///   + If unspecified: Default sample rate of 44100 will be used.
-  ///   + If specified: Audio streamer will use the specified sample rate, but this may not succeed on iOS.
-  Future<bool> start(Function onData, Function handleError,
-      {sampleRate = 44100}) async {
-    if (_isRecording) {
-      print('AudioStreamer: Already recording!');
-      return _isRecording;
-    } else {
-      bool granted = await AudioStreamer.checkPermission();
+  /// The actual sampling rate may be different from the requested sampling rate.
+  /// Only available after sampling has started.
+  Future<int> get actualSampleRate async =>
+      await _sampleRateChannel.invokeMethod<int>('getSampleRate') ??
+      DEFAULT_SAMPLING_RATE;
 
-      if (granted) {
-        try {
-          final stream = _makeAudioStream(handleError, sampleRate);
-          _subscription = stream.listen(onData as void Function(List<double>)?);
-          _isRecording = true;
-        } catch (err) {
-          debugPrint('AudioStreamer: startRecorder() error: $err');
-        }
-      }
-
-      /// If permission wasn't yet given, then
-      /// ask for it, and then try recording again.
-      else {
-        await AudioStreamer.requestPermission();
-        start(onData, handleError, sampleRate: sampleRate);
-      }
-    }
-    return _isRecording;
-  }
-
-  /// Stop the recording
-  Future<bool> stop() async {
-    try {
-      if (_subscription != null) {
-        _subscription!.cancel();
-        _subscription = null;
-      }
-      _isRecording = false;
-    } catch (err) {
-      debugPrint('AudioStreamer: stopRecorder() error: $err');
-    }
-    return _isRecording;
-  }
+  /// The stream of audio samples.
+  Stream<List<double>> get audioStream => _stream ??= _noiseEventChannel
+      .receiveBroadcastStream({"sampleRate": sampleRate})
+      .map((buffer) => buffer as List<dynamic>?)
+      .map((list) => (list != null && list.isNotEmpty && list[0] is double)
+          ? list.cast<double>()
+          : list!.map((e) => e is double ? e : double.parse('$e')).toList());
 }

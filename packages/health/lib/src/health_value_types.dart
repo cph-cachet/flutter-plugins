@@ -11,6 +11,7 @@ class NumericHealthValue extends HealthValue {
 
   NumericHealthValue(this._numericValue);
 
+  /// A [num] value for the [HealthDataPoint].
   num get numericValue => _numericValue;
 
   @override
@@ -18,6 +19,7 @@ class NumericHealthValue extends HealthValue {
     return numericValue.toString();
   }
 
+  /// Parses a json object to [NumericHealthValue]
   factory NumericHealthValue.fromJson(json) {
     return NumericHealthValue(num.parse(json['numericValue']));
   }
@@ -49,14 +51,19 @@ class AudiogramHealthValue extends HealthValue {
   AudiogramHealthValue(this._frequencies, this._leftEarSensitivities,
       this._rightEarSensitivities);
 
+  /// Array of frequencies of the test.
   List<num> get frequencies => _frequencies;
+
+  /// Threshold in decibel for the left ear.
   List<num> get leftEarSensitivities => _leftEarSensitivities;
+
+  /// Threshold in decibel for the right ear.
   List<num> get rightEarSensitivities => _rightEarSensitivities;
 
   @override
   String toString() {
-    return """frequencies: ${frequencies.toString()}, 
-    left ear sensitivities: ${leftEarSensitivities.toString()}, 
+    return """frequencies: ${frequencies.toString()},
+    left ear sensitivities: ${leftEarSensitivities.toString()},
     right ear sensitivities: ${rightEarSensitivities.toString()}""";
   }
 
@@ -183,14 +190,21 @@ class WorkoutHealthValue extends HealthValue {
 /// A [HealthValue] object for ECGs
 ///
 /// Parameters:
-/// * [voltageValues] - an array of [ElectrocardiogramVoltageValue]
+/// * [voltageValues] - an array of [ElectrocardiogramVoltageValue]s
 /// * [averageHeartRate] - the average heart rate during the ECG (in BPM)
 /// * [samplingFrequency] - the frequency at which the Apple Watch sampled the voltage.
 /// * [classification] - an [ElectrocardiogramClassification]
 class ElectrocardiogramHealthValue extends HealthValue {
+  /// An array of [ElectrocardiogramVoltageValue]s.
   List<ElectrocardiogramVoltageValue> voltageValues;
+
+  /// The average heart rate during the ECG (in BPM).
   num? averageHeartRate;
+
+  /// The frequency at which the Apple Watch sampled the voltage.
   double? samplingFrequency;
+
+  /// An [ElectrocardiogramClassification].
   ElectrocardiogramClassification classification;
 
   ElectrocardiogramHealthValue({
@@ -200,6 +214,7 @@ class ElectrocardiogramHealthValue extends HealthValue {
     required this.classification,
   });
 
+  /// Parses [ElectrocardiogramHealthValue] from JSON.
   factory ElectrocardiogramHealthValue.fromJson(json) =>
       ElectrocardiogramHealthValue(
         voltageValues: (json['voltageValues'] as List)
@@ -238,7 +253,10 @@ class ElectrocardiogramHealthValue extends HealthValue {
 
 /// Single voltage value belonging to a [ElectrocardiogramHealthValue]
 class ElectrocardiogramVoltageValue extends HealthValue {
+  /// Voltage of the ECG.
   num voltage;
+
+  /// Time since the start of the ECG.
   num timeSinceSampleStart;
 
   ElectrocardiogramVoltageValue(this.voltage, this.timeSinceSampleStart);
@@ -265,6 +283,90 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   String toString() => voltage.toString();
 }
 
+/// A [HealthValue] object for nutrition
+/// Parameters:
+/// * [protein] - the amount of protein in grams
+/// * [calories] - the amount of calories in kcal
+/// * [fat] - the amount of fat in grams
+/// * [name] - the name of the food
+/// * [carbs] - the amount of carbs in grams
+/// * [mealType] - the type of meal
+class NutritionHealthValue extends HealthValue {
+  double? _protein;
+  double? _calories;
+  double? _fat;
+  String? _name;
+  double? _carbs;
+  String _mealType;
+
+  NutritionHealthValue(this._protein, this._calories, this._fat, this._name,
+      this._carbs, this._mealType);
+
+  /// The amount of protein in grams.
+  double? get protein => _protein;
+
+  /// The amount of calories in kcal.
+  double? get calories => _calories;
+
+  /// The amount of fat in grams.
+  double? get fat => _fat;
+
+  /// The name of the food.
+  String? get name => _name;
+
+  /// The amount of carbs in grams.
+  double? get carbs => _carbs;
+
+  /// The type of meal.
+  String get mealType => _mealType;
+
+  factory NutritionHealthValue.fromJson(json) {
+    return NutritionHealthValue(
+      json['protein'] != null ? (json['protein'] as num).toDouble() : null,
+      json['calories'] != null ? (json['calories'] as num).toDouble() : null,
+      json['fat'] != null ? (json['fat'] as num).toDouble() : null,
+      json['name'] != null ? (json['name'] as String) : null,
+      json['carbs'] != null ? (json['carbs'] as num).toDouble() : null,
+      json['mealType'] as String,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'protein': _protein,
+        'calories': _calories,
+        'fat': _fat,
+        'name': _name,
+        'carbs': _carbs,
+        'mealType': _mealType,
+      };
+
+  @override
+  String toString() {
+    return """protein: ${protein.toString()},
+    calories: ${calories.toString()},
+    fat: ${fat.toString()},
+    name: ${name.toString()},
+    carbs: ${carbs.toString()},
+    mealType: $mealType""";
+  }
+
+  @override
+  bool operator ==(Object o) {
+    return o is NutritionHealthValue &&
+        o.protein == this.protein &&
+        o.calories == this.calories &&
+        o.fat == this.fat &&
+        o.name == this.name &&
+        o.carbs == this.carbs &&
+        o.mealType == this.mealType;
+  }
+
+  @override
+  int get hashCode => Object.hash(protein, calories, fat, name, carbs);
+}
+
+/// An abstract class for health values.
 abstract class HealthValue {
   Map<String, dynamic> toJson();
 }

@@ -22,12 +22,13 @@ class ESenseManager {
   static const String ESenseSensorEventChannelName = 'esense.io/esense_sensor';
 
   final MethodChannel _eSenseManagerMethodChannel =
-      MethodChannel(ESenseManagerMethodChannelName);
+      const MethodChannel(ESenseManagerMethodChannelName);
   final EventChannel _eSenseConnectionEventChannel =
-      EventChannel(ESenseConnectionEventChannelName);
-  final EventChannel _eSenseEventChannel = EventChannel(ESenseEventChannelName);
+      const EventChannel(ESenseConnectionEventChannelName);
+  final EventChannel _eSenseEventChannel =
+      const EventChannel(ESenseEventChannelName);
   final EventChannel _eSenseSensorEventChannel =
-      EventChannel(ESenseSensorEventChannelName);
+      const EventChannel(ESenseSensorEventChannelName);
 
   Stream<ConnectionEvent>? _connectionEventStream;
   Stream<ESenseEvent>? _eventStream;
@@ -46,7 +47,7 @@ class ESenseManager {
 
   /// Constructs an eSense manager for a device with name [deviceName].
   ESenseManager(this.deviceName) {
-    assert(deviceName.length > 0,
+    assert(deviceName.isNotEmpty,
         'Must provide a valid name of the eSense device to connect to.');
   }
 
@@ -72,8 +73,9 @@ class ESenseManager {
     _eventStream = null;
     _sensorStream = null;
 
-    return await _eSenseManagerMethodChannel
-        .invokeMethod('connect', <String, dynamic>{'name': deviceName});
+    return await _eSenseManagerMethodChannel.invokeMethod<bool?>(
+            'connect', <String, dynamic>{'name': deviceName}) ??
+        false;
   }
 
   /// Disconnects the device (if connected).
@@ -82,9 +84,15 @@ class ESenseManager {
   /// after the disconnection has taken place.
   /// Returns `true` if the disconnection was successfully made, `false`
   /// otherwise.
-  Future<bool> disconnect() async => (connected)
-      ? await _eSenseManagerMethodChannel.invokeMethod('disconnect')
-      : false;
+  Future<bool> disconnect() async {
+    _eventStream = null;
+    _sensorStream = null;
+
+    return (connected)
+        ? await _eSenseManagerMethodChannel.invokeMethod<bool?>('disconnect') ??
+            false
+        : false;
+  }
 
   /// Checks the BTLE connection if the device is connected or not.
   ///
@@ -108,7 +116,7 @@ class ESenseManager {
     _samplingRate = rate;
     // for some strange reason, iOS does not accept an int as argument
     // hence, [rate] is converted to a string
-    return await _eSenseManagerMethodChannel.invokeMethod(
+    return await _eSenseManagerMethodChannel.invokeMethod<bool?>(
             'setSamplingRate', <String, dynamic>{'rate': '$rate'}) ??
         false;
   }
@@ -118,9 +126,11 @@ class ESenseManager {
   /// The event [DeviceNameRead] is fired when the name has been read.
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool> getDeviceName() async {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
-    return await _eSenseManagerMethodChannel.invokeMethod('getDeviceName') ??
+    }
+    return await _eSenseManagerMethodChannel
+            .invokeMethod<bool?>('getDeviceName') ??
         false;
   }
 
@@ -130,9 +140,10 @@ class ESenseManager {
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool?> setDeviceName(String deviceName) async {
     assert(deviceName.isNotEmpty && deviceName.length < 22,
-        'The device name must be more that zero and less than 22 characteres long.');
-    if (!connected)
+        'The device name must be more that zero and less than 22 characters long.');
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
+    }
     return await _eSenseManagerMethodChannel.invokeMethod(
             'setDeviceName', <String, dynamic>{'deviceName': deviceName}) ??
         false;
@@ -143,10 +154,11 @@ class ESenseManager {
   /// The event [BatteryRead] is fired when the voltage has been read.
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool> getBatteryVoltage() async {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
+    }
     return await _eSenseManagerMethodChannel
-            .invokeMethod('getBatteryVoltage') ??
+            .invokeMethod<bool?>('getBatteryVoltage') ??
         false;
   }
 
@@ -156,10 +168,11 @@ class ESenseManager {
   /// The event [AccelerometerOffsetRead] is fired when the offset has been read.
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool> getAccelerometerOffset() async {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
+    }
     return await _eSenseManagerMethodChannel
-            .invokeMethod('getAccelerometerOffset') ??
+            .invokeMethod<bool?>('getAccelerometerOffset') ??
         false;
   }
 
@@ -170,10 +183,11 @@ class ESenseManager {
   /// parameter values has been read.
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool> getAdvertisementAndConnectionInterval() async {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
+    }
     return await _eSenseManagerMethodChannel
-            .invokeMethod('getAdvertisementAndConnectionInterval') ??
+            .invokeMethod<bool?>('getAdvertisementAndConnectionInterval') ??
         false;
   }
 
@@ -193,11 +207,12 @@ class ESenseManager {
   ///      greater than or equal to 20.
   ///
   /// Returns `true` if the request was successfully made, `false` otherwise.
-  Future<bool> setAdvertisementAndConnectiontInterval(int advMinInterval,
+  Future<bool> setAdvertisementAndConnectionInterval(int advMinInterval,
       int advMaxInterval, int connMinInterval, int connMaxInterval) async {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
-    return await _eSenseManagerMethodChannel.invokeMethod(
+    }
+    return await _eSenseManagerMethodChannel.invokeMethod<bool?>(
             'setAdvertisementAndConnectiontInterval', <String, dynamic>{
           'advMinInterval': advMinInterval,
           'advMaxInterval': advMaxInterval,
@@ -214,9 +229,11 @@ class ESenseManager {
   /// The event [SensorConfigRead] is fired when the offset has been read.
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool> getSensorConfig() async {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
-    return await _eSenseManagerMethodChannel.invokeMethod('getSensorConfig') ??
+    }
+    return await _eSenseManagerMethodChannel
+            .invokeMethod<bool?>('getSensorConfig') ??
         false;
   }
 
@@ -224,9 +241,10 @@ class ESenseManager {
   ///
   /// Returns `true` if the request was successfully made, `false` otherwise.
   Future<bool> setSensorConfig(ESenseConfig config) async {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
-    return await _eSenseManagerMethodChannel.invokeMethod(
+    }
+    return await _eSenseManagerMethodChannel.invokeMethod<bool?>(
             'setSensorConfig', config.toMap()) ??
         false;
   }
@@ -248,10 +266,12 @@ class ESenseManager {
     if (_connectionEventStream == null) {
       _connectionEventStream = _eSenseConnectionEventChannel
           .receiveBroadcastStream()
-          .map((type) => ConnectionEvent.fromString(type));
+          .map((type) => ConnectionEvent.fromString('$type'));
 
       // listen to the connection event in order to set the [connection] status
-      _connectionEventStream!.listen((ConnectionEvent event) {
+      _connectionEventStream?.listen((ConnectionEvent event) {
+        print('$runtimeType - event: $event');
+
         switch (event.type) {
           case ConnectionType.connected:
             connected = true;
@@ -273,14 +293,12 @@ class ESenseManager {
   /// Throws an [ESenseException] if not connected to an eSense device.
   /// Wait until [connected] before using this stream.
   Stream<ESenseEvent> get eSenseEvents {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
-    if (_eventStream == null) {
-      _eventStream = _eSenseEventChannel
-          .receiveBroadcastStream()
-          .map((event) => ESenseEvent.fromMap(event));
     }
-    return _eventStream!;
+
+    return _eventStream ??= _eSenseEventChannel.receiveBroadcastStream().map(
+        (event) => event is Map ? ESenseEvent.fromMap(event) : ESenseEvent());
   }
 
   /// Get the stream of sensor events.
@@ -291,14 +309,14 @@ class ESenseManager {
   /// Throws an [ESenseException] if not connected to an eSense device.
   /// Wait until [connected] before using this stream.
   Stream<SensorEvent> get sensorEvents {
-    if (!connected)
+    if (!connected) {
       throw ESenseException('Not connected to any eSense device.');
-    if (_sensorStream == null) {
-      _sensorStream = _eSenseSensorEventChannel
-          .receiveBroadcastStream()
-          .map((event) => SensorEvent.fromMap(event));
     }
-    return _sensorStream!;
+
+    return _sensorStream ??= _eSenseSensorEventChannel
+        .receiveBroadcastStream()
+        .map((event) =>
+            event is Map ? SensorEvent.fromMap(event) : SensorEvent.empty());
   }
 }
 
@@ -306,5 +324,6 @@ class ESenseManager {
 class ESenseException implements Exception {
   final String message;
   ESenseException(this.message);
+  @override
   String toString() => '$runtimeType - $message';
 }

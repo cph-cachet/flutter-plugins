@@ -32,11 +32,11 @@ class _HealthAppState extends State<HealthApp> {
   int _nofSteps = 0;
 
   // Define the types to get.
-  // NOTE: These are only the ones supported on Androids new API Health Connect.
-  // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
-  // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
-  static final types = dataTypesAndroid;
-  // Or selected types
+
+  // Use the entire list on e.g. Android.
+  static final types = dataTypesIOS;
+
+  // Or specify specific types
   // static final types = [
   //   HealthDataType.WEIGHT,
   //   HealthDataType.STEPS,
@@ -45,19 +45,21 @@ class _HealthAppState extends State<HealthApp> {
   //   HealthDataType.WORKOUT,
   //   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
   //   HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-  //   // Uncomment these lines on iOS - only available on iOS
+  //   // Uncomment this line on iOS - only available on iOS
   //   // HealthDataType.AUDIOGRAM
   // ];
 
-  // with coresponsing permissions
+  // Set up corresponding permissions
   // READ only
-  // final permissions = types.map((e) => HealthDataAccess.READ).toList();
-  // Or READ and WRITE
-  final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
+  final permissions = types.map((e) => HealthDataAccess.READ).toList();
+
+  // Or both READ and WRITE
+  // final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
 
   // create a HealthFactory for use in the app
   HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
 
+  /// Authorize, i.e. get permissions to access relevant health data.
   Future authorize() async {
     // If we are trying to read Step Count, Workout, Sleep or other data that requires
     // the ACTIVITY_RECOGNITION permission, we need to request the permission first.
@@ -67,7 +69,7 @@ class _HealthAppState extends State<HealthApp> {
     await Permission.activityRecognition.request();
     await Permission.location.request();
 
-    // Check if we have permission
+    // Check if we have health permissions
     bool? hasPermissions =
         await health.hasPermissions(types, permissions: permissions);
 
@@ -78,8 +80,12 @@ class _HealthAppState extends State<HealthApp> {
     bool authorized = false;
     if (!hasPermissions) {
       // requesting access to the data types before reading them
-      authorized =
-          await health.requestAuthorization(types, permissions: permissions);
+      try {
+        authorized =
+            await health.requestAuthorization(types, permissions: permissions);
+      } catch (error) {
+        print("Exception in authorize: $error");
+      }
     }
 
     setState(() => _state =
@@ -131,8 +137,6 @@ class _HealthAppState extends State<HealthApp> {
     // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
     bool success = true;
     success &= await health.writeHealthData(
-        10, HealthDataType.BODY_FAT_PERCENTAGE, earlier, now);
-    success &= await health.writeHealthData(
         1.925, HealthDataType.HEIGHT, earlier, now);
     success &=
         await health.writeHealthData(90, HealthDataType.WEIGHT, earlier, now);
@@ -146,12 +150,9 @@ class _HealthAppState extends State<HealthApp> {
         70, HealthDataType.HEART_RATE, earlier, now);
     success &= await health.writeHealthData(
         37, HealthDataType.BODY_TEMPERATURE, earlier, now);
-    success &= await health.writeHealthData(
-        98, HealthDataType.BLOOD_OXYGEN, earlier, now);
+    success &= await health.writeBloodOxygen(98, earlier, now, flowRate: 1.0);
     success &= await health.writeHealthData(
         105, HealthDataType.BLOOD_GLUCOSE, earlier, now);
-    success &= await health.writeHealthData(
-        1100, HealthDataType.DISTANCE_DELTA, earlier, now);
     success &=
         await health.writeHealthData(1.8, HealthDataType.WATER, earlier, now);
     success &= await health.writeWorkoutData(
@@ -161,7 +162,10 @@ class _HealthAppState extends State<HealthApp> {
         totalDistance: 2430,
         totalEnergyBurned: 400);
     success &= await health.writeBloodPressure(90, 80, earlier, now);
-
+    success &= await health.writeHealthData(
+        0.0, HealthDataType.SLEEP_DEEP, earlier, now);
+    success &= await health.writeMeal(
+        earlier, now, 1000, 50, 25, 50, "Banana", MealType.SNACK);
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
@@ -208,9 +212,14 @@ class _HealthAppState extends State<HealthApp> {
     final now = DateTime.now();
     final midnight = DateTime(now.year, now.month, now.day);
 
-    bool requested = await health.requestAuthorization([HealthDataType.STEPS]);
+    bool stepsPermission =
+        await health.hasPermissions([HealthDataType.STEPS]) ?? false;
+    if (!stepsPermission) {
+      stepsPermission =
+          await health.requestAuthorization([HealthDataType.STEPS]);
+    }
 
-    if (requested) {
+    if (stepsPermission) {
       try {
         steps = await health.getTotalStepsInInterval(midnight, now);
       } catch (error) {
@@ -229,8 +238,13 @@ class _HealthAppState extends State<HealthApp> {
     }
   }
 
+  /// Revoke access to health data. Note, this only has an effect on Android.
   Future revokeAccess() async {
-    await health.revokePermissions();
+    try {
+      await health.revokePermissions();
+    } catch (error) {
+      print("Caught exception in revokeAccess: $error");
+    }
   }
 
   Widget _contentFetchingData() {
@@ -268,6 +282,15 @@ class _HealthAppState extends State<HealthApp> {
               subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
             );
           }
+          if (p.value is NutritionHealthValue) {
+            return ListTile(
+              title: Text(
+                  "${p.typeString} ${(p.value as NutritionHealthValue).mealType}: ${(p.value as NutritionHealthValue).name}"),
+              trailing:
+                  Text('${(p.value as NutritionHealthValue).calories} kcal'),
+              subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+            );
+          }
           return ListTile(
             title: Text("${p.typeString}: ${p.value}"),
             trailing: Text('${p.unitString}'),
@@ -283,9 +306,10 @@ class _HealthAppState extends State<HealthApp> {
   Widget _contentNotFetched() {
     return Column(
       children: [
-        Text('Press the download button to fetch data.'),
-        Text('Press the plus button to insert some random data.'),
-        Text('Press the walking button to get total step count.'),
+        Text("Press 'Auth' to get permissions to access health data."),
+        Text("Press 'Fetch Dat' to get health data."),
+        Text("Press 'Add Data' to add some random health data."),
+        Text("Press 'Delete Data' to remove some random health data."),
       ],
       mainAxisAlignment: MainAxisAlignment.center,
     );
