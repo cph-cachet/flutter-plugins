@@ -806,27 +806,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         return listPermission.toSet()
     }
 
-    private fun hasPermissionHealthConnect(call: MethodCall, result: Result) {
-        if (activity == null) {
-            result.success(false)
-            return
-        }
-        val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
-        val permissionList = callToHealthConnectTypes(call)
-        mResult = result
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val granted = healthConnectClient.permissionController.getGrantedPermissions()
-
-            if (granted.containsAll(permissionList.toSet())) {
-                mResult?.success(true)
-            } else {
-                mResult?.success(false)
-                // Do we need to request here?
-            }
-        }
-    }
-
     var healthConnectAvailable = false
 
     private fun isHealthConnectAvailable(activityLocal: Activity?, call: MethodCall, result: Result) {
@@ -870,22 +849,51 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         result.success(success)
     }
 
+    private fun hasPermissionHealthConnect(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+        val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
+        val permissionList = callToHealthConnectTypes(call)
+        mResult = result
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val granted = healthConnectClient.permissionController.getGrantedPermissions()
+
+            if (granted.containsAll(permissionList.toSet())) {
+                mResult?.success(true)
+            } else {
+                mResult?.success(false)
+                // Do we need to request here?
+            }
+        }
+    }
+
     private fun requestHealthConnectPermission(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
             return
         }
         mResult = result
+        val healthConnectClient = HealthConnectClient.getOrCreate(activity!!.applicationContext)
         val permissionList = callToHealthConnectTypes(call)
+        val permissionListSet = permissionList.toSet()
 
-        if(healthConnectRequestPermissionsLauncher == null) {
-            result.success(false)
-            Log.i("FLUTTER_HEALTH", "Permission launcher not found")
-            return;
+        CoroutineScope(Dispatchers.Main).launch {
+            val granted = healthConnectClient.permissionController.getGrantedPermissions()
+
+            if (granted.containsAll(permissionListSet)) {
+                mResult?.success(true)
+            } else {
+                if(healthConnectRequestPermissionsLauncher == null) {
+                    mResult?.success(false)
+                    Log.i("FLUTTER_HEALTH", "Permission launcher not found")
+                } else {
+                    healthConnectRequestPermissionsLauncher!!.launch(permissionListSet);
+                }
+            }
         }
-
-
-        healthConnectRequestPermissionsLauncher!!.launch(permissionList.toSet());
     }
 
     private  fun onHealthConnectPermissionCallback(permissionGranted: Set<String>)
@@ -894,7 +902,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             mResult?.success(false);
             Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect)!")
 
-        }else {
+        } else {
             mResult?.success(true);
             Log.i("FLUTTER_HEALTH", "Access Granted (to Health Connect)!")
         }
