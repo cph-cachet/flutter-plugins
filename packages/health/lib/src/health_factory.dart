@@ -589,6 +589,36 @@ class HealthFactory {
     return stepsCount;
   }
 
+  Future<double?> getTotalCaloriesInInterval(
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
+    final args = <String, dynamic>{
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+    final calories = await _channel.invokeMethod<double?>(
+      'getTotalCaloriesInInterval',
+      args,
+    );
+    return calories;
+  }
+
+  Future<double?> getTotalDistanceInInterval(
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
+    final args = <String, dynamic>{
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+    final distance = await _channel.invokeMethod<double?>(
+      'getTotalDistanceInInterval',
+      args,
+    );
+    return distance;
+  }
+
   /// Assigns numbers to specific [HealthDataType]s.
   int _alignValue(HealthDataType type) {
     switch (type) {
