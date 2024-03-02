@@ -408,23 +408,40 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     )
                 )
                 CoroutineScope(Dispatchers.Main).launch {
-                    val response = healthConnectClient.readRecords(request)
-                    val dataList: List<WeightRecord> = response.records;
+                    var replySubmitted = false
+                    try {
+                        val response = healthConnectClient.readRecords(request)
+                        val dataList: List<WeightRecord> = response.records;
 
-                    val healthData = dataList.mapIndexed { _, it ->
-                        val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                        val zonedDateTime =
-                            dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
-                        val uid = it.metadata.id
-                        val weight = it.weight.inGrams
-                        return@mapIndexed hashMapOf(
-                            //"zonedDateTime" to formatter.format(zonedDateTime),
-                            "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
-                            "uid" to uid,
-                            "weight" to weight
-                        )
+                        val healthData = dataList.mapIndexed { _, it ->
+                            val formatter =
+                                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                            val zonedDateTime =
+                                dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
+                            val uid = it.metadata.id
+                            val weight = it.weight.inGrams
+                            return@mapIndexed hashMapOf(
+                                //"zonedDateTime" to formatter.format(zonedDateTime),
+                                "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
+                                "uid" to uid,
+                                "weight" to weight
+                            )
+                        }
+                        activity!!.runOnUiThread {
+                            if (!replySubmitted) {
+                                result.success(healthData)
+                                replySubmitted = true
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("Read Weight Error", e.message, null)
+                        activity!!.runOnUiThread {
+                            if (!replySubmitted) {
+                                result.success(false)
+                                replySubmitted = true
+                            }
+                        }
                     }
-                    activity!!.runOnUiThread { result.success(healthData) }
                 }
             }
             BODY_FAT_PERCENTAGE -> {
@@ -444,23 +461,40 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     )
                 )
                 CoroutineScope(Dispatchers.Main).launch {
-                    val response = healthConnectClient.readRecords(request)
-                    val dataList: List<BodyFatRecord> = response.records
+                    var replySubmitted = false
+                    try {
+                        val response = healthConnectClient.readRecords(request)
+                        val dataList: List<BodyFatRecord> = response.records
 
-                    val healthData = dataList.mapIndexed { _, it ->
-                        val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                        val zonedDateTime =
-                            dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
-                        val uid = it.metadata.id
-                        val bodyFat = it.percentage.value
-                        return@mapIndexed hashMapOf(
-                            "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
-                            //"zonedDateTime" to formatter.format(zonedDateTime),
-                            "uid" to uid,
-                            "bodyFat" to bodyFat
-                        )
+                        val healthData = dataList.mapIndexed { _, it ->
+                            val formatter =
+                                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                            val zonedDateTime =
+                                dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
+                            val uid = it.metadata.id
+                            val bodyFat = it.percentage.value
+                            return@mapIndexed hashMapOf(
+                                "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
+                                //"zonedDateTime" to formatter.format(zonedDateTime),
+                                "uid" to uid,
+                                "bodyFat" to bodyFat
+                            )
+                        }
+                        activity!!.runOnUiThread {
+                            if (!replySubmitted) {
+                                result.success(healthData)
+                                replySubmitted = true
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("Read Body Fat Error", e.message, null)
+                        activity!!.runOnUiThread {
+                            if (!replySubmitted) {
+                                result.success(false)
+                                replySubmitted = true
+                            }
+                        }
                     }
-                    activity!!.runOnUiThread { result.success(healthData) }
                 }
             }
             NUTRITION -> {
@@ -480,161 +514,178 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     ),
                 )
                 CoroutineScope(Dispatchers.Main).launch {
-                    val response = healthConnectClient.readRecords(request)
-                    val dataList: List<NutritionRecord> = response.records
-                    val healthData = dataList.mapIndexed { _, it ->
-                        val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                        val startZonedDateTime =
-                            dateTimeWithOffsetOrDefault(it.startTime, it.startZoneOffset)
-                        val endZonedDateTime =
-                            dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
-                        val uid = it.metadata.id
-                        val hashMapData = hashMapOf<String, Any>(
-                            "startDateTime" to startZonedDateTime.toInstant().toEpochMilli(),
-                            "endDateTime" to endZonedDateTime.toInstant().toEpochMilli(),
-                            "uid" to uid,
-                        )
-                        if (it.biotin != null) {
-                            //hashMapData["biotin"] = "${it.biotin!!.inGrams} grams"
-                            hashMapData["biotin"] = it.biotin!!.inGrams
+                    var replySubmitted = false
+                    try {
+                        val response = healthConnectClient.readRecords(request)
+                        val dataList: List<NutritionRecord> = response.records
+                        val healthData = dataList.mapIndexed { _, it ->
+                            val formatter =
+                                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                            val startZonedDateTime =
+                                dateTimeWithOffsetOrDefault(it.startTime, it.startZoneOffset)
+                            val endZonedDateTime =
+                                dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
+                            val uid = it.metadata.id
+                            val hashMapData = hashMapOf<String, Any>(
+                                "startDateTime" to startZonedDateTime.toInstant().toEpochMilli(),
+                                "endDateTime" to endZonedDateTime.toInstant().toEpochMilli(),
+                                "uid" to uid,
+                            )
+                            if (it.biotin != null) {
+                                //hashMapData["biotin"] = "${it.biotin!!.inGrams} grams"
+                                hashMapData["biotin"] = it.biotin!!.inGrams
+                            }
+                            if (it.caffeine != null) {
+                                //hashMapData["caffeine"] = "${it.caffeine!!.inGrams} grams"
+                                hashMapData["caffeine"] = it.caffeine!!.inGrams
+                            }
+                            if (it.calcium != null) {
+                                //hashMapData["calcium"] = "${it.calcium!!.inGrams} grams"
+                                hashMapData["calcium"] = it.calcium!!.inGrams
+                            }
+                            if (it.energy != null) {
+                                hashMapData["energy"] = it.energy!!.inCalories
+                            }
+                            if (it.energyFromFat != null) {
+                                hashMapData["energyFromFat"] =
+                                    it.energyFromFat!!.inCalories
+                            }
+                            if (it.chloride != null) {
+                                hashMapData["chloride"] = it.chloride!!.inGrams
+                            }
+                            if (it.cholesterol != null) {
+                                hashMapData["cholesterol"] = it.cholesterol!!.inGrams
+                            }
+                            if (it.chromium != null) {
+                                hashMapData["chromium"] = it.chromium!!.inGrams
+                            }
+                            if (it.copper != null) {
+                                hashMapData["copper"] = it.copper!!.inGrams
+                            }
+                            if (it.dietaryFiber != null) {
+                                hashMapData["dietaryFiber"] = it.dietaryFiber!!.inGrams
+                            }
+                            if (it.folate != null) {
+                                hashMapData["folate"] = it.folate!!.inGrams
+                            }
+                            if (it.folicAcid != null) {
+                                hashMapData["folicAcid"] = it.folicAcid!!.inGrams
+                            }
+                            if (it.iodine != null) {
+                                hashMapData["iodine"] = it.iodine!!.inGrams
+                            }
+                            if (it.iron != null) {
+                                hashMapData["iron"] = it.iron!!.inGrams
+                            }
+                            if (it.magnesium != null) {
+                                hashMapData["magnesium"] = it.magnesium!!.inGrams
+                            }
+                            if (it.manganese != null) {
+                                hashMapData["manganese"] = it.manganese!!.inGrams
+                            }
+                            if (it.molybdenum != null) {
+                                hashMapData["molybdenum"] = it.molybdenum!!.inGrams
+                            }
+                            if (it.monounsaturatedFat != null) {
+                                hashMapData["monounsaturatedFat"] = it.monounsaturatedFat!!.inGrams
+                            }
+                            if (it.niacin != null) {
+                                hashMapData["niacin"] = it.niacin!!.inGrams
+                            }
+                            if (it.pantothenicAcid != null) {
+                                hashMapData["pantothenicAcid"] = it.pantothenicAcid!!.inGrams
+                            }
+                            if (it.phosphorus != null) {
+                                hashMapData["phosphorus"] = it.phosphorus!!.inGrams
+                            }
+                            if (it.polyunsaturatedFat != null) {
+                                hashMapData["polyunsaturatedFat"] =
+                                    it.polyunsaturatedFat!!.inGrams
+                            }
+                            if (it.potassium != null) {
+                                hashMapData["potassium"] = it.potassium!!.inGrams
+                            }
+                            if (it.protein != null) {
+                                hashMapData["protein"] = it.protein!!.inGrams
+                            }
+                            if (it.riboflavin != null) {
+                                hashMapData["riboflavin"] = it.riboflavin!!.inGrams
+                            }
+                            if (it.saturatedFat != null) {
+                                hashMapData["saturatedFat"] = it.saturatedFat!!.inGrams
+                            }
+                            if (it.selenium != null) {
+                                hashMapData["selenium"] = it.selenium!!.inGrams
+                            }
+                            if (it.sodium != null) {
+                                hashMapData["sodium"] = it.sodium!!.inGrams
+                            }
+                            if (it.sugar != null) {
+                                hashMapData["sugar"] = it.sugar!!.inGrams
+                            }
+                            if (it.thiamin != null) {
+                                hashMapData["thiamin"] = it.thiamin!!.inGrams
+                            }
+                            if (it.totalCarbohydrate != null) {
+                                hashMapData["totalCarbohydrate"] =
+                                    it.totalCarbohydrate!!.inGrams
+                            }
+                            if (it.totalFat != null) {
+                                hashMapData["totalFat"] = it.totalFat!!.inGrams
+                            }
+                            if (it.transFat != null) {
+                                hashMapData["transFat"] = it.transFat!!.inGrams
+                            }
+                            if (it.unsaturatedFat != null) {
+                                hashMapData["unsaturatedFat"] = it.unsaturatedFat!!.inGrams
+                            }
+                            if (it.vitaminA != null) {
+                                hashMapData["vitaminA"] = it.vitaminA!!.inGrams
+                            }
+                            if (it.vitaminB12 != null) {
+                                hashMapData["vitaminB12"] = it.vitaminB12!!.inGrams
+                            }
+                            if (it.vitaminB6 != null) {
+                                hashMapData["vitaminB6"] = it.vitaminB6!!.inGrams
+                            }
+                            if (it.vitaminC != null) {
+                                hashMapData["vitaminC"] = it.vitaminC!!.inGrams
+                            }
+                            if (it.vitaminD != null) {
+                                hashMapData["vitaminD"] = it.vitaminD!!.inGrams
+                            }
+                            if (it.vitaminE != null) {
+                                hashMapData["vitaminE"] = it.vitaminE!!.inGrams
+                            }
+                            if (it.vitaminK != null) {
+                                hashMapData["vitaminK"] = it.vitaminK!!.inGrams
+                            }
+                            if (it.zinc != null) {
+                                hashMapData["zinc"] = it.zinc!!.inGrams
+                            }
+                            if (it.name != null) {
+                                hashMapData["name"] = "${it.name}"
+                            }
+                            if (it.mealType != null) {
+                                hashMapData["mealType"] = "${it.mealType}"
+                            }
+                            return@mapIndexed hashMapData
                         }
-                        if (it.caffeine != null) {
-                            //hashMapData["caffeine"] = "${it.caffeine!!.inGrams} grams"
-                            hashMapData["caffeine"] = it.caffeine!!.inGrams
+                        activity!!.runOnUiThread {
+                            if (!replySubmitted) {
+                                result.success(healthData)
+                                replySubmitted = true
+                            }
                         }
-                        if (it.calcium != null) {
-                            //hashMapData["calcium"] = "${it.calcium!!.inGrams} grams"
-                            hashMapData["calcium"] = it.calcium!!.inGrams
+                    } catch (e: Exception) {
+                        Log.e("Read Nutrition Error", e.message, null)
+                        activity!!.runOnUiThread {
+                            if (!replySubmitted) {
+                                result.success(false)
+                                replySubmitted = true
+                            }
                         }
-                        if (it.energy != null) {
-                            hashMapData["energy"] = it.energy!!.inCalories
-                        }
-                        if (it.energyFromFat != null) {
-                            hashMapData["energyFromFat"] =
-                                it.energyFromFat!!.inCalories
-                        }
-                        if (it.chloride != null) {
-                            hashMapData["chloride"] = it.chloride!!.inGrams
-                        }
-                        if (it.cholesterol != null) {
-                            hashMapData["cholesterol"] = it.cholesterol!!.inGrams
-                        }
-                        if (it.chromium != null) {
-                            hashMapData["chromium"] = it.chromium!!.inGrams
-                        }
-                        if (it.copper != null) {
-                            hashMapData["copper"] = it.copper!!.inGrams
-                        }
-                        if (it.dietaryFiber != null) {
-                            hashMapData["dietaryFiber"] = it.dietaryFiber!!.inGrams
-                        }
-                        if (it.folate != null) {
-                            hashMapData["folate"] = it.folate!!.inGrams
-                        }
-                        if (it.folicAcid != null) {
-                            hashMapData["folicAcid"] = it.folicAcid!!.inGrams
-                        }
-                        if (it.iodine != null) {
-                            hashMapData["iodine"] = it.iodine!!.inGrams
-                        }
-                        if (it.iron != null) {
-                            hashMapData["iron"] = it.iron!!.inGrams
-                        }
-                        if (it.magnesium != null) {
-                            hashMapData["magnesium"] = it.magnesium!!.inGrams
-                        }
-                        if (it.manganese != null) {
-                            hashMapData["manganese"] = it.manganese!!.inGrams
-                        }
-                        if (it.molybdenum != null) {
-                            hashMapData["molybdenum"] = it.molybdenum!!.inGrams
-                        }
-                        if (it.monounsaturatedFat != null) {
-                            hashMapData["monounsaturatedFat"] = it.monounsaturatedFat!!.inGrams
-                        }
-                        if (it.niacin != null) {
-                            hashMapData["niacin"] = it.niacin!!.inGrams
-                        }
-                        if (it.pantothenicAcid != null) {
-                            hashMapData["pantothenicAcid"] = it.pantothenicAcid!!.inGrams
-                        }
-                        if (it.phosphorus != null) {
-                            hashMapData["phosphorus"] = it.phosphorus!!.inGrams
-                        }
-                        if (it.polyunsaturatedFat != null) {
-                            hashMapData["polyunsaturatedFat"] =
-                                it.polyunsaturatedFat!!.inGrams
-                        }
-                        if (it.potassium != null) {
-                            hashMapData["potassium"] = it.potassium!!.inGrams
-                        }
-                        if (it.protein != null) {
-                            hashMapData["protein"] = it.protein!!.inGrams
-                        }
-                        if (it.riboflavin != null) {
-                            hashMapData["riboflavin"] = it.riboflavin!!.inGrams
-                        }
-                        if (it.saturatedFat != null) {
-                            hashMapData["saturatedFat"] = it.saturatedFat!!.inGrams
-                        }
-                        if (it.selenium != null) {
-                            hashMapData["selenium"] = it.selenium!!.inGrams
-                        }
-                        if (it.sodium != null) {
-                            hashMapData["sodium"] = it.sodium!!.inGrams
-                        }
-                        if (it.sugar != null) {
-                            hashMapData["sugar"] = it.sugar!!.inGrams
-                        }
-                        if (it.thiamin != null) {
-                            hashMapData["thiamin"] = it.thiamin!!.inGrams
-                        }
-                        if (it.totalCarbohydrate != null) {
-                            hashMapData["totalCarbohydrate"] =
-                                it.totalCarbohydrate!!.inGrams
-                        }
-                        if (it.totalFat != null) {
-                            hashMapData["totalFat"] = it.totalFat!!.inGrams
-                        }
-                        if (it.transFat != null) {
-                            hashMapData["transFat"] = it.transFat!!.inGrams
-                        }
-                        if (it.unsaturatedFat != null) {
-                            hashMapData["unsaturatedFat"] = it.unsaturatedFat!!.inGrams
-                        }
-                        if (it.vitaminA != null) {
-                            hashMapData["vitaminA"] = it.vitaminA!!.inGrams
-                        }
-                        if (it.vitaminB12 != null) {
-                            hashMapData["vitaminB12"] = it.vitaminB12!!.inGrams
-                        }
-                        if (it.vitaminB6 != null) {
-                            hashMapData["vitaminB6"] = it.vitaminB6!!.inGrams
-                        }
-                        if (it.vitaminC != null) {
-                            hashMapData["vitaminC"] = it.vitaminC!!.inGrams
-                        }
-                        if (it.vitaminD != null) {
-                            hashMapData["vitaminD"] = it.vitaminD!!.inGrams
-                        }
-                        if (it.vitaminE != null) {
-                            hashMapData["vitaminE"] = it.vitaminE!!.inGrams
-                        }
-                        if (it.vitaminK != null) {
-                            hashMapData["vitaminK"] = it.vitaminK!!.inGrams
-                        }
-                        if (it.zinc != null) {
-                            hashMapData["zinc"] = it.zinc!!.inGrams
-                        }
-                        if (it.name != null) {
-                            hashMapData["name"] = "${it.name}"
-                        }
-                        if (it.mealType != null) {
-                            hashMapData["mealType"] = "${it.mealType}"
-                        }
-                        return@mapIndexed hashMapData
                     }
-                    activity!!.runOnUiThread { result.success(healthData) }
                 }
             }
         }
