@@ -7,7 +7,6 @@ import android.os.Handler
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
-import androidx.annotation.NonNull
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -37,10 +36,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
 
@@ -52,19 +48,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var result: Result? = null
     private var handler: Handler? = null
     private var activity: Activity? = null
-    private var threadPoolExecutor: ExecutorService? = null
     private var healthConnectRequestPermissionsLauncher: ActivityResultLauncher<Set<String>>? = null
     private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
     private var WEIGHT = "WEIGHT"
     private var NUTRITION = "NUTRITION"
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    // The scope for the UI thread
+    private val mainScope = CoroutineScope(Dispatchers.Main)
+
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
         channel?.setMethodCallHandler(this)
-        threadPoolExecutor = Executors.newFixedThreadPool(4)
     }
 
-    fun checkAvailability() {
+    private fun checkAvailability() {
         val healthConnectStatus = HealthConnectClient.getSdkStatus(activity!!.applicationContext)
         healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
 
@@ -75,25 +72,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel = null
         activity = null
-        threadPoolExecutor!!.shutdown()
-        threadPoolExecutor = null
     }
 
     override fun success(p0: Any?) {
-        handler?.post(
-            Runnable { result?.success(p0) })
+        handler?.post { result?.success(p0) }
     }
 
     override fun notImplemented() {
-        handler?.post(
-            Runnable { result?.notImplemented() })
+        handler?.post { result?.notImplemented() }
     }
 
     override fun error(
         errorCode: String, errorMessage: String?, errorDetails: Any?
     ) {
-        handler?.post(
-            Runnable { result?.error(errorCode, errorMessage, errorDetails) })
+        handler?.post { result?.error(errorCode, errorMessage, errorDetails) }
     }
 
 
@@ -120,7 +112,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var mResult: Result? = null
 
     @Suppress("UNCHECKED_CAST")
-    private fun writeDataHealthConnect(call: MethodCall, result: Result) {
+    private suspend fun writeDataHealthConnect(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
             return
@@ -332,18 +324,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 }
             }
         }
-        CoroutineScope(Dispatchers.Main).launch {
-            if (type == NUTRITION && deleteDataRequest != null) {
-                healthConnectClient.deleteRecords(
-                    NutritionRecord::class,
-                    timeRangeFilter = deleteDataRequest
-                )
-            }
-            if (records.isNotEmpty()) {
-                healthConnectClient.insertRecords(records)
-            }
-            result.success(true)
+
+        if (type == NUTRITION && deleteDataRequest != null) {
+            healthConnectClient.deleteRecords(
+                NutritionRecord::class,
+                timeRangeFilter = deleteDataRequest
+            )
         }
+        if (records.isNotEmpty()) {
+            healthConnectClient.insertRecords(records)
+        }
+        result.success(true)
 
     }
 
@@ -378,7 +369,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         return Energy.calories(map.getValue("value") as Double)
     }
 
-    private fun getHealthConnectData(call: MethodCall, result: Result) {
+    private suspend fun getHealthConnectData(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
             return
@@ -392,306 +383,261 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         when (type) {
             WEIGHT -> {
-                val startDate = ZonedDateTime.parse(
+                val startDateInner = ZonedDateTime.parse(
                     startDate,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
-                val endDate = ZonedDateTime.parse(
+                val endDateInner = ZonedDateTime.parse(
                     endDate,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val request = ReadRecordsRequest(
                     recordType = WeightRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(
-                        startDate.toInstant(),
-                        endDate.toInstant()
+                        startDateInner.toInstant(),
+                        endDateInner.toInstant()
                     )
                 )
-                CoroutineScope(Dispatchers.Main).launch {
-                    var replySubmitted = false
-                    try {
-                        val response = healthConnectClient.readRecords(request)
-                        val dataList: List<WeightRecord> = response.records;
 
-                        val healthData = dataList.mapIndexed { _, it ->
-                            val formatter =
-                                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                            val zonedDateTime =
-                                dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
-                            val uid = it.metadata.id
-                            val weight = it.weight.inGrams
-                            return@mapIndexed hashMapOf(
-                                //"zonedDateTime" to formatter.format(zonedDateTime),
-                                "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
-                                "uid" to uid,
-                                "weight" to weight
-                            )
-                        }
-                        activity!!.runOnUiThread {
-                            if (!replySubmitted) {
-                                result.success(healthData)
-                                replySubmitted = true
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e("Read Weight Error", e.message, null)
-                        activity!!.runOnUiThread {
-                            if (!replySubmitted) {
-                                result.success(false)
-                                replySubmitted = true
-                            }
-                        }
+                try {
+                    val response = healthConnectClient.readRecords(request)
+                    val dataList: List<WeightRecord> = response.records
+
+                    val healthData = dataList.mapIndexed { _, it ->
+                        val zonedDateTime =
+                            dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
+                        val uid = it.metadata.id
+                        val weight = it.weight.inGrams
+                        return@mapIndexed hashMapOf(
+                            "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
+                            "uid" to uid,
+                            "weight" to weight
+                        )
                     }
+                    result.success(healthData)
+                } catch (e: Exception) {
+                    Log.e("Read Weight Error", e.message, null)
+                    result.success(false)
                 }
+
             }
             BODY_FAT_PERCENTAGE -> {
-                val startDate = ZonedDateTime.parse(
+                val startDateInner = ZonedDateTime.parse(
                     startDate,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
-                val endDate = ZonedDateTime.parse(
+                val endDateInner = ZonedDateTime.parse(
                     endDate,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val request = ReadRecordsRequest(
                     recordType = BodyFatRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(
-                        startDate.toInstant(),
-                        endDate.toInstant()
+                        startDateInner.toInstant(),
+                        endDateInner.toInstant()
                     )
                 )
-                CoroutineScope(Dispatchers.Main).launch {
-                    var replySubmitted = false
-                    try {
-                        val response = healthConnectClient.readRecords(request)
-                        val dataList: List<BodyFatRecord> = response.records
+                try {
+                    val response = healthConnectClient.readRecords(request)
+                    val dataList: List<BodyFatRecord> = response.records
 
-                        val healthData = dataList.mapIndexed { _, it ->
-                            val formatter =
-                                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                            val zonedDateTime =
-                                dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
-                            val uid = it.metadata.id
-                            val bodyFat = it.percentage.value
-                            return@mapIndexed hashMapOf(
-                                "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
-                                //"zonedDateTime" to formatter.format(zonedDateTime),
-                                "uid" to uid,
-                                "bodyFat" to bodyFat
-                            )
-                        }
-                        activity!!.runOnUiThread {
-                            if (!replySubmitted) {
-                                result.success(healthData)
-                                replySubmitted = true
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e("Read Body Fat Error", e.message, null)
-                        activity!!.runOnUiThread {
-                            if (!replySubmitted) {
-                                result.success(false)
-                                replySubmitted = true
-                            }
-                        }
+                    val healthData = dataList.mapIndexed { _, it ->
+                        val zonedDateTime =
+                            dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
+                        val uid = it.metadata.id
+                        val bodyFat = it.percentage.value
+                        return@mapIndexed hashMapOf(
+                            "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
+                            "uid" to uid,
+                            "bodyFat" to bodyFat
+                        )
                     }
+                    result.success(healthData)
+                } catch (e: Exception) {
+                    Log.e("Read Body Fat Error", e.message, null)
+                    result.success(false)
                 }
             }
             NUTRITION -> {
-                val startDate = ZonedDateTime.parse(
+                val startDateInner = ZonedDateTime.parse(
                     startDate,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
-                val endDate = ZonedDateTime.parse(
+                val endDateInner = ZonedDateTime.parse(
                     endDate,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
                 val request = ReadRecordsRequest(
                     recordType = NutritionRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(
-                        startDate.toInstant(),
-                        endDate.toInstant()
+                        startDateInner.toInstant(),
+                        endDateInner.toInstant()
                     ),
                 )
-                CoroutineScope(Dispatchers.Main).launch {
-                    var replySubmitted = false
-                    try {
-                        val response = healthConnectClient.readRecords(request)
-                        val dataList: List<NutritionRecord> = response.records
-                        val healthData = dataList.mapIndexed { _, it ->
-                            val formatter =
-                                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
-                            val startZonedDateTime =
-                                dateTimeWithOffsetOrDefault(it.startTime, it.startZoneOffset)
-                            val endZonedDateTime =
-                                dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
-                            val uid = it.metadata.id
-                            val hashMapData = hashMapOf<String, Any>(
-                                "startDateTime" to startZonedDateTime.toInstant().toEpochMilli(),
-                                "endDateTime" to endZonedDateTime.toInstant().toEpochMilli(),
-                                "uid" to uid,
-                            )
-                            if (it.biotin != null) {
-                                //hashMapData["biotin"] = "${it.biotin!!.inGrams} grams"
-                                hashMapData["biotin"] = it.biotin!!.inGrams
-                            }
-                            if (it.caffeine != null) {
-                                //hashMapData["caffeine"] = "${it.caffeine!!.inGrams} grams"
-                                hashMapData["caffeine"] = it.caffeine!!.inGrams
-                            }
-                            if (it.calcium != null) {
-                                //hashMapData["calcium"] = "${it.calcium!!.inGrams} grams"
-                                hashMapData["calcium"] = it.calcium!!.inGrams
-                            }
-                            if (it.energy != null) {
-                                hashMapData["energy"] = it.energy!!.inCalories
-                            }
-                            if (it.energyFromFat != null) {
-                                hashMapData["energyFromFat"] =
-                                    it.energyFromFat!!.inCalories
-                            }
-                            if (it.chloride != null) {
-                                hashMapData["chloride"] = it.chloride!!.inGrams
-                            }
-                            if (it.cholesterol != null) {
-                                hashMapData["cholesterol"] = it.cholesterol!!.inGrams
-                            }
-                            if (it.chromium != null) {
-                                hashMapData["chromium"] = it.chromium!!.inGrams
-                            }
-                            if (it.copper != null) {
-                                hashMapData["copper"] = it.copper!!.inGrams
-                            }
-                            if (it.dietaryFiber != null) {
-                                hashMapData["dietaryFiber"] = it.dietaryFiber!!.inGrams
-                            }
-                            if (it.folate != null) {
-                                hashMapData["folate"] = it.folate!!.inGrams
-                            }
-                            if (it.folicAcid != null) {
-                                hashMapData["folicAcid"] = it.folicAcid!!.inGrams
-                            }
-                            if (it.iodine != null) {
-                                hashMapData["iodine"] = it.iodine!!.inGrams
-                            }
-                            if (it.iron != null) {
-                                hashMapData["iron"] = it.iron!!.inGrams
-                            }
-                            if (it.magnesium != null) {
-                                hashMapData["magnesium"] = it.magnesium!!.inGrams
-                            }
-                            if (it.manganese != null) {
-                                hashMapData["manganese"] = it.manganese!!.inGrams
-                            }
-                            if (it.molybdenum != null) {
-                                hashMapData["molybdenum"] = it.molybdenum!!.inGrams
-                            }
-                            if (it.monounsaturatedFat != null) {
-                                hashMapData["monounsaturatedFat"] = it.monounsaturatedFat!!.inGrams
-                            }
-                            if (it.niacin != null) {
-                                hashMapData["niacin"] = it.niacin!!.inGrams
-                            }
-                            if (it.pantothenicAcid != null) {
-                                hashMapData["pantothenicAcid"] = it.pantothenicAcid!!.inGrams
-                            }
-                            if (it.phosphorus != null) {
-                                hashMapData["phosphorus"] = it.phosphorus!!.inGrams
-                            }
-                            if (it.polyunsaturatedFat != null) {
-                                hashMapData["polyunsaturatedFat"] =
-                                    it.polyunsaturatedFat!!.inGrams
-                            }
-                            if (it.potassium != null) {
-                                hashMapData["potassium"] = it.potassium!!.inGrams
-                            }
-                            if (it.protein != null) {
-                                hashMapData["protein"] = it.protein!!.inGrams
-                            }
-                            if (it.riboflavin != null) {
-                                hashMapData["riboflavin"] = it.riboflavin!!.inGrams
-                            }
-                            if (it.saturatedFat != null) {
-                                hashMapData["saturatedFat"] = it.saturatedFat!!.inGrams
-                            }
-                            if (it.selenium != null) {
-                                hashMapData["selenium"] = it.selenium!!.inGrams
-                            }
-                            if (it.sodium != null) {
-                                hashMapData["sodium"] = it.sodium!!.inGrams
-                            }
-                            if (it.sugar != null) {
-                                hashMapData["sugar"] = it.sugar!!.inGrams
-                            }
-                            if (it.thiamin != null) {
-                                hashMapData["thiamin"] = it.thiamin!!.inGrams
-                            }
-                            if (it.totalCarbohydrate != null) {
-                                hashMapData["totalCarbohydrate"] =
-                                    it.totalCarbohydrate!!.inGrams
-                            }
-                            if (it.totalFat != null) {
-                                hashMapData["totalFat"] = it.totalFat!!.inGrams
-                            }
-                            if (it.transFat != null) {
-                                hashMapData["transFat"] = it.transFat!!.inGrams
-                            }
-                            if (it.unsaturatedFat != null) {
-                                hashMapData["unsaturatedFat"] = it.unsaturatedFat!!.inGrams
-                            }
-                            if (it.vitaminA != null) {
-                                hashMapData["vitaminA"] = it.vitaminA!!.inGrams
-                            }
-                            if (it.vitaminB12 != null) {
-                                hashMapData["vitaminB12"] = it.vitaminB12!!.inGrams
-                            }
-                            if (it.vitaminB6 != null) {
-                                hashMapData["vitaminB6"] = it.vitaminB6!!.inGrams
-                            }
-                            if (it.vitaminC != null) {
-                                hashMapData["vitaminC"] = it.vitaminC!!.inGrams
-                            }
-                            if (it.vitaminD != null) {
-                                hashMapData["vitaminD"] = it.vitaminD!!.inGrams
-                            }
-                            if (it.vitaminE != null) {
-                                hashMapData["vitaminE"] = it.vitaminE!!.inGrams
-                            }
-                            if (it.vitaminK != null) {
-                                hashMapData["vitaminK"] = it.vitaminK!!.inGrams
-                            }
-                            if (it.zinc != null) {
-                                hashMapData["zinc"] = it.zinc!!.inGrams
-                            }
-                            if (it.name != null) {
-                                hashMapData["name"] = "${it.name}"
-                            }
-                            if (it.mealType != null) {
-                                hashMapData["mealType"] = "${it.mealType}"
-                            }
-                            return@mapIndexed hashMapData
+                try {
+                    val response = healthConnectClient.readRecords(request)
+                    val dataList: List<NutritionRecord> = response.records
+                    val healthData = dataList.mapIndexed { _, it ->
+                        val startZonedDateTime =
+                            dateTimeWithOffsetOrDefault(it.startTime, it.startZoneOffset)
+                        val endZonedDateTime =
+                            dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
+                        val uid = it.metadata.id
+                        val hashMapData = hashMapOf<String, Any>(
+                            "startDateTime" to startZonedDateTime.toInstant().toEpochMilli(),
+                            "endDateTime" to endZonedDateTime.toInstant().toEpochMilli(),
+                            "uid" to uid,
+                        )
+                        if (it.biotin != null) {
+                            //hashMapData["biotin"] = "${it.biotin!!.inGrams} grams"
+                            hashMapData["biotin"] = it.biotin!!.inGrams
                         }
-                        activity!!.runOnUiThread {
-                            if (!replySubmitted) {
-                                result.success(healthData)
-                                replySubmitted = true
-                            }
+                        if (it.caffeine != null) {
+                            //hashMapData["caffeine"] = "${it.caffeine!!.inGrams} grams"
+                            hashMapData["caffeine"] = it.caffeine!!.inGrams
                         }
-                    } catch (e: Exception) {
-                        Log.e("Read Nutrition Error", e.message, null)
-                        activity!!.runOnUiThread {
-                            if (!replySubmitted) {
-                                result.success(false)
-                                replySubmitted = true
-                            }
+                        if (it.calcium != null) {
+                            //hashMapData["calcium"] = "${it.calcium!!.inGrams} grams"
+                            hashMapData["calcium"] = it.calcium!!.inGrams
                         }
+                        if (it.energy != null) {
+                            hashMapData["energy"] = it.energy!!.inCalories
+                        }
+                        if (it.energyFromFat != null) {
+                            hashMapData["energyFromFat"] =
+                                it.energyFromFat!!.inCalories
+                        }
+                        if (it.chloride != null) {
+                            hashMapData["chloride"] = it.chloride!!.inGrams
+                        }
+                        if (it.cholesterol != null) {
+                            hashMapData["cholesterol"] = it.cholesterol!!.inGrams
+                        }
+                        if (it.chromium != null) {
+                            hashMapData["chromium"] = it.chromium!!.inGrams
+                        }
+                        if (it.copper != null) {
+                            hashMapData["copper"] = it.copper!!.inGrams
+                        }
+                        if (it.dietaryFiber != null) {
+                            hashMapData["dietaryFiber"] = it.dietaryFiber!!.inGrams
+                        }
+                        if (it.folate != null) {
+                            hashMapData["folate"] = it.folate!!.inGrams
+                        }
+                        if (it.folicAcid != null) {
+                            hashMapData["folicAcid"] = it.folicAcid!!.inGrams
+                        }
+                        if (it.iodine != null) {
+                            hashMapData["iodine"] = it.iodine!!.inGrams
+                        }
+                        if (it.iron != null) {
+                            hashMapData["iron"] = it.iron!!.inGrams
+                        }
+                        if (it.magnesium != null) {
+                            hashMapData["magnesium"] = it.magnesium!!.inGrams
+                        }
+                        if (it.manganese != null) {
+                            hashMapData["manganese"] = it.manganese!!.inGrams
+                        }
+                        if (it.molybdenum != null) {
+                            hashMapData["molybdenum"] = it.molybdenum!!.inGrams
+                        }
+                        if (it.monounsaturatedFat != null) {
+                            hashMapData["monounsaturatedFat"] = it.monounsaturatedFat!!.inGrams
+                        }
+                        if (it.niacin != null) {
+                            hashMapData["niacin"] = it.niacin!!.inGrams
+                        }
+                        if (it.pantothenicAcid != null) {
+                            hashMapData["pantothenicAcid"] = it.pantothenicAcid!!.inGrams
+                        }
+                        if (it.phosphorus != null) {
+                            hashMapData["phosphorus"] = it.phosphorus!!.inGrams
+                        }
+                        if (it.polyunsaturatedFat != null) {
+                            hashMapData["polyunsaturatedFat"] =
+                                it.polyunsaturatedFat!!.inGrams
+                        }
+                        if (it.potassium != null) {
+                            hashMapData["potassium"] = it.potassium!!.inGrams
+                        }
+                        if (it.protein != null) {
+                            hashMapData["protein"] = it.protein!!.inGrams
+                        }
+                        if (it.riboflavin != null) {
+                            hashMapData["riboflavin"] = it.riboflavin!!.inGrams
+                        }
+                        if (it.saturatedFat != null) {
+                            hashMapData["saturatedFat"] = it.saturatedFat!!.inGrams
+                        }
+                        if (it.selenium != null) {
+                            hashMapData["selenium"] = it.selenium!!.inGrams
+                        }
+                        if (it.sodium != null) {
+                            hashMapData["sodium"] = it.sodium!!.inGrams
+                        }
+                        if (it.sugar != null) {
+                            hashMapData["sugar"] = it.sugar!!.inGrams
+                        }
+                        if (it.thiamin != null) {
+                            hashMapData["thiamin"] = it.thiamin!!.inGrams
+                        }
+                        if (it.totalCarbohydrate != null) {
+                            hashMapData["totalCarbohydrate"] =
+                                it.totalCarbohydrate!!.inGrams
+                        }
+                        if (it.totalFat != null) {
+                            hashMapData["totalFat"] = it.totalFat!!.inGrams
+                        }
+                        if (it.transFat != null) {
+                            hashMapData["transFat"] = it.transFat!!.inGrams
+                        }
+                        if (it.unsaturatedFat != null) {
+                            hashMapData["unsaturatedFat"] = it.unsaturatedFat!!.inGrams
+                        }
+                        if (it.vitaminA != null) {
+                            hashMapData["vitaminA"] = it.vitaminA!!.inGrams
+                        }
+                        if (it.vitaminB12 != null) {
+                            hashMapData["vitaminB12"] = it.vitaminB12!!.inGrams
+                        }
+                        if (it.vitaminB6 != null) {
+                            hashMapData["vitaminB6"] = it.vitaminB6!!.inGrams
+                        }
+                        if (it.vitaminC != null) {
+                            hashMapData["vitaminC"] = it.vitaminC!!.inGrams
+                        }
+                        if (it.vitaminD != null) {
+                            hashMapData["vitaminD"] = it.vitaminD!!.inGrams
+                        }
+                        if (it.vitaminE != null) {
+                            hashMapData["vitaminE"] = it.vitaminE!!.inGrams
+                        }
+                        if (it.vitaminK != null) {
+                            hashMapData["vitaminK"] = it.vitaminK!!.inGrams
+                        }
+                        if (it.zinc != null) {
+                            hashMapData["zinc"] = it.zinc!!.inGrams
+                        }
+                        if (it.name != null) {
+                            hashMapData["name"] = "${it.name}"
+                        }
+                        if (it.mealType != null) {
+                            hashMapData["mealType"] = "${it.mealType}"
+                        }
+                        return@mapIndexed hashMapData
                     }
+                    result.success(healthData)
+                } catch (e: Exception) {
+                    Log.e("Read Nutrition Error", e.message, null)
+                    result.success(false)
                 }
             }
         }
     }
 
-    private fun deleteHealthConnectData(call: MethodCall, result: Result) {
+    private suspend fun deleteHealthConnectData(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
             return
@@ -700,8 +646,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val type = call.argument<String>("dataTypeKey")!!
         val uID = call.argument<String>("uID")!!
         mResult = result
-        if (type == WEIGHT) {
-            CoroutineScope(Dispatchers.Main).launch {
+        when (type) {
+            WEIGHT -> {
                 healthConnectClient.deleteRecords(
                     WeightRecord::class,
                     recordIdsList = listOf(uID),
@@ -709,8 +655,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 )
                 result.success(true)
             }
-        } else if (type == BODY_FAT_PERCENTAGE) {
-            CoroutineScope(Dispatchers.Main).launch {
+            BODY_FAT_PERCENTAGE -> {
                 healthConnectClient.deleteRecords(
                     BodyFatRecord::class,
                     recordIdsList = listOf(uID),
@@ -718,8 +663,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 )
                 result.success(true)
             }
-        } else if (type == NUTRITION) {
-            CoroutineScope(Dispatchers.Main).launch {
+            NUTRITION -> {
                 healthConnectClient.deleteRecords(
                     NutritionRecord::class,
                     recordIdsList = listOf(uID),
@@ -731,7 +675,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
     }
 
-    private fun deleteHealthConnectDataByDateRange(call: MethodCall, result: Result) {
+    private suspend fun deleteHealthConnectDataByDateRange(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
             return
@@ -752,16 +696,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     endTime,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
-                CoroutineScope(Dispatchers.Main).launch {
-                    healthConnectClient.deleteRecords(
-                        WeightRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(
-                            startDate.toInstant(),
-                            endDate.toInstant()
-                        )
+
+                healthConnectClient.deleteRecords(
+                    WeightRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(
+                        startDate.toInstant(),
+                        endDate.toInstant()
                     )
-                    result.success(true)
-                }
+                )
+                result.success(true)
             }
             BODY_FAT_PERCENTAGE -> {
                 val startDate = ZonedDateTime.parse(
@@ -773,16 +716,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
 
-                CoroutineScope(Dispatchers.Main).launch {
-                    healthConnectClient.deleteRecords(
-                        BodyFatRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(
-                            startDate.toInstant(),
-                            endDate.toInstant()
-                        )
+                healthConnectClient.deleteRecords(
+                    BodyFatRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(
+                        startDate.toInstant(),
+                        endDate.toInstant()
                     )
-                    result.success(true)
-                }
+                )
+                result.success(true)
             }
             NUTRITION -> {
                 val startDate = ZonedDateTime.parse(
@@ -794,16 +735,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
                 )
 
-                CoroutineScope(Dispatchers.Main).launch {
-                    healthConnectClient.deleteRecords(
-                        NutritionRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(
-                            startDate.toInstant(),
-                            endDate.toInstant()
-                        )
+                healthConnectClient.deleteRecords(
+                    NutritionRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(
+                        startDate.toInstant(),
+                        endDate.toInstant()
                     )
-                    result.success(true)
-                }
+                )
+                result.success(true)
             }
         }
     }
@@ -857,7 +796,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         return listPermission.toSet()
     }
 
-    var healthConnectAvailable = false
+    private var healthConnectAvailable = false
 
     private fun isHealthConnectAvailable(activityLocal: Activity?, call: MethodCall, result: Result) {
         if (activityLocal == null) {
@@ -870,7 +809,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val sdkStatus = HealthConnectClient.getSdkStatus(activityLocal)
         val success = sdkStatus == HealthConnectClient.SDK_AVAILABLE
 
-        healthConnectAvailable = success;
+        healthConnectAvailable = success
 
         Log.i("FLUTTER_HEALTH", "isHealthConnectAvailable")
         Log.i("FLUTTER_HEALTH", healthConnectAvailable.toString())
@@ -900,7 +839,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         result.success(success)
     }
 
-    private fun hasPermissionHealthConnect(call: MethodCall, result: Result) {
+    private suspend fun hasPermissionHealthConnect(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
             return
@@ -909,19 +848,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val permissionList = callToHealthConnectTypes(call)
         mResult = result
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
 
-            if (granted.containsAll(permissionList.toSet())) {
-                mResult?.success(true)
-            } else {
-                mResult?.success(false)
-                // Do we need to request here?
-            }
+        if (granted.containsAll(permissionList.toSet())) {
+            mResult?.success(true)
+        } else {
+            mResult?.success(false)
+            // Do we need to request here?
         }
     }
 
-    private fun requestHealthConnectPermission(call: MethodCall, result: Result) {
+    private suspend fun requestHealthConnectPermission(call: MethodCall, result: Result) {
         if (activity == null) {
             result.success(false)
             return
@@ -931,30 +868,28 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val permissionList = callToHealthConnectTypes(call)
         val permissionListSet = permissionList.toSet()
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
 
-            if (granted.containsAll(permissionListSet)) {
-                mResult?.success(true)
+        if (granted.containsAll(permissionListSet)) {
+            mResult?.success(true)
+        } else {
+            if(healthConnectRequestPermissionsLauncher == null) {
+                mResult?.success(false)
+                Log.i("FLUTTER_HEALTH", "Permission launcher not found")
             } else {
-                if(healthConnectRequestPermissionsLauncher == null) {
-                    mResult?.success(false)
-                    Log.i("FLUTTER_HEALTH", "Permission launcher not found")
-                } else {
-                    healthConnectRequestPermissionsLauncher!!.launch(permissionListSet);
-                }
+                healthConnectRequestPermissionsLauncher!!.launch(permissionListSet)
             }
         }
     }
 
-    private  fun onHealthConnectPermissionCallback(permissionGranted: Set<String>)
+    private fun onHealthConnectPermissionCallback(permissionGranted: Set<String>)
     {
         if(permissionGranted.isEmpty()) {
-            mResult?.success(false);
+            mResult?.success(false)
             Log.i("FLUTTER_HEALTH", "Access Denied (to Health Connect)!")
 
         } else {
-            mResult?.success(true);
+            mResult?.success(true)
             Log.i("FLUTTER_HEALTH", "Access Granted (to Health Connect)!")
         }
 
@@ -964,15 +899,31 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     override fun onMethodCall(call: MethodCall, result: Result) {
         val activityContext = activity
 
-        when (call.method) {
-            "hasPermissionsHealthConnect" -> hasPermissionHealthConnect(call, result)
-            "writeDataHealthConnect" -> writeDataHealthConnect(call, result)
-            "getHealthConnectData" -> getHealthConnectData(call, result)
-            "deleteHealthConnectData" -> deleteHealthConnectData(call, result)
-            "requestHealthConnectPermission" -> requestHealthConnectPermission(call, result)
-            "isHealthConnectAvailable" -> isHealthConnectAvailable(activityContext, call, result)
-            "deleteHealthConnectDataByDateRange" -> deleteHealthConnectDataByDateRange(call, result)
-            else -> result.notImplemented()
+        mainScope.launch {
+            when (call.method) {
+                "hasPermissionsHealthConnect" -> {
+                    hasPermissionHealthConnect(call, result)
+                }
+                "writeDataHealthConnect" -> {
+                    writeDataHealthConnect(call, result)
+                }
+                "getHealthConnectData" -> {
+                    getHealthConnectData(call, result)
+                }
+                "deleteHealthConnectData" -> {
+                    deleteHealthConnectData(call, result)
+                }
+                "requestHealthConnectPermission" -> {
+                    requestHealthConnectPermission(call, result)
+                }
+                "isHealthConnectAvailable" -> {
+                    isHealthConnectAvailable(activityContext, call, result)
+                }
+                "deleteHealthConnectDataByDateRange" -> {
+                    deleteHealthConnectDataByDateRange(call, result)
+                }
+                else -> result.notImplemented()
+            }
         }
     }
 
@@ -991,13 +942,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
 
         healthConnectRequestPermissionsLauncher =(activity as ComponentActivity).registerForActivityResult(requestPermissionActivityContract) { granted ->
-            onHealthConnectPermissionCallback(granted);
+            onHealthConnectPermissionCallback(granted)
         }
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         onDetachedFromActivity()
-        healthConnectRequestPermissionsLauncher = null;
+        healthConnectRequestPermissionsLauncher = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
