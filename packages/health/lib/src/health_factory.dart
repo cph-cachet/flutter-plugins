@@ -1,5 +1,18 @@
 part of health;
 
+extension _PlatformSpecificTypesExtension on List<HealthDataType> {
+  /// Filters out platform specific health data types.
+  List<HealthDataType> platformSpecific(PlatformType platformType) {
+    return this..removeWhere((type) => !_isTypeAvailable(type, platformType));
+  }
+
+  bool _isTypeAvailable(HealthDataType type, PlatformType platformType) {
+    return platformType == PlatformType.ANDROID
+        ? _dataTypeKeysAndroid.contains(type)
+        : _dataTypeKeysIOS.contains(type);
+  }
+}
+
 /// Main class for the Plugin.
 ///
 /// The plugin supports:
@@ -108,9 +121,9 @@ class HealthFactory {
   }
 
   /// Opens native system settings for:
-  /// - Health on iOS 
+  /// - Health on iOS
   /// - Health Connect on Android
-  /// 
+  ///
   /// Throws if the application is not installed on the device.
   Future<void> openSystemSettings() async {
     await _channel.invokeMethod('openSystemSettings');
@@ -158,7 +171,8 @@ class HealthFactory {
       }
     }
 
-    final mTypes = List<HealthDataType>.from(types, growable: true);
+    final mTypes = List<HealthDataType>.from(types, growable: true)
+        .platformSpecific(_platformType);
     final mPermissions = permissions == null
         ? List<int>.filled(types.length, HealthDataAccess.READ.index,
             growable: true)
@@ -433,7 +447,7 @@ class HealthFactory {
       DateTime startTime, DateTime endTime, List<HealthDataType> types) async {
     List<HealthDataPoint> dataPoints = [];
 
-    for (var type in types) {
+    for (var type in types.platformSpecific(_platformType)) {
       final result = await _prepareQuery(startTime, endTime, type);
       dataPoints.addAll(result);
     }

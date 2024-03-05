@@ -29,7 +29,6 @@ enum HealthDataType {
   WEIGHT,
   DISTANCE_WALKING_RUNNING,
   FLIGHTS_CLIMBED,
-  MOVE_MINUTES,
   DISTANCE_DELTA,
   MINDFULNESS,
   WATER,
@@ -48,6 +47,10 @@ enum HealthDataType {
   HEADACHE_MODERATE,
   HEADACHE_SEVERE,
   HEADACHE_UNSPECIFIED,
+  LEAN_BODY_MASS,
+  MOVE_TIME,
+  STAND_HOUR,
+  STAND_TIME,
 
   // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
@@ -112,6 +115,10 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.HEADACHE_SEVERE,
   HealthDataType.HEADACHE_UNSPECIFIED,
   HealthDataType.ELECTROCARDIOGRAM,
+  HealthDataType.LEAN_BODY_MASS,
+  HealthDataType.MOVE_TIME,
+  HealthDataType.STAND_HOUR,
+  HealthDataType.STAND_TIME,
 ];
 
 /// List of data types available on Android
@@ -125,10 +132,10 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
   HealthDataType.HEART_RATE,
+  HealthDataType.HEART_RATE_VARIABILITY_SDNN,
   HealthDataType.HEIGHT,
   HealthDataType.STEPS,
   HealthDataType.WEIGHT,
-  HealthDataType.MOVE_MINUTES,
   HealthDataType.DISTANCE_DELTA,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
@@ -143,6 +150,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.FLIGHTS_CLIMBED,
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.RESPIRATORY_RATE,
+  HealthDataType.LEAN_BODY_MASS,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
@@ -174,8 +182,8 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.WEIGHT: HealthDataUnit.KILOGRAM,
   HealthDataType.DISTANCE_WALKING_RUNNING: HealthDataUnit.METER,
   HealthDataType.FLIGHTS_CLIMBED: HealthDataUnit.COUNT,
-  HealthDataType.MOVE_MINUTES: HealthDataUnit.MINUTE,
   HealthDataType.DISTANCE_DELTA: HealthDataUnit.METER,
+  HealthDataType.LEAN_BODY_MASS: HealthDataUnit.KILOGRAM,
 
   HealthDataType.WATER: HealthDataUnit.LITER,
   HealthDataType.SLEEP_IN_BED: HealthDataUnit.MINUTE,
@@ -196,6 +204,10 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.HEADACHE_MODERATE: HealthDataUnit.MINUTE,
   HealthDataType.HEADACHE_SEVERE: HealthDataUnit.MINUTE,
   HealthDataType.HEADACHE_UNSPECIFIED: HealthDataUnit.MINUTE,
+
+  HealthDataType.MOVE_TIME: HealthDataUnit.MINUTE,
+  HealthDataType.STAND_HOUR: HealthDataUnit.HOUR,
+  HealthDataType.STAND_TIME: HealthDataUnit.MINUTE,
 
   // Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
@@ -463,8 +475,7 @@ enum ElectrocardiogramClassification {
 }
 
 /// Extension to assign numbers to [ElectrocardiogramClassification]s
-extension ElectrocardiogramClassificationValue
-    on ElectrocardiogramClassification {
+extension ElectrocardiogramClassificationValue on ElectrocardiogramClassification {
   int get value {
     switch (this) {
       case ElectrocardiogramClassification.NOT_SET:

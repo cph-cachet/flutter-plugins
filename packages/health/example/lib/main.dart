@@ -244,6 +244,22 @@ class _HealthAppState extends State<HealthApp> {
     }
   }
 
+  Future<void> openSettings() async {
+    try {
+      await health.openSystemSettings();
+    } catch (error) {
+      print("Caught exception in openSettings: $error");
+    }
+  }
+
+  Future<void> checkAvailability() async {
+    try {
+      await health.checkAvailability();
+    } catch (error) {
+      print("Caught exception in checkAvailability: $error");
+    }
+  }
+
   Widget _contentFetchingData() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -408,6 +424,20 @@ class _HealthAppState extends State<HealthApp> {
                   TextButton(
                       onPressed: revokeAccess,
                       child: Text("Revoke Access",
+                          style: TextStyle(color: Colors.white)),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.blue))),
+                  TextButton(
+                      onPressed: checkAvailability,
+                      child: Text("Check availability",
+                          style: TextStyle(color: Colors.white)),
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.blue))),
+                  TextButton(
+                      onPressed: openAppSettings,
+                      child: Text("Open settings",
                           style: TextStyle(color: Colors.white)),
                       style: ButtonStyle(
                           backgroundColor:

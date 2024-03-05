@@ -52,6 +52,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
   let SLEEP_AWAKE = "SLEEP_AWAKE"
   let SLEEP_DEEP = "SLEEP_DEEP"
   let SLEEP_REM = "SLEEP_REM"
+  let LEAN_BODY_MASS = "LEAN_BODY_MASS"
+  let MOVE_TIME = "MOVE_TIME"
+  let STAND_HOUR = "STAND_HOUR"
+  let STAND_TIME = "STAND_TIME"
 
   let EXERCISE_TIME = "EXERCISE_TIME"
   let WORKOUT = "WORKOUT"
@@ -237,6 +241,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     else {
       throw PluginError(message: "Invalid Arguments!")
     }
+      
+    // Sharing those data is not allowed.
+    let typesExcludedFromWrite = [MOVE_TIME, STAND_HOUR, STAND_TIME]
 
     var typesToRead = Set<HKSampleType>()
     var typesToWrite = Set<HKSampleType>()
@@ -247,10 +254,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       case 0:
         typesToRead.insert(dataType)
       case 1:
-        typesToWrite.insert(dataType)
+        if !typesExcludedFromWrite.contains(key) { typesToWrite.insert(dataType) }
       default:
         typesToRead.insert(dataType)
-        typesToWrite.insert(dataType)
+        if !typesExcludedFromWrite.contains(key) { typesToWrite.insert(dataType) }
       }
     }
 
@@ -915,12 +922,22 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
       dataTypesDict[SLEEP_AWAKE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
       dataTypesDict[SLEEP_DEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
       dataTypesDict[SLEEP_REM] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+      dataTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .leanBodyMass)!
+    
+      dataTypesDict[STAND_HOUR] = HKSampleType.categoryType(forIdentifier: .appleStandHour)!
+      dataTypesDict[STAND_TIME] = HKSampleType.quantityType(forIdentifier: .appleStandTime)!
 
       dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
       dataTypesDict[WORKOUT] = HKSampleType.workoutType()
 
       healthDataTypes = Array(dataTypesDict.values)
     }
+      
+    // Set up move time, requires iOS 14.5
+    if #available(iOS 14.5, *) {
+      dataTypesDict[MOVE_TIME] = HKSampleType.quantityType(forIdentifier: .appleMoveTime)!
+    }
+      
     // Set up heart rate data types specific to the apple watch, requires iOS 12
     if #available(iOS 12.2, *) {
       dataTypesDict[HIGH_HEART_RATE_EVENT] = HKSampleType.categoryType(
