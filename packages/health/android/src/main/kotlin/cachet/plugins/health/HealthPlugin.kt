@@ -416,7 +416,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     }
                     result.success(healthData)
                 } catch (e: Exception) {
-                    Log.e("Read Weight Error", e.message, null)
+                    Log.e("FLUTTER_HEALTH", e.message, null)
                     result.success(false)
                 }
 
@@ -454,7 +454,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     }
                     result.success(healthData)
                 } catch (e: Exception) {
-                    Log.e("Read Body Fat Error", e.message, null)
+                    Log.e("FLUTTER_HEALTH", e.message, null)
                     result.success(false)
                 }
             }
@@ -630,7 +630,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     }
                     result.success(healthData)
                 } catch (e: Exception) {
-                    Log.e("Read Nutrition Error", e.message, null)
+                    Log.e("FLUTTER_HEALTH", e.message, null)
                     result.success(false)
                 }
             }
@@ -829,8 +829,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
                 result.success(false)
                 return
-            } catch (e: Throwable) {
-                print(e.message)
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH", e.message, null)
                 result.success(false)
                 return
             }
@@ -905,7 +905,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     hasPermissionHealthConnect(call, result)
                 }
                 "writeDataHealthConnect" -> {
-                    writeDataHealthConnect(call, result)
+                    try {
+                        writeDataHealthConnect(call, result)
+                    } catch (e: Exception) {
+                        Log.e("FLUTTER_HEALTH", e.message, null)
+                    }
                 }
                 "getHealthConnectData" -> {
                     getHealthConnectData(call, result)
