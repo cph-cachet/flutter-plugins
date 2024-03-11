@@ -1154,6 +1154,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         )
                             ),
                     "source_id" to dataPoint.originalDataSource.streamIdentifier,
+                    "user_entered" to (dataPoint.originalDataSource.streamName == "user_input"),
                 )
             }
             Handler(context!!.mainLooper).run { result.success(healthData) }

@@ -200,6 +200,8 @@ class HealthFactory {
       final bmiValue =
           (weights[i].value as NumericHealthValue).numericValue.toDouble() /
               (h * h);
+      final isUserEntered =
+          heights.last.isUserEntered || weights[i].isUserEntered;
       final x = HealthDataPoint(
           NumericHealthValue(bmiValue),
           dataType,
@@ -209,7 +211,8 @@ class HealthFactory {
           _platformType,
           _deviceId!,
           '',
-          '');
+          '',
+          isUserEntered);
 
       bmiHealthPoints.add(x);
     }
@@ -548,6 +551,7 @@ class HealthFactory {
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
       final String sourceName = e["source_name"];
+      final bool userEntered = e["user_entered"];
       return HealthDataPoint(
         value,
         dataType,
@@ -558,6 +562,7 @@ class HealthFactory {
         device,
         sourceId,
         sourceName,
+        userEntered,
       );
     }).toList();
 
