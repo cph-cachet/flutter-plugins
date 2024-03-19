@@ -28,6 +28,8 @@ enum HealthDataType {
   WALKING_HEART_RATE,
   WEIGHT,
   DISTANCE_WALKING_RUNNING,
+  DISTANCE_SWIMMING,
+  DISTANCE_CYCLING,
   FLIGHTS_CLIMBED,
   MOVE_MINUTES,
   DISTANCE_DELTA,
@@ -35,6 +37,9 @@ enum HealthDataType {
   WATER,
   SLEEP_IN_BED,
   SLEEP_ASLEEP,
+  SLEEP_ASLEEP_CORE,
+  SLEEP_ASLEEP_DEEP,
+  SLEEP_ASLEEP_REM,
   SLEEP_AWAKE,
   SLEEP_LIGHT,
   SLEEP_DEEP,
@@ -56,6 +61,9 @@ enum HealthDataType {
   IRREGULAR_HEART_RATE_EVENT,
   ELECTRODERMAL_ACTIVITY,
   ELECTROCARDIOGRAM,
+
+  // Health Connect
+  TOTAL_CALORIES_BURNED
 }
 
 /// Access types for Health Data.
@@ -98,12 +106,17 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.WEIGHT,
   HealthDataType.FLIGHTS_CLIMBED,
   HealthDataType.DISTANCE_WALKING_RUNNING,
+  HealthDataType.DISTANCE_SWIMMING,
+  HealthDataType.DISTANCE_CYCLING,
   HealthDataType.MINDFULNESS,
   HealthDataType.SLEEP_IN_BED,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
   HealthDataType.SLEEP_DEEP,
   HealthDataType.SLEEP_REM,
+  HealthDataType.SLEEP_ASLEEP_CORE,
+  HealthDataType.SLEEP_ASLEEP_DEEP,
+  HealthDataType.SLEEP_ASLEEP_REM,
   HealthDataType.WATER,
   HealthDataType.EXERCISE_TIME,
   HealthDataType.WORKOUT,
@@ -134,6 +147,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.DISTANCE_DELTA,
   HealthDataType.SLEEP_AWAKE,
   HealthDataType.SLEEP_ASLEEP,
+  HealthDataType.SLEEP_IN_BED,
   HealthDataType.SLEEP_DEEP,
   HealthDataType.SLEEP_LIGHT,
   HealthDataType.SLEEP_REM,
@@ -146,6 +160,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.RESPIRATORY_RATE,
   HealthDataType.NUTRITION,
+  HealthDataType.TOTAL_CALORIES_BURNED,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
@@ -176,6 +191,8 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.WALKING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
   HealthDataType.WEIGHT: HealthDataUnit.KILOGRAM,
   HealthDataType.DISTANCE_WALKING_RUNNING: HealthDataUnit.METER,
+  HealthDataType.DISTANCE_SWIMMING: HealthDataUnit.METER,
+  HealthDataType.DISTANCE_CYCLING: HealthDataUnit.METER,
   HealthDataType.FLIGHTS_CLIMBED: HealthDataUnit.COUNT,
   HealthDataType.MOVE_MINUTES: HealthDataUnit.MINUTE,
   HealthDataType.DISTANCE_DELTA: HealthDataUnit.METER,
@@ -183,6 +200,9 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.WATER: HealthDataUnit.LITER,
   HealthDataType.SLEEP_IN_BED: HealthDataUnit.MINUTE,
   HealthDataType.SLEEP_ASLEEP: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_ASLEEP_CORE: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_ASLEEP_DEEP: HealthDataUnit.MINUTE,
+  HealthDataType.SLEEP_ASLEEP_REM: HealthDataUnit.MINUTE,
   HealthDataType.SLEEP_AWAKE: HealthDataUnit.MINUTE,
   HealthDataType.SLEEP_DEEP: HealthDataUnit.MINUTE,
   HealthDataType.SLEEP_REM: HealthDataUnit.MINUTE,
@@ -208,6 +228,9 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.ELECTROCARDIOGRAM: HealthDataUnit.VOLT,
 
   HealthDataType.NUTRITION: HealthDataUnit.NO_UNIT,
+
+  // Health Connect
+  HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,
 };
 
 const PlatformTypeJsonValue = {
