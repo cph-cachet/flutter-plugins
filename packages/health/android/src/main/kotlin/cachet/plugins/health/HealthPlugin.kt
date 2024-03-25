@@ -20,11 +20,13 @@ import androidx.health.connect.client.records.MealType.MEAL_TYPE_DINNER
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_LUNCH
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_SNACK
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_UNKNOWN
+import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessActivities
 import com.google.android.gms.fitness.FitnessOptions
@@ -114,6 +116,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var SNACK = "SNACK"
     private var MEAL_UNKNOWN = "UNKNOWN"
 
+    private var TOTAL_CALORIES_BURNED = "TOTAL_CALORIES_BURNED"
 
     val workoutTypeMap = mapOf(
         "AEROBICS" to FitnessActivities.AEROBICS,
@@ -417,7 +420,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         return false
     }
 
-
     private  fun onHealthConnectPermissionCallback(permissionGranted: Set<String>)
     {
         if(permissionGranted.isEmpty()) {
@@ -430,7 +432,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
 
     }
-    
+
     private fun keyToHealthDataType(type: String): DataType {
         return when (type) {
             BODY_FAT_PERCENTAGE -> DataType.TYPE_BODY_FAT_PERCENTAGE
@@ -1048,6 +1050,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = call.argument<Long>("startTime")!!
         val endTime = call.argument<Long>("endTime")!!
+        val includeManualEntry = call.argument<Boolean>("includeManualEntry")!!
         // Look up data type and unit for the type key
         val dataType = keyToHealthDataType(type)
         val field = getField(type)
@@ -1126,7 +1129,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     )
                     .addOnSuccessListener(
                         threadPoolExecutor!!,
-                        dataHandler(dataType, field, result),
+                        dataHandler(dataType, field, includeManualEntry, result),
                     )
                     .addOnFailureListener(
                         errHandler(
@@ -1138,12 +1141,92 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
-    private fun dataHandler(dataType: DataType, field: Field, result: Result) =
+    private fun getIntervalData(call: MethodCall, result: Result) {
+        if (useHealthConnectIfAvailable && healthConnectAvailable) {
+            getAggregateHCData(call, result)
+            return
+        }
+
+        if (context == null) {
+            result.success(null)
+            return
+        }
+
+        val type = call.argument<String>("dataTypeKey")!!
+        val startTime = call.argument<Long>("startTime")!!
+        val endTime = call.argument<Long>("endTime")!!
+        val interval = call.argument<Int>("interval")!!
+        val includeManualEntry = call.argument<Boolean>("includeManualEntry")!!
+
+        // Look up data type and unit for the type key
+        val dataType = keyToHealthDataType(type)
+        val field = getField(type)
+        val typesBuilder = FitnessOptions.builder()
+        typesBuilder.addDataType(dataType)
+        if (dataType == DataType.TYPE_SLEEP_SEGMENT) {
+            typesBuilder.accessSleepSessions(FitnessOptions.ACCESS_READ)
+        }
+        val fitnessOptions = typesBuilder.build()
+        val googleSignInAccount = GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+
+        Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
+            .readData(DataReadRequest.Builder()
+                .aggregate(dataType)
+                .bucketByTime(interval, TimeUnit.SECONDS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build())
+            .addOnSuccessListener (threadPoolExecutor!!, intervalDataHandler(dataType, field, includeManualEntry, result))
+            .addOnFailureListener(errHandler(result, "There was an error getting the interval data!"))
+    }
+
+    private fun getAggregateData(call: MethodCall, result: Result) {
+        if (context == null) {
+            result.success(null)
+            return
+        }
+
+        val types = call.argument<List<String>>("dataTypeKeys")!!
+        val startTime = call.argument<Long>("startTime")!!
+        val endTime = call.argument<Long>("endTime")!!
+        val activitySegmentDuration = call.argument<Int>("activitySegmentDuration")!!
+        val includeManualEntry = call.argument<Boolean>("includeManualEntry")!!
+
+        val typesBuilder = FitnessOptions.builder()
+        for (type in types) {
+            val dataType = keyToHealthDataType(type)
+            typesBuilder.addDataType(dataType)
+        }
+        val fitnessOptions = typesBuilder.build()
+        val googleSignInAccount = GoogleSignIn.getAccountForExtension(context!!.applicationContext, fitnessOptions)
+
+        val readWorkoutsRequest = DataReadRequest.Builder()
+            .bucketByActivitySegment(activitySegmentDuration, TimeUnit.SECONDS)
+            .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+
+        for (type in types) {
+            val dataType = keyToHealthDataType(type)
+            readWorkoutsRequest.aggregate(dataType)
+        }
+
+        Fitness.getHistoryClient(context!!.applicationContext, googleSignInAccount)
+            .readData(readWorkoutsRequest.build())
+            .addOnSuccessListener (threadPoolExecutor!!, aggregateDataHandler(includeManualEntry, result))
+            .addOnFailureListener(errHandler(result, "There was an error getting the aggregate data!"))
+    }
+
+    private fun dataHandler(dataType: DataType, field: Field, includeManualEntry: Boolean, result: Result) =
         OnSuccessListener { response: DataReadResponse ->
             // / Fetch all data points for the specified DataType
             val dataSet = response.getDataSet(dataType)
+            /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+            var dataPoints = dataSet.dataPoints
+            if(!includeManualEntry) {
+                dataPoints = dataPoints.filterIndexed { _, dataPoint ->
+                    !dataPoint.originalDataSource.streamName.contains("user_input")
+                }
+            }
             // / For each data point, extract the contents and send them to Flutter, along with date and unit.
-            val healthData = dataSet.dataPoints.mapIndexed { _, dataPoint ->
+            val healthData = dataPoints.mapIndexed { _, dataPoint ->
                 return@mapIndexed hashMapOf(
                     "value" to getHealthDataValue(dataPoint, field),
                     "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
@@ -1264,6 +1347,99 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         }
                     }
                 }
+            }
+            Handler(context!!.mainLooper).run { result.success(healthData) }
+        }
+
+    private fun intervalDataHandler(dataType: DataType, field: Field, includeManualEntry: Boolean, result: Result) =
+        OnSuccessListener { response: DataReadResponse ->
+            val healthData = mutableListOf<HashMap<String, Any>>()
+            for(bucket in response.buckets) {
+                /// Fetch all data points for the specified DataType
+                //val dataSet = response.getDataSet(dataType)
+                for (dataSet in bucket.dataSets) {
+                    /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+                    var dataPoints = dataSet.dataPoints
+                    if (!includeManualEntry) {
+                        dataPoints = dataPoints.filterIndexed { _, dataPoint ->
+                            !dataPoint.originalDataSource.streamName.contains("user_input")
+                        }
+                    }
+                    for (dataPoint in dataPoints) {
+                        for (field in dataPoint.dataType.fields) {
+                            val healthDataItems = dataPoints.mapIndexed { _, dataPoint ->
+                                return@mapIndexed hashMapOf(
+                                    "value" to getHealthDataValue(dataPoint, field),
+                                    "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                                    "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                                    "source_name" to (dataPoint.originalDataSource.appPackageName
+                                        ?: (dataPoint.originalDataSource.device?.model
+                                            ?: "")),
+                                    "source_id" to dataPoint.originalDataSource.streamIdentifier,
+                                    "is_manual_entry" to dataPoint.originalDataSource.streamName.contains("user_input")
+                                )
+                            }
+                            healthData.addAll(healthDataItems)
+                        }
+                    }
+                }
+            }
+            Handler(context!!.mainLooper).run { result.success(healthData) }
+        }
+
+    private fun aggregateDataHandler(includeManualEntry: Boolean, result: Result) =
+        OnSuccessListener { response: DataReadResponse ->
+            val healthData = mutableListOf<HashMap<String, Any>>()
+            for(bucket in response.buckets) {
+                var sourceName:Any = ""
+                var sourceId:Any = ""
+                var isManualEntry:Any = false
+                var totalSteps:Any = 0
+                var totalDistance:Any = 0
+                var totalEnergyBurned:Any = 0
+                /// Fetch all data points for the specified DataType
+                for (dataSet in bucket.dataSets) {
+                    /// For each data point, extract the contents and send them to Flutter, along with date and unit.
+                    var dataPoints = dataSet.dataPoints
+                    if (!includeManualEntry) {
+                        dataPoints = dataPoints.filterIndexed { _, dataPoint ->
+                            !dataPoint.originalDataSource.streamName.contains("user_input")
+                        }
+                    }
+                    for (dataPoint in dataPoints) {
+                        sourceName = (dataPoint.originalDataSource.appPackageName
+                            ?: (dataPoint.originalDataSource.device?.model
+                                ?: ""))
+                        sourceId = dataPoint.originalDataSource.streamIdentifier
+                        isManualEntry = dataPoint.originalDataSource.streamName.contains("user_input")
+                        for (field in dataPoint.dataType.fields) {
+                            when(field) {
+                                getField(STEPS) -> {
+                                    totalSteps = getHealthDataValue(dataPoint, field);
+                                }
+                                getField(DISTANCE_DELTA) -> {
+                                    totalDistance = getHealthDataValue(dataPoint, field);
+                                }
+                                getField(ACTIVE_ENERGY_BURNED) -> {
+                                    totalEnergyBurned = getHealthDataValue(dataPoint, field);
+                                }
+                            }
+                        }
+                    }
+                }
+                val healthDataItems = hashMapOf(
+                    "value" to bucket.getEndTime(TimeUnit.MINUTES) - bucket.getStartTime(TimeUnit.MINUTES),
+                    "date_from" to bucket.getStartTime(TimeUnit.MILLISECONDS),
+                    "date_to" to bucket.getEndTime(TimeUnit.MILLISECONDS),
+                    "source_name" to sourceName,
+                    "source_id" to sourceId,
+                    "is_manual_entry" to isManualEntry,
+                    "workout_type" to bucket.activity.toLowerCase(),
+                    "total_steps" to totalSteps,
+                    "total_distance" to totalDistance,
+                    "total_energy_burned" to totalEnergyBurned
+                )
+                healthData.add(healthDataItems)
             }
             Handler(context!!.mainLooper).run { result.success(healthData) }
         }
@@ -1546,6 +1722,27 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             }
         }
 
+    /// Disconnect Google fit
+    private fun disconnect(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+        val context = activity!!.applicationContext
+
+        val fitnessOptions = callToHealthTypes(call)
+        val googleAccount = GoogleSignIn.getAccountForExtension(context, fitnessOptions)
+        Fitness.getConfigClient(context, googleAccount).disableFit().continueWith {
+            val signinOption = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestId()
+                .requestEmail()
+                .build()
+            val googleSignInClient = GoogleSignIn.getClient(context, signinOption)
+            googleSignInClient.signOut()
+            result.success(true)
+        }
+    }
+
     private fun getActivityType(type: String): String {
         return workoutTypeMap[type] ?: FitnessActivities.UNKNOWN
     }
@@ -1560,13 +1757,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "requestAuthorization" -> requestAuthorization(call, result)
             "revokePermissions" -> revokePermissions(call, result)
             "getData" -> getData(call, result)
+            "getIntervalData" -> getIntervalData(call, result)
             "writeData" -> writeData(call, result)
             "delete" -> delete(call, result)
+            "getAggregateData" -> getAggregateData(call, result)
             "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
             "writeWorkoutData" -> writeWorkoutData(call, result)
             "writeBloodPressure" -> writeBloodPressure(call, result)
             "writeBloodOxygen" -> writeBloodOxygen(call, result)
             "writeMeal" -> writeMeal(call, result)
+            "disconnect" -> disconnect(call, result)
             else -> result.notImplemented()
         }
     }
@@ -1723,7 +1923,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 }
             }
         }
-        
         if(healthConnectRequestPermissionsLauncher == null) {
             result.success(false)
             Log.i("FLUTTER_HEALTH", "Permission launcher not found")
@@ -1749,10 +1948,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     // Define the maximum amount of data that HealthConnect can return in a single request
                     timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                 )
-                
+
                 var response = healthConnectClient.readRecords(request)
                 var pageToken = response.pageToken
-                
+
                 // Add the records from the initial response to the records list
                 records.addAll(response.records)
 
@@ -1801,6 +2000,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             totalEnergyBurned += energyBurnedRec.energy.inKilocalories
                         }
 
+                        val stepRequest = healthConnectClient.readRecords(
+                            ReadRecordsRequest(
+                                recordType = StepsRecord::class,
+                                timeRangeFilter = TimeRangeFilter.between(record.startTime, record.endTime),
+                            ),
+                        )
+                        var totalSteps = 0.0
+                        for (stepRec in stepRequest.records) {
+                            totalSteps += stepRec.count
+                        }
+
                         // val metadata = (rec as Record).metadata
                         // Add final datapoint
                         healthConnectData.add(
@@ -1814,6 +2024,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                 "totalDistanceUnit" to "METER",
                                 "totalEnergyBurned" to if (totalEnergyBurned == 0.0) null else totalEnergyBurned,
                                 "totalEnergyBurnedUnit" to "KILOCALORIE",
+                                "totalSteps" to if (totalSteps == 0.0) null else totalSteps,
+                                "totalStepsUnit" to "COUNT",
                                 "unit" to "MINUTES",
                                 "date_from" to rec.startTime.toEpochMilli(),
                                 "date_to" to rec.endTime.toEpochMilli(),
@@ -1866,6 +2078,50 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 "source_name" to sourceName,
             ),
         );
+    }
+
+    fun getAggregateHCData(call: MethodCall, result: Result) {
+        val dataType = call.argument<String>("dataTypeKey")!!
+        val interval = call.argument<Long>("interval")!!
+        val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
+        val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
+        val healthConnectData = mutableListOf<Map<String, Any?>>()
+        scope.launch {
+            MapToHCAggregateMetric[dataType]?.let { metricClassType ->
+                val request = AggregateGroupByDurationRequest(
+                    metrics = setOf(metricClassType),
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                    timeRangeSlicer = Duration.ofSeconds(interval)
+                )
+                val response = healthConnectClient.aggregateGroupByDuration(request)
+
+                for (durationResult in response) {
+                    // The result may be null if no data is available in the time range
+                    var totalValue = durationResult.result[metricClassType]
+                    if(totalValue is Length) {
+                        totalValue = totalValue.inMeters
+                    }
+                    else if(totalValue is Energy) {
+                        totalValue = totalValue.inKilocalories
+                    }
+
+                    val packageNames = durationResult.result.dataOrigins.joinToString {
+                        origin -> "${origin.packageName}"
+                    }
+
+                    val data = mapOf<String, Any>(
+                        "value" to (totalValue ?: 0),
+                        "date_from" to durationResult.startTime.toEpochMilli(),
+                        "date_to" to durationResult.endTime.toEpochMilli(),
+                        "source_name" to packageNames,
+                        "source_id" to "",
+                        "is_manual_entry" to packageNames.contains("user_input")
+                    );
+                    healthConnectData.add(data);
+                }
+            }
+            Handler(context!!.mainLooper).run { result.success(healthConnectData) }
+        }
     }
 
     // TODO: Find alternative to SOURCE_ID or make it nullable?
@@ -1992,6 +2248,24 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 ),
             )
 
+            is TotalCaloriesBurnedRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.energy.inKilocalories,
+                    "date_from" to record.startTime.toEpochMilli(),
+                    "date_to" to record.endTime.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
+            )
+            is BasalMetabolicRateRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.basalMetabolicRate.inKilocaloriesPerDay,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
+            )
             is SleepSessionRecord -> return listOf(
                 mapOf<String, Any>(
                     "date_from" to record.startTime.toEpochMilli(),
@@ -1999,6 +2273,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
                     "source_id" to "",
                     "source_name" to metadata.dataOrigin.packageName,
+                    "stage" to if (record.stages.isNotEmpty()) record.stages[0] else SleepSessionRecord.STAGE_TYPE_UNKNOWN,
                 ),
             )
             is RestingHeartRateRecord -> return listOf(
@@ -2226,6 +2501,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 zoneOffset = null,
             )
             // AGGREGATE_STEP_COUNT -> StepsRecord()
+            TOTAL_CALORIES_BURNED -> TotalCaloriesBurnedRecord(
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                energy = Energy.kilocalories(value),
+                startZoneOffset = null,
+                endZoneOffset = null,
+            )
             BLOOD_PRESSURE_SYSTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
             BLOOD_PRESSURE_DIASTOLIC -> throw IllegalArgumentException("You must use the [writeBloodPressure] API ")
             WORKOUT -> throw IllegalArgumentException("You must use the [writeWorkoutData] API ")
@@ -2427,6 +2709,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         BASAL_ENERGY_BURNED to BasalMetabolicRateRecord::class,
         FLIGHTS_CLIMBED to FloorsClimbedRecord::class,
         RESPIRATORY_RATE to RespiratoryRateRecord::class,
+        TOTAL_CALORIES_BURNED to TotalCaloriesBurnedRecord::class
         // MOVE_MINUTES to TODO: Find alternative?
         // TODO: Implement remaining types
         // "ActiveCaloriesBurned" to ActiveCaloriesBurnedRecord::class,
@@ -2465,5 +2748,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         // "Vo2Max" to Vo2MaxRecord::class,
         // "Weight" to WeightRecord::class,
         // "WheelchairPushes" to WheelchairPushesRecord::class,
+    )
+
+    val MapToHCAggregateMetric = hashMapOf(
+        HEIGHT to HeightRecord.HEIGHT_AVG,
+        WEIGHT to WeightRecord.WEIGHT_AVG,
+        STEPS to StepsRecord.COUNT_TOTAL,
+        AGGREGATE_STEP_COUNT to StepsRecord.COUNT_TOTAL,
+        ACTIVE_ENERGY_BURNED to ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL,
+        HEART_RATE to HeartRateRecord.MEASUREMENTS_COUNT,
+        DISTANCE_DELTA to DistanceRecord.DISTANCE_TOTAL,
+        WATER to HydrationRecord.VOLUME_TOTAL,
+        SLEEP_ASLEEP to SleepSessionRecord.SLEEP_DURATION_TOTAL,
+        SLEEP_AWAKE to SleepSessionRecord.SLEEP_DURATION_TOTAL,
+        SLEEP_IN_BED to SleepSessionRecord.SLEEP_DURATION_TOTAL,
+        TOTAL_CALORIES_BURNED to TotalCaloriesBurnedRecord.ENERGY_TOTAL
     )
 }

@@ -23,7 +23,6 @@
 - Added respiratory rate and peripheral perfusion index to HealthConnect
 - Minor fixes to requestAuthorization, sleep stage filtering
 
-
 ## 7.0.1
 
 - Updated dart doc
