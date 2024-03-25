@@ -623,6 +623,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val carbs = call.argument<Double>("carbohydrates") as Double?
         val protein = call.argument<Double>("protein") as Double?
         val fat = call.argument<Double>("fatTotal") as Double?
+        val caffeine = call.argument<Double>("caffeine") as Double?
         val name = call.argument<String>("name")
         val mealType = call.argument<String>("mealType")!!
 
@@ -636,6 +637,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         totalCarbohydrate = carbs?.grams,
                         protein = protein?.grams,
                         totalFat = fat?.grams,
+                        caffeine = caffeine?.grams,
                         startTime = startTime,
                         startZoneOffset = null,
                         endTime = endTime,
