@@ -423,6 +423,7 @@ class HealthFactory {
       double? protein,
       double? fatTotal,
       String? name,
+      double? caffeine,
       MealType mealType) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
@@ -435,6 +436,7 @@ class HealthFactory {
       'protein': protein,
       'fatTotal': fatTotal,
       'name': name,
+      'caffeine': caffeine,
       'mealType': mealType.name,
     };
     bool? success = await _channel.invokeMethod('writeMeal', args);
