@@ -70,6 +70,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
     let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
     let NUTRITION = "NUTRITION"
+    let STAND_TIME = "STAND_TIME"
 
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -610,6 +611,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         var predicate = HKQuery.predicateForSamples(
             withStart: dateFrom, end: dateTo, options: .strictStartDate)
+        let watchPredicate = HKQuery.predicateForObjects(withDeviceProperty: HKDevicePropertyKeyModel, allowedValues: ["Watch"])
+        let combinedPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate, watchPredicate])
         if (!includeManualEntry) {
             let manualPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
             predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
@@ -617,7 +620,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
 
         let query = HKSampleQuery(
-            sampleType: dataType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]
+            sampleType: dataType, predicate: combinedPredicate, limit: limit, sortDescriptors: [sortDescriptor]
         ) {
             [self]
             x, samplesOrNil, error in
@@ -1194,7 +1197,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[WORKOUT] = HKSampleType.workoutType()
             dataTypesDict[NUTRITION] = HKSampleType.correlationType(
                 forIdentifier: .food)!
-
+            dataTypesDict[STAND_TIME] = HKSampleType.quantityType(forIdentifier: .appleStandTime)
             healthDataTypes = Array(dataTypesDict.values)
         }
 
