@@ -28,6 +28,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let DIETARY_ENERGY_CONSUMED = "DIETARY_ENERGY_CONSUMED"
     let DIETARY_FATS_CONSUMED = "DIETARY_FATS_CONSUMED"
     let DIETARY_PROTEIN_CONSUMED = "DIETARY_PROTEIN_CONSUMED"
+    let DIETARY_CAFFEINE = "DIETARY_CAFFEINE"
     let ELECTRODERMAL_ACTIVITY = "ELECTRODERMAL_ACTIVITY"
     let FORCED_EXPIRATORY_VOLUME = "FORCED_EXPIRATORY_VOLUME"
     let HEART_RATE = "HEART_RATE"
@@ -211,6 +212,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             permissions.append(nutritionPermission)
             types.append(DIETARY_FATS_CONSUMED)
             permissions.append(nutritionPermission)
+            types.append(DIETARY_CAFFEINE)
+            permissions.append(nutritionPermission)
         }
         
         for (index, type) in types.enumerated() {
@@ -259,11 +262,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 let carbsType = dataTypeLookUp(key: DIETARY_CARBS_CONSUMED)
                 let proteinType = dataTypeLookUp(key: DIETARY_PROTEIN_CONSUMED)
                 let fatType = dataTypeLookUp(key: DIETARY_FATS_CONSUMED)
-                
+                let caffeineType = dataTypeLookUp(key: DIETARY_CAFFEINE)
+
                 typesToWrite.insert(caloriesType);
                 typesToWrite.insert(carbsType);
                 typesToWrite.insert(proteinType);
                 typesToWrite.insert(fatType);
+                typesToWrite.insert(caffeineType);
             } else {
                 let dataType = dataTypeLookUp(key: key)
                 let access = permissions[index]
@@ -426,6 +431,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
               let protein = (arguments["protein"] as? Double?) ?? 0,
               let fat = (arguments["fatTotal"] as? Double?) ?? 0,
               let name = (arguments["name"] as? String?),
+              let caffeine = (arguments["caffeine"] as? Double?) ?? 0,
               let mealType = (arguments["mealType"] as? String?)
         else {
             throw PluginError(message: "Invalid Arguments")
@@ -458,6 +464,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         if(fat > 0) {
             let fatSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryFatTotal)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: fat), start: dateFrom, end: dateTo, metadata: metadata)
             nutrition.insert(fatSample)
+        }
+
+        if(caffeine > 0) {
+            let caffeineSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryCaffeine)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: caffeine), start: dateFrom, end: dateTo, metadata: metadata)
+            nutrition.insert(caffeineSample)
         }
         
         if #available(iOS 15.0, *){
@@ -1017,6 +1028,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 forIdentifier: .dietaryCarbohydrates)!
             dataTypesDict[DIETARY_ENERGY_CONSUMED] = HKSampleType.quantityType(
                 forIdentifier: .dietaryEnergyConsumed)!
+            dataTypesDict[DIETARY_CAFFEINE] = HKSampleType.quantityType(
+                forIdentifier: .dietaryCaffeine)!
             dataTypesDict[DIETARY_FATS_CONSUMED] = HKSampleType.quantityType(
                 forIdentifier: .dietaryFatTotal)!
             dataTypesDict[DIETARY_PROTEIN_CONSUMED] = HKSampleType.quantityType(

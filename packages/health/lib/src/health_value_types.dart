@@ -290,6 +290,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
 /// * [fat] - the amount of fat in grams
 /// * [name] - the name of the food
 /// * [carbs] - the amount of carbs in grams
+/// * [caffeine] - the amount of caffeine in grams
 /// * [mealType] - the type of meal
 class NutritionHealthValue extends HealthValue {
   double? _protein;
@@ -297,10 +298,11 @@ class NutritionHealthValue extends HealthValue {
   double? _fat;
   String? _name;
   double? _carbs;
+  double? _caffeine;
   String _mealType;
 
   NutritionHealthValue(this._protein, this._calories, this._fat, this._name,
-      this._carbs, this._mealType);
+      this._carbs, this._caffeine, this._mealType);
 
   /// The amount of protein in grams.
   double? get protein => _protein;
@@ -317,6 +319,9 @@ class NutritionHealthValue extends HealthValue {
   /// The amount of carbs in grams.
   double? get carbs => _carbs;
 
+  /// The amount of caffeine in grams.
+  double? get caffeine => _caffeine;
+
   /// The type of meal.
   String get mealType => _mealType;
 
@@ -327,6 +332,7 @@ class NutritionHealthValue extends HealthValue {
       json['fat'] != null ? (json['fat'] as num).toDouble() : null,
       json['name'] != null ? (json['name'] as String) : null,
       json['carbs'] != null ? (json['carbs'] as num).toDouble() : null,
+      json['caffeine'] != null ? (json['caffeine'] as num).toDouble() : null,
       json['mealType'] as String,
     );
   }
@@ -338,6 +344,7 @@ class NutritionHealthValue extends HealthValue {
         'fat': _fat,
         'name': _name,
         'carbs': _carbs,
+        'caffeine': _caffeine,
         'mealType': _mealType,
       };
 
@@ -348,6 +355,7 @@ class NutritionHealthValue extends HealthValue {
     fat: ${fat.toString()},
     name: ${name.toString()},
     carbs: ${carbs.toString()},
+    caffeine: ${caffeine.toString()},
     mealType: $mealType""";
   }
 
@@ -359,11 +367,13 @@ class NutritionHealthValue extends HealthValue {
         o.fat == this.fat &&
         o.name == this.name &&
         o.carbs == this.carbs &&
+        o.caffeine == this.caffeine &&
         o.mealType == this.mealType;
   }
 
   @override
-  int get hashCode => Object.hash(protein, calories, fat, name, carbs);
+  int get hashCode =>
+      Object.hash(protein, calories, fat, name, carbs, caffeine);
 }
 
 /// An abstract class for health values.

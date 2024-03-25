@@ -165,7 +165,7 @@ class _HealthAppState extends State<HealthApp> {
     success &= await health.writeHealthData(
         0.0, HealthDataType.SLEEP_DEEP, earlier, now);
     success &= await health.writeMeal(
-        earlier, now, 1000, 50, 25, 50, "Banana", MealType.SNACK);
+        earlier, now, 1000, 50, 25, 50, "Banana", 0.002, MealType.SNACK);
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
