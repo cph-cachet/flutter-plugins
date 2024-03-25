@@ -30,6 +30,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace "dk.cachet.activity_recognition_flutter"
 }
 
 dependencies {

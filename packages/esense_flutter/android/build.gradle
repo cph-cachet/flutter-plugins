@@ -32,4 +32,5 @@ android {
     defaultConfig {
         minSdkVersion 16
     }
+    namespace "dk.cachet.esense_flutter"
 }

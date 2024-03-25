@@ -41,6 +41,7 @@ android {
             minifyEnabled true
         }
     }
+    namespace "dk.cachet.empatica_e4link"
 }
 
 dependencies {

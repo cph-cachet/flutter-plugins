@@ -95,6 +95,33 @@ class HealthFactory {
     }
   }
 
+  /// Disconnect Google fit.
+  ///
+  /// Not supported on iOS and method does nothing.
+  Future<bool?> disconnect(
+    List<HealthDataType> types, {
+    List<HealthDataAccess>? permissions,
+  }) async {
+    if (permissions != null && permissions.length != types.length) {
+      throw ArgumentError(
+          'The length of [types] must be same as that of [permissions].');
+    }
+
+    final mTypes = List<HealthDataType>.from(types, growable: true);
+    final mPermissions = permissions == null
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
+            growable: true)
+        : permissions.map((permission) => permission.index).toList();
+
+    // on Android, if BMI is requested, then also ask for weight and height
+    if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+
+    List<String> keys = mTypes.map((dataType) => dataType.name).toList();
+
+    return await _channel.invokeMethod(
+        'disconnect', {'types': keys, "permissions": mPermissions});
+  }
+
   /// Requests permissions to access data types in Apple Health or Google Fit.
   ///
   /// Returns true if successful, false otherwise
@@ -107,11 +134,14 @@ class HealthFactory {
   ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
   ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
   ///
-  ///  Caveat:
+  ///  Caveats:
   ///
-  ///   As Apple HealthKit will not disclose if READ access has been granted for a data type due to privacy concern,
-  ///   this method will return **true if the window asking for permission was showed to the user without errors**
-  ///   if it is called on iOS with a READ or READ_WRITE access.
+  ///  * This method may block if permissions are already granted. Hence, check
+  ///    [hasPermissions] before calling this method.
+  ///  * As Apple HealthKit will not disclose if READ access has been granted for
+  ///    a data type due to privacy concern, this method will return **true if
+  ///    the window asking for permission was showed to the user without errors**
+  ///    if it is called on iOS with a READ or READ_WRITE access.
   Future<bool> requestAuthorization(
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
@@ -147,8 +177,11 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => e.name).toList();
+    print(
+        '>> trying to get permissions for $keys with permissions $mPermissions');
     final bool? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
+    print('>> isAuthorized: $isAuthorized');
     return isAuthorized ?? false;
   }
 
@@ -172,16 +205,16 @@ class HealthFactory {
 
   /// Calculate the BMI using the last observed height and weight values.
   Future<List<HealthDataPoint>> _computeAndroidBMI(
-      DateTime startTime, DateTime endTime) async {
-    List<HealthDataPoint> heights =
-        await _prepareQuery(startTime, endTime, HealthDataType.HEIGHT);
+      DateTime startTime, DateTime endTime, bool includeManualEntry) async {
+    List<HealthDataPoint> heights = await _prepareQuery(
+        startTime, endTime, HealthDataType.HEIGHT, includeManualEntry);
 
     if (heights.isEmpty) {
       return [];
     }
 
-    List<HealthDataPoint> weights =
-        await _prepareQuery(startTime, endTime, HealthDataType.WEIGHT);
+    List<HealthDataPoint> weights = await _prepareQuery(
+        startTime, endTime, HealthDataType.WEIGHT, includeManualEntry);
 
     double h =
         (heights.last.value as NumericHealthValue).numericValue.toDouble();
@@ -195,15 +228,18 @@ class HealthFactory {
           (weights[i].value as NumericHealthValue).numericValue.toDouble() /
               (h * h);
       final x = HealthDataPoint(
-          NumericHealthValue(bmiValue),
-          dataType,
-          unit,
-          weights[i].dateFrom,
-          weights[i].dateTo,
-          _platformType,
-          _deviceId!,
-          '',
-          '');
+        NumericHealthValue(bmiValue),
+        dataType,
+        unit,
+        weights[i].dateFrom,
+        weights[i].dateTo,
+        _platformType,
+        _deviceId!,
+        '',
+        '',
+        !includeManualEntry,
+        null,
+      );
 
       bmiHealthPoints.add(x);
     }
@@ -257,6 +293,9 @@ class HealthFactory {
         type == HealthDataType.SLEEP_IN_BED ||
         type == HealthDataType.SLEEP_DEEP ||
         type == HealthDataType.SLEEP_REM ||
+        type == HealthDataType.SLEEP_ASLEEP_CORE ||
+        type == HealthDataType.SLEEP_ASLEEP_DEEP ||
+        type == HealthDataType.SLEEP_ASLEEP_REM ||
         type == HealthDataType.HEADACHE_NOT_PRESENT ||
         type == HealthDataType.HEADACHE_MILD ||
         type == HealthDataType.HEADACHE_MODERATE ||
@@ -384,6 +423,7 @@ class HealthFactory {
       double? protein,
       double? fatTotal,
       String? name,
+      double? caffeine,
       MealType mealType) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
@@ -396,6 +436,7 @@ class HealthFactory {
       'protein': protein,
       'fatTotal': fatTotal,
       'name': name,
+      'caffeine': caffeine,
       'mealType': mealType.name,
     };
     bool? success = await _channel.invokeMethod('writeMeal', args);
@@ -451,11 +492,13 @@ class HealthFactory {
 
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
-      DateTime startTime, DateTime endTime, List<HealthDataType> types) async {
+      DateTime startTime, DateTime endTime, List<HealthDataType> types,
+      {bool includeManualEntry = true}) async {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
-      final result = await _prepareQuery(startTime, endTime, type);
+      final result =
+          await _prepareQuery(startTime, endTime, type, includeManualEntry);
       dataPoints.addAll(result);
     }
 
@@ -467,9 +510,43 @@ class HealthFactory {
     return removeDuplicates(dataPoints);
   }
 
-  /// Prepares a query, i.e. checks if the types are available, etc.
+  /// Fetch a list of health data points based on [types].
+  Future<List<HealthDataPoint>> getHealthIntervalDataFromTypes(
+      DateTime startDate,
+      DateTime endDate,
+      List<HealthDataType> types,
+      int interval,
+      {bool includeManualEntry = true}) async {
+    List<HealthDataPoint> dataPoints = [];
+
+    for (var type in types) {
+      final result = await _prepareIntervalQuery(
+          startDate, endDate, type, interval, includeManualEntry);
+      dataPoints.addAll(result);
+    }
+
+    return removeDuplicates(dataPoints);
+  }
+
+  /// Fetch a list of health data points based on [types].
+  Future<List<HealthDataPoint>> getHealthAggregateDataFromTypes(
+      DateTime startDate, DateTime endDate, List<HealthDataType> types,
+      {int activitySegmentDuration = 1, bool includeManualEntry = true}) async {
+    List<HealthDataPoint> dataPoints = [];
+
+    final result = await _prepareAggregateQuery(
+        startDate, endDate, types, activitySegmentDuration, includeManualEntry);
+    dataPoints.addAll(result);
+
+    return removeDuplicates(dataPoints);
+  }
+
+  /// Prepares an interval query, i.e. checks if the types are available, etc.
   Future<List<HealthDataPoint>> _prepareQuery(
-      DateTime startTime, DateTime endTime, HealthDataType dataType) async {
+      DateTime startTime,
+      DateTime endTime,
+      HealthDataType dataType,
+      bool includeManualEntry) async {
     // Ask for device ID only once
     _deviceId ??= _platformType == PlatformType.ANDROID
         ? (await _deviceInfo.androidInfo).id
@@ -484,19 +561,65 @@ class HealthFactory {
     // If BodyMassIndex is requested on Android, calculate this manually
     if (dataType == HealthDataType.BODY_MASS_INDEX &&
         _platformType == PlatformType.ANDROID) {
-      return _computeAndroidBMI(startTime, endTime);
+      return _computeAndroidBMI(startTime, endTime, includeManualEntry);
     }
-    return await _dataQuery(startTime, endTime, dataType);
+    return await _dataQuery(startTime, endTime, dataType, includeManualEntry);
+  }
+
+  /// Prepares an interval query, i.e. checks if the types are available, etc.
+  Future<List<HealthDataPoint>> _prepareIntervalQuery(
+      DateTime startDate,
+      DateTime endDate,
+      HealthDataType dataType,
+      int interval,
+      bool includeManualEntry) async {
+    // Ask for device ID only once
+    _deviceId ??= _platformType == PlatformType.ANDROID
+        ? (await _deviceInfo.androidInfo).id
+        : (await _deviceInfo.iosInfo).identifierForVendor;
+
+    // If not implemented on platform, throw an exception
+    if (!isDataTypeAvailable(dataType)) {
+      throw HealthException(
+          dataType, 'Not available on platform $_platformType');
+    }
+
+    return await _dataIntervalQuery(
+        startDate, endDate, dataType, interval, includeManualEntry);
+  }
+
+  /// Prepares an aggregate query, i.e. checks if the types are available, etc.
+  Future<List<HealthDataPoint>> _prepareAggregateQuery(
+      DateTime startDate,
+      DateTime endDate,
+      List<HealthDataType> dataTypes,
+      int activitySegmentDuration,
+      bool includeManualEntry) async {
+    // Ask for device ID only once
+    _deviceId ??= _platformType == PlatformType.ANDROID
+        ? (await _deviceInfo.androidInfo).id
+        : (await _deviceInfo.iosInfo).identifierForVendor;
+
+    for (var type in dataTypes) {
+      // If not implemented on platform, throw an exception
+      if (!isDataTypeAvailable(type)) {
+        throw HealthException(type, 'Not available on platform $_platformType');
+      }
+    }
+
+    return await _dataAggregateQuery(startDate, endDate, dataTypes,
+        activitySegmentDuration, includeManualEntry);
   }
 
   /// Fetches data points from Android/iOS native code.
-  Future<List<HealthDataPoint>> _dataQuery(
-      DateTime startTime, DateTime endTime, HealthDataType dataType) async {
+  Future<List<HealthDataPoint>> _dataQuery(DateTime startTime, DateTime endTime,
+      HealthDataType dataType, bool includeManualEntry) async {
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
       'dataUnitKey': _dataTypeToUnit[dataType]!.name,
       'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
+      'endTime': endTime.millisecondsSinceEpoch,
+      'includeManualEntry': includeManualEntry
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
 
@@ -518,7 +641,63 @@ class HealthFactory {
     }
   }
 
-  /// Parses the fetched data points into a list of [HealthDataPoint].
+  /// function for fetching statistic health data
+  Future<List<HealthDataPoint>> _dataIntervalQuery(
+      DateTime startDate,
+      DateTime endDate,
+      HealthDataType dataType,
+      int interval,
+      bool includeManualEntry) async {
+    final args = <String, dynamic>{
+      'dataTypeKey': dataType.name,
+      'dataUnitKey': _dataTypeToUnit[dataType]!.name,
+      'startTime': startDate.millisecondsSinceEpoch,
+      'endTime': endDate.millisecondsSinceEpoch,
+      'interval': interval,
+      'includeManualEntry': includeManualEntry
+    };
+
+    final fetchedDataPoints =
+        await _channel.invokeMethod('getIntervalData', args);
+    if (fetchedDataPoints != null) {
+      final mesg = <String, dynamic>{
+        "dataType": dataType,
+        "dataPoints": fetchedDataPoints,
+        "deviceId": _deviceId!,
+      };
+      return _parse(mesg);
+    }
+    return <HealthDataPoint>[];
+  }
+
+  /// function for fetching statistic health data
+  Future<List<HealthDataPoint>> _dataAggregateQuery(
+      DateTime startDate,
+      DateTime endDate,
+      List<HealthDataType> dataTypes,
+      int activitySegmentDuration,
+      bool includeManualEntry) async {
+    final args = <String, dynamic>{
+      'dataTypeKeys': dataTypes.map((dataType) => dataType.name).toList(),
+      'startTime': startDate.millisecondsSinceEpoch,
+      'endTime': endDate.millisecondsSinceEpoch,
+      'activitySegmentDuration': activitySegmentDuration,
+      'includeManualEntry': includeManualEntry
+    };
+
+    final fetchedDataPoints =
+        await _channel.invokeMethod('getAggregateData', args);
+    if (fetchedDataPoints != null) {
+      final mesg = <String, dynamic>{
+        "dataType": HealthDataType.WORKOUT,
+        "dataPoints": fetchedDataPoints,
+        "deviceId": _deviceId!,
+      };
+      return _parse(mesg);
+    }
+    return <HealthDataPoint>[];
+  }
+
   static List<HealthDataPoint> _parse(Map<String, dynamic> message) {
     final dataType = message["dataType"];
     final dataPoints = message["dataPoints"];
@@ -529,19 +708,35 @@ class HealthFactory {
       HealthValue value;
       if (dataType == HealthDataType.AUDIOGRAM) {
         value = AudiogramHealthValue.fromJson(e);
-      } else if (dataType == HealthDataType.WORKOUT) {
+      } else if (dataType == HealthDataType.WORKOUT &&
+          e["totalEnergyBurned"] != null) {
         value = WorkoutHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.ELECTROCARDIOGRAM) {
         value = ElectrocardiogramHealthValue.fromJson(e);
       } else if (dataType == HealthDataType.NUTRITION) {
         value = NutritionHealthValue.fromJson(e);
       } else {
-        value = NumericHealthValue(e['value']);
+        value = NumericHealthValue(e['value'] ?? 0);
       }
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
       final String sourceId = e["source_id"];
       final String sourceName = e["source_name"];
+      final bool? isManualEntry = e["is_manual_entry"];
+
+      // Set WorkoutSummary
+      WorkoutSummary? workoutSummary;
+      if (e["workout_type"] != null ||
+          e["total_distance"] != null ||
+          e["total_energy_burned"] != null ||
+          e["total_steps"] != null) {
+        workoutSummary = WorkoutSummary(
+          e["workout_type"] ?? '',
+          e["total_distance"] ?? 0,
+          e["total_energy_burned"] ?? 0,
+          e["total_steps"] ?? 0,
+        );
+      }
       return HealthDataPoint(
         value,
         dataType,
@@ -552,6 +747,8 @@ class HealthFactory {
         device,
         sourceId,
         sourceName,
+        isManualEntry,
+        workoutSummary,
       );
     }).toList();
 
@@ -595,6 +792,12 @@ class HealthFactory {
       case HealthDataType.SLEEP_DEEP:
         return 4;
       case HealthDataType.SLEEP_REM:
+        return 5;
+      case HealthDataType.SLEEP_ASLEEP_CORE:
+        return 3;
+      case HealthDataType.SLEEP_ASLEEP_DEEP:
+        return 4;
+      case HealthDataType.SLEEP_ASLEEP_REM:
         return 5;
       case HealthDataType.HEADACHE_UNSPECIFIED:
         return 0;
@@ -744,6 +947,7 @@ class HealthFactory {
   bool _isOnAndroid(HealthWorkoutActivityType type) {
     // Returns true if the type is part of the Android set
     return {
+      // Both
       HealthWorkoutActivityType.ARCHERY,
       HealthWorkoutActivityType.BADMINTON,
       HealthWorkoutActivityType.BASEBALL,
@@ -786,8 +990,17 @@ class HealthFactory {
       HealthWorkoutActivityType.WALKING,
       HealthWorkoutActivityType.WATER_POLO,
       HealthWorkoutActivityType.YOGA,
+
+      // Android only
+      // Once Google Fit is removed, this list needs to be changed
       HealthWorkoutActivityType.AEROBICS,
       HealthWorkoutActivityType.BIATHLON,
+      HealthWorkoutActivityType.BIKING_HAND,
+      HealthWorkoutActivityType.BIKING_MOUNTAIN,
+      HealthWorkoutActivityType.BIKING_ROAD,
+      HealthWorkoutActivityType.BIKING_SPINNING,
+      HealthWorkoutActivityType.BIKING_STATIONARY,
+      HealthWorkoutActivityType.BIKING_UTILITY,
       HealthWorkoutActivityType.CALISTHENICS,
       HealthWorkoutActivityType.CIRCUIT_TRAINING,
       HealthWorkoutActivityType.CROSS_FIT,
@@ -803,6 +1016,7 @@ class HealthFactory {
       HealthWorkoutActivityType.HOUSEWORK,
       HealthWorkoutActivityType.INTERVAL_TRAINING,
       HealthWorkoutActivityType.IN_VEHICLE,
+      HealthWorkoutActivityType.ICE_SKATING,
       HealthWorkoutActivityType.KAYAKING,
       HealthWorkoutActivityType.KETTLEBELL_TRAINING,
       HealthWorkoutActivityType.KICK_SCOOTER,
@@ -813,6 +1027,7 @@ class HealthFactory {
       HealthWorkoutActivityType.PARAGLIDING,
       HealthWorkoutActivityType.POLO,
       HealthWorkoutActivityType.ROCK_CLIMBING,
+      HealthWorkoutActivityType.ROWING_MACHINE,
       HealthWorkoutActivityType.RUNNING_JOGGING,
       HealthWorkoutActivityType.RUNNING_SAND,
       HealthWorkoutActivityType.RUNNING_TREADMILL,
@@ -820,10 +1035,13 @@ class HealthFactory {
       HealthWorkoutActivityType.SKATING_CROSS,
       HealthWorkoutActivityType.SKATING_INDOOR,
       HealthWorkoutActivityType.SKATING_INLINE,
+      HealthWorkoutActivityType.SKIING,
       HealthWorkoutActivityType.SKIING_BACK_COUNTRY,
       HealthWorkoutActivityType.SKIING_KITE,
       HealthWorkoutActivityType.SKIING_ROLLER,
       HealthWorkoutActivityType.SLEDDING,
+      HealthWorkoutActivityType.SNOWMOBILE,
+      HealthWorkoutActivityType.SNOWSHOEING,
       HealthWorkoutActivityType.STAIR_CLIMBING_MACHINE,
       HealthWorkoutActivityType.STANDUP_PADDLEBOARDING,
       HealthWorkoutActivityType.STILL,

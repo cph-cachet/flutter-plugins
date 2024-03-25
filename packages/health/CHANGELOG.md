@@ -1,4 +1,15 @@
+## 9.0.0
+
+- Updated HC to comply with Android 14, PR [#834](https://github.com/cph-cachet/flutter-plugins/pull/834) and [#882](https://github.com/cph-cachet/flutter-plugins/pull/882)
+- Added checks for NullPointerException, closes issue [#878](https://github.com/cph-cachet/flutter-plugins/issues/878)
+- Updated intl to ^0.19.0
+- Upgrade to AGP 8, PR [#868](https://github.com/cph-cachet/flutter-plugins/pull/868)
+- Added missing google fit workout types, PR [#836](https://github.com/cph-cachet/flutter-plugins/pull/836)
+- Added pagination in HC, PR [#862](https://github.com/cph-cachet/flutter-plugins/pull/862)
+- Fix of permission in example app + improvements to doc, PR [#875](https://github.com/cph-cachet/flutter-plugins/pull/875)
+
 ## 8.1.0
+
 - Fixed sleep stages on iOS, Issue [#803](https://github.com/cph-cachet/flutter-plugins/issues/803)
 - Added Nutrition data type, includes PR [#679](https://github.com/cph-cachet/flutter-plugins/pull/679)
 - Lowered minSDK, Issue [#809](https://github.com/cph-cachet/flutter-plugins/issues/809)
@@ -11,7 +22,6 @@
 - Updated health connect client to 1.1.0
 - Added respiratory rate and peripheral perfusion index to HealthConnect
 - Minor fixes to requestAuthorization, sleep stage filtering
-
 
 ## 7.0.1
 

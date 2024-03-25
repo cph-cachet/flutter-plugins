@@ -13,3 +13,4 @@ part 'src/functions.dart';
 part 'src/health_data_point.dart';
 part 'src/health_value_types.dart';
 part 'src/health_factory.dart';
+part 'src/workout_summary.dart';
