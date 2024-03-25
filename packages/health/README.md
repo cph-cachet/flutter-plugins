@@ -33,6 +33,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes     | yes                      | yes                          |                                        |
 | BODY_MASS_INDEX             | NO_UNIT                 | yes     | yes                      | yes                          |                                        |
 | BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes     | yes                      | yes                          |                                        |
+| BODY_WATER_MASS             | KILOGRAMS               |         |                          | yes                          |                                        |
 | ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |                          |                              |                                        |
 | HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes                      | yes                          |                                        |
 | HEIGHT                      | METERS                  | yes     | yes                      | yes                          |                                        |

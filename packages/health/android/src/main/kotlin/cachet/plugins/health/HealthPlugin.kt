@@ -87,6 +87,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
     private var HEART_RATE = "HEART_RATE"
     private var BODY_TEMPERATURE = "BODY_TEMPERATURE"
+    private var BODY_WATER_MASS = "BODY_WATER_MASS"
     private var BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
     private var BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
     private var BLOOD_OXYGEN = "BLOOD_OXYGEN"
@@ -2198,6 +2199,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 ),
             )
 
+            is BodyWaterMassRecord -> return listOf(
+                mapOf<String, Any>(
+                    "value" to record.mass.inKilograms,
+                    "date_from" to record.time.toEpochMilli(),
+                    "date_to" to record.time.toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to metadata.dataOrigin.packageName,
+                ),
+            )
+
             is BloodPressureRecord -> return listOf(
                 mapOf<String, Any>(
                     "value" to if (dataType == BLOOD_PRESSURE_DIASTOLIC) record.diastolic.inMillimetersOfMercury else record.systolic.inMillimetersOfMercury,
@@ -2396,6 +2407,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             BODY_TEMPERATURE -> BodyTemperatureRecord(
                 time = Instant.ofEpochMilli(startTime),
                 temperature = Temperature.celsius(value),
+                zoneOffset = null,
+            )
+
+            BODY_WATER_MASS -> BodyWaterMassRecord(
+                time = Instant.ofEpochMilli(startTime),
+                mass = Mass.kilograms(value),
                 zoneOffset = null,
             )
 
@@ -2690,6 +2707,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         ACTIVE_ENERGY_BURNED to ActiveCaloriesBurnedRecord::class,
         HEART_RATE to HeartRateRecord::class,
         BODY_TEMPERATURE to BodyTemperatureRecord::class,
+        BODY_WATER_MASS to BodyWaterMassRecord::class,
         BLOOD_PRESSURE_SYSTOLIC to BloodPressureRecord::class,
         BLOOD_PRESSURE_DIASTOLIC to BloodPressureRecord::class,
         BLOOD_OXYGEN to OxygenSaturationRecord::class,
