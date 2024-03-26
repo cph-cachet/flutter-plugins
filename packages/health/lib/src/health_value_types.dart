@@ -107,13 +107,17 @@ class WorkoutHealthValue extends HealthValue {
   HealthDataUnit? _totalEnergyBurnedUnit;
   int? _totalDistance;
   HealthDataUnit? _totalDistanceUnit;
+  int? _totalSteps;
+  HealthDataUnit? _totalStepsUnit;
 
   WorkoutHealthValue(
       this._workoutActivityType,
       this._totalEnergyBurned,
       this._totalEnergyBurnedUnit,
       this._totalDistance,
-      this._totalDistanceUnit);
+      this._totalDistanceUnit,
+      this._totalSteps,
+      this._totalStepsUnit);
 
   /// The type of the workout.
   HealthWorkoutActivityType get workoutActivityType => _workoutActivityType;
@@ -134,6 +138,14 @@ class WorkoutHealthValue extends HealthValue {
   /// Might not be available for all workouts.
   HealthDataUnit? get totalDistanceUnit => _totalDistanceUnit;
 
+  /// The total steps covered during the workout.
+  /// Might not be available for all workouts.
+  int? get totalSteps => _totalSteps;
+
+  /// The unit of the total steps covered during the workout.
+  /// Might not be available for all workouts.
+  HealthDataUnit? get totalStepsUnit => _totalStepsUnit;
+
   factory WorkoutHealthValue.fromJson(json) {
     return WorkoutHealthValue(
         HealthWorkoutActivityType.values.firstWhere(
@@ -151,6 +163,11 @@ class WorkoutHealthValue extends HealthValue {
         json['totalDistanceUnit'] != null
             ? HealthDataUnit.values.firstWhere(
                 (element) => element.name == json['totalDistanceUnit'])
+            : null,
+        json['totalSteps'] != null ? (json['totalSteps'] as num).toInt() : null,
+        json['totalStepsUnit'] != null
+            ? HealthDataUnit.values
+                .firstWhere((element) => element.name == json['totalStepsUnit'])
             : null);
   }
 
@@ -161,6 +178,8 @@ class WorkoutHealthValue extends HealthValue {
         'totalEnergyBurnedUnit': _totalEnergyBurnedUnit?.name,
         'totalDistance': _totalDistance,
         'totalDistanceUnit': _totalDistanceUnit?.name,
+        'totalSteps': _totalSteps,
+        'totalStepsUnit': _totalStepsUnit?.name,
       };
 
   @override
@@ -169,7 +188,9 @@ class WorkoutHealthValue extends HealthValue {
            totalEnergyBurned: $totalEnergyBurned,
            totalEnergyBurnedUnit: ${totalEnergyBurnedUnit?.name},
            totalDistance: $totalDistance,
-           totalDistanceUnit: ${totalDistanceUnit?.name}""";
+           totalDistanceUnit: ${totalDistanceUnit?.name}
+           totalSteps: $totalSteps,
+           totalStepsUnit: ${totalStepsUnit?.name}""";
   }
 
   @override
@@ -179,12 +200,20 @@ class WorkoutHealthValue extends HealthValue {
         this.totalEnergyBurned == o.totalEnergyBurned &&
         this.totalEnergyBurnedUnit == o.totalEnergyBurnedUnit &&
         this.totalDistance == o.totalDistance &&
-        this.totalDistanceUnit == o.totalDistanceUnit;
+        this.totalDistanceUnit == o.totalDistanceUnit &&
+        this.totalSteps == o.totalSteps &&
+        this.totalStepsUnit == o.totalStepsUnit;
   }
 
   @override
-  int get hashCode => Object.hash(workoutActivityType, totalEnergyBurned,
-      totalEnergyBurnedUnit, totalDistance, totalDistanceUnit);
+  int get hashCode => Object.hash(
+      workoutActivityType,
+      totalEnergyBurned,
+      totalEnergyBurnedUnit,
+      totalDistance,
+      totalDistanceUnit,
+      totalSteps,
+      totalStepsUnit);
 }
 
 /// A [HealthValue] object for ECGs
@@ -290,6 +319,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
 /// * [fat] - the amount of fat in grams
 /// * [name] - the name of the food
 /// * [carbs] - the amount of carbs in grams
+/// * [caffeine] - the amount of caffeine in grams
 /// * [mealType] - the type of meal
 class NutritionHealthValue extends HealthValue {
   double? _protein;
@@ -297,10 +327,11 @@ class NutritionHealthValue extends HealthValue {
   double? _fat;
   String? _name;
   double? _carbs;
+  double? _caffeine;
   String _mealType;
 
   NutritionHealthValue(this._protein, this._calories, this._fat, this._name,
-      this._carbs, this._mealType);
+      this._carbs, this._caffeine, this._mealType);
 
   /// The amount of protein in grams.
   double? get protein => _protein;
@@ -317,6 +348,9 @@ class NutritionHealthValue extends HealthValue {
   /// The amount of carbs in grams.
   double? get carbs => _carbs;
 
+  /// The amount of caffeine in grams.
+  double? get caffeine => _caffeine;
+
   /// The type of meal.
   String get mealType => _mealType;
 
@@ -327,6 +361,7 @@ class NutritionHealthValue extends HealthValue {
       json['fat'] != null ? (json['fat'] as num).toDouble() : null,
       json['name'] != null ? (json['name'] as String) : null,
       json['carbs'] != null ? (json['carbs'] as num).toDouble() : null,
+      json['caffeine'] != null ? (json['caffeine'] as num).toDouble() : null,
       json['mealType'] as String,
     );
   }
@@ -338,6 +373,7 @@ class NutritionHealthValue extends HealthValue {
         'fat': _fat,
         'name': _name,
         'carbs': _carbs,
+        'caffeine': _caffeine,
         'mealType': _mealType,
       };
 
@@ -348,6 +384,7 @@ class NutritionHealthValue extends HealthValue {
     fat: ${fat.toString()},
     name: ${name.toString()},
     carbs: ${carbs.toString()},
+    caffeine: ${caffeine.toString()},
     mealType: $mealType""";
   }
 
@@ -359,11 +396,13 @@ class NutritionHealthValue extends HealthValue {
         o.fat == this.fat &&
         o.name == this.name &&
         o.carbs == this.carbs &&
+        o.caffeine == this.caffeine &&
         o.mealType == this.mealType;
   }
 
   @override
-  int get hashCode => Object.hash(protein, calories, fat, name, carbs);
+  int get hashCode =>
+      Object.hash(protein, calories, fat, name, carbs, caffeine);
 }
 
 /// An abstract class for health values.
