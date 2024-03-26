@@ -12,6 +12,7 @@ enum HealthDataType {
   BODY_FAT_PERCENTAGE,
   BODY_MASS_INDEX,
   BODY_TEMPERATURE,
+  BODY_WATER_MASS,
   DIETARY_CARBS_CONSUMED,
   DIETARY_CAFFEINE,
   DIETARY_ENERGY_CONSUMED,
@@ -55,6 +56,7 @@ enum HealthDataType {
   HEADACHE_SEVERE,
   HEADACHE_UNSPECIFIED,
   NUTRITION,
+  STAND_TIME,
 
   // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
@@ -129,6 +131,7 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.HEADACHE_UNSPECIFIED,
   HealthDataType.ELECTROCARDIOGRAM,
   HealthDataType.NUTRITION,
+  HealthDataType.STAND_TIME,
 ];
 
 /// List of data types available on Android
@@ -141,6 +144,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.BODY_FAT_PERCENTAGE,
   HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
+  HealthDataType.BODY_WATER_MASS,
   HealthDataType.HEART_RATE,
   HealthDataType.HEIGHT,
   HealthDataType.STEPS,
@@ -177,6 +181,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENT,
   HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
+  HealthDataType.BODY_WATER_MASS: HealthDataUnit.KILOGRAM,
   HealthDataType.DIETARY_CARBS_CONSUMED: HealthDataUnit.GRAM,
   HealthDataType.DIETARY_CAFFEINE: HealthDataUnit.GRAM,
   HealthDataType.DIETARY_ENERGY_CONSUMED: HealthDataUnit.KILOCALORIE,
@@ -231,6 +236,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.ELECTROCARDIOGRAM: HealthDataUnit.VOLT,
 
   HealthDataType.NUTRITION: HealthDataUnit.NO_UNIT,
+  HealthDataType.STAND_TIME: HealthDataUnit.MINUTE,
 
   // Health Connect
   HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,

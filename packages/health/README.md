@@ -23,7 +23,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 ## Data Types
 
 | **Data Type**               | **Unit**                | **iOS** | **Android (Google Fit)** | **Android (Health Connect)** | **Comments**                           |
-| --------------------------- | ----------------------- | ------- | ------------------------ |------------------------------| -------------------------------------- |
+|-----------------------------|-------------------------| ------- |--------------------------|------------------------------| -------------------------------------- |
 | ACTIVE_ENERGY_BURNED        | CALORIES                | yes     | yes                      | yes                          |                                        |
 | BASAL_ENERGY_BURNED         | CALORIES                | yes     |                          | yes                          |                                        |
 | BLOOD_GLUCOSE               | MILLIGRAM_PER_DECILITER | yes     | yes                      | yes                          |                                        |
@@ -33,12 +33,13 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | BODY_FAT_PERCENTAGE         | PERCENTAGE              | yes     | yes                      | yes                          |                                        |
 | BODY_MASS_INDEX             | NO_UNIT                 | yes     | yes                      | yes                          |                                        |
 | BODY_TEMPERATURE            | DEGREE_CELSIUS          | yes     | yes                      | yes                          |                                        |
+| BODY_WATER_MASS             | KILOGRAMS               |         |                          | yes                          |                                        |
 | ELECTRODERMAL_ACTIVITY      | SIEMENS                 | yes     |                          |                              |                                        |
 | HEART_RATE                  | BEATS_PER_MINUTE        | yes     | yes                      | yes                          |                                        |
 | HEIGHT                      | METERS                  | yes     | yes                      | yes                          |                                        |
 | RESTING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          | yes                          |                                        |
-| RESPIRATORY_RATE            | RESPIRATIONS_PER_MINUTE | yes     |                          | yes                                                                   |
-| PERIPHERAL_PERFUSION_INDEX  | PERCENTAGE              | yes     |                          |                                                             |
+| RESPIRATORY_RATE            | RESPIRATIONS_PER_MINUTE | yes     |                          | yes                          |
+| PERIPHERAL_PERFUSION_INDEX  | PERCENTAGE              | yes     |                          |                              |
 | STEPS                       | COUNT                   | yes     | yes                      | yes                          |                                        |
 | WAIST_CIRCUMFERENCE         | METERS                  | yes     |                          |                              |                                        |
 | WALKING_HEART_RATE          | BEATS_PER_MINUTE        | yes     |                          |                              |                                        |
@@ -71,6 +72,7 @@ Note that for Android, the target phone **needs** to have [Google Fit](https://w
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                          |                              |                                        |
 | ELECTROCARDIOGRAM           | VOLT                    | yes     |                          |                              | Requires Apple Watch to write the data |
 | NUTRITION                   | NO_UNIT                 | yes     | yes                      | yes                          |                                        |
+| STAND_TIME                  | MINUTES                 | yes     |                          |                              |                                        |
 
 ## Setup
 
