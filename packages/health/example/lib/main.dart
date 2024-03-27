@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:device_apps/device_apps.dart';
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(HealthApp());
 
@@ -27,14 +30,17 @@ enum AppState {
 }
 
 class _HealthAppState extends State<HealthApp> {
+  static const String packageIdHealthConnect = 'com.google.android.apps.healthdata';
+  StreamSubscription? _subscription;
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 0;
+  bool isAppInstalledHC = false;
 
   // Define the types to get.
 
   // Use the entire list on e.g. Android.
-  static final types = dataTypesIOS;
+  static final types = dataTypesAndroid;
 
   // Or specify specific types
   // static final types = [
@@ -69,6 +75,10 @@ class _HealthAppState extends State<HealthApp> {
     await Permission.activityRecognition.request();
     await Permission.location.request();
 
+    if (!isAppInstalledHC && Platform.isAndroid && health.useHealthConnectIfAvailable) {
+      await openAppStore(packageId: packageIdHealthConnect);
+      return;
+    }
     // Check if we have health permissions
     bool? hasPermissions =
         await health.hasPermissions(types, permissions: permissions);
@@ -376,6 +386,41 @@ class _HealthAppState extends State<HealthApp> {
       return _contentNotFetched();
   }
 
+  Future<void> checkInstallHC() async {
+    bool isInstalled = await DeviceApps.isAppInstalled(packageIdHealthConnect);
+    if (isInstalled) {
+      // Check and create a connection to Health Connect
+      await health.checkHealthConnectAvailable();
+    }
+    setState(() {
+      isAppInstalledHC = isInstalled;
+    });
+  }
+
+  Future<void> openAppStore({String packageId = ''}) async {
+    final url = 'https://play.google.com/store/apps/details?id=$packageId';
+    final uri = Uri.parse(url);
+    try {
+      if (!await launchUrl(uri)) {
+        throw Exception("Could not launch $uri");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (Platform.isAndroid) {
+      checkInstallHC();
+      _subscription?.cancel();
+      _subscription = DeviceApps.listenToAppsChanges().listen((event) async {
+        checkInstallHC();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -440,5 +485,11 @@ class _HealthAppState extends State<HealthApp> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 }

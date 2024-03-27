@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   permission_handler: ^10.2.0
+  device_apps: ^2.2.0
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
