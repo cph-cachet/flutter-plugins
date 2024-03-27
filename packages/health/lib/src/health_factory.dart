@@ -2,14 +2,23 @@ part of health;
 
 /// Main class for the Plugin.
 ///
-/// The plugin supports:
+/// Overall, the plugin supports:
 ///
-///  * handling permissions to access health data using the [hasPermissions],
+///  * Handling permissions to access health data using the [hasPermissions],
 ///    [requestAuthorization], [revokePermissions] methods.
-///  * reading health data using the [getHealthDataFromTypes] method.
-///  * writing health data using the [writeHealthData] method.
-///  * accessing total step counts using the [getTotalStepsInInterval] method.
-///  * cleaning up dublicate data points via the [removeDuplicates] method.
+///  * Reading health data using the [getHealthDataFromTypes] method.
+///  * Writing health data using the [writeHealthData] method.
+///  * Cleaning up duplicate data points via the [removeDuplicates] method.
+///
+/// In addition, the plugin has a set of specialized methods for reading and writing
+/// different types of health data:
+///
+///  * Reading aggregate health data using the [getHealthIntervalDataFromTypes]
+///    and [getHealthAggregateDataFromTypes] methods.
+///  * Reading total step counts using the [getTotalStepsInInterval] method.
+///  * Writing different types of specialized health data like the [writeWorkoutData],
+///    [writeBloodPressure], [writeBloodOxygen], [writeAudiogram], and [writeMeal]
+///    methods.
 class HealthFactory {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   String? _deviceId;
@@ -264,7 +273,8 @@ class HealthFactory {
   ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
   /// * [unit] - <mark>(iOS ONLY)</mark> the unit the health data is measured in.
   ///
-  /// Values for Sleep and Headache are ignored and will be automatically assigned the coresponding value.
+  /// Values for Sleep and Headache are ignored and will be automatically assigned
+  /// the default value.
   Future<bool> writeHealthData(
     double value,
     HealthDataType type,
@@ -547,8 +557,12 @@ class HealthFactory {
 
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthAggregateDataFromTypes(
-      DateTime startDate, DateTime endDate, List<HealthDataType> types,
-      {int activitySegmentDuration = 1, bool includeManualEntry = true}) async {
+    DateTime startDate,
+    DateTime endDate,
+    List<HealthDataType> types, {
+    int activitySegmentDuration = 1,
+    bool includeManualEntry = true,
+  }) async {
     List<HealthDataPoint> dataPoints = [];
 
     final result = await _prepareAggregateQuery(
@@ -778,7 +792,7 @@ class HealthFactory {
     return LinkedHashSet.of(points).toList();
   }
 
-  /// Get the total numbner of steps within a specific time period.
+  /// Get the total number of steps within a specific time period.
   /// Returns null if not successful.
   ///
   /// Is a fix according to https://stackoverflow.com/questions/29414386/step-count-retrieved-through-google-fit-api-does-not-match-step-count-displayed/29415091#29415091
@@ -837,13 +851,13 @@ class HealthFactory {
   /// Returns true if successfully added workout data.
   ///
   /// Parameters:
-  /// - [activityType] The type of activity performed
-  /// - [start] The start time of the workout
-  /// - [end] The end time of the workout
-  /// - [totalEnergyBurned] The total energy burned during the workout
-  /// - [totalEnergyBurnedUnit] The UNIT used to measure [totalEnergyBurned] *ONLY FOR IOS* Default value is KILOCALORIE.
-  /// - [totalDistance] The total distance traveled during the workout
-  /// - [totalDistanceUnit] The UNIT used to measure [totalDistance] *ONLY FOR IOS* Default value is METER.
+  ///  - [activityType] The type of activity performed
+  ///  - [start] The start time of the workout
+  ///  - [end] The end time of the workout
+  ///  - [totalEnergyBurned] The total energy burned during the workout
+  ///  - [totalEnergyBurnedUnit] The UNIT used to measure [totalEnergyBurned] *ONLY FOR IOS* Default value is KILOCALORIE.
+  ///  - [totalDistance] The total distance traveled during the workout
+  ///  - [totalDistanceUnit] The UNIT used to measure [totalDistance] *ONLY FOR IOS* Default value is METER.
   Future<bool> writeWorkoutData(
     HealthWorkoutActivityType activityType,
     DateTime start,

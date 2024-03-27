@@ -39,27 +39,27 @@ class _HealthAppState extends State<HealthApp> {
   // Define the types to get.
 
   // Use the entire list on e.g. Android.
-  static final types = dataTypesIOS;
+  // static final types = dataTypesIOS;
 
   // Or specify specific types
-  // static final types = [
-  //   HealthDataType.WEIGHT,
-  //   HealthDataType.STEPS,
-  //   HealthDataType.HEIGHT,
-  //   HealthDataType.BLOOD_GLUCOSE,
-  //   HealthDataType.WORKOUT,
-  //   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-  //   HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-  //   // Uncomment this line on iOS - only available on iOS
-  //   // HealthDataType.AUDIOGRAM
-  // ];
+  static final types = [
+    HealthDataType.WEIGHT,
+    HealthDataType.STEPS,
+    HealthDataType.HEIGHT,
+    HealthDataType.BLOOD_GLUCOSE,
+    HealthDataType.WORKOUT,
+    HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+    HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+    // Uncomment this line on iOS - only available on iOS
+    HealthDataType.AUDIOGRAM
+  ];
 
   // Set up corresponding permissions
   // READ only
-  final permissions = types.map((e) => HealthDataAccess.READ).toList();
+  // final permissions = types.map((e) => HealthDataAccess.READ).toList();
 
   // Or both READ and WRITE
-  // final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
+  final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
 
   // create a HealthFactory for use in the app
   HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
@@ -113,8 +113,8 @@ class _HealthAppState extends State<HealthApp> {
       List<HealthDataPoint> healthData =
           await health.getHealthDataFromTypes(yesterday, now, types);
 
-      debugPrint(
-          'Total number of data points: ${healthData.length}. Only showing the first 100.');
+      debugPrint('Total number of data points: ${healthData.length}. '
+          '${healthData.length > 100 ? 'Only showing the first 100.' : ''}');
 
       // save all the new data points (only the first 100)
       _healthDataList.addAll(
@@ -145,7 +145,7 @@ class _HealthAppState extends State<HealthApp> {
     success &= await health.writeHealthData(
         1.925, HealthDataType.HEIGHT, earlier, now);
     success &=
-        await health.writeHealthData(90, HealthDataType.WEIGHT, earlier, now);
+        await health.writeHealthData(90, HealthDataType.WEIGHT, now, now);
     success &= await health.writeHealthData(
         90, HealthDataType.HEART_RATE, earlier, now);
     success &=
@@ -179,8 +179,7 @@ class _HealthAppState extends State<HealthApp> {
     success &= await health.writeMeal(
         earlier, now, 1000, 50, 25, 50, "Banana", 0.002, MealType.SNACK);
 
-    // Store an Audiogram
-    // Uncomment these on iOS - only available on iOS
+    // Store an Audiogram - only available on iOS
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
     // const leftEarSensitivities = [49.0, 54.0, 89.0, 52.0, 77.0, 35.0];
     // const rightEarSensitivities = [76.0, 66.0, 90.0, 22.0, 85.0, 44.5];
