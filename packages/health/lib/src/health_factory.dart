@@ -858,6 +858,15 @@ class HealthFactory {
     return success ?? false;
   }
 
+  /// Check if the Health Connect is available on the device
+  Future<bool> checkHealthConnectAvailable() async {
+    if (_platformType == PlatformType.IOS) {
+      throw UnsupportedError('checkHealthConnectAvailable is not supported on iOS');
+    }
+    final bool? available = await _channel.invokeMethod('checkHealthConnectAvailable');
+    return available ?? false;
+  }
+
   /// Check if the given [HealthWorkoutActivityType] is supported on the iOS platform
   bool _isOnIOS(HealthWorkoutActivityType type) {
     // Returns true if the type is part of the iOS set
