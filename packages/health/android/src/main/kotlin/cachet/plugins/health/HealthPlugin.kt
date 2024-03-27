@@ -2272,8 +2272,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "date_to" to record.endTime.toEpochMilli(),
                     "value" to ChronoUnit.MINUTES.between(record.startTime, record.endTime),
                     "source_id" to "",
-                    "source_name" to metadata.dataOrigin.packageName,
-                    "stage" to if (record.stages.isNotEmpty()) record.stages[0] else SleepSessionRecord.STAGE_TYPE_UNKNOWN,
+                    "source_name" to metadata.dataOrigin.packageName,                    
                 ),
             )
             is RestingHeartRateRecord -> return listOf(
