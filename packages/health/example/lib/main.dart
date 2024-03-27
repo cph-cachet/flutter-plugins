@@ -1,9 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+/// A connivent function to convert a Dart object into a formatted JSON string.
+String toJsonString(Object? object) =>
+    const JsonEncoder.withIndent(' ').convert(object);
 
 void main() => runApp(HealthApp());
 
@@ -84,7 +89,7 @@ class _HealthAppState extends State<HealthApp> {
         authorized =
             await health.requestAuthorization(types, permissions: permissions);
       } catch (error) {
-        print("Exception in authorize: $error");
+        debugPrint("Exception in authorize: $error");
       }
     }
 
@@ -107,18 +112,19 @@ class _HealthAppState extends State<HealthApp> {
       // fetch health data
       List<HealthDataPoint> healthData =
           await health.getHealthDataFromTypes(yesterday, now, types);
+
+      debugPrint(
+          'Total number of data points: ${healthData.length}. Only showing the first 100.');
+
       // save all the new data points (only the first 100)
       _healthDataList.addAll(
           (healthData.length < 100) ? healthData : healthData.sublist(0, 100));
     } catch (error) {
-      print("Exception in getHealthDataFromTypes: $error");
+      debugPrint("Exception in getHealthDataFromTypes: $error");
     }
 
     // filter out duplicates
     _healthDataList = HealthFactory.removeDuplicates(_healthDataList);
-
-    // print the results
-    _healthDataList.forEach((x) => print(x));
 
     // update the UI to display the results
     setState(() {
@@ -172,6 +178,7 @@ class _HealthAppState extends State<HealthApp> {
         0.0, HealthDataType.SLEEP_DEEP, earlier, now);
     success &= await health.writeMeal(
         earlier, now, 1000, 50, 25, 50, "Banana", 0.002, MealType.SNACK);
+
     // Store an Audiogram
     // Uncomment these on iOS - only available on iOS
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
@@ -229,17 +236,17 @@ class _HealthAppState extends State<HealthApp> {
       try {
         steps = await health.getTotalStepsInInterval(midnight, now);
       } catch (error) {
-        print("Caught exception in getTotalStepsInInterval: $error");
+        debugPrint("Exception in getTotalStepsInInterval: $error");
       }
 
-      print('Total number of steps: $steps');
+      debugPrint('Total number of steps: $steps');
 
       setState(() {
         _nofSteps = (steps == null) ? 0 : steps;
         _state = (steps == null) ? AppState.NO_DATA : AppState.STEPS_READY;
       });
     } else {
-      print("Authorization not granted - error in authorization");
+      debugPrint("Authorization not granted - error in authorization");
       setState(() => _state = AppState.DATA_NOT_FETCHED);
     }
   }
@@ -249,132 +256,129 @@ class _HealthAppState extends State<HealthApp> {
     try {
       await health.revokePermissions();
     } catch (error) {
-      print("Caught exception in revokeAccess: $error");
+      debugPrint("Exception in revokeAccess: $error");
     }
   }
 
-  Widget _contentFetchingData() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Container(
-            padding: EdgeInsets.all(20),
-            child: CircularProgressIndicator(
-              strokeWidth: 10,
-            )),
-        Text('Fetching data...')
-      ],
-    );
-  }
+  Widget get _contentFetchingData => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(
+                strokeWidth: 10,
+              )),
+          Text('Fetching data...')
+        ],
+      );
 
-  Widget _contentDataReady() {
-    return ListView.builder(
-        itemCount: _healthDataList.length,
-        itemBuilder: (_, index) {
-          HealthDataPoint p = _healthDataList[index];
-          if (p.value is AudiogramHealthValue) {
-            return ListTile(
-              title: Text("${p.typeString}: ${p.value}"),
-              trailing: Text('${p.unitString}'),
-              subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
-            );
-          }
-          if (p.value is WorkoutHealthValue) {
-            return ListTile(
-              title: Text(
-                  "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
-              trailing: Text(
-                  '${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
-              subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
-            );
-          }
-          if (p.value is NutritionHealthValue) {
-            return ListTile(
-              title: Text(
-                  "${p.typeString} ${(p.value as NutritionHealthValue).mealType}: ${(p.value as NutritionHealthValue).name}"),
-              trailing:
-                  Text('${(p.value as NutritionHealthValue).calories} kcal'),
-              subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
-            );
-          }
+  Widget get _contentDataReady => ListView.builder(
+      itemCount: _healthDataList.length,
+      itemBuilder: (_, index) {
+        HealthDataPoint p = _healthDataList[index];
+        if (p.value is AudiogramHealthValue) {
           return ListTile(
             title: Text("${p.typeString}: ${p.value}"),
             trailing: Text('${p.unitString}'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
           );
-        });
-  }
+        }
+        if (p.value is WorkoutHealthValue) {
+          return ListTile(
+            title: Text(
+                "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
+            trailing: Text(
+                '${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
+            subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+          );
+        }
+        if (p.value is NutritionHealthValue) {
+          return ListTile(
+            title: Text(
+                "${p.typeString} ${(p.value as NutritionHealthValue).mealType}: ${(p.value as NutritionHealthValue).name}"),
+            trailing:
+                Text('${(p.value as NutritionHealthValue).calories} kcal'),
+            subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+          );
+        }
+        return ListTile(
+          title: Text("${p.typeString}: ${p.value}"),
+          trailing: Text('${p.unitString}'),
+          subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+        );
+      });
 
-  Widget _contentNoData() {
-    return Text('No Data to show');
-  }
+  Widget _contentNoData = const Text('No Data to show');
 
-  Widget _contentNotFetched() {
-    return Column(
-      children: [
-        Text("Press 'Auth' to get permissions to access health data."),
-        Text("Press 'Fetch Dat' to get health data."),
-        Text("Press 'Add Data' to add some random health data."),
-        Text("Press 'Delete Data' to remove some random health data."),
-      ],
-      mainAxisAlignment: MainAxisAlignment.center,
-    );
-  }
+  Widget _contentNotFetched = const Column(children: [
+    const Text("Press 'Auth' to get permissions to access health data."),
+    const Text("Press 'Fetch Dat' to get health data."),
+    const Text("Press 'Add Data' to add some random health data."),
+    const Text("Press 'Delete Data' to remove some random health data."),
+  ], mainAxisAlignment: MainAxisAlignment.center);
 
-  Widget _authorized() {
-    return Text('Authorization granted!');
-  }
+  Widget _authorized = const Text('Authorization granted!');
 
-  Widget _authorizationNotGranted() {
-    return Text('Authorization not given. '
-        'For Android please check your OAUTH2 client ID is correct in Google Developer Console. '
-        'For iOS check your permissions in Apple Health.');
-  }
+  Widget _authorizationNotGranted = const Column(
+    children: [
+      const Text('Authorization not given.'),
+      const Text(
+          'For Google Fit please check your OAUTH2 client ID is correct in Google Developer Console.'),
+      const Text(
+          'For Google Health Connect please check if you have added the right permissions and services to the manifest file.'),
+      const Text('For Apple Health check your permissions in Apple Health.'),
+    ],
+    mainAxisAlignment: MainAxisAlignment.center,
+  );
 
-  Widget _dataAdded() {
-    return Text('Data points inserted successfully!');
-  }
+  Widget _dataAdded = const Text('Data points inserted successfully.');
 
-  Widget _dataDeleted() {
-    return Text('Data points deleted successfully!');
-  }
+  Widget _dataDeleted = const Text('Data points deleted successfully.');
 
-  Widget _stepsFetched() {
-    return Text('Total number of steps: $_nofSteps');
-  }
+  Widget get _stepsFetched => Text('Total number of steps: $_nofSteps.');
 
-  Widget _dataNotAdded() {
-    return Text('Failed to add data');
-  }
+  Widget _dataNotAdded =
+      const Text('Failed to add data.\nDo you have permissions to add data?');
 
-  Widget _dataNotDeleted() {
-    return Text('Failed to delete data');
-  }
+  Widget _dataNotDeleted = const Text('Failed to delete data');
 
-  Widget _content() {
-    if (_state == AppState.DATA_READY)
-      return _contentDataReady();
-    else if (_state == AppState.NO_DATA)
-      return _contentNoData();
-    else if (_state == AppState.FETCHING_DATA)
-      return _contentFetchingData();
-    else if (_state == AppState.AUTHORIZED)
-      return _authorized();
-    else if (_state == AppState.AUTH_NOT_GRANTED)
-      return _authorizationNotGranted();
-    else if (_state == AppState.DATA_ADDED)
-      return _dataAdded();
-    else if (_state == AppState.DATA_DELETED)
-      return _dataDeleted();
-    else if (_state == AppState.STEPS_READY)
-      return _stepsFetched();
-    else if (_state == AppState.DATA_NOT_ADDED)
-      return _dataNotAdded();
-    else if (_state == AppState.DATA_NOT_DELETED)
-      return _dataNotDeleted();
-    else
-      return _contentNotFetched();
-  }
+  Widget get _content => switch (_state) {
+        AppState.DATA_READY => _contentDataReady,
+        AppState.DATA_NOT_FETCHED => _contentNotFetched,
+        AppState.FETCHING_DATA => _contentFetchingData,
+        AppState.NO_DATA => _contentNoData,
+        AppState.AUTHORIZED => _authorized,
+        AppState.AUTH_NOT_GRANTED => _authorizationNotGranted,
+        AppState.DATA_ADDED => _dataAdded,
+        AppState.DATA_DELETED => _dataDeleted,
+        AppState.DATA_NOT_ADDED => _dataNotAdded,
+        AppState.DATA_NOT_DELETED => _dataNotDeleted,
+        AppState.STEPS_READY => _stepsFetched,
+      };
+
+  //   if (_state == AppState.DATA_READY)
+  //     return _contentDataReady;
+  //   else if (_state == AppState.NO_DATA)
+  //     return _contentNoData;
+  //   else if (_state == AppState.FETCHING_DATA)
+  //     return _contentFetchingData;
+  //   else if (_state == AppState.AUTHORIZED)
+  //     return _authorized;
+  //   else if (_state == AppState.AUTH_NOT_GRANTED)
+  //     return _authorizationNotGranted;
+  //   else if (_state == AppState.DATA_ADDED)
+  //     return _dataAdded;
+  //   else if (_state == AppState.DATA_DELETED)
+  //     return _dataDeleted;
+  //   else if (_state == AppState.STEPS_READY)
+  //     return _stepsFetched;
+  //   else if (_state == AppState.DATA_NOT_ADDED)
+  //     return _dataNotAdded;
+  //   else if (_state == AppState.DATA_NOT_DELETED)
+  //     return _dataNotDeleted;
+  //   else
+  //     return _contentNotFetched;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -434,7 +438,7 @@ class _HealthAppState extends State<HealthApp> {
                 ],
               ),
               Divider(thickness: 3),
-              Expanded(child: Center(child: _content()))
+              Expanded(child: Center(child: _content))
             ],
           ),
         ),

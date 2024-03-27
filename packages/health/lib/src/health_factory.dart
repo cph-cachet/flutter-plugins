@@ -34,31 +34,34 @@ class HealthFactory {
           ? _dataTypeKeysAndroid.contains(dataType)
           : _dataTypeKeysIOS.contains(dataType);
 
-  /// Determines if the data types have been granted with the specified access rights.
+  /// Determines if the health data [types] have been granted with the specified
+  /// access rights [permissions].
   ///
   /// Returns:
   ///
-  /// * true - if all of the data types have been granted with the specfied access rights.
-  /// * false - if any of the data types has not been granted with the specified access right(s)
-  /// * null - if it can not be determined if the data types have been granted with the specified access right(s).
+  ///  * true - if all of the data types have been granted with the specified access rights.
+  ///  * false - if any of the data types has not been granted with the specified access right(s).
+  ///  * null - if it can not be determined if the data types have been granted with the specified access right(s).
   ///
   /// Parameters:
   ///
-  /// * [types]  - List of [HealthDataType] whose permissions are to be checked.
-  /// * [permissions] - Optional.
-  ///   + If unspecified, this method checks if each HealthDataType in [types] has been granted READ access.
-  ///   + If specified, this method checks if each [HealthDataType] in [types] has been granted with the access specified in its
+  ///  * [types]  - List of [HealthDataType] whose permissions are to be checked.
+  ///  * [permissions] - Optional.
+  ///    + If unspecified, this method checks if each HealthDataType in [types] has been granted READ access.
+  ///    + If specified, this method checks if each [HealthDataType] in [types] has been granted with the access specified in its
   ///   corresponding entry in this list. The length of this list must be equal to that of [types].
   ///
-  ///  Caveat:
+  /// Caveat:
   ///
-  ///   As Apple HealthKit will not disclose if READ access has been granted for a data type due to privacy concern,
-  ///   this method can only return null to represent an undertermined status, if it is called on iOS
+  ///  * As Apple HealthKit will not disclose if READ access has been granted for a data type due to privacy concern,
+  ///   this method can only return null to represent an undetermined status, if it is called on iOS
   ///   with a READ or READ_WRITE access.
   ///
-  ///   On Android, this function returns true or false, depending on whether the specified access right has been granted.
-  Future<bool?> hasPermissions(List<HealthDataType> types,
-      {List<HealthDataAccess>? permissions}) async {
+  ///  * On Android, this function returns true or false, depending on whether the specified access right has been granted.
+  Future<bool?> hasPermissions(
+    List<HealthDataType> types, {
+    List<HealthDataAccess>? permissions,
+  }) async {
     if (permissions != null && permissions.length != types.length)
       throw ArgumentError(
           "The lists of types and permissions must be of same length.");
@@ -79,6 +82,7 @@ class HealthFactory {
   }
 
   /// Revokes permissions of all types.
+  ///
   /// Uses `disableFit()` on Google Fit.
   ///
   /// Not implemented on iOS as there is no way to programmatically remove access.
@@ -91,7 +95,7 @@ class HealthFactory {
       await _channel.invokeMethod('revokePermissions');
       return;
     } catch (e) {
-      print(e);
+      debugPrint('$runtimeType - Exception in revokePermissions(): $e');
     }
   }
 
@@ -122,9 +126,9 @@ class HealthFactory {
         'disconnect', {'types': keys, "permissions": mPermissions});
   }
 
-  /// Requests permissions to access data types in Apple Health or Google Fit.
+  /// Requests permissions to access health data [types].
   ///
-  /// Returns true if successful, false otherwise
+  /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
   ///
@@ -177,11 +181,8 @@ class HealthFactory {
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => e.name).toList();
-    print(
-        '>> trying to get permissions for $keys with permissions $mPermissions');
     final bool? isAuthorized = await _channel.invokeMethod(
         'requestAuthorization', {'types': keys, "permissions": mPermissions});
-    print('>> isAuthorized: $isAuthorized');
     return isAuthorized ?? false;
   }
 
@@ -205,7 +206,10 @@ class HealthFactory {
 
   /// Calculate the BMI using the last observed height and weight values.
   Future<List<HealthDataPoint>> _computeAndroidBMI(
-      DateTime startTime, DateTime endTime, bool includeManualEntry) async {
+    DateTime startTime,
+    DateTime endTime,
+    bool includeManualEntry,
+  ) async {
     List<HealthDataPoint> heights = await _prepareQuery(
         startTime, endTime, HealthDataType.HEIGHT, includeManualEntry);
 
@@ -246,7 +250,7 @@ class HealthFactory {
     return bmiHealthPoints;
   }
 
-  /// Saves health data into Apple Health or Google Fit.
+  /// Write health data.
   ///
   /// Returns true if successful, false otherwise.
   ///
@@ -281,7 +285,7 @@ class HealthFactory {
         }.contains(type) &&
         _platformType == PlatformType.IOS)
       throw ArgumentError(
-          "$type - iOS doesnt support writing this data type in HealthKit");
+          "$type - iOS does not support writing this data type in HealthKit");
 
     // Assign default unit if not specified
     unit ??= _dataTypeToUnit[type]!;
@@ -315,18 +319,21 @@ class HealthFactory {
     return success ?? false;
   }
 
-  /// Deletes all records of the given type for a given period of time
+  /// Deletes all records of the given [type] for a given period of time.
   ///
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [type] - the value's HealthDataType
-  /// * [startTime] - the start time when this [value] is measured.
-  ///   + It must be equal to or earlier than [endTime].
-  /// * [endTime] - the end time when this [value] is measured.
-  ///   + It must be equal to or later than [startTime].
+  ///  * [type] - the value's HealthDataType.
+  ///  * [startTime] - the start time when this [value] is measured.
+  ///    Must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when this [value] is measured.
+  ///    Must be equal to or later than [startTime].
   Future<bool> delete(
-      HealthDataType type, DateTime startTime, DateTime endTime) async {
+    HealthDataType type,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
 
@@ -339,20 +346,25 @@ class HealthFactory {
     return success ?? false;
   }
 
-  /// Saves blood pressure record into Apple Health or Google Fit.
+  /// Saves a blood pressure record.
   ///
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [systolic] - the systolic part of the blood pressure
-  /// * [diastolic] - the diastolic part of the blood pressure
-  /// * [startTime] - the start time when this [value] is measured.
-  ///   + It must be equal to or earlier than [endTime].
-  /// * [endTime] - the end time when this [value] is measured.
-  ///   + It must be equal to or later than [startTime].
-  ///   + Simply set [endTime] equal to [startTime] if the blood pressure is measured only at a specific point in time.
+  ///  * [systolic] - the systolic part of the blood pressure.
+  ///  * [diastolic] - the diastolic part of the blood pressure.
+  ///  * [startTime] - the start time when this [value] is measured.
+  ///    Must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when this [value] is measured.
+  ///    Must be equal to or later than [startTime].
+  ///    Simply set [endTime] equal to [startTime] if the blood pressure is measured
+  ///    only at a specific point in time.
   Future<bool> writeBloodPressure(
-      int systolic, int diastolic, DateTime startTime, DateTime endTime) async {
+    int systolic,
+    int diastolic,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
 
@@ -366,21 +378,26 @@ class HealthFactory {
     return success ?? false;
   }
 
-  /// Saves blood oxygen saturation record into Apple Health or Google Fit/Health Connect.
+  /// Saves blood oxygen saturation record.
   ///
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [saturation] - the saturation of the blood oxygen in percentage
-  /// * [flowRate] - optional supplemental oxygen flow rate, only supported on Google Fit (default 0.0)
-  /// * [startTime] - the start time when this [value] is measured.
-  ///   + It must be equal to or earlier than [endTime].
-  /// * [endTime] - the end time when this [value] is measured.
-  ///   + It must be equal to or later than [startTime].
-  ///   + Simply set [endTime] equal to [startTime] if the blood oxygen saturation is measured only at a specific point in time.
+  ///  * [saturation] - the saturation of the blood oxygen in percentage
+  ///  * [flowRate] - optional supplemental oxygen flow rate, only supported on
+  ///    Google Fit (default 0.0)
+  ///  * [startTime] - the start time when this [value] is measured.
+  ///    Must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when this [value] is measured.
+  ///    Must be equal to or later than [startTime].
+  ///    Simply set [endTime] equal to [startTime] if the blood oxygen saturation
+  ///    is measured only at a specific point in time.
   Future<bool> writeBloodOxygen(
-      double saturation, DateTime startTime, DateTime endTime,
-      {double flowRate = 0.0}) async {
+    double saturation,
+    DateTime startTime,
+    DateTime endTime, {
+    double flowRate = 0.0,
+  }) async {
     if (startTime.isAfter(endTime))
       throw ArgumentError("startTime must be equal or earlier than endTime");
     bool? success;
