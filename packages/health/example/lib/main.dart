@@ -51,15 +51,15 @@ class _HealthAppState extends State<HealthApp> {
     HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
     HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
     // Uncomment this line on iOS - only available on iOS
-    HealthDataType.AUDIOGRAM
+    // HealthDataType.AUDIOGRAM
   ];
 
   // Set up corresponding permissions
   // READ only
-  // final permissions = types.map((e) => HealthDataAccess.READ).toList();
+  final permissions = types.map((e) => HealthDataAccess.READ).toList();
 
   // Or both READ and WRITE
-  final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
+  // final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
 
   // create a HealthFactory for use in the app
   HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
