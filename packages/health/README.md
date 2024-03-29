@@ -16,7 +16,6 @@ The plugin supports:
 - accessing total step counts using the `getTotalStepsInInterval` method.
 - cleaning up duplicate data points via the `removeDuplicates` method.
 - removing data of a given type in a selected period of time using the `delete` method.
-- Support the future Android API Health Connect.
 
 Note that for Android, the target phone **needs** to have [Google Fit](https://www.google.com/fit/) or [Health Connect](https://health.google/health-connect-android/) (which is currently in beta) installed and have access to the internet, otherwise this plugin will not work.
 
@@ -186,13 +185,13 @@ android.useAndroidX=true
 
 See the example app for detailed examples of how to use the Health API.
 
-The Health plugin is used via the `HealthFactory` class using the different methods for handling permissions and getting and adding data to Apple Health, Google Fit, or Google Health Connect.
+The Health plugin is used via the `Health()` singleton using the different methods for handling permissions and getting and adding data to Apple Health, Google Fit, or Google Health Connect.
 Below is a simplified flow of how to use the plugin.
 
 ```dart
-  // create a HealthFactory for use in the app, choose if HealthConnect should be used or not
-  HealthFactory health = HealthFactory(useHealthConnectIfAvailable: true);
-
+  // configure the health plugin before use.
+  Health().configure(useHealthConnectIfAvailable: true);
+  
   // define the types to get
   var types = [
     HealthDataType.STEPS,
@@ -200,12 +199,12 @@ Below is a simplified flow of how to use the plugin.
   ];
 
   // requesting access to the data types before reading them
-  bool requested = await health.requestAuthorization(types);
+  bool requested = await Health().requestAuthorization(types);
 
   var now = DateTime.now();
 
   // fetch health data from the last 24 hours
-  List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(
+  List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
      now.subtract(Duration(days: 1)), now, types);
 
   // request permissions to write steps and blood glucose
@@ -214,23 +213,23 @@ Below is a simplified flow of how to use the plugin.
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE
   ];
-  await health.requestAuthorization(types, permissions: permissions);
+  await Health().requestAuthorization(types, permissions: permissions);
 
   // write steps and blood glucose
-  bool success = await health.writeHealthData(10, HealthDataType.STEPS, now, now);
-  success = await health.writeHealthData(3.1, HealthDataType.BLOOD_GLUCOSE, now, now);
+  bool success = await Health().writeHealthData(10, HealthDataType.STEPS, now, now);
+  success = await Health().writeHealthData(3.1, HealthDataType.BLOOD_GLUCOSE, now, now);
 
   // get the number of steps for today
   var midnight = DateTime(now.year, now.month, now.day);
-  int? steps = await health.getTotalStepsInInterval(midnight, now);
+  int? steps = await Health().getTotalStepsInInterval(midnight, now);
 ```
 
 ### Health Data
 
-A `HealthDataPoint` object contains the following data fields:
+A [`HealthDataPoint`](https://pub.dev/documentation/health/latest/health/HealthDataPoint-class.html) object contains the following data fields:
 
 ```dart
-HealthValue value; // NumericHealthValue, AudiogramHealthValue, WorkoutHealthValue, ElectrocardiogramHealthValue
+HealthValue value;
 HealthDataType type;
 HealthDataUnit unit;
 DateTime dateFrom;
@@ -239,15 +238,19 @@ PlatformType platform;
 String uuid, deviceId;
 String sourceId;
 String sourceName;
+bool isManualEntry;
+WorkoutSummary? workoutSummary;
 ```
 
-A `HealthData` object can be serialized to JSON with the `toJson()` method.
+where a [HealthValue](https://pub.dev/documentation/health/latest/health/HealthValue-class.html) can be any type of `AudiogramHealthValue`, `ElectrocardiogramHealthValue`, `ElectrocardiogramVoltageValue`, `NumericHealthValue`, `NutritionHealthValue`, or `WorkoutHealthValue`.
+
+A `HealthDataPoint` object can be serialized to and from JSON using the `toJson()` and `fromJson()` methods. JSON serialization is using camel_case notation.
 
 ### Fetch health data
 
-See the example here on pub.dev, for a showcasing of how it's done.
+See the example app for a showcasing of how it's done.
 
-NB for iOS: The device must be unlocked before Health data can be requested, otherwise an error will be thrown:
+**Note** On iOS the device must be unlocked before health data can be requested. Otherwise an error will be thrown:
 
 ```bash
 flutter: Health Plugin Error:
@@ -270,10 +273,12 @@ If you have a list of data points, duplicates can be removed with:
 
 ```dart
 List<HealthDataPoint> points = ...;
-points = Health.removeDuplicates(points);
+points = Health().removeDuplicates(points);
 ```
 
 ## Data Types
+
+The plugin supports the following [`HealthDataType`](https://pub.dev/documentation/health/latest/health/HealthDataType.html).
 
 | **Data Type**               | **Unit**                | **Apple Health** | **Google Fit** | **Google Health Connect** | **Comments**                           |
 | --------------------------- | ----------------------- | ------- | ----------------------- |---------------------------| -------------------------------------- |
@@ -328,7 +333,7 @@ points = Health.removeDuplicates(points);
 
 ## Workout Types
 
-As of 4.0.0 Health supports adding workouts to both iOS and Android.
+The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/documentation/health/latest/health/HealthWorkoutActivityType.html).
 
 | **Workout Type**                 | **Apple Health** | **Google Fit** | **Google Health Connect** | **Comments**                                                      |
 | -------------------------------- | ------- | ----------------------- | ---------------------------- | ----------------------------------------------------------------- |
