@@ -1,6 +1,8 @@
 part of '../health.dart';
 
-/// Main class for the Plugin.
+/// Main class for the Plugin. This class works as a singleton and should be accessed
+/// via `Health()` factory method. The plugin must be configured using the [configure] method
+/// before used.
 ///
 /// Overall, the plugin supports:
 ///
@@ -59,7 +61,7 @@ class Health {
     }
   }
 
-  /// Using Health Connect (if true) or Google Fit (if false)?
+  /// Is this plugin using Health Connect (true) or Google Fit (false)?
   ///
   /// This is set in the [configure] method.
   bool get useHealthConnectIfAvailable => _useHealthConnectIfAvailable;
@@ -136,9 +138,9 @@ class Health {
     }
   }
 
-  /// Disconnect Google fit.
+  /// Disconnect from Google fit.
   ///
-  /// Not supported on iOS and method does nothing.
+  /// Not supported on iOS and Google Health Connect, and the method does nothing.
   Future<bool?> disconnect(
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
@@ -503,20 +505,20 @@ class Health {
     return success ?? false;
   }
 
-  /// Saves audiogram into Apple Health.
+  /// Saves audiogram into Apple Health. Not supported on Android.
   ///
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [frequencies] - array of frequencies of the test
-  /// * [leftEarSensitivities] threshold in decibel for the left ear
-  /// * [rightEarSensitivities] threshold in decibel for the left ear
-  /// * [startTime] - the start time when the audiogram is measured.
-  ///   + It must be equal to or earlier than [endTime].
-  /// * [endTime] - the end time when the audiogram is measured.
-  ///   + It must be equal to or later than [startTime].
-  ///   + Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
-  /// * [metadata] - optional map of keys, both HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
+  ///  * [frequencies] - array of frequencies of the test
+  ///  * [leftEarSensitivities] threshold in decibel for the left ear
+  ///  * [rightEarSensitivities] threshold in decibel for the left ear
+  ///  * [startTime] - the start time when the audiogram is measured.
+  ///    It must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when the audiogram is measured.
+  ///    It must be equal to or later than [startTime].
+  ///    Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
+  ///  * [metadata] - optional map of keys, both HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
   Future<bool> writeAudiogram(
       List<double> frequencies,
       List<double> leftEarSensitivities,
@@ -774,11 +776,9 @@ class Health {
         .toList();
   }
 
-  /// Given an array of [HealthDataPoint]s, this method will return the array
-  /// without any duplicates.
-  List<HealthDataPoint> removeDuplicates(List<HealthDataPoint> points) {
-    return LinkedHashSet.of(points).toList();
-  }
+  /// Return a list of [HealthDataPoint] based on [points] with no duplicates.
+  List<HealthDataPoint> removeDuplicates(List<HealthDataPoint> points) =>
+      LinkedHashSet.of(points).toList();
 
   /// Get the total number of steps within a specific time period.
   /// Returns null if not successful.
@@ -800,39 +800,23 @@ class Health {
   }
 
   /// Assigns numbers to specific [HealthDataType]s.
-  int _alignValue(HealthDataType type) {
-    switch (type) {
-      case HealthDataType.SLEEP_IN_BED:
-        return 0;
-      case HealthDataType.SLEEP_AWAKE:
-        return 2;
-      case HealthDataType.SLEEP_ASLEEP:
-        return 3;
-      case HealthDataType.SLEEP_DEEP:
-        return 4;
-      case HealthDataType.SLEEP_REM:
-        return 5;
-      case HealthDataType.SLEEP_ASLEEP_CORE:
-        return 3;
-      case HealthDataType.SLEEP_ASLEEP_DEEP:
-        return 4;
-      case HealthDataType.SLEEP_ASLEEP_REM:
-        return 5;
-      case HealthDataType.HEADACHE_UNSPECIFIED:
-        return 0;
-      case HealthDataType.HEADACHE_NOT_PRESENT:
-        return 1;
-      case HealthDataType.HEADACHE_MILD:
-        return 2;
-      case HealthDataType.HEADACHE_MODERATE:
-        return 3;
-      case HealthDataType.HEADACHE_SEVERE:
-        return 4;
-      default:
-        throw HealthException(type,
-            "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues");
-    }
-  }
+  int _alignValue(HealthDataType type) => switch (type) {
+        HealthDataType.SLEEP_IN_BED => 0,
+        HealthDataType.SLEEP_AWAKE => 2,
+        HealthDataType.SLEEP_ASLEEP => 3,
+        HealthDataType.SLEEP_DEEP => 4,
+        HealthDataType.SLEEP_REM => 5,
+        HealthDataType.SLEEP_ASLEEP_CORE => 3,
+        HealthDataType.SLEEP_ASLEEP_DEEP => 4,
+        HealthDataType.SLEEP_ASLEEP_REM => 5,
+        HealthDataType.HEADACHE_UNSPECIFIED => 0,
+        HealthDataType.HEADACHE_NOT_PRESENT => 1,
+        HealthDataType.HEADACHE_MILD => 2,
+        HealthDataType.HEADACHE_MODERATE => 3,
+        HealthDataType.HEADACHE_SEVERE => 4,
+        _ => throw HealthException(type,
+            "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues"),
+      };
 
   /// Write workout data to Apple Health
   ///

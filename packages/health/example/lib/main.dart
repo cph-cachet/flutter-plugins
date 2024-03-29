@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
+import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:carp_serializable/carp_serializable.dart';
 
@@ -38,20 +39,21 @@ class _HealthAppState extends State<HealthApp> {
   // Define the types to get.
 
   // Use the entire list on e.g. Android.
-  // static final types = dataTypesIOS;
+  static final types = dataTypesIOS;
+  // static final types = dataTypesAndroid;
 
-  // Or specify specific types
-  static final types = [
-    HealthDataType.WEIGHT,
-    HealthDataType.STEPS,
-    HealthDataType.HEIGHT,
-    HealthDataType.BLOOD_GLUCOSE,
-    HealthDataType.WORKOUT,
-    HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-    HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-    // Uncomment this line on iOS - only available on iOS
-    // HealthDataType.AUDIOGRAM
-  ];
+  // // Or specify specific types
+  // static final types = [
+  //   HealthDataType.WEIGHT,
+  //   HealthDataType.STEPS,
+  //   HealthDataType.HEIGHT,
+  //   HealthDataType.BLOOD_GLUCOSE,
+  //   HealthDataType.WORKOUT,
+  //   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+  //   HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+  //   // Uncomment this line on iOS - only available on iOS
+  //   // HealthDataType.AUDIOGRAM
+  // ];
 
   // Set up corresponding permissions
   // READ only
@@ -138,7 +140,8 @@ class _HealthAppState extends State<HealthApp> {
   }
 
   /// Add some random health data.
-  /// Note that you should ensure that you have permissions to add the following data types.
+  /// Note that you should ensure that you have permissions to add the
+  /// following data types.
   Future<void> addData() async {
     final now = DateTime.now();
     final earlier = now.subtract(Duration(minutes: 20));
@@ -148,6 +151,8 @@ class _HealthAppState extends State<HealthApp> {
     // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
     // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
     bool success = true;
+
+    // misc. health data examples using the writeHealthData() method
     success &= await Health()
         .writeHealthData(1.925, HealthDataType.HEIGHT, earlier, now);
     success &=
@@ -167,13 +172,8 @@ class _HealthAppState extends State<HealthApp> {
         .writeHealthData(105, HealthDataType.BLOOD_GLUCOSE, earlier, now);
     success &=
         await Health().writeHealthData(1.8, HealthDataType.WATER, earlier, now);
-    success &= await Health().writeWorkoutData(
-        HealthWorkoutActivityType.AMERICAN_FOOTBALL,
-        now.subtract(Duration(minutes: 15)),
-        now,
-        totalDistance: 2430,
-        totalEnergyBurned: 400);
-    success &= await Health().writeBloodPressure(90, 80, earlier, now);
+
+    // different types of sleep
     success &= await Health()
         .writeHealthData(0.0, HealthDataType.SLEEP_REM, earlier, now);
     success &= await Health()
@@ -182,6 +182,15 @@ class _HealthAppState extends State<HealthApp> {
         .writeHealthData(0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
     success &= await Health()
         .writeHealthData(0.0, HealthDataType.SLEEP_DEEP, earlier, now);
+
+    // specialized write methods
+    success &= await Health().writeWorkoutData(
+        HealthWorkoutActivityType.AMERICAN_FOOTBALL,
+        now.subtract(Duration(minutes: 15)),
+        now,
+        totalDistance: 2430,
+        totalEnergyBurned: 400);
+    success &= await Health().writeBloodPressure(90, 80, earlier, now);
     success &= await Health().writeMeal(
         earlier, now, 1000, 50, 25, 50, "Banana", 0.002, MealType.SNACK);
 
@@ -189,7 +198,6 @@ class _HealthAppState extends State<HealthApp> {
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
     // const leftEarSensitivities = [49.0, 54.0, 89.0, 52.0, 77.0, 35.0];
     // const rightEarSensitivities = [76.0, 66.0, 90.0, 22.0, 85.0, 44.5];
-
     // success &= await Health().writeAudiogram(
     //   frequencies,
     //   leftEarSensitivities,
