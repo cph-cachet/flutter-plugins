@@ -3002,7 +3002,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         }
                         is BodyTemperatureRecord ->
                                         return listOf(
-                                                        mapOf<String, Any>(w
+                                                        mapOf<String, Any>(
                                                                         "value" to
                                                                                         record.temperature
                                                                                                         .inCelsius,
