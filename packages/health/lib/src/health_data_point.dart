@@ -122,12 +122,7 @@ class HealthDataPoint {
         dataPoint["total_distance"] != null ||
         dataPoint["total_energy_burned"] != null ||
         dataPoint["total_steps"] != null) {
-      workoutSummary = WorkoutSummary(
-        dataPoint["workout_type"] as String? ?? '',
-        dataPoint["total_distance"] as num? ?? 0,
-        dataPoint["total_energy_burned"] as num? ?? 0,
-        dataPoint["total_steps"] as num? ?? 0,
-      );
+      workoutSummary = WorkoutSummary.fromHealthDataPoint(dataPoint);
     }
 
     return HealthDataPoint(

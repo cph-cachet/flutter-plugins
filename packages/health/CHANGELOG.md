@@ -1,3 +1,8 @@
+## 10.1.0
+
+* fix of error in `WorkoutSummary` JSON serialization.
+* empty value check for calories nutrition, PR [#926](https://github.com/cph-cachet/flutter-plugins/pull/926)
+  
 ## 10.0.0
 
 * **BREAKING** The plugin now works as a singleton using `Health()` to access it (instead of creating an instance of `HealthFactory`).
@@ -6,6 +11,7 @@
 * Support for new data types:
   * body water mass, PR [#917](https://github.com/cph-cachet/flutter-plugins/pull/917)
   * caffeine, PR [#924](https://github.com/cph-cachet/flutter-plugins/pull/924)
+  * workout summary, manual entry and new health data types, PR [#920](https://github.com/cph-cachet/flutter-plugins/pull/920)
 * Fixed `SleepSessionRecord`, PR [#928](https://github.com/cph-cachet/flutter-plugins/pull/928)
 * Update to API and README docs
 * Upgrade to Dart 3.2 and Flutter 3.
