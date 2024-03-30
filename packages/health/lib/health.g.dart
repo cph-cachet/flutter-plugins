@@ -530,10 +530,10 @@ Map<String, dynamic> _$NutritionHealthValueToJson(
 
 WorkoutSummary _$WorkoutSummaryFromJson(Map<String, dynamic> json) =>
     WorkoutSummary(
-      json['workout_type'] as String,
-      json['total_distance'] as num,
-      json['total_energy_burned'] as num,
-      json['total_steps'] as num,
+      workoutType: json['workout_type'] as String,
+      totalDistance: json['total_distance'] as num,
+      totalEnergyBurned: json['total_energy_burned'] as num,
+      totalSteps: json['total_steps'] as num,
     );
 
 Map<String, dynamic> _$WorkoutSummaryToJson(WorkoutSummary instance) =>
