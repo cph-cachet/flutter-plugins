@@ -1576,8 +1576,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 // / Fetch all data points for the specified DataType
                 val dataSet = response.getDataSet(dataType)
                 /// For each data point, extract the contents and send them to Flutter, along with
-                // date and
-                // unit.
+                // date and unit.
                 var dataPoints = dataSet.dataPoints
                 if (!includeManualEntry) {
                         dataPoints =
@@ -1587,9 +1586,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                 )
                                         }
                 }
-                // / For each data point, extract the contents and send them to Flutter, along with
-                // date and
-                // unit.
+                // For each data point, extract the contents and send them to Flutter, along with
+                // date and unit.
                 val healthData =
                                 dataPoints.mapIndexed { _, dataPoint ->
                                         return@mapIndexed hashMapOf(

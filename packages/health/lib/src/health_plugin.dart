@@ -558,8 +558,11 @@ class Health {
 
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes(
-      DateTime startTime, DateTime endTime, List<HealthDataType> types,
-      {bool includeManualEntry = true}) async {
+    DateTime startTime,
+    DateTime endTime,
+    List<HealthDataType> types, {
+    bool includeManualEntry = true,
+  }) async {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
@@ -613,10 +616,11 @@ class Health {
 
   /// Prepares an interval query, i.e. checks if the types are available, etc.
   Future<List<HealthDataPoint>> _prepareQuery(
-      DateTime startTime,
-      DateTime endTime,
-      HealthDataType dataType,
-      bool includeManualEntry) async {
+    DateTime startTime,
+    DateTime endTime,
+    HealthDataType dataType,
+    bool includeManualEntry,
+  ) async {
     // Ask for device ID only once
     _deviceId ??= platformType == PlatformType.ANDROID
         ? (await _deviceInfo.androidInfo).id
