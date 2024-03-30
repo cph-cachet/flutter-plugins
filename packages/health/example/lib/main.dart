@@ -185,11 +185,13 @@ class _HealthAppState extends State<HealthApp> {
 
     // specialized write methods
     success &= await Health().writeWorkoutData(
-        HealthWorkoutActivityType.AMERICAN_FOOTBALL,
-        now.subtract(Duration(minutes: 15)),
-        now,
-        totalDistance: 2430,
-        totalEnergyBurned: 400);
+      HealthWorkoutActivityType.AMERICAN_FOOTBALL,
+      now.subtract(Duration(minutes: 15)),
+      now,
+      totalDistance: 2430,
+      totalEnergyBurned: 400,
+      title: "Random workout name that shows up in Health Connect",
+    );
     success &= await Health().writeBloodPressure(90, 80, earlier, now);
     success &= await Health().writeMeal(
         earlier, now, 1000, 50, 25, 50, "Banana", 0.002, MealType.SNACK);
