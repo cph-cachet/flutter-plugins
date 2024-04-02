@@ -120,6 +120,26 @@ class Health {
     });
   }
 
+  /// Returns the current status of Health Connect availability.
+  ///
+  /// See this for more info:
+  /// https://developer.android.com/reference/kotlin/androidx/health/connect/client/HealthConnectClient#getSdkStatus(android.content.Context,kotlin.String)
+  ///
+  /// Not implemented on iOS as Health Connect doesn't exist at all there.
+  Future<HealthConnectSdkStatus?> getHealthConnectSdkStatus() async {
+    try {
+      if (platformType == PlatformType.IOS) {
+        throw UnsupportedError('Health Connect is not available on iOS.');
+      }
+      final int status =
+          (await _channel.invokeMethod('getHealthConnectSdkStatus'))!;
+      return HealthConnectSdkStatus.fromNativeValue(status);
+    } catch (e) {
+      debugPrint('$runtimeType - Exception in getHealthConnectSdkStatus(): $e');
+      return null;
+    }
+  }
+
   /// Revokes permissions of all types.
   ///
   /// Uses `disableFit()` on Google Fit.
