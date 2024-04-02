@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
@@ -67,6 +68,10 @@ class _HealthAppState extends State<HealthApp> {
     Health().configure(useHealthConnectIfAvailable: true);
 
     super.initState();
+  }
+
+  Future<void> installHealthConnect() async {
+    await Health().installHealthConnect();
   }
 
   /// Authorize, i.e. get permissions to access relevant health data.
@@ -330,6 +335,14 @@ class _HealthAppState extends State<HealthApp> {
                       style: ButtonStyle(
                           backgroundColor:
                               MaterialStatePropertyAll(Colors.blue))),
+                  if (Platform.isAndroid)
+                    TextButton(
+                        onPressed: installHealthConnect,
+                        child: Text("Install Health Connect",
+                            style: TextStyle(color: Colors.white)),
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStatePropertyAll(Colors.blue))),
                 ],
               ),
               Divider(thickness: 3),

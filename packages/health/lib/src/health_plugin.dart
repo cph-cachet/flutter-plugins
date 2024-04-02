@@ -61,6 +61,20 @@ class Health {
     }
   }
 
+  /// ANDROID ONLY:
+  /// Prompt the user to install the Health Connect app via the installed store (most likely Play Store).
+  Future<void> installHealthConnect() async {
+    try {
+      if (platformType != PlatformType.ANDROID) {
+        throw UnsupportedError(
+            'installHealthConnect is only available on Android');
+      }
+      await _channel.invokeMethod('installHealthConnect');
+    } catch (e) {
+      debugPrint('$runtimeType - Exception in revokePermissions(): $e');
+    }
+  }
+
   /// Is this plugin using Health Connect (true) or Google Fit (false)?
   ///
   /// This is set in the [configure] method.
