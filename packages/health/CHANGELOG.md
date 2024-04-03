@@ -1,6 +1,7 @@
-## 10.1.0
+## 10.1.1
 
 * fix of error in `WorkoutSummary` JSON serialization.
+* fix of [#934](https://github.com/cph-cachet/flutter-plugins/issues/934)
 * empty value check for calories nutrition, PR [#926](https://github.com/cph-cachet/flutter-plugins/pull/926)
   
 ## 10.0.0

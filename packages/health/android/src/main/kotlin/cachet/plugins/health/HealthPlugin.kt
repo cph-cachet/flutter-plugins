@@ -1576,8 +1576,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 // / Fetch all data points for the specified DataType
                 val dataSet = response.getDataSet(dataType)
                 /// For each data point, extract the contents and send them to Flutter, along with
-                // date and
-                // unit.
+                // date and unit.
                 var dataPoints = dataSet.dataPoints
                 if (!includeManualEntry) {
                         dataPoints =
@@ -1587,9 +1586,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                 )
                                         }
                 }
-                // / For each data point, extract the contents and send them to Flutter, along with
-                // date and
-                // unit.
+                // For each data point, extract the contents and send them to Flutter, along with
+                // date and unit.
                 val healthData =
                                 dataPoints.mapIndexed { _, dataPoint ->
                                         return@mapIndexed hashMapOf(
@@ -2385,6 +2383,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         override fun onMethodCall(call: MethodCall, result: Result) {
                 when (call.method) {
                         "useHealthConnectIfAvailable" -> useHealthConnectIfAvailable(call, result)
+                        "getHealthConnectSdkStatus" -> getHealthConnectSdkStatus(call, result)
                         "hasPermissions" -> hasPermissions(call, result)
                         "requestAuthorization" -> requestAuthorization(call, result)
                         "revokePermissions" -> revokePermissions(call, result)
@@ -2410,15 +2409,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 binding.addActivityResultListener(this)
                 activity = binding.activity
 
-                if (healthConnectAvailable) {
-                        val requestPermissionActivityContract =
-                                        PermissionController.createRequestPermissionResultContract()
+                val requestPermissionActivityContract =
+                                PermissionController.createRequestPermissionResultContract()
 
-                        healthConnectRequestPermissionsLauncher =
-                                        (activity as ComponentActivity).registerForActivityResult(
-                                                        requestPermissionActivityContract
-                                        ) { granted -> onHealthConnectPermissionCallback(granted) }
-                }
+                healthConnectRequestPermissionsLauncher =
+                                (activity as ComponentActivity).registerForActivityResult(
+                                                requestPermissionActivityContract
+                                ) { granted -> onHealthConnectPermissionCallback(granted) }
         }
 
         override fun onDetachedFromActivityForConfigChanges() {
@@ -2449,6 +2446,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         fun useHealthConnectIfAvailable(call: MethodCall, result: Result) {
                 useHealthConnectIfAvailable = true
                 result.success(null)
+        }
+
+        private fun getHealthConnectSdkStatus(call: MethodCall, result: Result) {
+                checkAvailability()
+                if (healthConnectAvailable) {
+                    healthConnectClient =
+                        HealthConnectClient.getOrCreate(
+                            context!!
+                        )
+                }
+                result.success(healthConnectStatus)
         }
 
         private fun hasPermissionsHC(call: MethodCall, result: Result) {
@@ -3002,7 +3010,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         }
                         is BodyTemperatureRecord ->
                                         return listOf(
-                                                        mapOf<String, Any>(w
+                                                        mapOf<String, Any>(
                                                                         "value" to
                                                                                         record.temperature
                                                                                                         .inCelsius,

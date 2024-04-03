@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
@@ -29,6 +30,7 @@ enum AppState {
   DATA_NOT_ADDED,
   DATA_NOT_DELETED,
   STEPS_READY,
+  HEALTH_CONNECT_STATUS,
 }
 
 class _HealthAppState extends State<HealthApp> {
@@ -100,6 +102,18 @@ class _HealthAppState extends State<HealthApp> {
 
     setState(() => _state =
         (authorized) ? AppState.AUTHORIZED : AppState.AUTH_NOT_GRANTED);
+  }
+
+  /// Gets the Health Connect status on Android.
+  Future<void> getHealthConnectSdkStatus() async {
+    assert(Platform.isAndroid, "This is only available on Android");
+
+    final status = await Health().getHealthConnectSdkStatus();
+
+    setState(() {
+      _contentHealthConnectStatus = Text('Health Connect Status: $status');
+      _state = AppState.HEALTH_CONNECT_STATUS;
+    });
   }
 
   /// Fetch data points from the health plugin and show them in the app.
@@ -295,6 +309,14 @@ class _HealthAppState extends State<HealthApp> {
                       style: ButtonStyle(
                           backgroundColor:
                               MaterialStatePropertyAll(Colors.blue))),
+                  if (Platform.isAndroid)
+                    TextButton(
+                        onPressed: getHealthConnectSdkStatus,
+                        child: Text("getHealthConnectSdkStatus",
+                            style: TextStyle(color: Colors.white)),
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStatePropertyAll(Colors.blue))),
                   TextButton(
                       onPressed: fetchData,
                       child: Text("Fetch Data",
@@ -412,6 +434,9 @@ class _HealthAppState extends State<HealthApp> {
     mainAxisAlignment: MainAxisAlignment.center,
   );
 
+  Widget _contentHealthConnectStatus = const Text(
+      'No status, click getHealthConnectSdkStatus to get the status.');
+
   Widget _dataAdded = const Text('Data points inserted successfully.');
 
   Widget _dataDeleted = const Text('Data points deleted successfully.');
@@ -435,5 +460,6 @@ class _HealthAppState extends State<HealthApp> {
         AppState.DATA_NOT_ADDED => _dataNotAdded,
         AppState.DATA_NOT_DELETED => _dataNotDeleted,
         AppState.STEPS_READY => _stepsFetched,
+        AppState.HEALTH_CONNECT_STATUS => _contentHealthConnectStatus,
       };
 }
