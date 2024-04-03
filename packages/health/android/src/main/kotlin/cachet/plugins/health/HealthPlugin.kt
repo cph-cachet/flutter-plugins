@@ -3792,6 +3792,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         return
                 }
                 val workoutType = workoutTypeMapHealthConnect[type]!!
+                val title = call.argument<String>("title") ?: type
 
                 scope.launch {
                         try {
@@ -3803,7 +3804,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                 endTime = endTime,
                                                                 endZoneOffset = null,
                                                                 exerciseType = workoutType,
-                                                                title = type,
+                                                                title = title,
                                                 ),
                                 )
                                 if (totalDistance != null) {

@@ -868,6 +868,7 @@ class Health {
   ///  - [totalEnergyBurnedUnit] The UNIT used to measure [totalEnergyBurned] *ONLY FOR IOS* Default value is KILOCALORIE.
   ///  - [totalDistance] The total distance traveled during the workout
   ///  - [totalDistanceUnit] The UNIT used to measure [totalDistance] *ONLY FOR IOS* Default value is METER.
+  ///  - [title] The title of the workout. *ONLY FOR HEALTH CONNECT* Default value is the [activityType], e.g. "STRENGTH_TRAINING"
   Future<bool> writeWorkoutData(
     HealthWorkoutActivityType activityType,
     DateTime start,
@@ -876,6 +877,7 @@ class Health {
     HealthDataUnit totalEnergyBurnedUnit = HealthDataUnit.KILOCALORIE,
     int? totalDistance,
     HealthDataUnit totalDistanceUnit = HealthDataUnit.METER,
+    String? title,
   }) async {
     // Check that value is on the current Platform
     if (platformType == PlatformType.IOS && !_isOnIOS(activityType)) {
@@ -894,6 +896,7 @@ class Health {
       'totalEnergyBurnedUnit': totalEnergyBurnedUnit.name,
       'totalDistance': totalDistance,
       'totalDistanceUnit': totalDistanceUnit.name,
+      'title': title,
     };
     return await _channel.invokeMethod('writeWorkoutData', args) == true;
   }
