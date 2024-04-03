@@ -239,10 +239,10 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,
 };
 
-const PlatformTypeJsonValue = {
-  PlatformType.IOS: 'ios',
-  PlatformType.ANDROID: 'android',
-};
+// const PlatformTypeJsonValue = {
+//   PlatformType.IOS: 'ios',
+//   PlatformType.ANDROID: 'android',
+// };
 
 /// List of all [HealthDataUnit]s.
 enum HealthDataUnit {

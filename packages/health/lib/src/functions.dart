@@ -16,9 +16,6 @@ class HealthException implements Exception {
       "Error requesting health data type '$dataType' - cause: $cause";
 }
 
-/// A list of supported platforms.
-enum PlatformType { IOS, ANDROID }
-
 /// The status of Google Health Connect.
 ///
 /// **NOTE** - The enum order is arbitrary. If you need the native value,

@@ -1,5 +1,8 @@
 part of '../health.dart';
 
+/// Types of health platforms.
+enum HealthPlatformType { appleHealth, googleFit, googleHealthConnect }
+
 /// A [HealthDataPoint] object corresponds to a data point capture from
 /// Apple HealthKit or Google Fit or Google Health Connect with a [HealthValue]
 /// as value.
@@ -26,11 +29,11 @@ class HealthDataPoint {
   /// The end of the time interval.
   DateTime dateTo;
 
-  /// The software platform of the data point.
-  PlatformType platform;
+  /// The health platform that this data point was fetched.
+  HealthPlatformType sourcePlatform;
 
   /// The id of the device from which the data point was fetched.
-  String deviceId;
+  String sourceDeviceId;
 
   /// The id of the source from which the data point was fetched.
   String sourceId;
@@ -50,8 +53,8 @@ class HealthDataPoint {
     required this.unit,
     required this.dateFrom,
     required this.dateTo,
-    required this.platform,
-    required this.deviceId,
+    required this.sourcePlatform,
+    required this.sourceDeviceId,
     required this.sourceId,
     required this.sourceName,
     this.isManualEntry = false,
@@ -131,8 +134,8 @@ class HealthDataPoint {
       unit: unit,
       dateFrom: from,
       dateTo: to,
-      platform: Health().platformType,
-      deviceId: Health().deviceId,
+      sourcePlatform: Health().platformType,
+      sourceDeviceId: Health().deviceId,
       sourceId: sourceId,
       sourceName: sourceName,
       isManualEntry: isManualEntry,
@@ -147,8 +150,8 @@ class HealthDataPoint {
     dateFrom: $dateFrom,
     dateTo: $dateTo,
     dataType: ${type.name},
-    platform: $platform,
-    deviceId: $deviceId,
+    platform: $sourcePlatform,
+    deviceId: $sourceDeviceId,
     sourceId: $sourceId,
     sourceName: $sourceName
     isManualEntry: $isManualEntry
@@ -162,13 +165,13 @@ class HealthDataPoint {
       dateFrom == other.dateFrom &&
       dateTo == other.dateTo &&
       type == other.type &&
-      platform == other.platform &&
-      deviceId == other.deviceId &&
+      sourcePlatform == other.sourcePlatform &&
+      sourceDeviceId == other.sourceDeviceId &&
       sourceId == other.sourceId &&
       sourceName == other.sourceName &&
       isManualEntry == other.isManualEntry;
 
   @override
-  int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type, platform,
-      deviceId, sourceId, sourceName);
+  int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type,
+      sourcePlatform, sourceDeviceId, sourceId, sourceName);
 }

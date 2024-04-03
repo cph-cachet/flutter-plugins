@@ -7,10 +7,6 @@ import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:carp_serializable/carp_serializable.dart';
 
-// /// A connivent function to convert a Dart object into a formatted JSON string.
-// String toJsonString(Object? object) =>
-//     const JsonEncoder.withIndent(' ').convert(object);
-
 void main() => runApp(HealthApp());
 
 class HealthApp extends StatefulWidget {
@@ -135,23 +131,23 @@ class _HealthAppState extends State<HealthApp> {
     // Clear old data points
     _healthDataList.clear();
 
-    try {
-      // fetch health data
-      List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
-        types: types,
-        startTime: yesterday,
-        endTime: now,
-      );
+    // try {
+    // fetch health data
+    List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
+      types: types,
+      startTime: yesterday,
+      endTime: now,
+    );
 
-      debugPrint('Total number of data points: ${healthData.length}. '
-          '${healthData.length > 100 ? 'Only showing the first 100.' : ''}');
+    debugPrint('Total number of data points: ${healthData.length}. '
+        '${healthData.length > 100 ? 'Only showing the first 100.' : ''}');
 
-      // save all the new data points (only the first 100)
-      _healthDataList.addAll(
-          (healthData.length < 100) ? healthData : healthData.sublist(0, 100));
-    } catch (error) {
-      debugPrint("Exception in getHealthDataFromTypes: $error");
-    }
+    // save all the new data points (only the first 100)
+    _healthDataList.addAll(
+        (healthData.length < 100) ? healthData : healthData.sublist(0, 100));
+    // } catch (error) {
+    //   debugPrint("Exception in getHealthDataFromTypes: $error");
+    // }
 
     // filter out duplicates
     _healthDataList = Health().removeDuplicates(_healthDataList);

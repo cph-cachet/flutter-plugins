@@ -1,10 +1,12 @@
 ## 10.2.0
 
 * Using named parameters in most methods for consistency.
-* Improved support for Google Health Connect
+* Added a `HealthPlatformType` to save which health platform the data originates from (Apple Health, Google Fit, or Google Health Connect).
+* Android: Improved support for Google Health Connect
   * getHealthConnectSdkStatus, PR [#941](https://github.com/cph-cachet/flutter-plugins/pull/941)
   * installHealthConnect, PR [#943](https://github.com/cph-cachet/flutter-plugins/pull/943)
   * workout title, PR [#938](https://github.com/cph-cachet/flutter-plugins/pull/938)
+* iOS: Add support for saving blood pressure as a correlation, PR [#919](https://github.com/cph-cachet/flutter-plugins/pull/919)
 
 ## 10.1.1
 

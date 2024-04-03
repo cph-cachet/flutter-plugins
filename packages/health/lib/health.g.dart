@@ -13,8 +13,9 @@ HealthDataPoint _$HealthDataPointFromJson(Map<String, dynamic> json) =>
       unit: $enumDecode(_$HealthDataUnitEnumMap, json['unit']),
       dateFrom: DateTime.parse(json['date_from'] as String),
       dateTo: DateTime.parse(json['date_to'] as String),
-      platform: $enumDecode(_$PlatformTypeEnumMap, json['platform']),
-      deviceId: json['device_id'] as String,
+      sourcePlatform:
+          $enumDecode(_$HealthPlatformTypeEnumMap, json['source_platform']),
+      sourceDeviceId: json['source_device_id'] as String,
       sourceId: json['source_id'] as String,
       sourceName: json['source_name'] as String,
       isManualEntry: json['is_manual_entry'] as bool? ?? false,
@@ -31,8 +32,8 @@ Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) {
     'unit': _$HealthDataUnitEnumMap[instance.unit]!,
     'date_from': instance.dateFrom.toIso8601String(),
     'date_to': instance.dateTo.toIso8601String(),
-    'platform': _$PlatformTypeEnumMap[instance.platform]!,
-    'device_id': instance.deviceId,
+    'source_platform': _$HealthPlatformTypeEnumMap[instance.sourcePlatform]!,
+    'source_device_id': instance.sourceDeviceId,
     'source_id': instance.sourceId,
     'source_name': instance.sourceName,
     'is_manual_entry': instance.isManualEntry,
@@ -163,9 +164,10 @@ const _$HealthDataUnitEnumMap = {
   HealthDataUnit.NO_UNIT: 'NO_UNIT',
 };
 
-const _$PlatformTypeEnumMap = {
-  PlatformType.IOS: 'IOS',
-  PlatformType.ANDROID: 'ANDROID',
+const _$HealthPlatformTypeEnumMap = {
+  HealthPlatformType.appleHealth: 'appleHealth',
+  HealthPlatformType.googleFit: 'googleFit',
+  HealthPlatformType.googleHealthConnect: 'googleHealthConnect',
 };
 
 HealthValue _$HealthValueFromJson(Map<String, dynamic> json) =>

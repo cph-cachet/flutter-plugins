@@ -37,8 +37,11 @@ class Health {
   factory Health() => _instance;
 
   /// The type of platform of this device.
-  PlatformType get platformType =>
-      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+  HealthPlatformType get platformType => Platform.isIOS
+      ? HealthPlatformType.appleHealth
+      : useHealthConnectIfAvailable
+          ? HealthPlatformType.googleHealthConnect
+          : HealthPlatformType.googleFit;
 
   /// The id of this device.
   ///
@@ -51,7 +54,7 @@ class Health {
   /// If [useHealthConnectIfAvailable] is true, Google Health Connect on
   /// Android will be used. Has no effect on iOS.
   Future<void> configure({bool useHealthConnectIfAvailable = false}) async {
-    _deviceId ??= platformType == PlatformType.ANDROID
+    _deviceId ??= Platform.isAndroid
         ? (await _deviceInfo.androidInfo).id
         : (await _deviceInfo.iosInfo).identifierForVendor;
 
@@ -67,10 +70,9 @@ class Health {
   bool get useHealthConnectIfAvailable => _useHealthConnectIfAvailable;
 
   /// Check if a given data type is available on the platform
-  bool isDataTypeAvailable(HealthDataType dataType) =>
-      platformType == PlatformType.ANDROID
-          ? dataTypeKeysAndroid.contains(dataType)
-          : dataTypeKeysIOS.contains(dataType);
+  bool isDataTypeAvailable(HealthDataType dataType) => Platform.isAndroid
+      ? dataTypeKeysAndroid.contains(dataType)
+      : dataTypeKeysIOS.contains(dataType);
 
   /// Determines if the health data [types] have been granted with the specified
   /// access rights [permissions].
@@ -112,7 +114,7 @@ class Health {
         : permissions.map((permission) => permission.index).toList();
 
     /// On Android, if BMI is requested, then also ask for weight and height
-    if (platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+    if (Platform.isAndroid) _handleBMI(mTypes, mPermissions);
 
     return await _channel.invokeMethod('hasPermissions', {
       "types": mTypes.map((type) => type.name).toList(),
@@ -127,7 +129,7 @@ class Health {
   /// Not implemented on iOS as there is no way to programmatically remove access.
   Future<void> revokePermissions() async {
     try {
-      if (platformType == PlatformType.IOS) {
+      if (Platform.isIOS) {
         throw UnsupportedError(
             'Revoke permissions is not supported on iOS. Please revoke permissions manually in the settings.');
       }
@@ -146,7 +148,7 @@ class Health {
   /// Android only.
   Future<HealthConnectSdkStatus?> getHealthConnectSdkStatus() async {
     try {
-      if (platformType == PlatformType.IOS) {
+      if (Platform.isIOS) {
         throw UnsupportedError('Health Connect is not available on iOS.');
       }
       final int status =
@@ -164,7 +166,7 @@ class Health {
   /// Android only.
   Future<void> installHealthConnect() async {
     try {
-      if (platformType != PlatformType.ANDROID) {
+      if (!Platform.isAndroid) {
         throw UnsupportedError(
             'installHealthConnect is only available on Android');
       }
@@ -193,7 +195,7 @@ class Health {
         : permissions.map((permission) => permission.index).toList();
 
     // on Android, if BMI is requested, then also ask for weight and height
-    if (platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+    if (Platform.isAndroid) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((dataType) => dataType.name).toList();
 
@@ -253,7 +255,7 @@ class Health {
         : permissions.map((permission) => permission.index).toList();
 
     // on Android, if BMI is requested, then also ask for weight and height
-    if (platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+    if (Platform.isAndroid) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => e.name).toList();
     final bool? isAuthorized = await _channel.invokeMethod(
@@ -265,7 +267,7 @@ class Health {
   void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
     final index = mTypes.indexOf(HealthDataType.BODY_MASS_INDEX);
 
-    if (index != -1 && platformType == PlatformType.ANDROID) {
+    if (index != -1 && Platform.isAndroid) {
       if (!mTypes.contains(HealthDataType.WEIGHT)) {
         mTypes.add(HealthDataType.WEIGHT);
         mPermissions.add(mPermissions[index]);
@@ -312,8 +314,8 @@ class Health {
         unit: unit,
         dateFrom: weights[i].dateFrom,
         dateTo: weights[i].dateTo,
-        platform: platformType,
-        deviceId: _deviceId!,
+        sourcePlatform: platformType,
+        sourceDeviceId: _deviceId!,
         sourceId: '',
         sourceName: '',
         isManualEntry: !includeManualEntry,
@@ -362,7 +364,7 @@ class Health {
           HealthDataType.IRREGULAR_HEART_RATE_EVENT,
           HealthDataType.ELECTROCARDIOGRAM,
         }.contains(type) &&
-        platformType == PlatformType.IOS) {
+        Platform.isIOS) {
       throw ArgumentError(
           "$type - iOS does not support writing this data type in HealthKit");
     }
@@ -487,13 +489,13 @@ class Health {
     }
     bool? success;
 
-    if (platformType == PlatformType.IOS) {
+    if (Platform.isIOS) {
       success = await writeHealthData(
           value: saturation,
           type: HealthDataType.BLOOD_OXYGEN,
           startTime: startTime,
           endTime: endTime);
-    } else if (platformType == PlatformType.ANDROID) {
+    } else if (Platform.isAndroid) {
       Map<String, dynamic> args = {
         'value': saturation,
         'flowRate': flowRate,
@@ -590,7 +592,7 @@ class Health {
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
-    if (platformType == PlatformType.ANDROID) {
+    if (Platform.isAndroid) {
       throw UnsupportedError("writeAudiogram is not supported on Android");
     }
 
@@ -672,7 +674,7 @@ class Health {
     bool includeManualEntry,
   ) async {
     // Ask for device ID only once
-    _deviceId ??= platformType == PlatformType.ANDROID
+    _deviceId ??= Platform.isAndroid
         ? (await _deviceInfo.androidInfo).id
         : (await _deviceInfo.iosInfo).identifierForVendor;
 
@@ -683,8 +685,7 @@ class Health {
     }
 
     // If BodyMassIndex is requested on Android, calculate this manually
-    if (dataType == HealthDataType.BODY_MASS_INDEX &&
-        platformType == PlatformType.ANDROID) {
+    if (dataType == HealthDataType.BODY_MASS_INDEX && Platform.isAndroid) {
       return _computeAndroidBMI(startTime, endTime, includeManualEntry);
     }
     return await _dataQuery(startTime, endTime, dataType, includeManualEntry);
@@ -698,7 +699,7 @@ class Health {
       int interval,
       bool includeManualEntry) async {
     // Ask for device ID only once
-    _deviceId ??= platformType == PlatformType.ANDROID
+    _deviceId ??= Platform.isAndroid
         ? (await _deviceInfo.androidInfo).id
         : (await _deviceInfo.iosInfo).identifierForVendor;
 
@@ -720,7 +721,7 @@ class Health {
       int activitySegmentDuration,
       bool includeManualEntry) async {
     // Ask for device ID only once
-    _deviceId ??= platformType == PlatformType.ANDROID
+    _deviceId ??= Platform.isAndroid
         ? (await _deviceInfo.androidInfo).id
         : (await _deviceInfo.iosInfo).identifierForVendor;
 
@@ -899,11 +900,10 @@ class Health {
     String? title,
   }) async {
     // Check that value is on the current Platform
-    if (platformType == PlatformType.IOS && !_isOnIOS(activityType)) {
+    if (Platform.isIOS && !_isOnIOS(activityType)) {
       throw HealthException(activityType,
           "Workout activity type $activityType is not supported on iOS");
-    } else if (platformType == PlatformType.ANDROID &&
-        !_isOnAndroid(activityType)) {
+    } else if (Platform.isAndroid && !_isOnAndroid(activityType)) {
       throw HealthException(activityType,
           "Workout activity type $activityType is not supported on Android");
     }
