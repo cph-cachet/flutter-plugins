@@ -426,9 +426,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             type: HKSampleType.quantityType(forIdentifier: .bloodPressureDiastolic)!,
             quantity: HKQuantity(unit: HKUnit.millimeterOfMercury(), doubleValue: diastolic),
             start: dateFrom, end: dateTo)
+        let bpCorrelationType = HKCorrelationType.correlationType(forIdentifier: .bloodPressure)!
+        let bpCorrelation = Set(arrayLiteral: systolic_sample, diastolic_sample)
+        let blood_pressure_sample = HKCorrelation(type: bpCorrelationType , start: dateFrom, end: dateTo, objects: bpCorrelation)
 
         HKHealthStore().save(
-            [systolic_sample, diastolic_sample],
+            [blood_pressure_sample],
             withCompletion: { (success, error) in
                 if let err = error {
                     print("Error Saving Blood Pressure Sample: \(err.localizedDescription)")
