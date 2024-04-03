@@ -865,12 +865,12 @@ class Health {
   }
 
   /// Check if the Health Connect is available on the device
-  Future<bool> checkHealthConnectAvailable() async {
-    if (_platformType == PlatformType.IOS) {
-      throw UnsupportedError('checkHealthConnectAvailable is not supported on iOS');
+  Future<HealthConnectAvailability> checkHealthConnectAvailability() async {
+    if (platformType == PlatformType.IOS) {
+      throw UnsupportedError('Health Connect is not supported on iOS');
     }
-    final bool? available = await _channel.invokeMethod('checkHealthConnectAvailable');
-    return available ?? false;
+    final int status = (await _channel.invokeMethod<int>('checkHealthConnectAvailability'))!;
+    return HealthConnectAvailability.fromNativeValue(status);
   }
 
   /// Check if the given [HealthWorkoutActivityType] is supported on the iOS platform

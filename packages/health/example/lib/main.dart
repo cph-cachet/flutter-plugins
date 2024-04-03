@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-
-import 'package:device_apps/device_apps.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:health_example/util.dart';
@@ -32,21 +31,20 @@ enum AppState {
   DATA_NOT_ADDED,
   DATA_NOT_DELETED,
   STEPS_READY,
+  NOT_SUPPORT,
 }
 
 class _HealthAppState extends State<HealthApp> {
   static const String packageIdHealthConnect = 'com.google.android.apps.healthdata';
-  StreamSubscription? _subscription;
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 0;
-  bool isAppInstalledHC = false;
 
   // Define the types to get.
 
   // Use the entire list on e.g. Android.
-  static final types = dataTypesIOS;
-  // static final types = dataTypesAndroid;
+  // static final types = dataTypesIOS;
+  static final types = dataTypesAndroid;
 
   // // Or specify specific types
   // static final types = [
@@ -85,10 +83,27 @@ class _HealthAppState extends State<HealthApp> {
     await Permission.activityRecognition.request();
     await Permission.location.request();
 
-    if (!isAppInstalledHC && Platform.isAndroid && health.useHealthConnectIfAvailable) {
-      await openAppStore(packageId: packageIdHealthConnect);
-      return;
+    if (Platform.isAndroid && Health().useHealthConnectIfAvailable) {
+      final availability = await Health().checkHealthConnectAvailability();
+      switch (availability) {
+        case HealthConnectAvailability.NOT_SUPPORT:
+          debugPrint('Health Connect is not supported on this device.');
+          setState(() {
+            _state = AppState.NOT_SUPPORT;
+          });
+          return;
+        case HealthConnectAvailability.NOT_INSTALL:
+          debugPrint('Health Connect is not installed on this device.');
+          // Handle this as you see fit. You can open the app store to download Health Connect.
+          await openAppStore(packageId: packageIdHealthConnect);
+          return;
+        case HealthConnectAvailability.INSTALLED:
+          debugPrint('Health Connect is installed on this device.');
+          break;
+      }
     }
+
+    print("Requesting permissions...");
     // Check if we have health permissions
     bool? hasPermissions =
         await Health().hasPermissions(types, permissions: permissions);
@@ -283,19 +298,19 @@ class _HealthAppState extends State<HealthApp> {
     }
   }
 
-  // UI building below
-
-  @override
-  void initState() {
-    super.initState();
-    if (Platform.isAndroid) {
-      checkInstallHC();
-      _subscription?.cancel();
-      _subscription = DeviceApps.listenToAppsChanges().listen((event) async {
-        checkInstallHC();
-      });
+  Future<void> openAppStore({String packageId = ''}) async {
+    final url = 'https://play.google.com/store/apps/details?id=$packageId';
+    final uri = Uri.parse(url);
+    try {
+      if (!await launchUrl(uri)) {
+        throw Exception("Could not launch $uri");
+      }
+    } catch (e) {
+      rethrow;
     }
   }
+
+  // UI building below
 
   @override
   Widget build(BuildContext context) {
@@ -445,6 +460,8 @@ class _HealthAppState extends State<HealthApp> {
 
   Widget _dataNotDeleted = const Text('Failed to delete data');
 
+  Widget _notSupport = const Text('Health Connect is not supported.');
+
   Widget get _content => switch (_state) {
         AppState.DATA_READY => _contentDataReady,
         AppState.DATA_NOT_FETCHED => _contentNotFetched,
@@ -457,11 +474,6 @@ class _HealthAppState extends State<HealthApp> {
         AppState.DATA_NOT_ADDED => _dataNotAdded,
         AppState.DATA_NOT_DELETED => _dataNotDeleted,
         AppState.STEPS_READY => _stepsFetched,
+        AppState.NOT_SUPPORT => _notSupport,
       };
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
 }
