@@ -19,10 +19,10 @@ class HealthException implements Exception {
 /// A list of supported platforms.
 enum PlatformType { IOS, ANDROID }
 
-/// The status of Health Connect.
+/// The status of Google Health Connect.
 ///
-/// NOTE:
-/// The enum order is arbitrary. If you need the native value, use [nativeValue] and not the index.
+/// **NOTE** - The enum order is arbitrary. If you need the native value,
+/// use [nativeValue] and not the index.
 ///
 /// Reference:
 /// https://developer.android.com/reference/kotlin/androidx/health/connect/client/HealthConnectClient#constants_1

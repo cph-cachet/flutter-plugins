@@ -27,7 +27,7 @@ class Health {
 
   String? _deviceId;
   final _deviceInfo = DeviceInfoPlugin();
-  late bool _useHealthConnectIfAvailable;
+  bool _useHealthConnectIfAvailable = false;
 
   Health._() {
     _registerFromJsonFunctions();
@@ -58,20 +58,6 @@ class Health {
     _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
     if (_useHealthConnectIfAvailable) {
       await _channel.invokeMethod('useHealthConnectIfAvailable');
-    }
-  }
-
-  /// ANDROID ONLY:
-  /// Prompt the user to install the Health Connect app via the installed store (most likely Play Store).
-  Future<void> installHealthConnect() async {
-    try {
-      if (platformType != PlatformType.ANDROID) {
-        throw UnsupportedError(
-            'installHealthConnect is only available on Android');
-      }
-      await _channel.invokeMethod('installHealthConnect');
-    } catch (e) {
-      debugPrint('$runtimeType - Exception in revokePermissions(): $e');
     }
   }
 
@@ -134,26 +120,6 @@ class Health {
     });
   }
 
-  /// Returns the current status of Health Connect availability.
-  ///
-  /// See this for more info:
-  /// https://developer.android.com/reference/kotlin/androidx/health/connect/client/HealthConnectClient#getSdkStatus(android.content.Context,kotlin.String)
-  ///
-  /// Not implemented on iOS as Health Connect doesn't exist at all there.
-  Future<HealthConnectSdkStatus?> getHealthConnectSdkStatus() async {
-    try {
-      if (platformType == PlatformType.IOS) {
-        throw UnsupportedError('Health Connect is not available on iOS.');
-      }
-      final int status =
-          (await _channel.invokeMethod('getHealthConnectSdkStatus'))!;
-      return HealthConnectSdkStatus.fromNativeValue(status);
-    } catch (e) {
-      debugPrint('$runtimeType - Exception in getHealthConnectSdkStatus(): $e');
-      return null;
-    }
-  }
-
   /// Revokes permissions of all types.
   ///
   /// Uses `disableFit()` on Google Fit.
@@ -169,6 +135,42 @@ class Health {
       return;
     } catch (e) {
       debugPrint('$runtimeType - Exception in revokePermissions(): $e');
+    }
+  }
+
+  /// Returns the current status of Health Connect availability.
+  ///
+  /// See this for more info:
+  /// https://developer.android.com/reference/kotlin/androidx/health/connect/client/HealthConnectClient#getSdkStatus(android.content.Context,kotlin.String)
+  ///
+  /// Android only.
+  Future<HealthConnectSdkStatus?> getHealthConnectSdkStatus() async {
+    try {
+      if (platformType == PlatformType.IOS) {
+        throw UnsupportedError('Health Connect is not available on iOS.');
+      }
+      final int status =
+          (await _channel.invokeMethod('getHealthConnectSdkStatus'))!;
+      return HealthConnectSdkStatus.fromNativeValue(status);
+    } catch (e) {
+      debugPrint('$runtimeType - Exception in getHealthConnectSdkStatus(): $e');
+      return null;
+    }
+  }
+
+  /// Prompt the user to install the Health Connect app via the installed store
+  /// (most likely Play Store).
+  ///
+  /// Android only.
+  Future<void> installHealthConnect() async {
+    try {
+      if (platformType != PlatformType.ANDROID) {
+        throw UnsupportedError(
+            'installHealthConnect is only available on Android');
+      }
+      await _channel.invokeMethod('installHealthConnect');
+    } catch (e) {
+      debugPrint('$runtimeType - Exception in installHealthConnect(): $e');
     }
   }
 
@@ -327,28 +329,30 @@ class Health {
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [value] - the health data's value in double
-  /// * [type] - the value's HealthDataType
-  /// * [startTime] - the start time when this [value] is measured.
-  ///   + It must be equal to or earlier than [endTime].
-  /// * [endTime] - the end time when this [value] is measured.
-  ///   + It must be equal to or later than [startTime].
-  ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
-  /// * [unit] - <mark>(iOS ONLY)</mark> the unit the health data is measured in.
+  ///  * [value] - the health data's value in double
+  ///  * [unit] - **iOS ONLY** the unit the health data is measured in.
+  ///  * [type] - the value's HealthDataType
+  ///  * [startTime] - the start time when this [value] is measured.
+  ///    It must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when this [value] is measured.
+  ///    It must be equal to or later than [startTime].
+  ///    Simply set [endTime] equal to [startTime] if the [value] is measured
+  ///    only at a specific point in time (default).
   ///
   /// Values for Sleep and Headache are ignored and will be automatically assigned
   /// the default value.
-  Future<bool> writeHealthData(
-    double value,
-    HealthDataType type,
-    DateTime startTime,
-    DateTime endTime, {
+  Future<bool> writeHealthData({
+    required double value,
     HealthDataUnit? unit,
+    required HealthDataType type,
+    required DateTime startTime,
+    DateTime? endTime,
   }) async {
     if (type == HealthDataType.WORKOUT) {
       throw ArgumentError(
           "Adding workouts should be done using the writeWorkoutData method.");
     }
+    endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
@@ -405,11 +409,12 @@ class Health {
   ///    Must be equal to or earlier than [endTime].
   ///  * [endTime] - the end time when this [value] is measured.
   ///    Must be equal to or later than [startTime].
-  Future<bool> delete(
-    HealthDataType type,
-    DateTime startTime,
-    DateTime endTime,
-  ) async {
+  Future<bool> delete({
+    required HealthDataType type,
+    required DateTime startTime,
+    DateTime? endTime,
+  }) async {
+    endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
@@ -435,13 +440,14 @@ class Health {
   ///  * [endTime] - the end time when this [value] is measured.
   ///    Must be equal to or later than [startTime].
   ///    Simply set [endTime] equal to [startTime] if the blood pressure is measured
-  ///    only at a specific point in time.
-  Future<bool> writeBloodPressure(
-    int systolic,
-    int diastolic,
-    DateTime startTime,
-    DateTime endTime,
-  ) async {
+  ///    only at a specific point in time. If omitted, [endTime] is set to [startTime].
+  Future<bool> writeBloodPressure({
+    required int systolic,
+    required int diastolic,
+    required DateTime startTime,
+    DateTime? endTime,
+  }) async {
+    endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
@@ -463,18 +469,19 @@ class Health {
   ///  * [saturation] - the saturation of the blood oxygen in percentage
   ///  * [flowRate] - optional supplemental oxygen flow rate, only supported on
   ///    Google Fit (default 0.0)
-  ///  * [startTime] - the start time when this [value] is measured.
+  ///  * [startTime] - the start time when this [saturation] is measured.
   ///    Must be equal to or earlier than [endTime].
-  ///  * [endTime] - the end time when this [value] is measured.
+  ///  * [endTime] - the end time when this [saturation] is measured.
   ///    Must be equal to or later than [startTime].
   ///    Simply set [endTime] equal to [startTime] if the blood oxygen saturation
-  ///    is measured only at a specific point in time.
-  Future<bool> writeBloodOxygen(
-    double saturation,
-    DateTime startTime,
-    DateTime endTime, {
+  ///    is measured only at a specific point in time (default).
+  Future<bool> writeBloodOxygen({
+    required double saturation,
     double flowRate = 0.0,
+    required DateTime startTime,
+    DateTime? endTime,
   }) async {
+    endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
@@ -482,7 +489,10 @@ class Health {
 
     if (platformType == PlatformType.IOS) {
       success = await writeHealthData(
-          saturation, HealthDataType.BLOOD_OXYGEN, startTime, endTime);
+          value: saturation,
+          type: HealthDataType.BLOOD_OXYGEN,
+          startTime: startTime,
+          endTime: endTime);
     } else if (platformType == PlatformType.ANDROID) {
       Map<String, dynamic> args = {
         'value': saturation,
@@ -496,30 +506,32 @@ class Health {
     return success ?? false;
   }
 
-  /// Saves meal record into Apple Health or Google Fit.
+  /// Saves meal record into Apple Health or Google Fit / Health Connect.
   ///
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [startTime] - the start time when the meal was consumed.
-  ///   + It must be equal to or earlier than [endTime].
-  /// * [endTime] - the end time when the meal was consumed.
-  ///   + It must be equal to or later than [startTime].
-  /// * [caloriesConsumed] - total calories consumed with this meal.
-  /// * [carbohydrates] - optional carbohydrates information.
-  /// * [protein] - optional protein information.
-  /// * [fatTotal] - optional total fat information.
-  /// * [name] - optional name information about this meal.
-  Future<bool> writeMeal(
-      DateTime startTime,
-      DateTime endTime,
-      double? caloriesConsumed,
-      double? carbohydrates,
-      double? protein,
-      double? fatTotal,
-      String? name,
-      double? caffeine,
-      MealType mealType) async {
+  ///  * [mealType] - the type of meal.
+  ///  * [startTime] - the start time when the meal was consumed.
+  ///    It must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when the meal was consumed.
+  ///    It must be equal to or later than [startTime].
+  ///  * [caloriesConsumed] - total calories consumed with this meal.
+  ///  * [carbohydrates] - optional carbohydrates information.
+  ///  * [protein] - optional protein information.
+  ///  * [fatTotal] - optional total fat information.
+  ///  * [name] - optional name information about this meal.
+  Future<bool> writeMeal({
+    required MealType mealType,
+    required DateTime startTime,
+    required DateTime endTime,
+    double? caloriesConsumed,
+    double? carbohydrates,
+    double? protein,
+    double? fatTotal,
+    String? name,
+    double? caffeine,
+  }) async {
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
@@ -544,22 +556,25 @@ class Health {
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  ///  * [frequencies] - array of frequencies of the test
-  ///  * [leftEarSensitivities] threshold in decibel for the left ear
-  ///  * [rightEarSensitivities] threshold in decibel for the left ear
-  ///  * [startTime] - the start time when the audiogram is measured.
-  ///    It must be equal to or earlier than [endTime].
-  ///  * [endTime] - the end time when the audiogram is measured.
-  ///    It must be equal to or later than [startTime].
-  ///    Simply set [endTime] equal to [startTime] if the audiogram is measured only at a specific point in time.
-  ///  * [metadata] - optional map of keys, both HKMetadataKeyExternalUUID and HKMetadataKeyDeviceName are required
-  Future<bool> writeAudiogram(
-      List<double> frequencies,
-      List<double> leftEarSensitivities,
-      List<double> rightEarSensitivities,
-      DateTime startTime,
-      DateTime endTime,
-      {Map<String, dynamic>? metadata}) async {
+  ///   * [frequencies] - array of frequencies of the test
+  ///   * [leftEarSensitivities] threshold in decibel for the left ear
+  ///   * [rightEarSensitivities] threshold in decibel for the left ear
+  ///   * [startTime] - the start time when the audiogram is measured.
+  ///     It must be equal to or earlier than [endTime].
+  ///   * [endTime] - the end time when the audiogram is measured.
+  ///     It must be equal to or later than [startTime].
+  ///     Simply set [endTime] equal to [startTime] if the audiogram is measured
+  ///     only at a specific point in time (default).
+  ///   * [metadata] - optional map of keys, both HKMetadataKeyExternalUUID
+  ///     and HKMetadataKeyDeviceName are required
+  Future<bool> writeAudiogram({
+    required List<double> frequencies,
+    required List<double> leftEarSensitivities,
+    required List<double> rightEarSensitivities,
+    required DateTime startTime,
+    DateTime? endTime,
+    Map<String, dynamic>? metadata,
+  }) async {
     if (frequencies.isEmpty ||
         leftEarSensitivities.isEmpty ||
         rightEarSensitivities.isEmpty) {
@@ -571,6 +586,7 @@ class Health {
       throw ArgumentError(
           "frequencies, leftEarSensitivities and rightEarSensitivities need to be of the same length");
     }
+    endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
@@ -591,10 +607,10 @@ class Health {
   }
 
   /// Fetch a list of health data points based on [types].
-  Future<List<HealthDataPoint>> getHealthDataFromTypes(
-    DateTime startTime,
-    DateTime endTime,
-    List<HealthDataType> types, {
+  Future<List<HealthDataPoint>> getHealthDataFromTypes({
+    required List<HealthDataType> types,
+    required DateTime startTime,
+    required DateTime endTime,
     bool includeManualEntry = true,
   }) async {
     List<HealthDataPoint> dataPoints = [];
@@ -615,11 +631,11 @@ class Health {
 
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthIntervalDataFromTypes(
-      DateTime startDate,
-      DateTime endDate,
-      List<HealthDataType> types,
-      int interval,
-      {bool includeManualEntry = true}) async {
+      {required DateTime startDate,
+      required DateTime endDate,
+      required List<HealthDataType> types,
+      required int interval,
+      bool includeManualEntry = true}) async {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
@@ -632,10 +648,10 @@ class Health {
   }
 
   /// Fetch a list of health data points based on [types].
-  Future<List<HealthDataPoint>> getHealthAggregateDataFromTypes(
-    DateTime startDate,
-    DateTime endDate,
-    List<HealthDataType> types, {
+  Future<List<HealthDataPoint>> getHealthAggregateDataFromTypes({
+    required List<HealthDataType> types,
+    required DateTime startDate,
+    required DateTime endDate,
     int activitySegmentDuration = 1,
     bool includeManualEntry = true,
   }) async {
@@ -856,23 +872,26 @@ class Health {
             "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues"),
       };
 
-  /// Write workout data to Apple Health
+  /// Write workout data to Apple Health or Google Fit or Google Health Connect.
   ///
-  /// Returns true if successfully added workout data.
+  /// Returns true if the workout data was successfully added.
   ///
   /// Parameters:
-  ///  - [activityType] The type of activity performed
-  ///  - [start] The start time of the workout
-  ///  - [end] The end time of the workout
-  ///  - [totalEnergyBurned] The total energy burned during the workout
-  ///  - [totalEnergyBurnedUnit] The UNIT used to measure [totalEnergyBurned] *ONLY FOR IOS* Default value is KILOCALORIE.
-  ///  - [totalDistance] The total distance traveled during the workout
-  ///  - [totalDistanceUnit] The UNIT used to measure [totalDistance] *ONLY FOR IOS* Default value is METER.
-  ///  - [title] The title of the workout. *ONLY FOR HEALTH CONNECT* Default value is the [activityType], e.g. "STRENGTH_TRAINING"
-  Future<bool> writeWorkoutData(
-    HealthWorkoutActivityType activityType,
-    DateTime start,
-    DateTime end, {
+  ///  - [activityType] The type of activity performed.
+  ///  - [start] The start time of the workout.
+  ///  - [end] The end time of the workout.
+  ///  - [totalEnergyBurned] The total energy burned during the workout.
+  ///  - [totalEnergyBurnedUnit] The UNIT used to measure [totalEnergyBurned]
+  ///    *ONLY FOR IOS* Default value is KILOCALORIE.
+  ///  - [totalDistance] The total distance traveled during the workout.
+  ///  - [totalDistanceUnit] The UNIT used to measure [totalDistance]
+  ///    *ONLY FOR IOS* Default value is METER.
+  ///  - [title] The title of the workout.
+  ///    *ONLY FOR HEALTH CONNECT* Default value is the [activityType], e.g. "STRENGTH_TRAINING".
+  Future<bool> writeWorkoutData({
+    required HealthWorkoutActivityType activityType,
+    required DateTime start,
+    required DateTime end,
     int? totalEnergyBurned,
     HealthDataUnit totalEnergyBurnedUnit = HealthDataUnit.KILOCALORIE,
     int? totalDistance,

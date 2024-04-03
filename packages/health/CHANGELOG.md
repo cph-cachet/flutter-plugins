@@ -1,8 +1,16 @@
+## 10.2.0
+
+* Using named parameters in most methods for consistency.
+* Improved support for Google Health Connect
+  * getHealthConnectSdkStatus, PR [#941](https://github.com/cph-cachet/flutter-plugins/pull/941)
+  * installHealthConnect, PR [#943](https://github.com/cph-cachet/flutter-plugins/pull/943)
+  * workout title, PR [#938](https://github.com/cph-cachet/flutter-plugins/pull/938)
+
 ## 10.1.1
 
-* fix of error in `WorkoutSummary` JSON serialization.
-* fix of [#934](https://github.com/cph-cachet/flutter-plugins/issues/934)
-* empty value check for calories nutrition, PR [#926](https://github.com/cph-cachet/flutter-plugins/pull/926)
+* Fix of error in `WorkoutSummary` JSON serialization.
+* Fix of [#934](https://github.com/cph-cachet/flutter-plugins/issues/934)
+* Empty value check for calories nutrition, PR [#926](https://github.com/cph-cachet/flutter-plugins/pull/926)
   
 ## 10.0.0
 

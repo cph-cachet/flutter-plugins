@@ -38,11 +38,12 @@ class _HealthAppState extends State<HealthApp> {
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 0;
 
-  // Define the types to get.
-
-  // Use the entire list on e.g. Android.
-  static final types = dataTypesIOS;
-  // static final types = dataTypesAndroid;
+  // All types available depending on platform (iOS ot Android).
+  List<HealthDataType> get types => (Platform.isAndroid)
+      ? dataTypesAndroid
+      : (Platform.isIOS)
+          ? dataTypesIOS
+          : [];
 
   // // Or specify specific types
   // static final types = [
@@ -59,10 +60,12 @@ class _HealthAppState extends State<HealthApp> {
 
   // Set up corresponding permissions
   // READ only
-  final permissions = types.map((e) => HealthDataAccess.READ).toList();
+  List<HealthDataAccess> get permissions =>
+      types.map((e) => HealthDataAccess.READ).toList();
 
   // Or both READ and WRITE
-  // final permissions = types.map((e) => HealthDataAccess.READ_WRITE).toList();
+  // List<HealthDataAccess> get permissions =>
+  //     types.map((e) => HealthDataAccess.READ_WRITE).toList();
 
   void initState() {
     // configure the health plugin before use.
@@ -71,6 +74,7 @@ class _HealthAppState extends State<HealthApp> {
     super.initState();
   }
 
+  /// Install Google Health Connect on this phone.
   Future<void> installHealthConnect() async {
     await Health().installHealthConnect();
   }
@@ -133,8 +137,11 @@ class _HealthAppState extends State<HealthApp> {
 
     try {
       // fetch health data
-      List<HealthDataPoint> healthData =
-          await Health().getHealthDataFromTypes(yesterday, now, types);
+      List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
+        types: types,
+        startTime: yesterday,
+        endTime: now,
+      );
 
       debugPrint('Total number of data points: ${healthData.length}. '
           '${healthData.length > 100 ? 'Only showing the first 100.' : ''}');
@@ -171,48 +178,102 @@ class _HealthAppState extends State<HealthApp> {
     bool success = true;
 
     // misc. health data examples using the writeHealthData() method
-    success &= await Health()
-        .writeHealthData(1.925, HealthDataType.HEIGHT, earlier, now);
-    success &=
-        await Health().writeHealthData(90, HealthDataType.WEIGHT, now, now);
-    success &= await Health()
-        .writeHealthData(90, HealthDataType.HEART_RATE, earlier, now);
-    success &=
-        await Health().writeHealthData(90, HealthDataType.STEPS, earlier, now);
     success &= await Health().writeHealthData(
-        200, HealthDataType.ACTIVE_ENERGY_BURNED, earlier, now);
-    success &= await Health()
-        .writeHealthData(70, HealthDataType.HEART_RATE, earlier, now);
-    success &= await Health()
-        .writeHealthData(37, HealthDataType.BODY_TEMPERATURE, earlier, now);
-    success &= await Health().writeBloodOxygen(98, earlier, now, flowRate: 1.0);
-    success &= await Health()
-        .writeHealthData(105, HealthDataType.BLOOD_GLUCOSE, earlier, now);
-    success &=
-        await Health().writeHealthData(1.8, HealthDataType.WATER, earlier, now);
+        value: 1.925,
+        type: HealthDataType.HEIGHT,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 90, type: HealthDataType.WEIGHT, startTime: now);
+    success &= await Health().writeHealthData(
+        value: 90,
+        type: HealthDataType.HEART_RATE,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 90,
+        type: HealthDataType.STEPS,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 200,
+        type: HealthDataType.ACTIVE_ENERGY_BURNED,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 70,
+        type: HealthDataType.HEART_RATE,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 37,
+        type: HealthDataType.BODY_TEMPERATURE,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 105,
+        type: HealthDataType.BLOOD_GLUCOSE,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 1.8,
+        type: HealthDataType.WATER,
+        startTime: earlier,
+        endTime: now);
 
     // different types of sleep
-    success &= await Health()
-        .writeHealthData(0.0, HealthDataType.SLEEP_REM, earlier, now);
-    success &= await Health()
-        .writeHealthData(0.0, HealthDataType.SLEEP_ASLEEP, earlier, now);
-    success &= await Health()
-        .writeHealthData(0.0, HealthDataType.SLEEP_AWAKE, earlier, now);
-    success &= await Health()
-        .writeHealthData(0.0, HealthDataType.SLEEP_DEEP, earlier, now);
+    success &= await Health().writeHealthData(
+        value: 0.0,
+        type: HealthDataType.SLEEP_REM,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 0.0,
+        type: HealthDataType.SLEEP_ASLEEP,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 0.0,
+        type: HealthDataType.SLEEP_AWAKE,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
+        value: 0.0,
+        type: HealthDataType.SLEEP_DEEP,
+        startTime: earlier,
+        endTime: now);
 
     // specialized write methods
+    success &= await Health().writeBloodOxygen(
+      saturation: 98,
+      startTime: earlier,
+      endTime: now,
+      flowRate: 1.0,
+    );
     success &= await Health().writeWorkoutData(
-      HealthWorkoutActivityType.AMERICAN_FOOTBALL,
-      now.subtract(Duration(minutes: 15)),
-      now,
+      activityType: HealthWorkoutActivityType.AMERICAN_FOOTBALL,
+      title: "Random workout name that shows up in Health Connect",
+      start: now.subtract(Duration(minutes: 15)),
+      end: now,
       totalDistance: 2430,
       totalEnergyBurned: 400,
-      title: "Random workout name that shows up in Health Connect",
     );
-    success &= await Health().writeBloodPressure(90, 80, earlier, now);
+    success &= await Health().writeBloodPressure(
+      systolic: 90,
+      diastolic: 80,
+      startTime: now,
+    );
     success &= await Health().writeMeal(
-        earlier, now, 1000, 50, 25, 50, "Banana", 0.002, MealType.SNACK);
+      mealType: MealType.SNACK,
+      startTime: earlier,
+      endTime: now,
+      caloriesConsumed: 1000,
+      carbohydrates: 50,
+      protein: 25,
+      fatTotal: 50,
+      name: "Banana",
+      caffeine: 0.002,
+    );
 
     // Store an Audiogram - only available on iOS
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
@@ -242,7 +303,11 @@ class _HealthAppState extends State<HealthApp> {
 
     bool success = true;
     for (HealthDataType type in types) {
-      success &= await Health().delete(type, earlier, now);
+      success &= await Health().delete(
+        type: type,
+        startTime: earlier,
+        endTime: now,
+      );
     }
 
     setState(() {
@@ -310,15 +375,15 @@ class _HealthAppState extends State<HealthApp> {
                 children: [
                   TextButton(
                       onPressed: authorize,
-                      child:
-                          Text("Auth", style: TextStyle(color: Colors.white)),
+                      child: Text("Authenticate",
+                          style: TextStyle(color: Colors.white)),
                       style: ButtonStyle(
                           backgroundColor:
                               MaterialStatePropertyAll(Colors.blue))),
                   if (Platform.isAndroid)
                     TextButton(
                         onPressed: getHealthConnectSdkStatus,
-                        child: Text("getHealthConnectSdkStatus",
+                        child: Text("Check Health Connect Status",
                             style: TextStyle(color: Colors.white)),
                         style: ButtonStyle(
                             backgroundColor:
