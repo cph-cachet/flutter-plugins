@@ -71,6 +71,10 @@ class _HealthAppState extends State<HealthApp> {
     super.initState();
   }
 
+  Future<void> installHealthConnect() async {
+    await Health().installHealthConnect();
+  }
+
   /// Authorize, i.e. get permissions to access relevant health data.
   Future<void> authorize() async {
     // If we are trying to read Step Count, Workout, Sleep or other data that requires
@@ -352,6 +356,14 @@ class _HealthAppState extends State<HealthApp> {
                       style: ButtonStyle(
                           backgroundColor:
                               MaterialStatePropertyAll(Colors.blue))),
+                  if (Platform.isAndroid)
+                    TextButton(
+                        onPressed: installHealthConnect,
+                        child: Text("Install Health Connect",
+                            style: TextStyle(color: Colors.white)),
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStatePropertyAll(Colors.blue))),
                 ],
               ),
               Divider(thickness: 3),

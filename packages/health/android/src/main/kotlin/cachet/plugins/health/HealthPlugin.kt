@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.util.Log
@@ -2382,6 +2383,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         /** Handle calls from the MethodChannel */
         override fun onMethodCall(call: MethodCall, result: Result) {
                 when (call.method) {
+                        "installHealthConnect" -> installHealthConnect(call, result)
                         "useHealthConnectIfAvailable" -> useHealthConnectIfAvailable(call, result)
                         "getHealthConnectSdkStatus" -> getHealthConnectSdkStatus(call, result)
                         "hasPermissions" -> hasPermissions(call, result)
@@ -2441,6 +2443,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         fun checkAvailability() {
                 healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
                 healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
+        }
+
+        private fun installHealthConnect(call: MethodCall, result: Result) {
+                val uriString =
+                    "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
+                context!!.startActivity(
+                    Intent(Intent.ACTION_VIEW).apply {
+                        setPackage("com.android.vending")
+                        data = Uri.parse(uriString)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra("overlay", true)
+                        putExtra("callerId", context!!.packageName)
+                    }
+                )
+                result.success(null)
         }
 
         fun useHealthConnectIfAvailable(call: MethodCall, result: Result) {
