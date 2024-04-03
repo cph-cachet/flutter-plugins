@@ -1,54 +1,52 @@
-part of health;
+part of '../health.dart';
 
 /// A [WorkoutSummary] object store vary metrics of a workout.
-/// * totalDistance - The total distance that was traveled during a workout.
-/// * totalEnergyBurned - The amount of energy that was burned during a workout.
-/// * totalSteps - The count of steps was burned during a workout.
+///
+///  * [workoutType] - The type of workout. See [HealthWorkoutActivityType] for available types.
+///  * [totalDistance] - The total distance that was traveled during a workout.
+///  * [totalEnergyBurned] - The amount of energy that was burned during a workout.
+///  * [totalSteps] - The number of steps during a workout.
+@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
 class WorkoutSummary {
-  String _workoutType;
-  num _totalDistance;
-  num _totalEnergyBurned;
-  num _totalSteps;
+  /// Workout type.
+  String workoutType;
 
-  WorkoutSummary(
-    this._workoutType,
-    this._totalDistance,
-    this._totalEnergyBurned,
-    this._totalSteps,
-  );
+  /// The total distance value of the workout.
+  num totalDistance;
 
-  /// Converts a json object to the [WorkoutSummary]
-  factory WorkoutSummary.fromJson(json) => WorkoutSummary(
-        json['workoutType'],
-        json['totalDistance'],
-        json['totalEnergyBurned'],
-        json['totalSteps'],
+  /// The total energy burned value of the workout.
+  num totalEnergyBurned;
+
+  /// The total steps value of the workout.
+  num totalSteps;
+
+  WorkoutSummary({
+    required this.workoutType,
+    required this.totalDistance,
+    required this.totalEnergyBurned,
+    required this.totalSteps,
+  });
+
+  /// Create a [WorkoutSummary] based on a health data point from native data format.
+  factory WorkoutSummary.fromHealthDataPoint(dynamic dataPoint) =>
+      WorkoutSummary(
+        workoutType: dataPoint['workout_type'] as String? ?? '',
+        totalDistance: dataPoint['total_distance'] as num? ?? 0,
+        totalEnergyBurned: dataPoint['total_energy_burned'] as num? ?? 0,
+        totalSteps: dataPoint['total_steps'] as num? ?? 0,
       );
 
-  /// Converts the [WorkoutSummary] to a json object
-  Map<String, dynamic> toJson() => {
-        'workoutType': workoutType,
-        'totalDistance': totalDistance,
-        'totalEnergyBurned': totalEnergyBurned,
-        'totalSteps': totalSteps
-      };
+  /// Create a [HealthDataPoint] from json.
+  factory WorkoutSummary.fromJson(Map<String, dynamic> json) =>
+      _$WorkoutSummaryFromJson(json);
+
+  /// Convert this [HealthDataPoint] to json.
+  Map<String, dynamic> toJson() => _$WorkoutSummaryToJson(this);
 
   @override
-  String toString() => '${this.runtimeType} - '
+  String toString() => '$runtimeType - '
       'workoutType: $workoutType'
       'totalDistance: $totalDistance, '
       'totalEnergyBurned: $totalEnergyBurned, '
       'totalSteps: $totalSteps';
-
-  /// Workout type.
-  String get workoutType => _workoutType;
-
-  /// The total distance value of the workout.
-  num get totalDistance => _totalDistance;
-
-  /// The total energy burned value of the workout.
-  num get totalEnergyBurned => _totalEnergyBurned;
-
-  /// The total steps value of the workout.
-  num get totalSteps => _totalSteps;
 }
