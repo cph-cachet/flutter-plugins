@@ -234,17 +234,35 @@ HealthDataType type;
 HealthDataUnit unit;
 DateTime dateFrom;
 DateTime dateTo;
-PlatformType platform;
-String uuid, deviceId;
+HealthPlatformType sourcePlatform;
+String sourceDeviceId;
 String sourceId;
 String sourceName;
 bool isManualEntry;
 WorkoutSummary? workoutSummary;
 ```
 
-where a [HealthValue](https://pub.dev/documentation/health/latest/health/HealthValue-class.html) can be any type of `AudiogramHealthValue`, `ElectrocardiogramHealthValue`, `ElectrocardiogramVoltageValue`, `NumericHealthValue`, `NutritionHealthValue`, or `WorkoutHealthValue`.
+where a [`HealthValue`](https://pub.dev/documentation/health/latest/health/HealthValue-class.html) can be any type of `AudiogramHealthValue`, `ElectrocardiogramHealthValue`, `ElectrocardiogramVoltageValue`, `NumericHealthValue`, `NutritionHealthValue`, or `WorkoutHealthValue`.
 
-A `HealthDataPoint` object can be serialized to and from JSON using the `toJson()` and `fromJson()` methods. JSON serialization is using camel_case notation.
+A `HealthDataPoint` object can be serialized to and from JSON using the `toJson()` and `fromJson()` methods. JSON serialization is using camel_case notation. Null values are not serialized. For example;
+
+```json
+{
+ "value": {
+  "__type": "NumericHealthValue",
+  "numeric_value": 141.0
+ },
+ "type": "STEPS",
+ "unit": "COUNT",
+ "date_from": "2024-04-03T10:06:57.736",
+ "date_to": "2024-04-03T10:12:51.724",
+ "source_platform": "appleHealth",
+ "source_device_id": "F74938B9-C011-4DE4-AA5E-CF41B60B96E7",
+ "source_id": "com.apple.health.81AE7156-EC05-47E3-AC93-2D6F65C717DF",
+ "source_name": "iPhone12.bardram.net",
+ "is_manual_entry": false
+}
+```
 
 ### Fetch health data
 

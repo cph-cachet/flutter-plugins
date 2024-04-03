@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.util.Log
@@ -2382,7 +2383,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         /** Handle calls from the MethodChannel */
         override fun onMethodCall(call: MethodCall, result: Result) {
                 when (call.method) {
+                        "installHealthConnect" -> installHealthConnect(call, result)
                         "useHealthConnectIfAvailable" -> useHealthConnectIfAvailable(call, result)
+                        "getHealthConnectSdkStatus" -> getHealthConnectSdkStatus(call, result)
                         "hasPermissions" -> hasPermissions(call, result)
                         "requestAuthorization" -> requestAuthorization(call, result)
                         "revokePermissions" -> revokePermissions(call, result)
@@ -2408,15 +2411,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 binding.addActivityResultListener(this)
                 activity = binding.activity
 
-                if (healthConnectAvailable) {
-                        val requestPermissionActivityContract =
-                                        PermissionController.createRequestPermissionResultContract()
+                val requestPermissionActivityContract =
+                                PermissionController.createRequestPermissionResultContract()
 
-                        healthConnectRequestPermissionsLauncher =
-                                        (activity as ComponentActivity).registerForActivityResult(
-                                                        requestPermissionActivityContract
-                                        ) { granted -> onHealthConnectPermissionCallback(granted) }
-                }
+                healthConnectRequestPermissionsLauncher =
+                                (activity as ComponentActivity).registerForActivityResult(
+                                                requestPermissionActivityContract
+                                ) { granted -> onHealthConnectPermissionCallback(granted) }
         }
 
         override fun onDetachedFromActivityForConfigChanges() {
@@ -2444,9 +2445,35 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
         }
 
+        private fun installHealthConnect(call: MethodCall, result: Result) {
+                val uriString =
+                    "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
+                context!!.startActivity(
+                    Intent(Intent.ACTION_VIEW).apply {
+                        setPackage("com.android.vending")
+                        data = Uri.parse(uriString)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra("overlay", true)
+                        putExtra("callerId", context!!.packageName)
+                    }
+                )
+                result.success(null)
+        }
+
         fun useHealthConnectIfAvailable(call: MethodCall, result: Result) {
                 useHealthConnectIfAvailable = true
                 result.success(null)
+        }
+
+        private fun getHealthConnectSdkStatus(call: MethodCall, result: Result) {
+                checkAvailability()
+                if (healthConnectAvailable) {
+                    healthConnectClient =
+                        HealthConnectClient.getOrCreate(
+                            context!!
+                        )
+                }
+                result.success(healthConnectStatus)
         }
 
         private fun hasPermissionsHC(call: MethodCall, result: Result) {
@@ -3765,6 +3792,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         return
                 }
                 val workoutType = workoutTypeMapHealthConnect[type]!!
+                val title = call.argument<String>("title") ?: type
 
                 scope.launch {
                         try {
@@ -3776,7 +3804,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                 endTime = endTime,
                                                                 endZoneOffset = null,
                                                                 exerciseType = workoutType,
-                                                                title = type,
+                                                                title = title,
                                                 ),
                                 )
                                 if (totalDistance != null) {
