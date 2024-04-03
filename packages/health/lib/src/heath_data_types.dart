@@ -1,6 +1,6 @@
-part of health;
+part of '../health.dart';
 
-/// List of all available data types.
+/// List of all available health data types.
 enum HealthDataType {
   ACTIVE_ENERGY_BURNED,
   AUDIOGRAM,
@@ -12,6 +12,7 @@ enum HealthDataType {
   BODY_FAT_PERCENTAGE,
   BODY_MASS_INDEX,
   BODY_TEMPERATURE,
+  BODY_WATER_MASS,
   DIETARY_CARBS_CONSUMED,
   DIETARY_CAFFEINE,
   DIETARY_ENERGY_CONSUMED,
@@ -74,8 +75,8 @@ enum HealthDataAccess {
   READ_WRITE,
 }
 
-/// List of data types available on iOS
-const List<HealthDataType> _dataTypeKeysIOS = [
+/// List of data types available on iOS.
+const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.AUDIOGRAM,
   HealthDataType.BASAL_ENERGY_BURNED,
@@ -132,7 +133,7 @@ const List<HealthDataType> _dataTypeKeysIOS = [
 ];
 
 /// List of data types available on Android
-const List<HealthDataType> _dataTypeKeysAndroid = [
+const List<HealthDataType> dataTypeKeysAndroid = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
   HealthDataType.BLOOD_OXYGEN,
@@ -141,6 +142,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
   HealthDataType.BODY_FAT_PERCENTAGE,
   HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
+  HealthDataType.BODY_WATER_MASS,
   HealthDataType.HEART_RATE,
   HealthDataType.HEIGHT,
   HealthDataType.STEPS,
@@ -166,7 +168,7 @@ const List<HealthDataType> _dataTypeKeysAndroid = [
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
-const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
+const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataUnit.KILOCALORIE,
   HealthDataType.AUDIOGRAM: HealthDataUnit.DECIBEL_HEARING_LEVEL,
   HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.KILOCALORIE,
@@ -177,6 +179,7 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENT,
   HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
+  HealthDataType.BODY_WATER_MASS: HealthDataUnit.KILOGRAM,
   HealthDataType.DIETARY_CARBS_CONSUMED: HealthDataUnit.GRAM,
   HealthDataType.DIETARY_CAFFEINE: HealthDataUnit.GRAM,
   HealthDataType.DIETARY_ENERGY_CONSUMED: HealthDataUnit.KILOCALORIE,
@@ -323,8 +326,9 @@ enum HealthDataUnit {
 }
 
 /// List of [HealthWorkoutActivityType]s.
-/// Commented for which platform they are supported
 enum HealthWorkoutActivityType {
+  // Commented for which platform the type are supported
+
   // Both
   ARCHERY,
   BADMINTON,
@@ -504,24 +508,14 @@ enum ElectrocardiogramClassification {
 /// Extension to assign numbers to [ElectrocardiogramClassification]s
 extension ElectrocardiogramClassificationValue
     on ElectrocardiogramClassification {
-  int get value {
-    switch (this) {
-      case ElectrocardiogramClassification.NOT_SET:
-        return 0;
-      case ElectrocardiogramClassification.SINUS_RHYTHM:
-        return 1;
-      case ElectrocardiogramClassification.ATRIAL_FIBRILLATION:
-        return 2;
-      case ElectrocardiogramClassification.INCONCLUSIVE_LOW_HEART_RATE:
-        return 3;
-      case ElectrocardiogramClassification.INCONCLUSIVE_HIGH_HEART_RATE:
-        return 4;
-      case ElectrocardiogramClassification.INCONCLUSIVE_POOR_READING:
-        return 5;
-      case ElectrocardiogramClassification.INCONCLUSIVE_OTHER:
-        return 6;
-      case ElectrocardiogramClassification.UNRECOGNIZED:
-        return 100;
-    }
-  }
+  int get value => switch (this) {
+        ElectrocardiogramClassification.NOT_SET => 0,
+        ElectrocardiogramClassification.SINUS_RHYTHM => 1,
+        ElectrocardiogramClassification.ATRIAL_FIBRILLATION => 2,
+        ElectrocardiogramClassification.INCONCLUSIVE_LOW_HEART_RATE => 3,
+        ElectrocardiogramClassification.INCONCLUSIVE_HIGH_HEART_RATE => 4,
+        ElectrocardiogramClassification.INCONCLUSIVE_POOR_READING => 5,
+        ElectrocardiogramClassification.INCONCLUSIVE_OTHER => 6,
+        ElectrocardiogramClassification.UNRECOGNIZED => 100,
+      };
 }

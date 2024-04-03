@@ -1,4 +1,4 @@
-part of health;
+part of '../health.dart';
 
 /// Custom Exception for the plugin. Used when a Health Data Type is requested,
 /// but not available on the current platform.
@@ -11,6 +11,7 @@ class HealthException implements Exception {
 
   HealthException(this.dataType, this.cause);
 
+  @override
   String toString() =>
       "Error requesting health data type '$dataType' - cause: $cause";
 }
