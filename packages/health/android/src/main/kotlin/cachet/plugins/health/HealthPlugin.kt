@@ -2201,8 +2201,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
          */
         private fun revokePermissions(call: MethodCall, result: Result) {
                 if (useHealthConnectIfAvailable && healthConnectAvailable) {
-                        result.notImplemented()
-                        return
+                        //result.notImplemented()
+                        scope.launch {
+                                healthConnectClient.permissionController.revokeAllPermissions()
+                        }
+                        result.success(true)
                 }
                 if (context == null) {
                         result.success(false)
