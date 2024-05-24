@@ -6,24 +6,42 @@ class Mass {
 
   Mass(this.value, {this.type = Type.GRAMS});
 
-  get getInGram => value;
+  Mass get grams => Mass(_convertTo(Type.GRAMS), type: Type.GRAMS);
+  Mass get kilograms => Mass(_convertTo(Type.KILOGRAMS), type: Type.KILOGRAMS);
+  Mass get milligrams =>
+      Mass(_convertTo(Type.MILLIGRAMS), type: Type.MILLIGRAMS);
+  Mass get micrograms =>
+      Mass(_convertTo(Type.MICROGRAMS), type: Type.MICROGRAMS);
+  Mass get ounces => Mass(_convertTo(Type.OUNCES), type: Type.OUNCES);
+  Mass get pounds => Mass(_convertTo(Type.POUNDS), type: Type.POUNDS);
 
-  get getInKilograms => getInGram / 1000.0;
+  Mass as(Type type) => Mass(_convertTo(type), type: type);
 
-  get getInMilligrams => getInGram / 0.001;
+  double _convertTo(Type other) => // convert to grams then to the desired unit
+      value * type.conversionFactor / other.conversionFactor;
 
-  get getInMicrograms => getInGram / 0.000001;
-
-  get getInOunces => getInGram / 28.34952;
-
-  get getInPounds => getInGram / 453.59237;
+  /// Adds two masses. Always results in grams.
+  @override
+  Mass operator +(Mass other) {
+    final _thisGrams = this.grams;
+    final _otherGrams = other.grams;
+    final bool typesMatch = _thisGrams.type == _otherGrams.type;
+    final Mass sum =
+        Mass(_thisGrams.value + _otherGrams.value, type: Type.GRAMS);
+    return typesMatch ? sum.as(this.type) : sum;
+  }
 }
+// create a tree structure of mass units and their converison factors with grams as the base unit
+// the tree can be used to convert between any two units
 
 enum Type {
-  GRAMS,
-  KILOGRAMS,
-  MILLIGRAMS,
-  MICROGRAMS,
-  OUNCES,
-  POUNDS,
+  GRAMS(1.0),
+  KILOGRAMS(1000.0),
+  MILLIGRAMS(1e-3),
+  MICROGRAMS(1e-6),
+  OUNCES(28.34952),
+  POUNDS(453.59237);
+
+  const Type(this.conversionFactor);
+  final double conversionFactor; // number of grams in 1 unit of the type
 }

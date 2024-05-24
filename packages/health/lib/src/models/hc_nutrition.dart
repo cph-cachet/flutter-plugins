@@ -1,8 +1,6 @@
 part of health;
 
 class HealthConnectNutrition extends HealthConnectData {
-  final HealthDataType? healthDataType;
-
   final DateTime startTime;
   final DateTime endTime;
 
@@ -137,57 +135,57 @@ class HealthConnectNutrition extends HealthConnectData {
   /// Vitamin E in [Mass] unit. Optional field. Valid range: 0-100 grams. */
   final Mass? vitaminE;
 
-  // For Read Use Only
-  final String? uID;
-
-  HealthConnectNutrition(this.startTime, this.endTime,
-      {this.mealType,
-      this.name,
-      this.vitaminK,
-      this.zinc,
-      this.biotin,
-      this.caffeine,
-      this.calcium,
-      this.chloride,
-      this.cholesterol,
-      this.chromium,
-      this.copper,
-      this.dietaryFiber,
-      this.energy,
-      this.energyFromFat,
-      this.folate,
-      this.folicAcid,
-      this.iodine,
-      this.iron,
-      this.magnesium,
-      this.manganese,
-      this.molybdenum,
-      this.monounsaturatedFat,
-      this.niacin,
-      this.pantothenicAcid,
-      this.phosphorus,
-      this.polyunsaturatedFat,
-      this.potassium,
-      this.protein,
-      this.riboflavin,
-      this.saturatedFat,
-      this.selenium,
-      this.sodium,
-      this.sugar,
-      this.thiamin,
-      this.totalCarbohydrate,
-      this.totalFat,
-      this.transFat,
-      this.unsaturatedFat,
-      this.vitaminA,
-      this.vitaminB6,
-      this.vitaminB12,
-      this.vitaminC,
-      this.vitaminD,
-      this.vitaminE,
-      this.uID,
-      this.healthDataType})
-      : super(uID ?? "", healthDataType);
+  HealthConnectNutrition(
+    this.startTime,
+    this.endTime, {
+    super.uID,
+    super.healthDataType,
+    super.packageName,
+    this.mealType,
+    this.name,
+    this.vitaminK,
+    this.zinc,
+    this.biotin,
+    this.caffeine,
+    this.calcium,
+    this.chloride,
+    this.cholesterol,
+    this.chromium,
+    this.copper,
+    this.dietaryFiber,
+    this.energy,
+    this.energyFromFat,
+    this.folate,
+    this.folicAcid,
+    this.iodine,
+    this.iron,
+    this.magnesium,
+    this.manganese,
+    this.molybdenum,
+    this.monounsaturatedFat,
+    this.niacin,
+    this.pantothenicAcid,
+    this.phosphorus,
+    this.polyunsaturatedFat,
+    this.potassium,
+    this.protein,
+    this.riboflavin,
+    this.saturatedFat,
+    this.selenium,
+    this.sodium,
+    this.sugar,
+    this.thiamin,
+    this.totalCarbohydrate,
+    this.totalFat,
+    this.transFat,
+    this.unsaturatedFat,
+    this.vitaminA,
+    this.vitaminB6,
+    this.vitaminB12,
+    this.vitaminC,
+    this.vitaminD,
+    this.vitaminE,
+  });
 
   factory HealthConnectNutrition.fromJson(
           Map<dynamic, dynamic> json, HealthDataType type) =>
@@ -196,8 +194,10 @@ class HealthConnectNutrition extends HealthConnectData {
         DateTime.fromMillisecondsSinceEpoch(json['endDateTime']),
         uID: json['uid'],
         healthDataType: type,
-        mealType:
-            json.containsKey("mealType") ? getMealType(json['mealType']) : null,
+        packageName: json['packageName'],
+        mealType: json.containsKey("mealType")
+            ? MealType.getMealType(json['mealType'])
+            : null,
         name: json.containsKey("name") ? json['name'] : null,
         biotin: json.containsKey("biotin") ? Mass(json['biotin']) : null,
         caffeine: json.containsKey("caffeine") ? Mass(json['caffeine']) : null,
@@ -276,8 +276,9 @@ class HealthConnectNutrition extends HealthConnectData {
     map['endTime'] =
         DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endTime).toString();
 
-    if (mealType != null) {
-      map['mealType'] = getMealTypeAsString(mealType!);
+    final MealType? mealTypeLocal = mealType;
+    if (mealTypeLocal != null) {
+      map['mealType'] = mealTypeLocal.getMealTypeAsString();
     }
     if (name != null) {
       map['name'] = name;
@@ -530,6 +531,86 @@ class HealthConnectNutrition extends HealthConnectData {
     }
     return map;
   }
+
+  @override
+  String toString() => '${this.runtimeType} - '
+      '${toMap().toString()}';
+
+  Mass? _add(Mass? a, Mass? b) {
+    if (a == null && b == null) {
+      return null;
+    }
+    if (a == null) {
+      return b;
+    }
+    if (b == null) {
+      return a;
+    }
+
+    return a + b;
+  }
+
+  Energy? _addE(Energy? a, Energy? b) {
+    if (a == null && b == null) {
+      return null;
+    }
+    if (a == null) {
+      return b;
+    }
+    if (b == null) {
+      return a;
+    }
+
+    return a + b;
+  }
+
+  /// Adds two [HealthConnectNutrition] objects. start date and end dates are determined based on input.
+  @override
+  HealthConnectNutrition operator +(HealthConnectNutrition other) {
+    final newStartTime =
+        startTime.isBefore(other.startTime) ? startTime : other.startTime;
+    final newEndTime = endTime.isAfter(other.endTime) ? endTime : other.endTime;
+    // TODO: check if all nutrients are used
+    // TODO: add new nutrients
+    return HealthConnectNutrition(
+      newStartTime,
+      newEndTime,
+      energy: _addE(energy, other.energy),
+      energyFromFat: _addE(energyFromFat, other.energyFromFat),
+      protein: _add(protein, other.protein),
+      totalCarbohydrate: _add(totalCarbohydrate, other.totalCarbohydrate),
+      dietaryFiber: _add(dietaryFiber, other.dietaryFiber),
+      sugar: _add(sugar, other.sugar),
+      totalFat: _add(totalFat, other.totalFat),
+      saturatedFat: _add(saturatedFat, other.saturatedFat),
+      polyunsaturatedFat: _add(polyunsaturatedFat, other.polyunsaturatedFat),
+      monounsaturatedFat: _add(monounsaturatedFat, other.monounsaturatedFat),
+      cholesterol: _add(cholesterol, other.cholesterol),
+      sodium: _add(sodium, other.sodium),
+      potassium: _add(potassium, other.potassium),
+      vitaminA: _add(vitaminA, other.vitaminA),
+      thiamin: _add(thiamin, other.thiamin),
+      riboflavin: _add(riboflavin, other.riboflavin),
+      niacin: _add(niacin, other.niacin),
+      pantothenicAcid: _add(pantothenicAcid, other.pantothenicAcid),
+      vitaminB6: _add(vitaminB6, other.vitaminB6),
+      vitaminB12: _add(vitaminB12, other.vitaminB12),
+      vitaminC: _add(vitaminC, other.vitaminC),
+      vitaminD: _add(vitaminD, other.vitaminD),
+      vitaminE: _add(vitaminE, other.vitaminE),
+      vitaminK: _add(vitaminK, other.vitaminK),
+      folate: _add(folate, other.folate),
+      calcium: _add(calcium, other.calcium),
+      iron: _add(iron, other.iron),
+      magnesium: _add(magnesium, other.magnesium),
+      phosphorus: _add(phosphorus, other.phosphorus),
+      zinc: _add(zinc, other.zinc),
+      caffeine: _add(caffeine, other.caffeine),
+      copper: _add(copper, other.copper),
+      manganese: _add(manganese, other.manganese),
+      selenium: _add(selenium, other.selenium),
+    );
+  }
 }
 
 enum MealType {
@@ -537,35 +618,38 @@ enum MealType {
   BREAKFAST,
   LUNCH,
   DINNER,
-  SNACK,
-}
+  SNACK;
 
-String getMealTypeAsString(MealType data) {
-  if (data == MealType.UNKNOWN) {
-    return "unknown";
-  } else if (data == MealType.BREAKFAST) {
-    return "breakfast";
-  } else if (data == MealType.DINNER) {
-    return "dinner";
-  } else if (data == MealType.LUNCH) {
-    return "lunch";
-  } else if (data == MealType.SNACK) {
-    return "snack";
-  }
-  return "";
-}
+  const MealType();
 
-MealType getMealType(String data) {
-  if (data == "unknown") {
-    return MealType.UNKNOWN;
-  } else if (data == "breakfast") {
-    return MealType.BREAKFAST;
-  } else if (data == "dinner") {
-    return MealType.DINNER;
-  } else if (data == "lunch") {
-    return MealType.LUNCH;
-  } else if (data == "snack") {
-    return MealType.SNACK;
+  String getMealTypeAsString() {
+    switch (this) {
+      case MealType.UNKNOWN:
+        return "unknown";
+      case MealType.BREAKFAST:
+        return "breakfast";
+      case MealType.DINNER:
+        return "dinner";
+      case MealType.LUNCH:
+        return "lunch";
+      case MealType.SNACK:
+        return "snack";
+    }
   }
-  return MealType.UNKNOWN;
+
+  static MealType getMealType(String data) {
+    switch (data) {
+      case "breakfast":
+        return MealType.BREAKFAST;
+      case "dinner":
+        return MealType.DINNER;
+      case "lunch":
+        return MealType.LUNCH;
+      case "snack":
+        return MealType.SNACK;
+      case "unknown":
+      default:
+        return MealType.UNKNOWN;
+    }
+  }
 }

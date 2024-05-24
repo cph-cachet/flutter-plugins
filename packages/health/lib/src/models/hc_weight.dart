@@ -1,34 +1,42 @@
 part of health;
 
 class HealthConnectWeight extends HealthConnectData {
-  final String uID;
   final Mass weight;
   final DateTime zonedDateTime;
-  final HealthDataType healthDataType;
 
-  HealthConnectWeight(
-      this.uID, this.weight, this.zonedDateTime, this.healthDataType)
-      : super(uID, healthDataType);
+  HealthConnectWeight({
+    super.uID,
+    required this.weight,
+    required this.zonedDateTime,
+    required super.healthDataType,
+    super.packageName,
+  });
 
-  factory HealthConnectWeight.fromJson(json, HealthDataType healthDataType) =>
-      HealthConnectWeight(
-          json['uid'],
-          Mass(
-            json['weight'],
-          ),
+  factory HealthConnectWeight.fromJson(json, HealthDataType healthDataType) {
+    print(json);
+    return HealthConnectWeight(
+      uID: json['uid'],
+      packageName: json['packageName'],
+      weight: Mass(
+        json['weight'],
+      ),
+      zonedDateTime:
           DateTime.fromMillisecondsSinceEpoch((json['zonedDateTime'] as int)),
-          healthDataType);
+      healthDataType: healthDataType,
+    );
+  }
 
   /// Converts the [HealthDataPoint] to a json object
   Map<String, dynamic> toJson() => {
         'uid': uID,
-        'weight': weight.getInKilograms,
+        'weight': weight.kilograms,
         'zonedDateTime': zonedDateTime,
       };
 
   @override
   String toString() => '${this.runtimeType} - '
       'uid: $uID, '
+      'packageName: $packageName, '
       'weight: $weight, '
       'zonedDateTime: $zonedDateTime, ';
 }

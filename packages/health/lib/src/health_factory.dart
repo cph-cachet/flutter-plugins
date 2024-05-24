@@ -17,12 +17,14 @@ class HealthFactory {
   String? _deviceId;
   final _deviceInfo = DeviceInfoPlugin();
 
-  static PlatformType _platformType = Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
+  static PlatformType _platformType =
+      Platform.isAndroid ? PlatformType.ANDROID : PlatformType.IOS;
 
   /// Check if a given data type is available on the platform
-  bool isDataTypeAvailable(HealthDataType dataType) => _platformType == PlatformType.ANDROID
-      ? _dataTypeKeysAndroid.contains(dataType)
-      : _dataTypeKeysIOS.contains(dataType);
+  bool isDataTypeAvailable(HealthDataType dataType) =>
+      _platformType == PlatformType.ANDROID
+          ? _dataTypeKeysAndroid.contains(dataType)
+          : _dataTypeKeysIOS.contains(dataType);
 
   /// Determines if the data types have been granted with the specified access rights.
   ///
@@ -47,12 +49,15 @@ class HealthFactory {
   ///   with a READ or READ_WRITE access.
   ///
   ///   On Android, this function returns true or false, depending on whether the specified access right has been granted.
-  static Future<bool?> hasPermissions(List<HealthDataType> types, {List<HealthDataAccess>? permissions}) async {
+  static Future<bool?> hasPermissions(List<HealthDataType> types,
+      {List<HealthDataAccess>? permissions}) async {
     if (permissions != null && permissions.length != types.length)
-      throw ArgumentError("The lists of types and permissions must be of same length.");
+      throw ArgumentError(
+          "The lists of types and permissions must be of same length.");
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
-        ? List<int>.filled(types.length, HealthDataAccess.READ.index, growable: true)
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
+            growable: true)
         : permissions.map((permission) => permission.index).toList();
 
     /// On Android, if BMI is requested, then also ask for weight and height
@@ -101,17 +106,21 @@ class HealthFactory {
     List<HealthDataAccess>? permissions,
   }) async {
     if (permissions != null && permissions.length != types.length) {
-      throw ArgumentError('The length of [types] must be same as that of [permissions].');
+      throw ArgumentError(
+          'The length of [types] must be same as that of [permissions].');
     }
 
-    if (_platformType != PlatformType.ANDROID && _platformType != PlatformType.IOS) {
+    if (_platformType != PlatformType.ANDROID &&
+        _platformType != PlatformType.IOS) {
       return false;
     }
 
     List<HealthDataType> usableTypes = [];
     List<HealthDataAccess>? usablePermissions = permissions == null ? null : [];
 
-    var platformDataTypeKeys = _platformType == PlatformType.ANDROID ? _dataTypeKeysAndroid : _dataTypeKeysIOS;
+    var platformDataTypeKeys = _platformType == PlatformType.ANDROID
+        ? _dataTypeKeysAndroid
+        : _dataTypeKeysIOS;
 
     // Only use supplied types and permissions if they are valid for the current platform
     for (var i = 0; i < types.length; i++) {
@@ -131,15 +140,16 @@ class HealthFactory {
 
     final mTypes = List<HealthDataType>.from(usableTypes, growable: true);
     final mPermissions = usablePermissions == null
-        ? List<int>.filled(usableTypes.length, HealthDataAccess.READ.index, growable: true)
+        ? List<int>.filled(usableTypes.length, HealthDataAccess.READ.index,
+            growable: true)
         : usablePermissions.map((permission) => permission.index).toList();
 
     // on Android, if BMI is requested, then also ask for weight and height
     if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
-    final bool? isAuthorized =
-        await _channel.invokeMethod('requestAuthorization', {'types': keys, "permissions": mPermissions});
+    final bool? isAuthorized = await _channel.invokeMethod(
+        'requestAuthorization', {'types': keys, "permissions": mPermissions});
     return isAuthorized ?? false;
   }
 
@@ -161,14 +171,17 @@ class HealthFactory {
   }
 
   /// Calculate the BMI using the last observed height and weight values.
-  Future<List<HealthDataPoint>> _computeAndroidBMI(DateTime startDate, DateTime endDate) async {
-    List<HealthDataPoint> heights = await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
+  Future<List<HealthDataPoint>> _computeAndroidBMI(
+      DateTime startDate, DateTime endDate) async {
+    List<HealthDataPoint> heights =
+        await _prepareQuery(startDate, endDate, HealthDataType.HEIGHT);
 
     if (heights.isEmpty) {
       return [];
     }
 
-    List<HealthDataPoint> weights = await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
+    List<HealthDataPoint> weights =
+        await _prepareQuery(startDate, endDate, HealthDataType.WEIGHT);
 
     double h = heights.last.value.toDouble();
 
@@ -178,8 +191,8 @@ class HealthFactory {
     final bmiHealthPoints = <HealthDataPoint>[];
     for (var i = 0; i < weights.length; i++) {
       final bmiValue = weights[i].value.toDouble() / (h * h);
-      final x = HealthDataPoint(
-          bmiValue, dataType, unit, weights[i].dateFrom, weights[i].dateTo, _platformType, _deviceId!, '', '');
+      final x = HealthDataPoint(bmiValue, dataType, unit, weights[i].dateFrom,
+          weights[i].dateTo, _platformType, _deviceId!, '', '');
 
       bmiHealthPoints.add(x);
     }
@@ -208,7 +221,8 @@ class HealthFactory {
   }) async {
     if (startTime == null) throw ArgumentError("startTime must be not null");
     if (endTime == null) throw ArgumentError("endTime must be not null");
-    if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
 
     Map<String, dynamic> args = {
       'value': value,
@@ -220,8 +234,11 @@ class HealthFactory {
     return success ?? false;
   }
 
-  Future<bool> writeFoodData(List<Map> foodList, DateTime startTime, DateTime endTime, {bool overwrite = false}) async {
-    if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+  Future<bool> writeFoodData(
+      List<Map> foodList, DateTime startTime, DateTime endTime,
+      {bool overwrite = false}) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
       'foodList': foodList,
       'startTime': startTime.millisecondsSinceEpoch,
@@ -244,8 +261,10 @@ class HealthFactory {
   ///   + It must be equal to or later than [startTime].
   ///   + Simply set [endTime] equal to [startTime] if the [value] is measured only at a specific point in time.
   ///
-  Future<bool> deleteHealthData(HealthDataType type, DateTime startTime, DateTime endTime) async {
-    if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+  Future<bool> deleteHealthData(
+      HealthDataType type, DateTime startTime, DateTime endTime) async {
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
       'dataTypeKey': _enumToString(type),
       'startTime': startTime.millisecondsSinceEpoch,
@@ -256,7 +275,8 @@ class HealthFactory {
   }
 
   Future<bool> deleteFoodData(DateTime startTime, DateTime endTime) async {
-    if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
     Map<String, dynamic> args = {
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
@@ -287,7 +307,8 @@ class HealthFactory {
   }
 
   /// Prepares a query, i.e. checks if the types are available, etc.
-  Future<List<HealthDataPoint>> _prepareQuery(DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+  Future<List<HealthDataPoint>> _prepareQuery(
+      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     // Ask for device ID only once
     _deviceId ??= _platformType == PlatformType.ANDROID
         ? (await _deviceInfo.androidInfo).id
@@ -295,18 +316,21 @@ class HealthFactory {
 
     // If not implemented on platform, throw an exception
     if (!isDataTypeAvailable(dataType)) {
-      throw HealthException(dataType, 'Not available on platform $_platformType');
+      throw HealthException(
+          dataType, 'Not available on platform $_platformType');
     }
 
     // If BodyMassIndex is requested on Android, calculate this manually
-    if (dataType == HealthDataType.BODY_MASS_INDEX && _platformType == PlatformType.ANDROID) {
+    if (dataType == HealthDataType.BODY_MASS_INDEX &&
+        _platformType == PlatformType.ANDROID) {
       return _computeAndroidBMI(startDate, endDate);
     }
     return await _dataQuery(startDate, endDate, dataType);
   }
 
   /// The main function for fetching health data
-  Future<List<HealthDataPoint>> _dataQuery(DateTime startDate, DateTime endDate, HealthDataType dataType) async {
+  Future<List<HealthDataPoint>> _dataQuery(
+      DateTime startDate, DateTime endDate, HealthDataType dataType) async {
     final args = <String, dynamic>{
       'dataTypeKey': _enumToString(dataType),
       'startDate': startDate.millisecondsSinceEpoch,
@@ -338,6 +362,7 @@ class HealthFactory {
     final device = message["deviceId"];
     final unit = _dataTypeToUnit[dataType]!;
     final list = dataPoints.map<HealthDataPoint>((e) {
+      print(message);
       final num value = e['value'];
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
@@ -405,7 +430,8 @@ class HealthFactory {
       'install': install,
     };
 
-    final bool? isAvailable = await _channel.invokeMethod('isHealthConnectAvailable', args);
+    final bool? isAvailable =
+        await _channel.invokeMethod('isHealthConnectAvailable', args);
     return isAvailable ?? false;
   }
 
@@ -416,7 +442,8 @@ class HealthFactory {
     List<HealthDataAccess>? permissions,
   }) async {
     if (permissions != null && permissions.length != types.length) {
-      throw ArgumentError('The length of [types] must be same as that of [permissions].');
+      throw ArgumentError(
+          'The length of [types] must be same as that of [permissions].');
     }
 
     for (var i = 0; i < types.length; i++) {
@@ -436,12 +463,14 @@ class HealthFactory {
 
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
-        ? List<int>.filled(types.length, HealthDataAccess.READ.index, growable: true)
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
+            growable: true)
         : permissions.map((permission) => permission.index).toList();
 
     List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
-    final bool? isAuthorized =
-        await _channel.invokeMethod('hasPermissionsHealthConnect', {'types': keys, "permissions": mPermissions});
+    final bool? isAuthorized = await _channel.invokeMethod(
+        'hasPermissionsHealthConnect',
+        {'types': keys, "permissions": mPermissions});
     return isAuthorized ?? false;
   }
 
@@ -450,7 +479,8 @@ class HealthFactory {
     List<HealthDataAccess>? permissions,
   }) async {
     if (permissions != null && permissions.length != types.length) {
-      throw ArgumentError('The length of [types] must be same as that of [permissions].');
+      throw ArgumentError(
+          'The length of [types] must be same as that of [permissions].');
     }
 
     if (_platformType != PlatformType.ANDROID) {
@@ -459,12 +489,14 @@ class HealthFactory {
 
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
-        ? List<int>.filled(types.length, HealthDataAccess.READ.index, growable: true)
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
+            growable: true)
         : permissions.map((permission) => permission.index).toList();
 
     List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
-    final bool? isAuthorized =
-        await _channel.invokeMethod('requestHealthConnectPermission', {'types': keys, "permissions": mPermissions});
+    final bool? isAuthorized = await _channel.invokeMethod(
+        'requestHealthConnectPermission',
+        {'types': keys, "permissions": mPermissions});
     print("$isAuthorized");
     return isAuthorized ?? false;
   }
@@ -485,13 +517,16 @@ class HealthFactory {
     if (_platformType != PlatformType.ANDROID) {
       throw ArgumentError("This operation is not supported for $_platformType");
     }
-    if (type != HealthDataType.WEIGHT && type != HealthDataType.BODY_FAT_PERCENTAGE)
-      throw ArgumentError("This datatype is not supported for HealthConnect yet");
+    if (type != HealthDataType.WEIGHT &&
+        type != HealthDataType.BODY_FAT_PERCENTAGE)
+      throw ArgumentError(
+          "This datatype is not supported for HealthConnect yet");
 
     Map<String, dynamic> args = {
       'value': value,
       'dataTypeKey': _enumToString(type),
-      'currentTime': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(currentTime).toString(),
+      'currentTime':
+          DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(currentTime).toString(),
     };
     bool? success = await _channel.invokeMethod('writeDataHealthConnect', args);
     return success ?? false;
@@ -520,15 +555,19 @@ class HealthFactory {
     if (isOverWrite) {
       if (startTime == null) throw ArgumentError("startTime must be not null");
       if (endTime == null) throw ArgumentError("endTime must be not null");
-      if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+      if (startTime.isAfter(endTime))
+        throw ArgumentError("startTime must be equal or earlier than endTime");
     } else {
-      if (listNutrition.isEmpty) throw ArgumentError("list must be not null when `isOverWrite` is False");
+      if (listNutrition.isEmpty)
+        throw ArgumentError(
+            "list must be not null when `isOverWrite` is False");
     }
 
     listNutrition.forEach((nutrition) {
       if (nutrition.startTime.compareTo(nutrition.endTime) == 0)
         throw ArgumentError("startTime must be earlier than endTime");
-      if (nutrition.startTime.isAfter(nutrition.endTime)) throw ArgumentError("startTime must be earlier than endTime");
+      if (nutrition.startTime.isAfter(nutrition.endTime))
+        throw ArgumentError("startTime must be earlier than endTime");
     });
     Map<String, dynamic> args = {
       'value': listNutrition.map((e) => e.toMap()).toList(),
@@ -537,8 +576,10 @@ class HealthFactory {
     };
     if (startTime != null && endTime != null) {
       args.addAll({
-        "startTime": DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(startTime).toString(),
-        "endTime": DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endTime).toString(),
+        "startTime":
+            DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(startTime).toString(),
+        "endTime":
+            DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endTime).toString(),
       });
     }
     bool? success = await _channel.invokeMethod('writeDataHealthConnect', args);
@@ -552,7 +593,8 @@ class HealthFactory {
     HealthDataType type,
   ) async {
     if (_platformType == PlatformType.ANDROID) {
-      if (startDate.isAfter(endDate)) throw ArgumentError("startTime must be equal or earlier than endTime");
+      if (startDate.isAfter(endDate))
+        throw ArgumentError("startTime must be equal or earlier than endTime");
 
       if (startDate == endDate) {
         throw ArgumentError("end time needs be after start time");
@@ -560,22 +602,27 @@ class HealthFactory {
 
       Map<String, dynamic> args = {
         'dataTypeKey': _enumToString(type),
-        'startDate': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(startDate).toString(),
-        'endDate': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endDate).toString(),
+        'startDate':
+            DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(startDate).toString(),
+        'endDate':
+            DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endDate).toString(),
       };
       var success = await _channel.invokeMethod('getHealthConnectData', args);
       if (success.length > 0) {
         if (type == HealthDataType.WEIGHT) {
           return success.map<HealthConnectWeight>((e) {
-            return HealthConnectWeight.fromJson(e as Map<dynamic, dynamic>, type);
+            return HealthConnectWeight.fromJson(
+                e as Map<dynamic, dynamic>, type);
           }).toList();
         } else if (type == HealthDataType.BODY_FAT_PERCENTAGE) {
           return success.map<HealthConnectBodyFat>((e) {
-            return HealthConnectBodyFat.fromJson(e as Map<dynamic, dynamic>, type);
+            return HealthConnectBodyFat.fromJson(
+                e as Map<dynamic, dynamic>, type);
           }).toList();
         } else if (type == HealthDataType.NUTRITION) {
           return success.map<HealthConnectNutrition>((e) {
-            return HealthConnectNutrition.fromJson(e as Map<dynamic, dynamic>, type);
+            return HealthConnectNutrition.fromJson(
+                e as Map<dynamic, dynamic>, type);
           }).toList();
         }
       }
@@ -588,24 +635,33 @@ class HealthFactory {
   Future<bool> deleteHCData(HealthDataType type, String uID) async {
     if (_platformType == PlatformType.ANDROID) {
       if (uID.isEmpty) throw ArgumentError("uID must be not null");
-      Map<String, dynamic> args = {'dataTypeKey': _enumToString(type), 'uID': uID};
-      var success = await _channel.invokeMethod('deleteHealthConnectData', args);
+      Map<String, dynamic> args = {
+        'dataTypeKey': _enumToString(type),
+        'uID': uID
+      };
+      var success =
+          await _channel.invokeMethod('deleteHealthConnectData', args);
       return success ?? false;
     }
     throw ArgumentError("This method will only work with Android.");
   }
 
   /// Delete Health Connect entries using [startTime] & [endTime] &[type]
-  Future<bool> deleteHCDataByDateRange(HealthDataType type, DateTime startTime, DateTime endTime) async {
+  Future<bool> deleteHCDataByDateRange(
+      HealthDataType type, DateTime startTime, DateTime endTime) async {
     if (_platformType == PlatformType.ANDROID) {
-      if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+      if (startTime.isAfter(endTime))
+        throw ArgumentError("startTime must be equal or earlier than endTime");
       Map<String, dynamic> args = {
         'dataTypeKey': _enumToString(type),
-        'startTime': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(startTime).toString(),
-        'endTime': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endTime).toString(),
+        'startTime':
+            DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(startTime).toString(),
+        'endTime':
+            DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endTime).toString(),
       };
 
-      var success = await _channel.invokeMethod('deleteHealthConnectDataByDateRange', args);
+      var success = await _channel.invokeMethod(
+          'deleteHealthConnectDataByDateRange', args);
 
       return success ?? false;
     }
