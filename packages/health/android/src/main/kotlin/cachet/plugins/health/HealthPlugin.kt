@@ -14,6 +14,7 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.DataOrigin
 
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
@@ -404,14 +405,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     val dataList: List<WeightRecord> = response.records
 
                     val healthData = dataList.mapIndexed { _, it ->
+
                         val zonedDateTime =
                             dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
-                        val uid = it.metadata.id
-                        val weight = it.weight.inGrams
+                        val uid: String = it.metadata.id
+                        val packageName: String = it.metadata.dataOrigin.packageName
+                        val weight: Double = it.weight.inGrams
                         return@mapIndexed hashMapOf(
                             "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
                             "uid" to uid,
-                            "weight" to weight
+                            "packageName" to packageName,
+                            "weight" to weight,
                         )
                     }
                     result.success(healthData)
@@ -445,10 +449,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         val zonedDateTime =
                             dateTimeWithOffsetOrDefault(it.time, it.zoneOffset)
                         val uid = it.metadata.id
+                        val packageName: String = it.metadata.dataOrigin.packageName
                         val bodyFat = it.percentage.value
                         return@mapIndexed hashMapOf(
                             "zonedDateTime" to zonedDateTime.toInstant().toEpochMilli(),
                             "uid" to uid,
+                            "packageName" to packageName,
                             "bodyFat" to bodyFat
                         )
                     }
@@ -483,10 +489,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         val endZonedDateTime =
                             dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
                         val uid = it.metadata.id
+                        val packageName: String = it.metadata.dataOrigin.packageName
                         val hashMapData = hashMapOf<String, Any>(
                             "startDateTime" to startZonedDateTime.toInstant().toEpochMilli(),
                             "endDateTime" to endZonedDateTime.toInstant().toEpochMilli(),
                             "uid" to uid,
+                            "packageName" to packageName
                         )
                         if (it.biotin != null) {
                             //hashMapData["biotin"] = "${it.biotin!!.inGrams} grams"
