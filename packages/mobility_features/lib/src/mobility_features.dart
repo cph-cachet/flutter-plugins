@@ -47,7 +47,7 @@ class MobilityFeatures {
     if (_subscription != null) {
       await _subscription!.cancel();
     }
-    _subscription = stream.listen(_onData);
+    _subscription = await stream.listen(_onData);
   }
 
   Future<void> _handleInit() async {
