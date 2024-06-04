@@ -59,9 +59,9 @@ class Health {
         : (await _deviceInfo.iosInfo).identifierForVendor;
 
     _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
-    if (_useHealthConnectIfAvailable) {
-      await _channel.invokeMethod('useHealthConnectIfAvailable');
-    }
+    await _channel.invokeMethod('useHealthConnectIfAvailable', {
+      "useHealthConnect": useHealthConnectIfAvailable,
+    });
   }
 
   /// Is this plugin using Health Connect (true) or Google Fit (false)?

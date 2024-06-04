@@ -2461,7 +2461,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
 
         fun useHealthConnectIfAvailable(call: MethodCall, result: Result) {
-                useHealthConnectIfAvailable = true
+                val useHealthConnect = call.argument<Boolean>("useHealthConnect")!!
+                useHealthConnectIfAvailable = useHealthConnect
                 result.success(null)
         }
 
