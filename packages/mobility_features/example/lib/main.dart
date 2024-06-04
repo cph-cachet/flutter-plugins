@@ -226,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
             "${_mobilityContext.numberOfSignificantPlaces}", placeIcon),
         entry(
             "Home Stay",
-            _mobilityContext.homeStay! < 0
+            _mobilityContext.homeStay == null || _mobilityContext.homeStay! < 0
                 ? "?"
                 : "${(_mobilityContext.homeStay! * 100).toStringAsFixed(1)}%",
             homeStayIcon),
