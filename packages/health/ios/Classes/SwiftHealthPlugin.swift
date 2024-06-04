@@ -70,6 +70,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
     let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
     let NUTRITION = "NUTRITION"
+    let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
+
 
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -686,6 +688,14 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     samplesCategory = samplesCategory.filter { $0.value == 4 }
                 }
                 let categories = samplesCategory.map { sample -> NSDictionary in
+                    var metadata: [String: Any] = [:]
+
+                    if let sampleMetadata = sample.metadata {
+                        for (key, value) in sampleMetadata {
+                            metadata[key] = value
+                        }
+                    }
+
                     return [
                         "uuid": "\(sample.uuid)",
                         "value": sample.value,
@@ -693,7 +703,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "is_manual_entry": sample.metadata?[HKMetadataKeyWasUserEntered] != nil
+                        "is_manual_entry": sample.metadata?[HKMetadataKeyWasUserEntered] != nil,
+                        "metadata": metadata
                     ]
                 }
                 DispatchQueue.main.async {
@@ -1194,6 +1205,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[SLEEP_AWAKE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[SLEEP_DEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[SLEEP_REM] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[MENSTRUATION_FLOW] = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
+
 
             dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
             dataTypesDict[WORKOUT] = HKSampleType.workoutType()

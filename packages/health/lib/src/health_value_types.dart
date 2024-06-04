@@ -417,3 +417,111 @@ class NutritionHealthValue extends HealthValue {
   int get hashCode =>
       Object.hash(protein, calories, fat, name, carbs, caffeine);
 }
+
+enum MenstrualFlow {
+  unspecified,
+  none,
+  light,
+  medium,
+  heavy,
+  spotting;
+
+  static MenstrualFlow fromGoogleFit(int value) {
+    switch (value) {
+      case 1:
+        return MenstrualFlow.spotting;
+      case 2:
+        return MenstrualFlow.light;
+      case 3:
+        return MenstrualFlow.medium;
+      case 4:
+        return MenstrualFlow.heavy;
+      default:
+        return MenstrualFlow.none;
+    }
+  }
+
+  static MenstrualFlow fromHealthKit(int value) {
+    switch (value) {
+      case 1:
+        return MenstrualFlow.unspecified;
+      case 2:
+        return MenstrualFlow.light;
+      case 3:
+        return MenstrualFlow.medium;
+      case 4:
+        return MenstrualFlow.heavy;
+      case 5:
+        return MenstrualFlow.none;
+      default:
+        return MenstrualFlow.unspecified;
+    }
+  }
+}
+
+/// A [HealthValue] object for menstrual flow.
+///
+/// Parameters:
+/// * [flowValue] - the flow value
+/// * [isStartOfCycle] - indicator whether or not this occurrence is the first day of the menstrual cycle
+@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+class MenstruationFlowHealthValue extends HealthValue {
+  final MenstrualFlow? flow;
+  final bool? isStartOfCycle;
+  final DateTime dateTime;
+  final bool selfReported;
+
+  MenstruationFlowHealthValue({
+    required this.flow,
+    required this.isStartOfCycle,
+    required this.dateTime,
+    required this.selfReported,
+  });
+
+  @override
+  String toString() =>
+      "flow: ${flow?.name}, startOfCycle: $isStartOfCycle, dateTime: $dateTime, selfReported: $selfReported";
+
+  factory MenstruationFlowHealthValue.fromHealthDataPoint(dynamic dataPoint) {
+    // Parse flow value safely
+    final flowValueIndex = dataPoint['value'] as int? ?? 0;
+    MenstrualFlow? menstrualFlow;
+    if (Platform.isAndroid) {
+      menstrualFlow = MenstrualFlow.fromGoogleFit(flowValueIndex);
+    } else if (Platform.isIOS) {
+      menstrualFlow = MenstrualFlow.fromHealthKit(flowValueIndex);
+    }
+
+    return MenstruationFlowHealthValue(
+      flow: menstrualFlow,
+      isStartOfCycle:
+          dataPoint['metadata']?['HKMetadataKeyMenstrualCycleStart'] as bool?,
+      dateTime:
+          DateTime.fromMillisecondsSinceEpoch(dataPoint['date_from'] as int),
+      selfReported: dataPoint['self_reported'] as bool? ?? false,
+    );
+  }
+
+  @override
+  Function get fromJsonFunction => _$MenstruationFlowHealthValueFromJson;
+
+  factory MenstruationFlowHealthValue.fromJson(Map<String, dynamic> json) =>
+      FromJsonFactory().fromJson(json) as MenstruationFlowHealthValue;
+
+  @override
+  Map<String, dynamic> toJson() => _$MenstruationFlowHealthValueToJson(this);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is MenstruationFlowHealthValue &&
+            runtimeType == other.runtimeType &&
+            flow == other.flow &&
+            isStartOfCycle == other.isStartOfCycle &&
+            dateTime == other.dateTime &&
+            selfReported == other.selfReported;
+  }
+
+  @override
+  int get hashCode => Object.hash(flow, isStartOfCycle, dateTime, selfReported);
+}
