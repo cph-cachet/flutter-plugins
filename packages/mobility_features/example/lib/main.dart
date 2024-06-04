@@ -2,6 +2,7 @@ library mobility_app;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:carp_background_location/carp_background_location.dart';
 import 'package:mobility_features/mobility_features.dart';
 
@@ -105,6 +106,15 @@ class _MyHomePageState extends State<MyHomePage> {
   /// * Location streaming to MobilityContext
   /// * Subscribe to MobilityContext updates
   void streamInit() async {
+    await _requestNotificationPermission();
+    await _requestManageExternalStoragePermission();
+
+    // ask for location permissions, if not already granted
+    if (!await isLocationAlwaysGranted()) {
+      await _requestLocationPermission();
+      await askForLocationAlwaysPermission();
+    }
+
     locationStream = LocationManager().locationStream;
 
     // subscribe to location stream - in case this is needed in the app
@@ -121,11 +131,69 @@ class _MyHomePageState extends State<MyHomePage> {
             DateTime.now()));
 
     // provide the [MobilityFeatures] instance with the LocationSample stream
-    MobilityFeatures().startListening(locationSampleStream);
+    await MobilityFeatures().startListening(locationSampleStream);
 
     // start listening to incoming MobilityContext objects
     mobilitySubscription =
-        MobilityFeatures().contextStream.listen(onMobilityContext);
+        await MobilityFeatures().contextStream.listen(onMobilityContext);
+  }
+
+  Future<bool> isLocationAlwaysGranted() async {
+    bool granted = false;
+    try {
+      granted = await Permission.locationAlways.isGranted;
+    } catch (e) {
+      print(e);
+    }
+    return granted;
+  }
+
+  /// Tries to ask for "location always" permissions from the user.
+  /// Returns `true` if successful, `false` otherwise.
+  Future<bool> askForLocationAlwaysPermission() async {
+    bool granted = false;
+    try {
+      granted = await Permission.locationAlways.isGranted;
+    } catch (e) {
+      print(e);
+    }
+
+    if (!granted) {
+      granted =
+          await Permission.locationAlways.request() == PermissionStatus.granted;
+    }
+
+    return granted;
+  }
+
+  Future<void> _requestLocationPermission() async {
+    final result = await Permission.location.request();
+
+    if (result == PermissionStatus.granted) {
+      print('GRANTED'); // ignore: avoid_print
+    } else {
+      print('NOT GRANTED'); // ignore: avoid_print
+    }
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    final result = await Permission.notification.request();
+
+    if (result == PermissionStatus.granted) {
+      print('NOTIFICATION GRANTED');
+    } else {
+      print('NOTIFICATION NOT GRANTED');
+    }
+  }
+
+  Future<void> _requestManageExternalStoragePermission() async {
+    final result = await Permission.manageExternalStorage.request();
+
+    if (result == PermissionStatus.granted) {
+      print('MANAGE_EXTERNAL_STORAGE GRANTED');
+    } else {
+      print('MANAGE_EXTERNAL_STORAGE NOT GRANTED');
+    }
   }
 
   /// Called whenever location changes.
