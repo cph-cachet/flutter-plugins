@@ -7,6 +7,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let healthStore = HKHealthStore()
     var healthDataTypes = [HKSampleType]()
     var healthDataQuantityTypes = [HKQuantityType]()
+    var characteristicsDataTypes = [HKCharacteristicType]()
     var heartRateEventTypes = Set<HKSampleType>()
     var headacheType = Set<HKSampleType>()
     var allDataTypes = Set<HKSampleType>()
@@ -14,6 +15,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     var dataQuantityTypesDict: [String: HKQuantityType] = [:]
     var unitDict: [String: HKUnit] = [:]
     var workoutActivityTypeMap: [String: HKWorkoutActivityType] = [:]
+    var characteristicsTypesDict: [String: HKCharacteristicType] = [:]
 
     // Health Data Type Keys
     let ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
@@ -70,6 +72,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
     let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
     let NUTRITION = "NUTRITION"
+    let BIRTH_DATE = "BIRTH_DATE"
+    let GENDER = "GENDER"
+    let BLOOD_TYPE = "BLOOD_TYPE"
 
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -241,12 +246,19 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 result(success)
                 return
             }
+            if let characteristicType = characteristicsTypesDict[type] {
+                let characteristicSuccess = hasPermission(type: characteristicType, access: permissions[index])
+                if (characteristicSuccess == nil || characteristicSuccess == false) {
+                    result(characteristicSuccess)
+                    return
+                }
+            }
         }
 
-        result(true)
+        result(false)
     }
 
-    func hasPermission(type: HKSampleType, access: Int) -> Bool? {
+    func hasPermission(type: HKObjectType, access: Int) -> Bool? {
 
         if #available(iOS 13.0, *) {
             let status = healthStore.authorizationStatus(for: type)
@@ -272,7 +284,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             throw PluginError(message: "Invalid Arguments!")
         }
 
-        var typesToRead = Set<HKSampleType>()
+        var typesToRead = Set<HKObjectType>()
         var typesToWrite = Set<HKSampleType>()
         for (index, key) in types.enumerated() {
             if (key == NUTRITION) {
@@ -297,6 +309,17 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 default:
                     typesToRead.insert(dataType)
                     typesToWrite.insert(dataType)
+                }
+                if let characteristicsType = characteristicsTypesDict[key] {
+                    let access = permissions[index]
+                    switch access {
+                    case 0:
+                        typesToRead.insert(characteristicsType)
+                    case 1:
+                        throw PluginError(message: "Can not ask for reading permissions to the type of \(characteristicsType)")
+                    default:
+                        break
+                    }
                 }
             }
         }
@@ -611,6 +634,53 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         var unit: HKUnit?
         if let dataUnitKey = dataUnitKey {
             unit = unitDict[dataUnitKey]
+        }
+
+        let sourceIdForCharacteristic = "com.apple.Health"
+        let sourceNameForCharacteristic = "Health"
+
+        switch(dataTypeKey) {
+        case "BIRTH_DATE":
+            let dateOfBirth = getBirthDate()
+            result([
+            [
+                "value": dateOfBirth?.timeIntervalSince1970,
+                "date_from": Int(dateFrom.timeIntervalSince1970 * 1000),
+                "date_to": Int(dateTo.timeIntervalSince1970 * 1000),
+                "source_id": sourceIdForCharacteristic,
+                "source_name": sourceNameForCharacteristic,
+                "is_manual_entry": true
+                ]
+            ])
+            return
+        case "GENDER":
+            let gender = getGender()
+            result([
+            [
+                "value": gender?.rawValue,
+                "date_from": Int(dateFrom.timeIntervalSince1970 * 1000),
+                "date_to": Int(dateTo.timeIntervalSince1970 * 1000),
+                "source_id": sourceIdForCharacteristic,
+                "source_name": sourceNameForCharacteristic,
+                "is_manual_entry": true
+                ]
+            ])
+            return
+        case "BLOOD_TYPE":
+            let bloodType = getBloodType()
+            result([
+            [
+                "value": bloodType?.rawValue,
+                "date_from": Int(dateFrom.timeIntervalSince1970 * 1000),
+                "date_to": Int(dateTo.timeIntervalSince1970 * 1000),
+                "source_id": sourceIdForCharacteristic,
+                "source_name": sourceNameForCharacteristic,
+                "is_manual_entry": true
+                ]
+            ])
+            return
+        default:
+            break
         }
 
         var predicate = HKQuery.predicateForSamples(
@@ -1000,6 +1070,39 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         return dataType_
     }
 
+    func getGender() -> HKBiologicalSex? {
+        var bioSex:HKBiologicalSex?
+        do {
+            bioSex = try healthStore.biologicalSex().biologicalSex
+        } catch {
+            bioSex = nil
+            print("Error retrieving biologicalSex: \(error)")
+        }
+        return bioSex
+    }
+
+    func getBirthDate() -> Date? {
+        var dob:Date?
+        do {
+          dob = try healthStore.dateOfBirthComponents().date
+        } catch {
+          dob = nil
+          print("Error retrieving date of birth: \(error)")
+        }
+        return dob
+    }
+
+    func getBloodType() -> HKBloodType? {
+        var bloodType:HKBloodType?
+        do {
+            bloodType = try healthStore.bloodType().bloodType
+        } catch {
+            bloodType = nil
+            print("Error retrieving blood type: \(error)")
+        }
+        return bloodType
+    }
+
     func initializeTypes() {
         // Initialize units
         unitDict[GRAM] = HKUnit.gram()
@@ -1201,6 +1304,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 forIdentifier: .food)!
 
             healthDataTypes = Array(dataTypesDict.values)
+
+            characteristicsTypesDict[BIRTH_DATE] = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
+            characteristicsTypesDict[GENDER] = HKObjectType.characteristicType(forIdentifier: .biologicalSex)!
+            characteristicsTypesDict[BLOOD_TYPE] = HKObjectType.characteristicType(forIdentifier: .bloodType)!
+            characteristicsDataTypes = Array(characteristicsTypesDict.values)
         }
 
         // Set up iOS 11 specific types (ordinary health data quantity types)
