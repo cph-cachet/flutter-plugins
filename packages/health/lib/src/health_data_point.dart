@@ -99,21 +99,16 @@ class HealthDataPoint {
   ) {
     // Handling different [HealthValue] types
     HealthValue value = switch (dataType) {
-      HealthDataType.AUDIOGRAM =>
-        AudiogramHealthValue.fromHealthDataPoint(dataPoint),
-      HealthDataType.WORKOUT =>
-        WorkoutHealthValue.fromHealthDataPoint(dataPoint),
-      HealthDataType.ELECTROCARDIOGRAM =>
-        ElectrocardiogramHealthValue.fromHealthDataPoint(dataPoint),
-      HealthDataType.NUTRITION =>
-        NutritionHealthValue.fromHealthDataPoint(dataPoint),
+      HealthDataType.AUDIOGRAM => AudiogramHealthValue.fromHealthDataPoint(dataPoint),
+      HealthDataType.WORKOUT => WorkoutHealthValue.fromHealthDataPoint(dataPoint),
+      HealthDataType.ELECTROCARDIOGRAM => ElectrocardiogramHealthValue.fromHealthDataPoint(dataPoint),
+      HealthDataType.NUTRITION => NutritionHealthValue.fromHealthDataPoint(dataPoint),
+      HealthDataType.MENSTRUATION_FLOW => MenstruationFlowHealthValue.fromHealthDataPoint(dataPoint),
       _ => NumericHealthValue.fromHealthDataPoint(dataPoint),
     };
 
-    final DateTime from =
-        DateTime.fromMillisecondsSinceEpoch(dataPoint['date_from'] as int);
-    final DateTime to =
-        DateTime.fromMillisecondsSinceEpoch(dataPoint['date_to'] as int);
+    final DateTime from = DateTime.fromMillisecondsSinceEpoch(dataPoint['date_from'] as int);
+    final DateTime to = DateTime.fromMillisecondsSinceEpoch(dataPoint['date_to'] as int);
     final String sourceId = dataPoint["source_id"] as String;
     final String sourceName = dataPoint["source_name"] as String;
     final bool isManualEntry = dataPoint["is_manual_entry"] as bool? ?? false;

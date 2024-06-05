@@ -113,6 +113,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         private var DINNER = "DINNER"
         private var SNACK = "SNACK"
         private var MEAL_UNKNOWN = "UNKNOWN"
+        private var MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
 
         private var TOTAL_CALORIES_BURNED = "TOTAL_CALORIES_BURNED"
 
@@ -582,6 +583,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         SLEEP_DEEP -> DataType.TYPE_SLEEP_SEGMENT
                         WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
                         NUTRITION -> DataType.TYPE_NUTRITION
+                        MENSTRUATION_FLOW -> HealthDataTypes.TYPE_MENSTRUATION
                         else -> throw IllegalArgumentException("Unsupported dataType: $type")
                 }
         }
@@ -610,6 +612,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         SLEEP_DEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
                         WORKOUT -> Field.FIELD_ACTIVITY
                         NUTRITION -> Field.FIELD_NUTRIENTS
+                        MENSTRUATION_FLOW -> HealthFields.FIELD_MENSTRUAL_FLOW
                         else -> throw IllegalArgumentException("Unsupported dataType: $type")
                 }
         }
