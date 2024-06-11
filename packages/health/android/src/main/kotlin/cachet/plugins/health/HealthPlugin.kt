@@ -12,6 +12,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -49,6 +51,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import io.flutter.embedding.engine.plugins.lifecycle.HiddenLifecycleReference
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -73,6 +76,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         private var useHealthConnectIfAvailable: Boolean = false
         private var healthConnectRequestPermissionsLauncher: ActivityResultLauncher<Set<String>>? =
                         null
+        private var lifecycleState:Lifecycle.Event = Lifecycle.Event.ON_START
         private lateinit var healthConnectClient: HealthConnectClient
         private lateinit var scope: CoroutineScope
 
@@ -2418,6 +2422,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                 (activity as ComponentActivity).registerForActivityResult(
                                                 requestPermissionActivityContract
                                 ) { granted -> onHealthConnectPermissionCallback(granted) }
+
+                (binding.lifecycle as HiddenLifecycleReference)
+                        .lifecycle
+                        .addObserver(LifecycleEventObserver { source, event ->
+                                lifecycleState = event
+                                healthConnectInBackground = event != Lifecycle.Event.ON_START && event != Lifecycle.Event.ON_RESUME                
+                        })
         }
 
         override fun onDetachedFromActivityForConfigChanges() {
@@ -2439,6 +2450,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         /** HEALTH CONNECT BELOW */
         var healthConnectAvailable = false
         var healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
+        var healthConnectInBackground = false
 
         fun checkAvailability() {
                 healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
@@ -2632,6 +2644,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
                 val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
                 val healthConnectData = mutableListOf<Map<String, Any?>>()
+
+                if (healthConnectInBackground) {
+                        Log.e(
+                                "FLUTTER_HEALTH::",
+                                "Must be in foreground to read the "+dataType+" data from Health connect!"
+                        )
+                        result.success(null)
+                        return
+                }
+
                 scope.launch {
                         MapToHCType[dataType]?.let { classType ->
                                 val records = mutableListOf<Record>()
@@ -2861,6 +2883,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
                 val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
                 val healthConnectData = mutableListOf<Map<String, Any?>>()
+
+                if (healthConnectInBackground) {
+                        Log.e(
+                                "FLUTTER_HEALTH::",
+                                "Must be in foreground to read the "+dataType+" data from Health connect!"
+                        )
+                        result.success(null)
+                        return
+                }
+
                 scope.launch {
                         MapToHCAggregateMetric[dataType]?.let { metricClassType ->
                                 val request =
