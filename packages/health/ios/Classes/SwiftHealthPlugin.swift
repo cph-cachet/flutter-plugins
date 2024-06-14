@@ -945,14 +945,19 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let arguments = call.arguments as? NSDictionary
         let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
         let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
+        let includeManualEntry = (arguments?["includeManualEntry"] as? Bool) ?? true
 
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
 
         let sampleType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        let predicate = HKQuery.predicateForSamples(
+        var predicate = HKQuery.predicateForSamples(
             withStart: dateFrom, end: dateTo, options: .strictStartDate)
+        if (!includeManualEntry) {
+            let manualPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+            predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
+        }
 
         let query = HKStatisticsQuery(
             quantityType: sampleType,
