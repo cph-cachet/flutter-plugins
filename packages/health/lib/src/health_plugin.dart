@@ -54,13 +54,12 @@ class Health {
   /// If [useHealthConnectIfAvailable] is true, Google Health Connect on
   /// Android will be used. Has no effect on iOS.
   Future<void> configure({bool useHealthConnectIfAvailable = false}) async {
-    _deviceId ??= Platform.isAndroid
-        ? (await _deviceInfo.androidInfo).id
-        : (await _deviceInfo.iosInfo).identifierForVendor;
-
-    _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
-    if (_useHealthConnectIfAvailable) {
+    if (Platform.isAndroid) {
+      _deviceId = (await _deviceInfo.androidInfo).id;
+      _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
       await _channel.invokeMethod('useHealthConnectIfAvailable');
+    } else {
+      _deviceId = (await _deviceInfo.iosInfo).identifierForVendor;
     }
   }
 
