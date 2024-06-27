@@ -14,6 +14,7 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.HydrationRecord
 import androidx.health.connect.client.records.metadata.DataOrigin
 
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -53,6 +54,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     private var BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
     private var WEIGHT = "WEIGHT"
     private var NUTRITION = "NUTRITION"
+    private var WATER = "WATER"
 
     // The scope for the UI thread
     private val mainScope = CoroutineScope(Dispatchers.Main)
@@ -379,24 +381,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val type = call.argument<String>("dataTypeKey")!!
         val startDate = call.argument<String>("startDate")!!
         val endDate = call.argument<String>("endDate")!!
-
+        val startDateObject = ZonedDateTime.parse(
+            startDate,
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+        )
+        val endDateObject = ZonedDateTime.parse(
+            endDate,
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+        )
         mResult = result
 
         when (type) {
             WEIGHT -> {
-                val startDateInner = ZonedDateTime.parse(
-                    startDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-                )
-                val endDateInner = ZonedDateTime.parse(
-                    endDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-                )
                 val request = ReadRecordsRequest(
                     recordType = WeightRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(
-                        startDateInner.toInstant(),
-                        endDateInner.toInstant()
+                        startDateObject.toInstant(),
+                        endDateObject.toInstant()
                     )
                 )
 
@@ -426,19 +427,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
             }
             BODY_FAT_PERCENTAGE -> {
-                val startDateInner = ZonedDateTime.parse(
-                    startDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-                )
-                val endDateInner = ZonedDateTime.parse(
-                    endDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-                )
                 val request = ReadRecordsRequest(
                     recordType = BodyFatRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(
-                        startDateInner.toInstant(),
-                        endDateInner.toInstant()
+                        startDateObject.toInstant(),
+                        endDateObject.toInstant()
                     )
                 )
                 try {
@@ -464,20 +457,47 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                     result.success(false)
                 }
             }
+             WATER -> {
+                 val request = ReadRecordsRequest(
+                     recordType = HydrationRecord::class,
+                     timeRangeFilter = TimeRangeFilter.between(
+                         startDateObject.toInstant(),
+                         endDateObject.toInstant()
+                     )
+                 )
+                 try {
+                     val response = healthConnectClient.readRecords(request)
+                     val dataList: List<HydrationRecord> = response.records
+
+                     val healthData = dataList.mapIndexed { _, it ->
+                         val startZonedDateTime =
+                             dateTimeWithOffsetOrDefault(it.startTime, it.startZoneOffset)
+                         val endZonedDateTime =
+                             dateTimeWithOffsetOrDefault(it.endTime, it.endZoneOffset)
+                         val uid = it.metadata.id
+                         val packageName: String = it.metadata.dataOrigin.packageName
+                         val volume = it.volume.inMilliliters
+                         return@mapIndexed hashMapOf(
+                             "startDateTime" to startZonedDateTime.toInstant().toEpochMilli(),
+                             "endDateTime" to endZonedDateTime.toInstant().toEpochMilli(),
+                             "uid" to uid,
+                             "packageName" to packageName,
+                             "volume" to volume
+                         )
+                     }
+                     result.success(healthData)
+                 } catch (e: Exception) {
+                     Log.e("FLUTTER_HEALTH", e.message, null)
+                     result.success(false)
+                 }
+
+             }
             NUTRITION -> {
-                val startDateInner = ZonedDateTime.parse(
-                    startDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-                )
-                val endDateInner = ZonedDateTime.parse(
-                    endDate,
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-                )
                 val request = ReadRecordsRequest(
                     recordType = NutritionRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(
-                        startDateInner.toInstant(),
-                        endDateInner.toInstant()
+                        startDateObject.toInstant(),
+                        endDateObject.toInstant()
                     ),
                 )
                 try {
@@ -785,6 +805,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                 BODY_FAT_PERCENTAGE -> {
                     BodyFatRecord::class
                 }
+                WATER -> {
+                    HydrationRecord::class
+                }
                 else -> throw IllegalArgumentException("Unknown access type $access")
             }
             when (access) {
@@ -909,9 +932,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
 
         mainScope.launch {
             when (call.method) {
-                "hasPermissionsHealthConnect" -> {
-                    hasPermissionHealthConnect(call, result)
-                }
+                "hasPermissionsHealthConnect" -> hasPermissionHealthConnect(call, result)
                 "writeDataHealthConnect" -> {
                     try {
                         writeDataHealthConnect(call, result)
@@ -919,21 +940,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
                         Log.e("FLUTTER_HEALTH", e.message, null)
                     }
                 }
-                "getHealthConnectData" -> {
-                    getHealthConnectData(call, result)
-                }
-                "deleteHealthConnectData" -> {
-                    deleteHealthConnectData(call, result)
-                }
-                "requestHealthConnectPermission" -> {
-                    requestHealthConnectPermission(call, result)
-                }
-                "isHealthConnectAvailable" -> {
-                    isHealthConnectAvailable(activityContext, call, result)
-                }
-                "deleteHealthConnectDataByDateRange" -> {
-                    deleteHealthConnectDataByDateRange(call, result)
-                }
+                "getHealthConnectData" -> getHealthConnectData(call, result)
+                "deleteHealthConnectData" -> deleteHealthConnectData(call, result)
+                "requestHealthConnectPermission" -> requestHealthConnectPermission(call, result)
+                "isHealthConnectAvailable" -> isHealthConnectAvailable(activityContext, call, result)
+                "deleteHealthConnectDataByDateRange" -> deleteHealthConnectDataByDateRange(call, result)
                 else -> result.notImplemented()
             }
         }

@@ -18,3 +18,4 @@ part 'src/models/hc_energy.dart';
 part 'src/models/hc_mass.dart';
 part 'src/models/hc_nutrition.dart';
 part 'src/models/hc_weight.dart';
+part 'src/models/hc_water.dart';
