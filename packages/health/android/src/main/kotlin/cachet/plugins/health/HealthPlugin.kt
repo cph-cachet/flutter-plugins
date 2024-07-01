@@ -914,53 +914,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         result.success(false)
                         return
                 }
-                // Commented nutrients are not supported by Google Fit
+
                 val startTime = call.argument<Long>("start_time")!!
                 val endTime = call.argument<Long>("end_time")!!
                 val calories = call.argument<Double>("calories")
-                val protein = call.argument<Double>("protein") as Double?
                 val carbs = call.argument<Double>("carbs") as Double?
+                val protein = call.argument<Double>("protein") as Double?
                 val fat = call.argument<Double>("fat") as Double?
-//                val caffeine = call.argument<Double>("caffeine") as Double?
-                val vitaminA = call.argument<Double>("vitamin_a") as Double?
-//                val b1Thiamine = call.argument<Double>("b1_thiamine") as Double?
-//                val b2Riboflavin = call.argument<Double>("b2_riboflavin") as Double?
-//                val b3Niacin = call.argument<Double>("b3_niacin") as Double?
-//                val b5PantothenicAcid = call.argument<Double>("b5_pantothenic_acid") as Double?
-//                val b6Pyridoxine = call.argument<Double>("b6_pyridoxine") as Double?
-//                val b7Biotin = call.argument<Double>("b7_biotin") as Double?
-//                val b9Folate = call.argument<Double>("b9_folate") as Double?
-//                val b12Cobalamin = call.argument<Double>("b12_cobalamin") as Double?
-                val vitaminC = call.argument<Double>("vitamin_c") as Double?
-//                val vitaminD = call.argument<Double>("vitamin_d") as Double?
-//                val vitaminE = call.argument<Double>("vitamin_e") as Double?
-//                val vitaminK = call.argument<Double>("vitamin_k") as Double?
-                val calcium = call.argument<Double>("calcium") as Double?
-//                val chloride = call.argument<Double>("chloride") as Double?
-                val cholesterol = call.argument<Double>("cholesterol") as Double?
-//                Choline is not yet supported by Health Connect
-//                val choline = call.argument<Double>("choline") as Double?
-//                val chromium = call.argument<Double>("chromium") as Double?
-//                val copper = call.argument<Double>("copper") as Double?
-                val fatUnsaturated = call.argument<Double>("fat_unsaturated") as Double?
-                val fatMonounsaturated = call.argument<Double>("fat_monounsaturated") as Double?
-                val fatPolyunsaturated = call.argument<Double>("fat_polyunsaturated") as Double?
-                val fatSaturated = call.argument<Double>("fat_saturated") as Double?
-                val fatTransMonoenoic = call.argument<Double>("fat_trans_monoenoic") as Double?
-                val fiber = call.argument<Double>("fiber") as Double?
-//                val iodine = call.argument<Double>("iodine") as Double?
-                val iron = call.argument<Double>("iron") as Double?
-//                val magnesium = call.argument<Double>("magnesium") as Double?
-//                val manganese = call.argument<Double>("manganese") as Double?
-//                val molybdenum = call.argument<Double>("molybdenum") as Double?
-//                val phosphorus = call.argument<Double>("phosphorus") as Double?
-                val potassium = call.argument<Double>("potassium") as Double?
-//                val selenium = call.argument<Double>("selenium") as Double?
-                val sodium = call.argument<Double>("sodium") as Double?
-                val sugar = call.argument<Double>("sugar") as Double?
-//                Water is not support on a food in Health Connect
-//                val water = call.argument<Double>("water") as Double?
-//                val zinc = call.argument<Double>("zinc") as Double?
             
 
                 val name = call.argument<String>("name")
@@ -970,6 +930,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
                 val typesBuilder = FitnessOptions.builder()
                 typesBuilder.addDataType(dataType, FitnessOptions.ACCESS_WRITE)
+
                 val dataSource =
                                 DataSource.Builder()
                                                 .setDataType(dataType)
@@ -983,24 +944,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                 .build()
 
                 val nutrients = mutableMapOf(Field.NUTRIENT_CALORIES to calories?.toFloat())
-                // These are the only supported nutrients in Google Fit
-                nutrients[Field.NUTRIENT_PROTEIN] = protein?.toFloat()
-                nutrients[Field.NUTRIENT_TOTAL_FAT] = fat?.toFloat()
-                nutrients[Field.NUTRIENT_TOTAL_CARBS] = carbs?.toFloat()
-                nutrients[Field.NUTRIENT_VITAMIN_A] = vitaminA?.toFloat()
-                nutrients[Field.NUTRIENT_VITAMIN_C] = vitaminC?.toFloat()
-                nutrients[Field.NUTRIENT_CALCIUM] = calcium?.toFloat()
-                nutrients[Field.NUTRIENT_CHOLESTEROL] = cholesterol?.toFloat()
-                nutrients[Field.NUTRIENT_UNSATURATED_FAT] = fatUnsaturated?.toFloat()
-                nutrients[Field.NUTRIENT_MONOUNSATURATED_FAT] = fatMonounsaturated?.toFloat()
-                nutrients[Field.NUTRIENT_POLYUNSATURATED_FAT] = fatPolyunsaturated?.toFloat()
-                nutrients[Field.NUTRIENT_SATURATED_FAT] = fatSaturated?.toFloat()
-                nutrients[Field.NUTRIENT_TRANS_FAT] = fatTransMonoenoic?.toFloat()
-                nutrients[Field.NUTRIENT_DIETARY_FIBER] = fiber?.toFloat()
-                nutrients[Field.NUTRIENT_IRON] = iron?.toFloat()
-                nutrients[Field.NUTRIENT_POTASSIUM] = potassium?.toFloat()
-                nutrients[Field.NUTRIENT_SODIUM] = sodium?.toFloat()
-                nutrients[Field.NUTRIENT_SUGAR] = sugar?.toFloat()
+                
+                if (carbs != null) {
+                        nutrients[Field.NUTRIENT_TOTAL_CARBS] = carbs.toFloat()
+                }
+
+                if (protein != null) {
+                        nutrients[Field.NUTRIENT_PROTEIN] = protein.toFloat()
+                }
+
+                if (fat != null) {
+                        nutrients[Field.NUTRIENT_TOTAL_FAT] = fat.toFloat()
+                }
 
                 val dataBuilder =
                                 DataPoint.builder(dataSource)
