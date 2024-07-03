@@ -205,16 +205,19 @@ class HealthFactory {
     DateTime? startTime,
     DateTime? endTime,
     double? value,
+    bool overwrite = false,
   }) async {
     if (startTime == null) throw ArgumentError("startTime must be not null");
     if (endTime == null) throw ArgumentError("endTime must be not null");
-    if (startTime.isAfter(endTime)) throw ArgumentError("startTime must be equal or earlier than endTime");
+    if (startTime.isAfter(endTime))
+      throw ArgumentError("startTime must be equal or earlier than endTime");
 
     Map<String, dynamic> args = {
       'value': value,
       'dataTypeKey': _enumToString(type),
       'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
+      'endTime': endTime.millisecondsSinceEpoch,
+      'overwrite': overwrite,
     };
     bool? success = await _channel.invokeMethod('writeData', args);
     return success ?? false;
