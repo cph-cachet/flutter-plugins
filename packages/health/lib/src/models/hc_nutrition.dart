@@ -570,11 +570,19 @@ class HealthConnectNutrition extends HealthConnectData {
     final newStartTime =
         startTime.isBefore(other.startTime) ? startTime : other.startTime;
     final newEndTime = endTime.isAfter(other.endTime) ? endTime : other.endTime;
+    final newPackageName =
+        packageName == other.packageName ? packageName : null;
+    final newName = name == other.name ? name : null;
+    final newMealType = mealType == other.mealType ? mealType : null;
     // TODO: check if all nutrients are used
     // TODO: add new nutrients
     return HealthConnectNutrition(
       newStartTime,
       newEndTime,
+      healthDataType: HealthDataType.NUTRITION,
+      packageName: newPackageName,
+      mealType: newMealType,
+      name: newName,
       energy: _addE(energy, other.energy),
       energyFromFat: _addE(energyFromFat, other.energyFromFat),
       protein: _add(protein, other.protein),
