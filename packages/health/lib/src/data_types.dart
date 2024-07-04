@@ -129,7 +129,6 @@ const List<HealthDataType> _dataTypeKeysIOS = [
   HealthDataType.DIETARY_FAT_UNSATURATED,
   HealthDataType.DIETARY_FAT_POLYUNSATURATED,
   HealthDataType.DIETARY_FAT_MONOUNSATURATED,
-  HealthDataType.DIETARY_FAT_TRANS,
   HealthDataType.DIETARY_CHOLESTEROL,
   HealthDataType.DIETARY_SODIUM,
   HealthDataType.DIETARY_POTASSIUM,
@@ -193,10 +192,6 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENTAGE,
   HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
-  HealthDataType.DIETARY_CARBS_CONSUMED: HealthDataUnit.GRAMS,
-  HealthDataType.DIETARY_ENERGY_CONSUMED: HealthDataUnit.CALORIES,
-  HealthDataType.DIETARY_FATS_CONSUMED: HealthDataUnit.GRAMS,
-  HealthDataType.DIETARY_PROTEIN_CONSUMED: HealthDataUnit.GRAMS,
   HealthDataType.ELECTRODERMAL_ACTIVITY: HealthDataUnit.SIEMENS,
   HealthDataType.FORCED_EXPIRATORY_VOLUME: HealthDataUnit.LITER,
   HealthDataType.HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
@@ -224,6 +219,43 @@ const Map<HealthDataType, HealthDataUnit> _dataTypeToUnit = {
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECONDS,
+
+  // Nutrients
+  HealthDataType.DIETARY_ENERGY_CONSUMED: HealthDataUnit.CALORIES,
+  HealthDataType.DIETARY_PROTEIN_CONSUMED: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_FATS_CONSUMED: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_CARBS_CONSUMED: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_FAT_SATURATED: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_FAT_UNSATURATED: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_FAT_POLYUNSATURATED: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_FAT_MONOUNSATURATED: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_CHOLESTEROL: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_SODIUM: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_POTASSIUM: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_FIBER: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_SUGAR: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_VITAMIN_A: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_THIAMIN: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_RIBOFLAVIN: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_NIACIN: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_PANTOTHENIC_ACID: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_VITAMIN_B6: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_VITAMIN_B12: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_VITAMIN_C: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_VITAMIN_D: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_VITAMIN_E: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_VITAMIN_K: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_FOLATE: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_CALCIUM: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_IRON: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_MAGNESIUM: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_PHOSPHORUS: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_ZINC: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_WATER: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_CAFFEINE: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_COPPER: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_MANGANESE: HealthDataUnit.GRAMS,
+  HealthDataType.DIETARY_SELENIUM: HealthDataUnit.GRAMS,
 };
 
 const HealthDataTypeJsonValue = {
@@ -280,7 +312,10 @@ const HealthDataUnitJsonValue = {
   HealthDataUnit.LITER: 'liter',
 };
 
-const PlatformTypeJsonValue = {PlatformType.IOS: 'ios', PlatformType.ANDROID: 'android'};
+const PlatformTypeJsonValue = {
+  PlatformType.IOS: 'ios',
+  PlatformType.ANDROID: 'android',
+};
 
 /// List of all [HealthDataPoint] units.
 enum HealthDataUnit {
