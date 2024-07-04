@@ -341,7 +341,6 @@ class HealthFactory {
     final device = message["deviceId"];
     final unit = _dataTypeToUnit[dataType]!;
     final list = dataPoints.map<HealthDataPoint>((e) {
-      print(message);
       final num value = e['value'];
       final DateTime from = DateTime.fromMillisecondsSinceEpoch(e['date_from']);
       final DateTime to = DateTime.fromMillisecondsSinceEpoch(e['date_to']);
@@ -469,7 +468,6 @@ class HealthFactory {
     List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
     final bool? isAuthorized =
         await _channel.invokeMethod('requestHealthConnectPermission', {'types': keys, "permissions": mPermissions});
-    print("$isAuthorized");
     return isAuthorized ?? false;
   }
 
