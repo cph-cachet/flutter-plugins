@@ -125,7 +125,7 @@ class HealthDataPoint {
     final bool isManualEntry = dataPoint["is_manual_entry"] as bool? ?? false;
     final Map<String, dynamic>? metadata = dataPoint["metadata"] == null
         ? null
-        : Map.from(dataPoint["metadata"] as Map<String, dynamic>);
+        : Map<String, dynamic>.from(dataPoint['metadata'] as Map);
     final unit = dataTypeToUnit[dataType] ?? HealthDataUnit.UNKNOWN_UNIT;
 
     // Set WorkoutSummary, if available.

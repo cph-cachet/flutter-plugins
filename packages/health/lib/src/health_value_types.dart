@@ -340,8 +340,7 @@ class InsulinDeliveryHealthValue extends HealthValue {
 
     final metadata = dataPoint['metadata'] == null
         ? null
-        : Map<String, dynamic>.from(
-            dataPoint['metadata'] as Map<String, dynamic>);
+        : Map<String, dynamic>.from(dataPoint['metadata'] as Map);
     final reasonIndex =
         metadata == null || !metadata.containsKey('HKInsulinDeliveryReason')
             ? 0
