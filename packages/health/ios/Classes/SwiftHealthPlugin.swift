@@ -475,30 +475,20 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         var nutrition = Set<HKSample>()
 
-        if(calories > 0) {
-            let caloriesSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryEnergyConsumed)!, quantity: HKQuantity(unit: HKUnit.kilocalorie(), doubleValue: calories), start: dateFrom, end: dateTo, metadata: metadata)
-            nutrition.insert(caloriesSample)
-        }
-
-        if(carbs > 0) {
-            let carbsSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: carbs), start: dateFrom, end: dateTo, metadata: metadata)
-            nutrition.insert(carbsSample)
-        }
-
-        if(protein > 0) {
-            let proteinSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryProtein)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: protein), start: dateFrom, end: dateTo, metadata: metadata)
-            nutrition.insert(proteinSample)
-        }
-
-        if(fat > 0) {
-            let fatSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryFatTotal)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: fat), start: dateFrom, end: dateTo, metadata: metadata)
-            nutrition.insert(fatSample)
-        }
-
-        if(caffeine > 0) {
-            let caffeineSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryCaffeine)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: caffeine), start: dateFrom, end: dateTo, metadata: metadata)
-            nutrition.insert(caffeineSample)
-        }
+        let caloriesSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryEnergyConsumed)!, quantity: HKQuantity(unit: HKUnit.kilocalorie(), doubleValue: calories), start: dateFrom, end: dateTo, metadata: metadata)
+        nutrition.insert(caloriesSample)
+        
+        let carbsSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: carbs), start: dateFrom, end: dateTo, metadata: metadata)
+        nutrition.insert(carbsSample)
+        
+        let proteinSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryProtein)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: protein), start: dateFrom, end: dateTo, metadata: metadata)
+        nutrition.insert(proteinSample)
+        
+        let fatSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryFatTotal)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: fat), start: dateFrom, end: dateTo, metadata: metadata)
+        nutrition.insert(fatSample)
+        
+        let caffeineSample = HKQuantitySample(type: HKSampleType.quantityType(forIdentifier: .dietaryCaffeine)!, quantity: HKQuantity(unit: HKUnit.gram(), doubleValue: caffeine), start: dateFrom, end: dateTo, metadata: metadata)
+        nutrition.insert(caffeineSample)
         
         if #available(iOS 15.0, *){
             let type = HKCorrelationType.correlationType(forIdentifier: HKCorrelationTypeIdentifier.food)!
