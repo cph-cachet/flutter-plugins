@@ -2194,15 +2194,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
 
         /**
-         * Revokes access to Google Fit using the `disableFit`-method.
+         * Revokes access to Health Connect using `revokeAllPermissions` and Google Fit using the `disableFit`-method.
          *
          * Note: Using the `revokeAccess` creates a bug on android when trying to reapply for
          * permissions afterwards, hence `disableFit` was used.
+         * Note: When using `revokePermissions` with Health Connect, the app must be completely killed
+         * for it to take effect.
          */
         private fun revokePermissions(call: MethodCall, result: Result) {
                 if (useHealthConnectIfAvailable && healthConnectAvailable) {
-                        result.notImplemented()
-                        return
+                        scope.launch {
+                                Log.i("Health", "Disabling Health Connect")
+                                healthConnectClient.permissionController.revokeAllPermissions()
+                        }
+                        result.success(true)
                 }
                 if (context == null) {
                         result.success(false)
