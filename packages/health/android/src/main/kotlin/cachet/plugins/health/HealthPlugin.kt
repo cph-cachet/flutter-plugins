@@ -2230,6 +2230,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
                 val start = call.argument<Long>("startTime")!!
                 val end = call.argument<Long>("endTime")!!
+                val includeManualEntry = call.argument<Boolean>("includeManualEntry")!!
 
                 if (useHealthConnectIfAvailable && healthConnectAvailable) {
                         getStepsHealthConnect(start, end, result)
@@ -2260,7 +2261,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
                 val request =
                                 DataReadRequest.Builder()
-                                                .aggregate(ds)
+                                                .read(ds)
                                                 .bucketByTime(duration, TimeUnit.MILLISECONDS)
                                                 .setTimeRange(start, end, TimeUnit.MILLISECONDS)
                                                 .build()
@@ -2278,7 +2279,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                 getStepsInRange(
                                                                 start,
                                                                 end,
-                                                                aggregatedDataType,
+                                                                includeManualEntry,
                                                                 result
                                                 ),
                                 )
@@ -2320,36 +2321,57 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         }
 
         private fun getStepsInRange(
-                        start: Long,
-                        end: Long,
-                        aggregatedDataType: DataType,
-                        result: Result,
-        ) = OnSuccessListener { response: DataReadResponse ->
-                val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
-                for (bucket in response.buckets) {
-                        val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
-                        if (dp != null) {
-                                val count = dp.getValue(aggregatedDataType.fields[0])
+                start: Long,
+                end: Long,
+                includeManualEntry: Boolean,
+                result: Result
+                ) = OnSuccessListener { response: DataReadResponse ->                
+                var totalSteps = 0 // Variable to accumulate the total steps.
 
-                                val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
-                                val startDate = Date(startTime)
-                                val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
-                                Log.i(
-                                                "FLUTTER_HEALTH::SUCCESS",
-                                                "returning $count steps for $startDate - $endDate",
-                                )
-                                map[startTime] = count.asInt()
-                        } else {
-                                val startDay = Date(start)
-                                val endDay = Date(end)
-                                Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
+                for (bucket in response.buckets) {
+                        for (dataSet in bucket.dataSets) {
+                                var dataPoints = dataSet.dataPoints
+                                if (!includeManualEntry) {
+                                        dataPoints =
+                                                        dataPoints.filterIndexed { _, dataPoint ->
+                                                                !dataPoint.originalDataSource
+                                                                                .streamName
+                                                                                .contains(
+                                                                                                "user_input"
+                                                                                )
+                                                        }
+                                }
+                                for (dp in dataPoints) {
+                                        val streamName = dp.originalDataSource.streamName
+                                        if (!includeManualEntry && streamName.contains("user_input")) {
+                                                // Skip this data point if manual entry is not included
+                                                Log.i("FLUTTER_HEALTH::SKIPPED", "Skipping manual entry data point with stream name $streamName")
+                                                continue
+                                        }
+
+                                        val count = dp.getValue(Field.FIELD_STEPS)
+                                        totalSteps += count.asInt()
+
+                                        val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
+                                        val startDate = Date(startTime)
+                                        val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
+                                        Log.i(
+                                                "FLUTTER_HEALTH::INFO",
+                                                "adding $count steps for $startDate - $endDate. Total so far: $totalSteps",
+                                        )
+                                }
                         }
                 }
 
-                assert(map.size <= 1) {
-                        "getTotalStepsInInterval should return only one interval. Found: ${map.size}"
+                if (totalSteps == 0) {
+                        val startDay = Date(start)
+                        val endDay = Date(end)
+                        Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
                 }
-                Handler(context!!.mainLooper).run { result.success(map.values.firstOrNull()) }
+
+                Log.i("FLUTTER_HEALTH::SUCCESS", "Final total steps in interval: $totalSteps")
+
+                Handler(context!!.mainLooper).run { result.success(totalSteps) }
         }
 
         /// Disconnect Google fit
