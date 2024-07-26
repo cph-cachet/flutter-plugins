@@ -348,6 +348,7 @@ The plugin supports the following [`HealthDataType`](https://pub.dev/documentati
 | AUDIOGRAM                   | DECIBEL_HEARING_LEVEL   | yes     |                         |                           |                                        |
 | ELECTROCARDIOGRAM           | VOLT                    | yes     |                         |                           | Requires Apple Watch to write the data |
 | NUTRITION                   | NO_UNIT                 | yes     | yes                     | yes                       |                                        |
+| INSULIN_DELIVERY            | INTERNATIONAL_UNIT      | yes     |                         |                           |                                        |
 
 ## Workout Types
 

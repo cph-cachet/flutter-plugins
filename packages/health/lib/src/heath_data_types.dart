@@ -22,6 +22,7 @@ enum HealthDataType {
   HEART_RATE,
   HEART_RATE_VARIABILITY_SDNN,
   HEIGHT,
+  INSULIN_DELIVERY,
   RESTING_HEART_RATE,
   RESPIRATORY_RATE,
   PERIPHERAL_PERFUSION_INDEX,
@@ -97,6 +98,7 @@ const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.HEART_RATE,
   HealthDataType.HEART_RATE_VARIABILITY_SDNN,
   HealthDataType.HEIGHT,
+  HealthDataType.INSULIN_DELIVERY,
   HealthDataType.HIGH_HEART_RATE_EVENT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT,
   HealthDataType.LOW_HEART_RATE_EVENT,
@@ -191,6 +193,7 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.RESPIRATORY_RATE: HealthDataUnit.RESPIRATIONS_PER_MINUTE,
   HealthDataType.PERIPHERAL_PERFUSION_INDEX: HealthDataUnit.PERCENT,
   HealthDataType.HEIGHT: HealthDataUnit.METER,
+  HealthDataType.INSULIN_DELIVERY: HealthDataUnit.INTERNATIONAL_UNIT,
   HealthDataType.RESTING_HEART_RATE: HealthDataUnit.BEATS_PER_MINUTE,
   HealthDataType.STEPS: HealthDataUnit.COUNT,
   HealthDataType.WAIST_CIRCUMFERENCE: HealthDataUnit.METER,
@@ -503,6 +506,13 @@ enum ElectrocardiogramClassification {
   INCONCLUSIVE_POOR_READING,
   INCONCLUSIVE_OTHER,
   UNRECOGNIZED,
+}
+
+/// Types of insulin delivery reason
+enum InsulinDeliveryReason {
+  NOT_SET,
+  BASAL,
+  BOLUS,
 }
 
 /// Extension to assign numbers to [ElectrocardiogramClassification]s
