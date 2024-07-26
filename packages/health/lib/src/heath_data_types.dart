@@ -21,6 +21,7 @@ enum HealthDataType {
   FORCED_EXPIRATORY_VOLUME,
   HEART_RATE,
   HEART_RATE_VARIABILITY_SDNN,
+  HEART_RATE_VARIABILITY_RMSSD,
   HEIGHT,
   INSULIN_DELIVERY,
   RESTING_HEART_RATE,
@@ -146,6 +147,7 @@ const List<HealthDataType> dataTypeKeysAndroid = [
   HealthDataType.BODY_TEMPERATURE,
   HealthDataType.BODY_WATER_MASS,
   HealthDataType.HEART_RATE,
+  HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
   HealthDataType.HEIGHT,
   HealthDataType.STEPS,
   HealthDataType.WEIGHT,
@@ -234,6 +236,7 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.HEART_RATE_VARIABILITY_SDNN: HealthDataUnit.MILLISECOND,
+  HealthDataType.HEART_RATE_VARIABILITY_RMSSD: HealthDataUnit.MILLISECOND,
   HealthDataType.ELECTROCARDIOGRAM: HealthDataUnit.VOLT,
 
   HealthDataType.NUTRITION: HealthDataUnit.NO_UNIT,
