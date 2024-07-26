@@ -633,6 +633,11 @@ class Health {
       throw ArgumentError("set a valid insulin delivery reason");
     }
 
+    if (Platform.isAndroid) {
+      throw UnsupportedError(
+          "writeInsulinDelivery is not supported on Android");
+    }
+
     Map<String, dynamic> args = {
       'units': units,
       'reason': reason.index,
