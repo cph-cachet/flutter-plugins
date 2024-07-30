@@ -4,14 +4,14 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'screen_state'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter project.'
+  s.version          = '1.0.0'
+  s.summary          = 'Base plugin for screen state detection.'
   s.description      = <<-DESC
-A new Flutter project.
+https://github.com/cph-cachet/flutter-plugins/tree/master/packages/screen_state/ios.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/cph-cachet/flutter-plugins/tree/master/packages/screen_state/ios'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Tokenlab' => 'luansilva@tokenlab.com.br' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
