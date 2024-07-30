@@ -324,13 +324,51 @@ class ElectrocardiogramVoltageValue extends HealthValue {
 /// A [HealthValue] object for nutrition.
 ///
 /// Parameters:
-///  * [protein] - the amount of protein in grams
-///  * [calories] - the amount of calories in kcal
-///  * [fat] - the amount of fat in grams
-///  * [name] - the name of the food
-///  * [carbs] - the amount of carbs in grams
+///  * [b1Thiamine] - the amount of thiamine (B1) in grams
+///  * [b2Riboflavin] - the amount of riboflavin (B2) in grams
+///  * [b3Niacin] - the amount of niacin (B3) in grams
+///  * [b5PantothenicAcid] - the amount of pantothenic acid (B5) in grams
+///  * [b6Pyridoxine] - the amount of pyridoxine (B6) in grams
+///  * [b7Biotin] - the amount of biotin (B7) in grams
+///  * [b9Folate] - the amount of folate (B9) in grams
+///  * [b12Cobalamin] - the amount of cobalamin (B12) in grams
 ///  * [caffeine] - the amount of caffeine in grams
+///  * [calcium] - the amount of calcium in grams
+///  * [calories] - the amount of calories in kcal
+///  * [carbs] - the amount of carbs in grams
+///  * [chloride] - the amount of chloride in grams
+///  * [cholesterol] - the amount of cholesterol in grams
+///  * [choline] - the amount of choline in grams
+///  * [chromium] - the amount of chromium in grams
+///  * [copper] - the amount of copper in grams
+///  * [fat] - the amount of fat in grams
+///  * [fatMonounsaturated] - the amount of monounsaturated fat in grams
+///  * [fatPolyunsaturated] - the amount of polyunsaturated fat in grams
+///  * [fatSaturated] - the amount of saturated fat in grams
+///  * [fatTransMonoenoic] - the amount of
+///  * [fatUnsaturated] - the amount of unsaturated fat in grams
+///  * [fiber] - the amount of fiber in grams
+///  * [iodine] - the amount of iodine in grams
+///  * [iron] - the amount of iron in grams
+///  * [magnesium] - the amount of magnesium in grams
+///  * [manganese] - the amount of manganese in grams
 ///  * [mealType] - the type of meal
+///  * [molybdenum] - the amount of molybdenum in grams
+///  * [name] - the name of the food
+///  * [phosphorus] - the amount of phosphorus in grams
+///  * [potassium] - the amount of potassium in grams
+///  * [protein] - the amount of protein in grams
+///  * [selenium] - the amount of selenium in grams
+///  * [sodium] - the amount of sodium in grams
+///  * [sugar] - the amount of sugar in grams
+///  * [vitaminA] - the amount of vitamin A in grams
+///  * [vitaminC] - the amount of vitamin C in grams
+///  * [vitaminD] - the amount of vitamin D in grams
+///  * [vitaminE] - the amount of vitamin E in grams
+///  * [vitaminK] - the amount of vitamin K in grams
+///  * [water] - the amount of water in grams
+///  * [zinc] - the amount of zinc in grams
+
 @JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
 class NutritionHealthValue extends HealthValue {
   /// The name of the food.

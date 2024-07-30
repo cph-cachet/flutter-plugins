@@ -523,6 +523,43 @@ class Health {
   ///  * [protein] - optional protein information.
   ///  * [fatTotal] - optional total fat information.
   ///  * [name] - optional name information about this meal.
+  ///  * [caffeine] - optional caffeine information.
+  ///  * [vitaminA] - optional vitamin A information.
+  ///  * [b1Thiamin] - optional vitamin B1 (thiamin) information.
+  ///  * [b2Riboflavin] - optional vitamin B2 (riboflavin) information.
+  ///  * [b3Niacin] - optional vitamin B3 (niacin) information.
+  ///  * [b5PantothenicAcid] - optional vitamin B5 (pantothenic acid) information.
+  ///  * [b6Pyridoxine] - optional vitamin B6 (pyridoxine) information.
+  ///  * [b7Biotin] - optional vitamin B7 (biotin) information.
+  ///  * [b9Folate] - optional vitamin B9 (folate) information.
+  ///  * [b12Cobalamin] - optional vitamin B12 (cobalamin) information.
+  ///  * [vitaminC] - optional vitamin C information.
+  ///  * [vitaminD] - optional vitamin D information.
+  ///  * [vitaminE] - optional vitamin E information.
+  ///  * [vitaminK] - optional vitamin K information.
+  ///  * [calcium] - optional calcium information.
+  ///  * [cholesterol] - optional cholesterol information.
+  ///  * [chloride] - optional chloride information.
+  ///  * [chromium] - optional chromium information.
+  ///  * [copper] - optional copper information.
+  ///  * [fatUnsaturated] - optional unsaturated fat information.
+  ///  * [fatMonounsaturated] - optional monounsaturated fat information.
+  ///  * [fatPolyunsaturated] - optional polyunsaturated fat information.
+  ///  * [fatSaturated] - optional saturated fat information.
+  ///  * [fatTransMonoenoic] - optional trans-monoenoic fat information.
+  ///  * [fiber] - optional fiber information.
+  ///  * [iodine] - optional iodine information.
+  ///  * [iron] - optional iron information.
+  ///  * [magnesium] - optional magnesium information.
+  ///  * [manganese] - optional manganese information.
+  ///  * [molybdenum] - optional molybdenum information.
+  ///  * [phosphorus] - optional phosphorus information.
+  ///  * [potassium] - optional potassium information.
+  ///  * [selenium] - optional selenium information.
+  ///  * [sodium] - optional sodium information.
+  ///  * [sugar] - optional sugar information.
+  ///  * [water] - optional water information.
+  ///  * [zinc] - optional zinc information.
   Future<bool> writeMeal({
     required MealType mealType,
     required DateTime startTime,
