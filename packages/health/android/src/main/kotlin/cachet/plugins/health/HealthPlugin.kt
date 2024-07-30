@@ -777,15 +777,55 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
 
         private fun writeMealHC(call: MethodCall, result: Result) {
-                val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
-                val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
-                val calories = call.argument<Double>("caloriesConsumed")
-                val carbs = call.argument<Double>("carbohydrates") as Double?
+                val startTime = Instant.ofEpochMilli(call.argument<Long>("start_time")!!)
+                val endTime = Instant.ofEpochMilli(call.argument<Long>("end_time")!!)
+                val calories = call.argument<Double>("calories")
                 val protein = call.argument<Double>("protein") as Double?
-                val fat = call.argument<Double>("fatTotal") as Double?
+                val carbs = call.argument<Double>("carbs") as Double?
+                val fat = call.argument<Double>("fat") as Double?
                 val caffeine = call.argument<Double>("caffeine") as Double?
+                val vitaminA = call.argument<Double>("vitamin_a") as Double?
+                val b1Thiamine = call.argument<Double>("b1_thiamine") as Double?
+                val b2Riboflavin = call.argument<Double>("b2_riboflavin") as Double?
+                val b3Niacin = call.argument<Double>("b3_niacin") as Double?
+                val b5PantothenicAcid = call.argument<Double>("b5_pantothenic_acid") as Double?
+                val b6Pyridoxine = call.argument<Double>("b6_pyridoxine") as Double?
+                val b7Biotin = call.argument<Double>("b7_biotin") as Double?
+                val b9Folate = call.argument<Double>("b9_folate") as Double?
+                val b12Cobalamin = call.argument<Double>("b12_cobalamin") as Double?
+                val vitaminC = call.argument<Double>("vitamin_c") as Double?
+                val vitaminD = call.argument<Double>("vitamin_d") as Double?
+                val vitaminE = call.argument<Double>("vitamin_e") as Double?
+                val vitaminK = call.argument<Double>("vitamin_k") as Double?
+                val calcium = call.argument<Double>("calcium") as Double?
+                val chloride = call.argument<Double>("chloride") as Double?
+                val cholesterol = call.argument<Double>("cholesterol") as Double?
+                // Choline is not yet supported by Health Connect
+                // val choline = call.argument<Double>("choline") as Double?
+                val chromium = call.argument<Double>("chromium") as Double?
+                val copper = call.argument<Double>("copper") as Double?
+                val fatUnsaturated = call.argument<Double>("fat_unsaturated") as Double?
+                val fatMonounsaturated = call.argument<Double>("fat_monounsaturated") as Double?
+                val fatPolyunsaturated = call.argument<Double>("fat_polyunsaturated") as Double?
+                val fatSaturated = call.argument<Double>("fat_saturated") as Double?
+                val fatTransMonoenoic = call.argument<Double>("fat_trans_monoenoic") as Double?
+                val fiber = call.argument<Double>("fiber") as Double?
+                val iodine = call.argument<Double>("iodine") as Double?
+                val iron = call.argument<Double>("iron") as Double?
+                val magnesium = call.argument<Double>("magnesium") as Double?
+                val manganese = call.argument<Double>("manganese") as Double?
+                val molybdenum = call.argument<Double>("molybdenum") as Double?
+                val phosphorus = call.argument<Double>("phosphorus") as Double?
+                val potassium = call.argument<Double>("potassium") as Double?
+                val selenium = call.argument<Double>("selenium") as Double?
+                val sodium = call.argument<Double>("sodium") as Double?
+                val sugar = call.argument<Double>("sugar") as Double?
+                // Water is not support on a food in Health Connect
+                // val water = call.argument<Double>("water") as Double?
+                val zinc = call.argument<Double>("zinc") as Double?
+
                 val name = call.argument<String>("name")
-                val mealType = call.argument<String>("mealType")!!
+                val mealType = call.argument<String>("meal_type")!!
 
                 scope.launch {
                         try {
@@ -798,6 +838,41 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                 protein = protein?.grams,
                                                                 totalFat = fat?.grams,
                                                                 caffeine = caffeine?.grams,
+                                                                vitaminA = vitaminA?.grams,
+                                                                thiamin = b1Thiamine?.grams,
+                                                                riboflavin = b2Riboflavin?.grams,
+                                                                niacin = b3Niacin?.grams,
+                                                                pantothenicAcid = b5PantothenicAcid?.grams,
+                                                                vitaminB6 = b6Pyridoxine?.grams,
+                                                                biotin = b7Biotin?.grams,
+                                                                folate = b9Folate?.grams,
+                                                                vitaminB12 = b12Cobalamin?.grams,
+                                                                vitaminC = vitaminC?.grams,
+                                                                vitaminD = vitaminD?.grams,
+                                                                vitaminE = vitaminE?.grams,
+                                                                vitaminK = vitaminK?.grams,
+                                                                calcium = calcium?.grams,
+                                                                chloride = chloride?.grams,
+                                                                cholesterol = cholesterol?.grams,
+                                                                chromium = chromium?.grams,
+                                                                copper = copper?.grams,
+                                                                unsaturatedFat = fatUnsaturated?.grams,
+                                                                monounsaturatedFat = fatMonounsaturated?.grams,
+                                                                polyunsaturatedFat = fatPolyunsaturated?.grams,
+                                                                saturatedFat = fatSaturated?.grams,
+                                                                transFat = fatTransMonoenoic?.grams,
+                                                                dietaryFiber = fiber?.grams,
+                                                                iodine = iodine?.grams,
+                                                                iron = iron?.grams,
+                                                                magnesium = magnesium?.grams,
+                                                                manganese = manganese?.grams,
+                                                                molybdenum = molybdenum?.grams,
+                                                                phosphorus = phosphorus?.grams,
+                                                                potassium = potassium?.grams,
+                                                                selenium = selenium?.grams,
+                                                                sodium = sodium?.grams,
+                                                                sugar = sugar?.grams,
+                                                                zinc = zinc?.grams,
                                                                 startTime = startTime,
                                                                 startZoneOffset = null,
                                                                 endTime = endTime,
@@ -840,14 +915,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         return
                 }
 
-                val startTime = call.argument<Long>("startTime")!!
-                val endTime = call.argument<Long>("endTime")!!
-                val calories = call.argument<Double>("caloriesConsumed")
-                val carbs = call.argument<Double>("carbohydrates") as Double?
+                val startTime = call.argument<Long>("start_time")!!
+                val endTime = call.argument<Long>("end_time")!!
+                val calories = call.argument<Double>("calories")
+                val carbs = call.argument<Double>("carbs") as Double?
                 val protein = call.argument<Double>("protein") as Double?
-                val fat = call.argument<Double>("fatTotal") as Double?
+                val fat = call.argument<Double>("fat") as Double?
+            
+
                 val name = call.argument<String>("name")
-                val mealType = call.argument<String>("mealType")!!
+                val mealType = call.argument<String>("meal_type")!!
 
                 val dataType = DataType.TYPE_NUTRITION
 
@@ -867,7 +944,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                 .build()
 
                 val nutrients = mutableMapOf(Field.NUTRIENT_CALORIES to calories?.toFloat())
-
+                
                 if (carbs != null) {
                         nutrients[Field.NUTRIENT_TOTAL_CARBS] = carbs.toFloat()
                 }
@@ -887,7 +964,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                 endTime,
                                                                 TimeUnit.MILLISECONDS
                                                 )
-                                                .setField(Field.FIELD_NUTRIENTS, nutrients)
+                                                .setField(
+                                                    Field.FIELD_NUTRIENTS,
+                                                    // Remove null values
+                                                    nutrients.filterValues { it != null }.toMutableMap(),
+                                                )
 
                 if (name != null) {
                         dataBuilder.setField(Field.FIELD_FOOD_ITEM, name as String)
@@ -2961,7 +3042,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
 
         // TODO: Find alternative to SOURCE_ID or make it nullable?
-        fun convertRecord(record: Any, dataType: String): List<Map<String, Any>> {
+        fun convertRecord(record: Any, dataType: String): List<Map<String, Any?>> {
                 val metadata = (record as Record).metadata
                 when (record) {
                         is WeightRecord ->
@@ -3323,19 +3404,51 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         )
                         is NutritionRecord ->
                                         return listOf(
-                                                        mapOf<String, Any>(
-                                                                        "calories" to
-                                                                                        record.energy!!.inKilocalories,
-                                                                        "protein" to
-                                                                                        record.protein!!.inGrams,
-                                                                        "carbs" to
-                                                                                        record.totalCarbohydrate!!
-                                                                                                        .inGrams,
-                                                                        "fat" to
-                                                                                        record.totalFat!!
-                                                                                                        .inGrams,
+                                                        mapOf<String, Any?>(
+                                                                        "calories" to record.energy?.inKilocalories,
+                                                                        "protein" to record.protein?.inGrams,
+                                                                        "carbs" to record.totalCarbohydrate?.inGrams,
+                                                                        "fat" to record.totalFat?.inGrams,
+                                                                        "caffeine" to record.caffeine?.inGrams,
+                                                                        "vitamin_a" to record.vitaminA?.inGrams,
+                                                                        "b1_thiamine" to record.thiamin?.inGrams,
+                                                                        "b2_riboflavin" to record.riboflavin?.inGrams,
+                                                                        "b3_niacin" to record.niacin?.inGrams,
+                                                                        "b5_pantothenic_acid" to record.pantothenicAcid?.inGrams,
+                                                                        "b6_pyridoxine" to record.vitaminB6?.inGrams,
+                                                                        "b7_biotin" to record.biotin?.inGrams,
+                                                                        "b9_folate" to record.folate?.inGrams,
+                                                                        "b12_cobalamin" to record.vitaminB12?.inGrams,
+                                                                        "vitamin_c" to record.vitaminC?.inGrams,
+                                                                        "vitamin_d" to record.vitaminD?.inGrams,
+                                                                        "vitamin_e" to record.vitaminE?.inGrams,
+                                                                        "vitamin_k" to record.vitaminK?.inGrams,
+                                                                        "calcium" to record.calcium?.inGrams,
+                                                                        "chloride" to record.chloride?.inGrams,
+                                                                        "cholesterol" to record.cholesterol?.inGrams,
+                                                                        "choline" to null,
+                                                                        "chromium" to record.chromium?.inGrams,
+                                                                        "copper" to record.copper?.inGrams,
+                                                                        "fat_unsaturated" to record.unsaturatedFat?.inGrams,
+                                                                        "fat_monounsaturated" to record.monounsaturatedFat?.inGrams,
+                                                                        "fat_polyunsaturated" to record.polyunsaturatedFat?.inGrams,
+                                                                        "fat_saturated" to record.saturatedFat?.inGrams,
+                                                                        "fat_trans_monoenoic" to record.transFat?.inGrams,
+                                                                        "fiber" to record.dietaryFiber?.inGrams,
+                                                                        "iodine" to record.iodine?.inGrams,
+                                                                        "iron" to record.iron?.inGrams,
+                                                                        "magnesium" to record.magnesium?.inGrams,
+                                                                        "manganese" to record.manganese?.inGrams,
+                                                                        "molybdenum" to record.molybdenum?.inGrams,
+                                                                        "phosphorus" to record.phosphorus?.inGrams,
+                                                                        "potassium" to record.potassium?.inGrams,
+                                                                        "selenium" to record.selenium?.inGrams,
+                                                                        "sodium" to record.sodium?.inGrams,
+                                                                        "sugar" to record.sugar?.inGrams,
+                                                                        "water" to null,
+                                                                        "zinc" to record.zinc?.inGrams,
                                                                         "name" to record.name!!,
-                                                                        "mealType" to
+                                                                        "meal_type" to
                                                                                         (MapTypeToMealTypeHC[
                                                                                                         record.mealType]
                                                                                                         ?: MEAL_TYPE_UNKNOWN),

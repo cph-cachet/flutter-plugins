@@ -68,6 +68,39 @@ const _$HealthDataTypeEnumMap = {
   HealthDataType.DIETARY_ENERGY_CONSUMED: 'DIETARY_ENERGY_CONSUMED',
   HealthDataType.DIETARY_FATS_CONSUMED: 'DIETARY_FATS_CONSUMED',
   HealthDataType.DIETARY_PROTEIN_CONSUMED: 'DIETARY_PROTEIN_CONSUMED',
+  HealthDataType.DIETARY_FIBER: 'DIETARY_FIBER',
+  HealthDataType.DIETARY_SUGAR: 'DIETARY_SUGAR',
+  HealthDataType.DIETARY_FAT_MONOUNSATURATED: 'DIETARY_FAT_MONOUNSATURATED',
+  HealthDataType.DIETARY_FAT_POLYUNSATURATED: 'DIETARY_FAT_POLYUNSATURATED',
+  HealthDataType.DIETARY_FAT_SATURATED: 'DIETARY_FAT_SATURATED',
+  HealthDataType.DIETARY_CHOLESTEROL: 'DIETARY_CHOLESTEROL',
+  HealthDataType.DIETARY_VITAMIN_A: 'DIETARY_VITAMIN_A',
+  HealthDataType.DIETARY_THIAMIN: 'DIETARY_THIAMIN',
+  HealthDataType.DIETARY_RIBOFLAVIN: 'DIETARY_RIBOFLAVIN',
+  HealthDataType.DIETARY_NIACIN: 'DIETARY_NIACIN',
+  HealthDataType.DIETARY_PANTOTHENIC_ACID: 'DIETARY_PANTOTHENIC_ACID',
+  HealthDataType.DIETARY_VITAMIN_B6: 'DIETARY_VITAMIN_B6',
+  HealthDataType.DIETARY_BIOTIN: 'DIETARY_BIOTIN',
+  HealthDataType.DIETARY_VITAMIN_B12: 'DIETARY_VITAMIN_B12',
+  HealthDataType.DIETARY_VITAMIN_C: 'DIETARY_VITAMIN_C',
+  HealthDataType.DIETARY_VITAMIN_D: 'DIETARY_VITAMIN_D',
+  HealthDataType.DIETARY_VITAMIN_E: 'DIETARY_VITAMIN_E',
+  HealthDataType.DIETARY_VITAMIN_K: 'DIETARY_VITAMIN_K',
+  HealthDataType.DIETARY_FOLATE: 'DIETARY_FOLATE',
+  HealthDataType.DIETARY_CALCIUM: 'DIETARY_CALCIUM',
+  HealthDataType.DIETARY_CHLORIDE: 'DIETARY_CHLORIDE',
+  HealthDataType.DIETARY_IRON: 'DIETARY_IRON',
+  HealthDataType.DIETARY_MAGNESIUM: 'DIETARY_MAGNESIUM',
+  HealthDataType.DIETARY_PHOSPHORUS: 'DIETARY_PHOSPHORUS',
+  HealthDataType.DIETARY_POTASSIUM: 'DIETARY_POTASSIUM',
+  HealthDataType.DIETARY_SODIUM: 'DIETARY_SODIUM',
+  HealthDataType.DIETARY_ZINC: 'DIETARY_ZINC',
+  HealthDataType.DIETARY_CHROMIUM: 'DIETARY_CHROMIUM',
+  HealthDataType.DIETARY_COPPER: 'DIETARY_COPPER',
+  HealthDataType.DIETARY_IODINE: 'DIETARY_IODINE',
+  HealthDataType.DIETARY_MANGANESE: 'DIETARY_MANGANESE',
+  HealthDataType.DIETARY_MOLYBDENUM: 'DIETARY_MOLYBDENUM',
+  HealthDataType.DIETARY_SELENIUM: 'DIETARY_SELENIUM',
   HealthDataType.FORCED_EXPIRATORY_VOLUME: 'FORCED_EXPIRATORY_VOLUME',
   HealthDataType.HEART_RATE: 'HEART_RATE',
   HealthDataType.HEART_RATE_VARIABILITY_SDNN: 'HEART_RATE_VARIABILITY_SDNN',
@@ -532,13 +565,50 @@ const _$InsulinDeliveryReasonEnumMap = {
 NutritionHealthValue _$NutritionHealthValueFromJson(
         Map<String, dynamic> json) =>
     NutritionHealthValue(
-      mealType: json['meal_type'] as String?,
-      protein: (json['protein'] as num?)?.toDouble(),
-      calories: (json['calories'] as num?)?.toDouble(),
-      fat: (json['fat'] as num?)?.toDouble(),
       name: json['name'] as String?,
+      mealType: json['meal_type'] as String?,
+      calories: (json['calories'] as num?)?.toDouble(),
+      protein: (json['protein'] as num?)?.toDouble(),
+      fat: (json['fat'] as num?)?.toDouble(),
       carbs: (json['carbs'] as num?)?.toDouble(),
       caffeine: (json['caffeine'] as num?)?.toDouble(),
+      vitaminA: (json['vitamin_a'] as num?)?.toDouble(),
+      b1Thiamine: (json['b1_thiamine'] as num?)?.toDouble(),
+      b2Riboflavin: (json['b2_riboflavin'] as num?)?.toDouble(),
+      b3Niacin: (json['b3_niacin'] as num?)?.toDouble(),
+      b5PantothenicAcid: (json['b5_pantothenic_acid'] as num?)?.toDouble(),
+      b6Pyridoxine: (json['b6_pyridoxine'] as num?)?.toDouble(),
+      b7Biotin: (json['b7_biotin'] as num?)?.toDouble(),
+      b9Folate: (json['b9_folate'] as num?)?.toDouble(),
+      b12Cobalamin: (json['b12_cobalamin'] as num?)?.toDouble(),
+      vitaminC: (json['vitamin_c'] as num?)?.toDouble(),
+      vitaminD: (json['vitamin_d'] as num?)?.toDouble(),
+      vitaminE: (json['vitamin_e'] as num?)?.toDouble(),
+      vitaminK: (json['vitamin_k'] as num?)?.toDouble(),
+      calcium: (json['calcium'] as num?)?.toDouble(),
+      chloride: (json['chloride'] as num?)?.toDouble(),
+      cholesterol: (json['cholesterol'] as num?)?.toDouble(),
+      choline: (json['choline'] as num?)?.toDouble(),
+      chromium: (json['chromium'] as num?)?.toDouble(),
+      copper: (json['copper'] as num?)?.toDouble(),
+      fatUnsaturated: (json['fat_unsaturated'] as num?)?.toDouble(),
+      fatMonounsaturated: (json['fat_monounsaturated'] as num?)?.toDouble(),
+      fatPolyunsaturated: (json['fat_polyunsaturated'] as num?)?.toDouble(),
+      fatSaturated: (json['fat_saturated'] as num?)?.toDouble(),
+      fatTransMonoenoic: (json['fat_trans_monoenoic'] as num?)?.toDouble(),
+      fiber: (json['fiber'] as num?)?.toDouble(),
+      iodine: (json['iodine'] as num?)?.toDouble(),
+      iron: (json['iron'] as num?)?.toDouble(),
+      magnesium: (json['magnesium'] as num?)?.toDouble(),
+      manganese: (json['manganese'] as num?)?.toDouble(),
+      molybdenum: (json['molybdenum'] as num?)?.toDouble(),
+      phosphorus: (json['phosphorus'] as num?)?.toDouble(),
+      potassium: (json['potassium'] as num?)?.toDouble(),
+      selenium: (json['selenium'] as num?)?.toDouble(),
+      sodium: (json['sodium'] as num?)?.toDouble(),
+      sugar: (json['sugar'] as num?)?.toDouble(),
+      water: (json['water'] as num?)?.toDouble(),
+      zinc: (json['zinc'] as num?)?.toDouble(),
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$NutritionHealthValueToJson(
@@ -552,13 +622,50 @@ Map<String, dynamic> _$NutritionHealthValueToJson(
   }
 
   writeNotNull('__type', instance.$type);
-  writeNotNull('meal_type', instance.mealType);
-  writeNotNull('protein', instance.protein);
-  writeNotNull('calories', instance.calories);
-  writeNotNull('fat', instance.fat);
   writeNotNull('name', instance.name);
+  writeNotNull('meal_type', instance.mealType);
+  writeNotNull('calories', instance.calories);
+  writeNotNull('protein', instance.protein);
+  writeNotNull('fat', instance.fat);
   writeNotNull('carbs', instance.carbs);
   writeNotNull('caffeine', instance.caffeine);
+  writeNotNull('vitamin_a', instance.vitaminA);
+  writeNotNull('b1_thiamine', instance.b1Thiamine);
+  writeNotNull('b2_riboflavin', instance.b2Riboflavin);
+  writeNotNull('b3_niacin', instance.b3Niacin);
+  writeNotNull('b5_pantothenic_acid', instance.b5PantothenicAcid);
+  writeNotNull('b6_pyridoxine', instance.b6Pyridoxine);
+  writeNotNull('b7_biotin', instance.b7Biotin);
+  writeNotNull('b9_folate', instance.b9Folate);
+  writeNotNull('b12_cobalamin', instance.b12Cobalamin);
+  writeNotNull('vitamin_c', instance.vitaminC);
+  writeNotNull('vitamin_d', instance.vitaminD);
+  writeNotNull('vitamin_e', instance.vitaminE);
+  writeNotNull('vitamin_k', instance.vitaminK);
+  writeNotNull('calcium', instance.calcium);
+  writeNotNull('chloride', instance.chloride);
+  writeNotNull('cholesterol', instance.cholesterol);
+  writeNotNull('choline', instance.choline);
+  writeNotNull('chromium', instance.chromium);
+  writeNotNull('copper', instance.copper);
+  writeNotNull('fat_unsaturated', instance.fatUnsaturated);
+  writeNotNull('fat_monounsaturated', instance.fatMonounsaturated);
+  writeNotNull('fat_polyunsaturated', instance.fatPolyunsaturated);
+  writeNotNull('fat_saturated', instance.fatSaturated);
+  writeNotNull('fat_trans_monoenoic', instance.fatTransMonoenoic);
+  writeNotNull('fiber', instance.fiber);
+  writeNotNull('iodine', instance.iodine);
+  writeNotNull('iron', instance.iron);
+  writeNotNull('magnesium', instance.magnesium);
+  writeNotNull('manganese', instance.manganese);
+  writeNotNull('molybdenum', instance.molybdenum);
+  writeNotNull('phosphorus', instance.phosphorus);
+  writeNotNull('potassium', instance.potassium);
+  writeNotNull('selenium', instance.selenium);
+  writeNotNull('sodium', instance.sodium);
+  writeNotNull('sugar', instance.sugar);
+  writeNotNull('water', instance.water);
+  writeNotNull('zinc', instance.zinc);
   return val;
 }
 
