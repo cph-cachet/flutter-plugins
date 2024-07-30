@@ -47,6 +47,9 @@ class HealthDataPoint {
   /// The summary of the workout data point, if available.
   WorkoutSummary? workoutSummary;
 
+  /// The metadata for this data point.
+  Map<String, dynamic>? metadata;
+
   HealthDataPoint({
     required this.value,
     required this.type,
@@ -59,6 +62,7 @@ class HealthDataPoint {
     required this.sourceName,
     this.isManualEntry = false,
     this.workoutSummary,
+    this.metadata,
   }) {
     // set the value to minutes rather than the category
     // returned by the native API
@@ -107,6 +111,8 @@ class HealthDataPoint {
         ElectrocardiogramHealthValue.fromHealthDataPoint(dataPoint),
       HealthDataType.NUTRITION =>
         NutritionHealthValue.fromHealthDataPoint(dataPoint),
+      HealthDataType.INSULIN_DELIVERY =>
+        InsulinDeliveryHealthValue.fromHealthDataPoint(dataPoint),
       _ => NumericHealthValue.fromHealthDataPoint(dataPoint),
     };
 
@@ -117,6 +123,9 @@ class HealthDataPoint {
     final String sourceId = dataPoint["source_id"] as String;
     final String sourceName = dataPoint["source_name"] as String;
     final bool isManualEntry = dataPoint["is_manual_entry"] as bool? ?? false;
+    final Map<String, dynamic>? metadata = dataPoint["metadata"] == null
+        ? null
+        : Map<String, dynamic>.from(dataPoint['metadata'] as Map);
     final unit = dataTypeToUnit[dataType] ?? HealthDataUnit.UNKNOWN_UNIT;
 
     // Set WorkoutSummary, if available.
@@ -140,6 +149,7 @@ class HealthDataPoint {
       sourceName: sourceName,
       isManualEntry: isManualEntry,
       workoutSummary: workoutSummary,
+      metadata: metadata,
     );
   }
 
@@ -155,7 +165,8 @@ class HealthDataPoint {
     sourceId: $sourceId,
     sourceName: $sourceName
     isManualEntry: $isManualEntry
-    workoutSummary: $workoutSummary""";
+    workoutSummary: $workoutSummary
+    metadata: $metadata""";
 
   @override
   bool operator ==(Object other) =>
@@ -169,9 +180,10 @@ class HealthDataPoint {
       sourceDeviceId == other.sourceDeviceId &&
       sourceId == other.sourceId &&
       sourceName == other.sourceName &&
-      isManualEntry == other.isManualEntry;
+      isManualEntry == other.isManualEntry &&
+      metadata == other.metadata;
 
   @override
   int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type,
-      sourcePlatform, sourceDeviceId, sourceId, sourceName);
+      sourcePlatform, sourceDeviceId, sourceId, sourceName, metadata);
 }

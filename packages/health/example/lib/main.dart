@@ -27,6 +27,9 @@ enum AppState {
   DATA_NOT_DELETED,
   STEPS_READY,
   HEALTH_CONNECT_STATUS,
+  PERMISSIONS_REVOKING,
+  PERMISSIONS_REVOKED,
+  PERMISSIONS_NOT_REVOKED,
 }
 
 class _HealthAppState extends State<HealthApp> {
@@ -383,11 +386,21 @@ class _HealthAppState extends State<HealthApp> {
 
   /// Revoke access to health data. Note, this only has an effect on Android.
   Future<void> revokeAccess() async {
+    setState(() => _state = AppState.PERMISSIONS_REVOKING);
+
+    bool success = false;
     try {
       await Health().revokePermissions();
+      success = true;
     } catch (error) {
       debugPrint("Exception in revokeAccess: $error");
     }
+
+    setState(() {
+      _state = success
+          ? AppState.PERMISSIONS_REVOKED
+          : AppState.PERMISSIONS_NOT_REVOKED;
+    });
   }
 
   // UI building below
@@ -473,6 +486,23 @@ class _HealthAppState extends State<HealthApp> {
       ),
     );
   }
+
+  Widget get _permissionsRevoking => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(
+                strokeWidth: 10,
+              )),
+          Text('Revoking permissions...')
+        ],
+      );
+
+  Widget get _permissionsRevoked => const Text('Permissions revoked.');
+
+  Widget get _permissionsNotRevoked =>
+      const Text('Failed to revoke permissions');
 
   Widget get _contentFetchingData => Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -572,5 +602,8 @@ class _HealthAppState extends State<HealthApp> {
         AppState.DATA_NOT_DELETED => _dataNotDeleted,
         AppState.STEPS_READY => _stepsFetched,
         AppState.HEALTH_CONNECT_STATUS => _contentHealthConnectStatus,
+        AppState.PERMISSIONS_REVOKING => _permissionsRevoking,
+        AppState.PERMISSIONS_REVOKED => _permissionsRevoked,
+        AppState.PERMISSIONS_NOT_REVOKED => _permissionsNotRevoked,
       };
 }

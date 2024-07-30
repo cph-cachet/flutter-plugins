@@ -19,8 +19,8 @@ part of '../health.dart';
 ///    and [getHealthAggregateDataFromTypes] methods.
 ///  * Reading total step counts using the [getTotalStepsInInterval] method.
 ///  * Writing different types of specialized health data like the [writeWorkoutData],
-///    [writeBloodPressure], [writeBloodOxygen], [writeAudiogram], and [writeMeal]
-///    methods.
+///    [writeBloodPressure], [writeBloodOxygen], [writeAudiogram], [writeMeal],
+///    [writeInsulinDelivery] methods.
 class Health {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   static final _instance = Health._();
@@ -54,13 +54,12 @@ class Health {
   /// If [useHealthConnectIfAvailable] is true, Google Health Connect on
   /// Android will be used. Has no effect on iOS.
   Future<void> configure({bool useHealthConnectIfAvailable = false}) async {
-    _deviceId ??= Platform.isAndroid
-        ? (await _deviceInfo.androidInfo).id
-        : (await _deviceInfo.iosInfo).identifierForVendor;
-
-    _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
-    if (_useHealthConnectIfAvailable) {
+    if (Platform.isAndroid) {
+      _deviceId = (await _deviceInfo.androidInfo).id;
+      _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
       await _channel.invokeMethod('useHealthConnectIfAvailable');
+    } else {
+      _deviceId = (await _deviceInfo.iosInfo).identifierForVendor;
     }
   }
 
@@ -717,6 +716,47 @@ class Health {
     return await _channel.invokeMethod('writeAudiogram', args) == true;
   }
 
+  /// Saves insulin delivery record into Apple Health.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  ///  * [units] - the number of units of insulin taken.
+  ///  * [reason] - the insulin reason, basal or bolus.
+  ///  * [startTime] - the start time when the meal was consumed.
+  ///    It must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when the meal was consumed.
+  ///    It must be equal to or later than [startTime].
+  Future<bool> writeInsulinDelivery(
+    double units,
+    InsulinDeliveryReason reason,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
+    if (startTime.isAfter(endTime)) {
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+    }
+
+    if (reason == InsulinDeliveryReason.NOT_SET) {
+      throw ArgumentError("set a valid insulin delivery reason");
+    }
+
+    if (Platform.isAndroid) {
+      throw UnsupportedError(
+          "writeInsulinDelivery is not supported on Android");
+    }
+
+    Map<String, dynamic> args = {
+      'units': units,
+      'reason': reason.index,
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+
+    bool? success = await _channel.invokeMethod('writeInsulinDelivery', args);
+    return success ?? false;
+  }
+
   /// Fetch a list of health data points based on [types].
   Future<List<HealthDataPoint>> getHealthDataFromTypes({
     required List<HealthDataType> types,
@@ -951,10 +991,14 @@ class Health {
   Future<int?> getTotalStepsInInterval(
     DateTime startTime,
     DateTime endTime,
+    {
+      bool includeManualEntry = true
+    }
   ) async {
     final args = <String, dynamic>{
       'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
+      'endTime': endTime.millisecondsSinceEpoch,
+      'includeManualEntry': includeManualEntry
     };
     final stepsCount = await _channel.invokeMethod<int?>(
       'getTotalStepsInInterval',
