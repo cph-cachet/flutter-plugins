@@ -324,6 +324,8 @@ class ElectrocardiogramVoltageValue extends HealthValue {
 /// A [HealthValue] object for nutrition.
 ///
 /// Parameters:
+///  * [mealType] - the type of meal
+///  * [name] - the name of the food
 ///  * [b1Thiamine] - the amount of thiamine (B1) in grams
 ///  * [b2Riboflavin] - the amount of riboflavin (B2) in grams
 ///  * [b3Niacin] - the amount of niacin (B3) in grams
@@ -352,9 +354,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
 ///  * [iron] - the amount of iron in grams
 ///  * [magnesium] - the amount of magnesium in grams
 ///  * [manganese] - the amount of manganese in grams
-///  * [mealType] - the type of meal
 ///  * [molybdenum] - the amount of molybdenum in grams
-///  * [name] - the name of the food
 ///  * [phosphorus] - the amount of phosphorus in grams
 ///  * [potassium] - the amount of potassium in grams
 ///  * [protein] - the amount of protein in grams

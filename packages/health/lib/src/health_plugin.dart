@@ -518,11 +518,11 @@ class Health {
   ///    It must be equal to or earlier than [endTime].
   ///  * [endTime] - the end time when the meal was consumed.
   ///    It must be equal to or later than [startTime].
+  ///  * [name] - optional name information about this meal.
   ///  * [caloriesConsumed] - total calories consumed with this meal.
   ///  * [carbohydrates] - optional carbohydrates information.
   ///  * [protein] - optional protein information.
   ///  * [fatTotal] - optional total fat information.
-  ///  * [name] - optional name information about this meal.
   ///  * [caffeine] - optional caffeine information.
   ///  * [vitaminA] - optional vitamin A information.
   ///  * [b1Thiamin] - optional vitamin B1 (thiamin) information.
