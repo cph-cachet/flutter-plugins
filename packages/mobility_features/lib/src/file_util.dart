@@ -1,4 +1,4 @@
-part of mobility_features;
+part of '../mobility_features.dart';
 
 const String _LOCATION_SAMPLES_FILE = 'location_samples',
     _STOPS_FILE = 'stops',
@@ -29,7 +29,7 @@ Future<File> _fileReference(Type T) async {
   }
 
   // Create a file reference
-  File reference = new File('$path/$type.json');
+  File reference = File('$path/$type.json');
 
   // If it does not exist already,
   // create it by writing an empty string to it

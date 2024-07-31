@@ -1,4 +1,4 @@
-part of mobility_app;
+part of 'main.dart';
 
 class StopsPage extends StatelessWidget {
   final List<Stop> stops;
@@ -18,16 +18,10 @@ class StopsPage extends StatelessWidget {
         ));
   }
 
-  Widget list() {
-    return ListView.builder(
-        itemCount: stops.length,
-        itemBuilder: (ctx, index) => stopEntry(stops[index]));
-  }
+  Widget list() => ListView.builder(
+      itemCount: stops.length,
+      itemBuilder: (ctx, index) => stopEntry(stops[index]));
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: list(),
-    );
-  }
+  Widget build(BuildContext context) => Container(child: list());
 }

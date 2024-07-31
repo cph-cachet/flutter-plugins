@@ -42,7 +42,7 @@ final moveIcon = Icon(Icons.directions_walk);
 final placeIcon = Icon(Icons.place);
 final featuresIcon = Icon(Icons.assessment);
 final homeStayIcon = Icon(Icons.home);
-final distanceTravelledIcon = Icon(Icons.card_travel);
+final distanceTraveledIcon = Icon(Icons.card_travel);
 final entropyIcon = Icon(Icons.equalizer);
 final varianceIcon = Icon(Icons.swap_calls);
 
@@ -105,13 +105,13 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Set up streams:
   /// * Location streaming to MobilityContext
   /// * Subscribe to MobilityContext updates
-  void streamInit() async {
-    await _requestNotificationPermission();
-    await _requestManageExternalStoragePermission();
+  Future<void> streamInit() async {
+    await requestNotificationPermission();
+    await requestManageExternalStoragePermission();
 
     // ask for location permissions, if not already granted
     if (!await isLocationAlwaysGranted()) {
-      await _requestLocationPermission();
+      await requestLocationPermission();
       await askForLocationAlwaysPermission();
     }
 
@@ -166,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return granted;
   }
 
-  Future<void> _requestLocationPermission() async {
+  Future<void> requestLocationPermission() async {
     final result = await Permission.location.request();
 
     if (result == PermissionStatus.granted) {
@@ -176,7 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _requestNotificationPermission() async {
+  Future<void> requestNotificationPermission() async {
     final result = await Permission.notification.request();
 
     if (result == PermissionStatus.granted) {
@@ -186,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _requestManageExternalStoragePermission() async {
+  Future<void> requestManageExternalStoragePermission() async {
     final result = await Permission.manageExternalStorage.request();
 
     if (result == PermissionStatus.granted) {
@@ -231,9 +231,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 : "${(_mobilityContext.homeStay! * 100).toStringAsFixed(1)}%",
             homeStayIcon),
         entry(
-            "Distance Travelled",
-            "${(_mobilityContext.distanceTravelled! / 1000).toStringAsFixed(2)} km",
-            distanceTravelledIcon),
+            "Distance Traveled",
+            "${(_mobilityContext.distanceTraveled! / 1000).toStringAsFixed(2)} km",
+            distanceTraveledIcon),
         entry(
             "Normalized Entropy",
             "${_mobilityContext.normalizedEntropy?.toStringAsFixed(2)}",
@@ -290,19 +290,17 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Widget _navBar() {
-    return BottomNavigationBar(
-      onTap: onTabTapped, // new
-      currentIndex: _currentIndex, // this will be set when a new tab is tapped
-      type: BottomNavigationBarType.fixed,
-      items: [
-        BottomNavigationBarItem(icon: featuresIcon, label: 'Features'),
-        BottomNavigationBarItem(icon: stopIcon, label: 'Stops'),
-        BottomNavigationBarItem(icon: placeIcon, label: 'Places'),
-        BottomNavigationBarItem(icon: moveIcon, label: 'Moves')
-      ],
-    );
-  }
+  Widget get navBar => BottomNavigationBar(
+        onTap: onTabTapped,
+        currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
+        items: [
+          BottomNavigationBarItem(icon: featuresIcon, label: 'Features'),
+          BottomNavigationBarItem(icon: stopIcon, label: 'Stops'),
+          BottomNavigationBarItem(icon: placeIcon, label: 'Places'),
+          BottomNavigationBarItem(icon: moveIcon, label: 'Moves')
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -331,12 +329,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: pages[_currentIndex],
-      bottomNavigationBar: _navBar(),
+      bottomNavigationBar: navBar,
     );
   }
 }
