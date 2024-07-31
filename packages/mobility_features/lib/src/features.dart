@@ -1,15 +1,15 @@
-part of mobility_features;
+part of '../mobility_features.dart';
 
 /// Main entry for configuring and listening for mobility features.
-/// Used as a singleton `MobilityFactory()`.
+/// Used as a singleton `MobilityFeatures()`.
 class MobilityFeatures {
   double _stopRadius = 5, _placeRadius = 50;
   Duration _stopDuration = const Duration(seconds: 20);
 
   StreamSubscription<LocationSample>? _subscription;
-  _MobilitySerializer<LocationSample>? _serializerSamples;
-  late _MobilitySerializer<Stop> _serializerStops;
-  late _MobilitySerializer<Move> _serializerMoves;
+  MobilitySerializer<LocationSample>? _serializerSamples;
+  late MobilitySerializer<Stop> _serializerStops;
+  late MobilitySerializer<Move> _serializerMoves;
   List<Stop> _stops = [];
   List<Move> _moves = [];
   List<Place> _places = [];
@@ -24,8 +24,7 @@ class MobilityFeatures {
   }
 
   // Outgoing stream
-  StreamController<MobilityContext> _streamController =
-      StreamController<MobilityContext>.broadcast();
+  final _streamController = StreamController<MobilityContext>.broadcast();
 
   Stream<MobilityContext> get contextStream => _streamController.stream;
 
@@ -35,13 +34,13 @@ class MobilityFeatures {
   // Private Singleton field
   static final MobilityFeatures _instance = MobilityFeatures._();
 
-  /// Public getter for the Singleton instance
+  /// Singleton instance of MobilityFeatures.
   factory MobilityFeatures() => _instance;
 
   /// Listen to a Stream of [LocationSample].
   /// The subscription will be stored as a [StreamSubscription]
   /// which may be cancelled later.
-  Future startListening(Stream<LocationSample> stream) async {
+  Future<void> startListening(Stream<LocationSample> stream) async {
     await _handleInit();
 
     if (_subscription != null) {
@@ -52,9 +51,9 @@ class MobilityFeatures {
 
   Future<void> _handleInit() async {
     _serializerSamples =
-        _serializerSamples = _MobilitySerializer<LocationSample>();
-    _serializerStops = _MobilitySerializer<Stop>();
-    _serializerMoves = _MobilitySerializer<Move>();
+        _serializerSamples = MobilitySerializer<LocationSample>();
+    _serializerStops = MobilitySerializer<Stop>();
+    _serializerMoves = MobilitySerializer<Move>();
 
     _stops = (await _serializerStops.load() as List<Stop>);
     _moves = (await _serializerMoves.load() as List<Move>);
@@ -62,8 +61,9 @@ class MobilityFeatures {
     _stops = uniqueElements(_stops) as List<Stop>;
     _moves = uniqueElements(_moves) as List<Move>;
 
-    if (_cluster.isNotEmpty)
+    if (_cluster.isNotEmpty) {
       _print('Loaded ${_cluster.length} location samples from disk');
+    }
     if (_stops.isNotEmpty) {
       _print('Loaded ${_stops.length} stops from disk');
     }
@@ -71,11 +71,9 @@ class MobilityFeatures {
       _print('Loaded ${_moves.length} moves from disk');
     }
 
-    for (var s in _stops) _print(s);
-
     if (_stops.isNotEmpty) {
       /// Only keeps stops and moves from the last known date
-      DateTime date = _stops.last.datetime.midnight;
+      DateTime date = _stops.last.dateTime.midnight;
       _stops = _getElementsForDate(_stops, date) as List<Stop>;
       _moves = _getElementsForDate(_moves, date) as List<Move>;
       _places = _findPlaces(_stops, placeRadius: _placeRadius);
@@ -88,7 +86,7 @@ class MobilityFeatures {
   }
 
   /// Cancel the [StreamSubscription] and stop listening.
-  Future stopListening() async {
+  Future<void> stopListening() async {
     if (_subscription != null) {
       await _subscription!.cancel();
     }
@@ -111,7 +109,7 @@ class MobilityFeatures {
     // If previous samples exist, check if we should compute anything
     if (_cluster.isNotEmpty) {
       // If previous sample was on a different date, reset everything
-      if (_cluster.last.datetime.midnight != sample.datetime.midnight) {
+      if (_cluster.last.dateTime.midnight != sample.dateTime.midnight) {
         _createStopAndResetCluster();
         _clearEverything();
       }
@@ -122,7 +120,7 @@ class MobilityFeatures {
         GeoLocation centroid = _computeCentroid(_cluster);
 
         // If the new data point is far away from cluster, make stop
-        if (Distance.fromGeospatial(centroid, sample) > _stopRadius) {
+        if (Distance.fromGeoSpatial(centroid, sample) > _stopRadius) {
           _createStopAndResetCluster();
         }
       }
@@ -154,7 +152,7 @@ class MobilityFeatures {
 
   /// Converts the cluster into a stop, i.e. closing the cluster
   void _createStopAndResetCluster() {
-    Stop s = Stop._fromLocationSamples(_cluster);
+    Stop s = Stop.fromLocationSamples(_cluster);
 
     // If the stop is too short, it is discarded
     // Otherwise compute a context and send it via the stream
@@ -176,7 +174,7 @@ class MobilityFeatures {
       _serializerStops.save(_stops);
 
       // Extract date
-      DateTime date = _cluster.last.datetime.midnight;
+      DateTime date = _cluster.last.dateTime.midnight;
 
       if (stopPrev != null) {
         _moves = _findMoves(_stops, _samples);
@@ -207,15 +205,11 @@ class MobilityFeatures {
   }
 
   /// Configure the stop-radius for the place algorithm
-  set placeRadius(value) {
-    _placeRadius = value;
-  }
+  set placeRadius(double value) => _placeRadius = value;
 
-  Future<_MobilitySerializer<LocationSample>>
+  Future<MobilitySerializer<LocationSample>>
       get _locationSampleSerializer async {
-    if (_serializerSamples == null) {
-      _serializerSamples = _MobilitySerializer<LocationSample>();
-    }
+    _serializerSamples ??= MobilitySerializer<LocationSample>();
     return _serializerSamples!;
   }
 
@@ -229,18 +223,18 @@ class MobilityFeatures {
     return (await serializer.load() as List<LocationSample>);
   }
 
-  static List<_Timestamped> _getElementsForDate(
-      List<_Timestamped> elements, DateTime date) {
-    return elements.where((e) => e.datetime.midnight == date).toList();
+  static List<Timestamped> _getElementsForDate(
+      List<Timestamped> elements, DateTime date) {
+    return elements.where((e) => e.dateTime.midnight == date).toList();
   }
 
-  static List<_Timestamped> uniqueElements(List<_Timestamped> elements) {
+  static List<Timestamped> uniqueElements(List<Timestamped> elements) {
     List<int> seen = [];
 
-    elements.sort((a, b) => a.datetime.compareTo(b.datetime));
+    elements.sort((a, b) => a.dateTime.compareTo(b.dateTime));
 
     return elements.where((e) {
-      int ms = e.datetime.millisecondsSinceEpoch;
+      int ms = e.dateTime.millisecondsSinceEpoch;
       if (!seen.contains(ms)) {
         seen.add(ms);
         return true;
