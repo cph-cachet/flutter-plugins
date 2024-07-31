@@ -147,6 +147,9 @@ const _$HealthDataTypeEnumMap = {
   HealthDataType.ELECTRODERMAL_ACTIVITY: 'ELECTRODERMAL_ACTIVITY',
   HealthDataType.ELECTROCARDIOGRAM: 'ELECTROCARDIOGRAM',
   HealthDataType.TOTAL_CALORIES_BURNED: 'TOTAL_CALORIES_BURNED',
+  HealthDataType.BIRTH_DATE: 'BIRTH_DATE',
+  HealthDataType.BLOOD_TYPE: 'BLOOD_TYPE',
+  HealthDataType.GENDER: 'GENDER',
 };
 
 const _$HealthDataUnitEnumMap = {
