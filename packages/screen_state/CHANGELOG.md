@@ -1,4 +1,4 @@
-## 3.1.0
+## 4.0.0
 
 - Added support for iOS.
 - Restructuring of the interaction between the plugin and native applications.
