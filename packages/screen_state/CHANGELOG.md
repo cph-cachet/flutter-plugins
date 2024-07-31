@@ -1,3 +1,8 @@
+## 4.0.0
+
+- Added support for iOS.
+- Restructuring of the interaction between the plugin and native applications.
+
 ## 3.0.1
 
 - Reduced minSdk version to 23

@@ -780,15 +780,55 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
 
         private fun writeMealHC(call: MethodCall, result: Result) {
-                val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
-                val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
-                val calories = call.argument<Double>("caloriesConsumed")
-                val carbs = call.argument<Double>("carbohydrates") as Double?
+                val startTime = Instant.ofEpochMilli(call.argument<Long>("start_time")!!)
+                val endTime = Instant.ofEpochMilli(call.argument<Long>("end_time")!!)
+                val calories = call.argument<Double>("calories")
                 val protein = call.argument<Double>("protein") as Double?
-                val fat = call.argument<Double>("fatTotal") as Double?
+                val carbs = call.argument<Double>("carbs") as Double?
+                val fat = call.argument<Double>("fat") as Double?
                 val caffeine = call.argument<Double>("caffeine") as Double?
+                val vitaminA = call.argument<Double>("vitamin_a") as Double?
+                val b1Thiamine = call.argument<Double>("b1_thiamine") as Double?
+                val b2Riboflavin = call.argument<Double>("b2_riboflavin") as Double?
+                val b3Niacin = call.argument<Double>("b3_niacin") as Double?
+                val b5PantothenicAcid = call.argument<Double>("b5_pantothenic_acid") as Double?
+                val b6Pyridoxine = call.argument<Double>("b6_pyridoxine") as Double?
+                val b7Biotin = call.argument<Double>("b7_biotin") as Double?
+                val b9Folate = call.argument<Double>("b9_folate") as Double?
+                val b12Cobalamin = call.argument<Double>("b12_cobalamin") as Double?
+                val vitaminC = call.argument<Double>("vitamin_c") as Double?
+                val vitaminD = call.argument<Double>("vitamin_d") as Double?
+                val vitaminE = call.argument<Double>("vitamin_e") as Double?
+                val vitaminK = call.argument<Double>("vitamin_k") as Double?
+                val calcium = call.argument<Double>("calcium") as Double?
+                val chloride = call.argument<Double>("chloride") as Double?
+                val cholesterol = call.argument<Double>("cholesterol") as Double?
+                // Choline is not yet supported by Health Connect
+                // val choline = call.argument<Double>("choline") as Double?
+                val chromium = call.argument<Double>("chromium") as Double?
+                val copper = call.argument<Double>("copper") as Double?
+                val fatUnsaturated = call.argument<Double>("fat_unsaturated") as Double?
+                val fatMonounsaturated = call.argument<Double>("fat_monounsaturated") as Double?
+                val fatPolyunsaturated = call.argument<Double>("fat_polyunsaturated") as Double?
+                val fatSaturated = call.argument<Double>("fat_saturated") as Double?
+                val fatTransMonoenoic = call.argument<Double>("fat_trans_monoenoic") as Double?
+                val fiber = call.argument<Double>("fiber") as Double?
+                val iodine = call.argument<Double>("iodine") as Double?
+                val iron = call.argument<Double>("iron") as Double?
+                val magnesium = call.argument<Double>("magnesium") as Double?
+                val manganese = call.argument<Double>("manganese") as Double?
+                val molybdenum = call.argument<Double>("molybdenum") as Double?
+                val phosphorus = call.argument<Double>("phosphorus") as Double?
+                val potassium = call.argument<Double>("potassium") as Double?
+                val selenium = call.argument<Double>("selenium") as Double?
+                val sodium = call.argument<Double>("sodium") as Double?
+                val sugar = call.argument<Double>("sugar") as Double?
+                // Water is not support on a food in Health Connect
+                // val water = call.argument<Double>("water") as Double?
+                val zinc = call.argument<Double>("zinc") as Double?
+
                 val name = call.argument<String>("name")
-                val mealType = call.argument<String>("mealType")!!
+                val mealType = call.argument<String>("meal_type")!!
 
                 scope.launch {
                         try {
@@ -801,6 +841,41 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                 protein = protein?.grams,
                                                                 totalFat = fat?.grams,
                                                                 caffeine = caffeine?.grams,
+                                                                vitaminA = vitaminA?.grams,
+                                                                thiamin = b1Thiamine?.grams,
+                                                                riboflavin = b2Riboflavin?.grams,
+                                                                niacin = b3Niacin?.grams,
+                                                                pantothenicAcid = b5PantothenicAcid?.grams,
+                                                                vitaminB6 = b6Pyridoxine?.grams,
+                                                                biotin = b7Biotin?.grams,
+                                                                folate = b9Folate?.grams,
+                                                                vitaminB12 = b12Cobalamin?.grams,
+                                                                vitaminC = vitaminC?.grams,
+                                                                vitaminD = vitaminD?.grams,
+                                                                vitaminE = vitaminE?.grams,
+                                                                vitaminK = vitaminK?.grams,
+                                                                calcium = calcium?.grams,
+                                                                chloride = chloride?.grams,
+                                                                cholesterol = cholesterol?.grams,
+                                                                chromium = chromium?.grams,
+                                                                copper = copper?.grams,
+                                                                unsaturatedFat = fatUnsaturated?.grams,
+                                                                monounsaturatedFat = fatMonounsaturated?.grams,
+                                                                polyunsaturatedFat = fatPolyunsaturated?.grams,
+                                                                saturatedFat = fatSaturated?.grams,
+                                                                transFat = fatTransMonoenoic?.grams,
+                                                                dietaryFiber = fiber?.grams,
+                                                                iodine = iodine?.grams,
+                                                                iron = iron?.grams,
+                                                                magnesium = magnesium?.grams,
+                                                                manganese = manganese?.grams,
+                                                                molybdenum = molybdenum?.grams,
+                                                                phosphorus = phosphorus?.grams,
+                                                                potassium = potassium?.grams,
+                                                                selenium = selenium?.grams,
+                                                                sodium = sodium?.grams,
+                                                                sugar = sugar?.grams,
+                                                                zinc = zinc?.grams,
                                                                 startTime = startTime,
                                                                 startZoneOffset = null,
                                                                 endTime = endTime,
@@ -843,14 +918,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         return
                 }
 
-                val startTime = call.argument<Long>("startTime")!!
-                val endTime = call.argument<Long>("endTime")!!
-                val calories = call.argument<Double>("caloriesConsumed")
-                val carbs = call.argument<Double>("carbohydrates") as Double?
+                val startTime = call.argument<Long>("start_time")!!
+                val endTime = call.argument<Long>("end_time")!!
+                val calories = call.argument<Double>("calories")
+                val carbs = call.argument<Double>("carbs") as Double?
                 val protein = call.argument<Double>("protein") as Double?
-                val fat = call.argument<Double>("fatTotal") as Double?
+                val fat = call.argument<Double>("fat") as Double?
+            
+
                 val name = call.argument<String>("name")
-                val mealType = call.argument<String>("mealType")!!
+                val mealType = call.argument<String>("meal_type")!!
 
                 val dataType = DataType.TYPE_NUTRITION
 
@@ -870,7 +947,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                 .build()
 
                 val nutrients = mutableMapOf(Field.NUTRIENT_CALORIES to calories?.toFloat())
-
+                
                 if (carbs != null) {
                         nutrients[Field.NUTRIENT_TOTAL_CARBS] = carbs.toFloat()
                 }
@@ -890,7 +967,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                 endTime,
                                                                 TimeUnit.MILLISECONDS
                                                 )
-                                                .setField(Field.FIELD_NUTRIENTS, nutrients)
+                                                .setField(
+                                                    Field.FIELD_NUTRIENTS,
+                                                    // Remove null values
+                                                    nutrients.filterValues { it != null }.toMutableMap(),
+                                                )
 
                 if (name != null) {
                         dataBuilder.setField(Field.FIELD_FOOD_ITEM, name as String)
@@ -2197,15 +2278,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
 
         /**
-         * Revokes access to Google Fit using the `disableFit`-method.
+         * Revokes access to Health Connect using `revokeAllPermissions` and Google Fit using the `disableFit`-method.
          *
          * Note: Using the `revokeAccess` creates a bug on android when trying to reapply for
          * permissions afterwards, hence `disableFit` was used.
+         * Note: When using `revokePermissions` with Health Connect, the app must be completely killed
+         * for it to take effect.
          */
         private fun revokePermissions(call: MethodCall, result: Result) {
                 if (useHealthConnectIfAvailable && healthConnectAvailable) {
-                        result.notImplemented()
-                        return
+                        scope.launch {
+                                Log.i("Health", "Disabling Health Connect")
+                                healthConnectClient.permissionController.revokeAllPermissions()
+                        }
+                        result.success(true)
                 }
                 if (context == null) {
                         result.success(false)
@@ -2233,6 +2319,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
                 val start = call.argument<Long>("startTime")!!
                 val end = call.argument<Long>("endTime")!!
+                val includeManualEntry = call.argument<Boolean>("includeManualEntry")!!
 
                 if (useHealthConnectIfAvailable && healthConnectAvailable) {
                         getStepsHealthConnect(start, end, result)
@@ -2263,7 +2350,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
                 val request =
                                 DataReadRequest.Builder()
-                                                .aggregate(ds)
+                                                .read(ds)
                                                 .bucketByTime(duration, TimeUnit.MILLISECONDS)
                                                 .setTimeRange(start, end, TimeUnit.MILLISECONDS)
                                                 .build()
@@ -2281,7 +2368,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                 getStepsInRange(
                                                                 start,
                                                                 end,
-                                                                aggregatedDataType,
+                                                                includeManualEntry,
                                                                 result
                                                 ),
                                 )
@@ -2316,42 +2403,64 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         )
                                         result.success(stepsInInterval)
                                 } catch (e: Exception) {
-                                        Log.i("FLUTTER_HEALTH::ERROR", "unable to return steps")
+                                        Log.e("FLUTTER_HEALTH::ERROR", "Unable to return steps due to the following exception:")
+                                        Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
                                         result.success(null)
                                 }
                         }
 
         private fun getStepsInRange(
-                        start: Long,
-                        end: Long,
-                        aggregatedDataType: DataType,
-                        result: Result,
-        ) = OnSuccessListener { response: DataReadResponse ->
-                val map = HashMap<Long, Int>() // need to return to Dart so can't use sparse array
-                for (bucket in response.buckets) {
-                        val dp = bucket.dataSets.firstOrNull()?.dataPoints?.firstOrNull()
-                        if (dp != null) {
-                                val count = dp.getValue(aggregatedDataType.fields[0])
+                start: Long,
+                end: Long,
+                includeManualEntry: Boolean,
+                result: Result
+                ) = OnSuccessListener { response: DataReadResponse ->                
+                var totalSteps = 0 // Variable to accumulate the total steps.
 
-                                val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
-                                val startDate = Date(startTime)
-                                val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
-                                Log.i(
-                                                "FLUTTER_HEALTH::SUCCESS",
-                                                "returning $count steps for $startDate - $endDate",
-                                )
-                                map[startTime] = count.asInt()
-                        } else {
-                                val startDay = Date(start)
-                                val endDay = Date(end)
-                                Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
+                for (bucket in response.buckets) {
+                        for (dataSet in bucket.dataSets) {
+                                var dataPoints = dataSet.dataPoints
+                                if (!includeManualEntry) {
+                                        dataPoints =
+                                                        dataPoints.filterIndexed { _, dataPoint ->
+                                                                !dataPoint.originalDataSource
+                                                                                .streamName
+                                                                                .contains(
+                                                                                                "user_input"
+                                                                                )
+                                                        }
+                                }
+                                for (dp in dataPoints) {
+                                        val streamName = dp.originalDataSource.streamName
+                                        if (!includeManualEntry && streamName.contains("user_input")) {
+                                                // Skip this data point if manual entry is not included
+                                                Log.i("FLUTTER_HEALTH::SKIPPED", "Skipping manual entry data point with stream name $streamName")
+                                                continue
+                                        }
+
+                                        val count = dp.getValue(Field.FIELD_STEPS)
+                                        totalSteps += count.asInt()
+
+                                        val startTime = dp.getStartTime(TimeUnit.MILLISECONDS)
+                                        val startDate = Date(startTime)
+                                        val endDate = Date(dp.getEndTime(TimeUnit.MILLISECONDS))
+                                        Log.i(
+                                                "FLUTTER_HEALTH::INFO",
+                                                "adding $count steps for $startDate - $endDate. Total so far: $totalSteps",
+                                        )
+                                }
                         }
                 }
 
-                assert(map.size <= 1) {
-                        "getTotalStepsInInterval should return only one interval. Found: ${map.size}"
+                if (totalSteps == 0) {
+                        val startDay = Date(start)
+                        val endDay = Date(end)
+                        Log.i("FLUTTER_HEALTH::ERROR", "no steps for $startDay - $endDay")
                 }
-                Handler(context!!.mainLooper).run { result.success(map.values.firstOrNull()) }
+
+                Log.i("FLUTTER_HEALTH::SUCCESS", "Final total steps in interval: $totalSteps")
+
+                Handler(context!!.mainLooper).run { result.success(totalSteps) }
         }
 
         /// Disconnect Google fit
@@ -2636,204 +2745,210 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
                 val healthConnectData = mutableListOf<Map<String, Any?>>()
                 scope.launch {
-                        MapToHCType[dataType]?.let { classType ->
-                                val records = mutableListOf<Record>()
+                        try {
+                                MapToHCType[dataType]?.let { classType ->
+                                        val records = mutableListOf<Record>()
 
-                                // Set up the initial request to read health records with specified
-                                // parameters
-                                var request =
-                                                ReadRecordsRequest(
-                                                                recordType = classType,
-                                                                // Define the maximum amount of data
-                                                                // that HealthConnect can return
-                                                                // in a single request
-                                                                timeRangeFilter =
-                                                                                TimeRangeFilter.between(
-                                                                                                startTime,
-                                                                                                endTime
-                                                                                ),
-                                                )
-
-                                var response = healthConnectClient.readRecords(request)
-                                var pageToken = response.pageToken
-
-                                // Add the records from the initial response to the records list
-                                records.addAll(response.records)
-
-                                // Continue making requests and fetching records while there is a
-                                // page token
-                                while (!pageToken.isNullOrEmpty()) {
-                                        request =
+                                        // Set up the initial request to read health records with specified
+                                        // parameters
+                                        var request =
                                                         ReadRecordsRequest(
                                                                         recordType = classType,
+                                                                        // Define the maximum amount of data
+                                                                        // that HealthConnect can return
+                                                                        // in a single request
                                                                         timeRangeFilter =
                                                                                         TimeRangeFilter.between(
                                                                                                         startTime,
                                                                                                         endTime
                                                                                         ),
-                                                                        pageToken = pageToken
                                                         )
-                                        response = healthConnectClient.readRecords(request)
 
-                                        pageToken = response.pageToken
+                                        var response = healthConnectClient.readRecords(request)
+                                        var pageToken = response.pageToken
+
+                                        // Add the records from the initial response to the records list
                                         records.addAll(response.records)
-                                }
 
-                                // Workout needs distance and total calories burned too
-                                if (dataType == WORKOUT) {
-                                        for (rec in records) {
-                                                val record = rec as ExerciseSessionRecord
-                                                val distanceRequest =
-                                                                healthConnectClient.readRecords(
-                                                                                ReadRecordsRequest(
-                                                                                                recordType =
-                                                                                                                DistanceRecord::class,
-                                                                                                timeRangeFilter =
-                                                                                                                TimeRangeFilter.between(
-                                                                                                                                record.startTime,
-                                                                                                                                record.endTime,
-                                                                                                                ),
-                                                                                ),
+                                        // Continue making requests and fetching records while there is a
+                                        // page token
+                                        while (!pageToken.isNullOrEmpty()) {
+                                                request =
+                                                                ReadRecordsRequest(
+                                                                                recordType = classType,
+                                                                                timeRangeFilter =
+                                                                                                TimeRangeFilter.between(
+                                                                                                                startTime,
+                                                                                                                endTime
+                                                                                                ),
+                                                                                pageToken = pageToken
                                                                 )
-                                                var totalDistance = 0.0
-                                                for (distanceRec in distanceRequest.records) {
-                                                        totalDistance +=
-                                                                        distanceRec.distance
-                                                                                        .inMeters
-                                                }
+                                                response = healthConnectClient.readRecords(request)
 
-                                                val energyBurnedRequest =
-                                                                healthConnectClient.readRecords(
-                                                                                ReadRecordsRequest(
-                                                                                                recordType =
-                                                                                                                TotalCaloriesBurnedRecord::class,
-                                                                                                timeRangeFilter =
-                                                                                                                TimeRangeFilter.between(
-                                                                                                                                record.startTime,
-                                                                                                                                record.endTime,
-                                                                                                                ),
-                                                                                ),
-                                                                )
-                                                var totalEnergyBurned = 0.0
-                                                for (energyBurnedRec in
-                                                                energyBurnedRequest.records) {
-                                                        totalEnergyBurned +=
-                                                                        energyBurnedRec.energy
-                                                                                        .inKilocalories
-                                                }
-
-                                                val stepRequest =
-                                                                healthConnectClient.readRecords(
-                                                                                ReadRecordsRequest(
-                                                                                                recordType =
-                                                                                                                StepsRecord::class,
-                                                                                                timeRangeFilter =
-                                                                                                                TimeRangeFilter.between(
-                                                                                                                                record.startTime,
-                                                                                                                                record.endTime
-                                                                                                                ),
-                                                                                ),
-                                                                )
-                                                var totalSteps = 0.0
-                                                for (stepRec in stepRequest.records) {
-                                                        totalSteps += stepRec.count
-                                                }
-
-                                                // val metadata = (rec as Record).metadata
-                                                // Add final datapoint
-                                                healthConnectData.add(
-                                                                // mapOf(
-                                                                mapOf<String, Any?>(
-                                                                                "workoutActivityType" to
-                                                                                                (workoutTypeMapHealthConnect
-                                                                                                                .filterValues {
-                                                                                                                        it ==
-                                                                                                                                        record.exerciseType
-                                                                                                                }
-                                                                                                                .keys
-                                                                                                                .firstOrNull()
-                                                                                                                ?: "OTHER"),
-                                                                                "totalDistance" to
-                                                                                                if (totalDistance ==
-                                                                                                                                0.0
-                                                                                                )
-                                                                                                                null
-                                                                                                else
-                                                                                                                totalDistance,
-                                                                                "totalDistanceUnit" to
-                                                                                                "METER",
-                                                                                "totalEnergyBurned" to
-                                                                                                if (totalEnergyBurned ==
-                                                                                                                                0.0
-                                                                                                )
-                                                                                                                null
-                                                                                                else
-                                                                                                                totalEnergyBurned,
-                                                                                "totalEnergyBurnedUnit" to
-                                                                                                "KILOCALORIE",
-                                                                                "totalSteps" to
-                                                                                                if (totalSteps ==
-                                                                                                                                0.0
-                                                                                                )
-                                                                                                                null
-                                                                                                else
-                                                                                                                totalSteps,
-                                                                                "totalStepsUnit" to
-                                                                                                "COUNT",
-                                                                                "unit" to "MINUTES",
-                                                                                "date_from" to
-                                                                                                rec.startTime
-                                                                                                                .toEpochMilli(),
-                                                                                "date_to" to
-                                                                                                rec.endTime.toEpochMilli(),
-                                                                                "source_id" to "",
-                                                                                "source_name" to
-                                                                                                record.metadata
-                                                                                                                .dataOrigin
-                                                                                                                .packageName,
-                                                                ),
-                                                )
+                                                pageToken = response.pageToken
+                                                records.addAll(response.records)
                                         }
-                                        // Filter sleep stages for requested stage
-                                } else if (classType == SleepSessionRecord::class) {
-                                        for (rec in response.records) {
-                                                if (rec is SleepSessionRecord) {
-                                                        if (dataType == SLEEP_SESSION) {
-                                                                healthConnectData.addAll(
-                                                                                convertRecord(
-                                                                                                rec,
-                                                                                                dataType
-                                                                                )
-                                                                )
-                                                        } else {
-                                                                for (recStage in rec.stages) {
-                                                                        if (dataType ==
-                                                                                                        MapSleepStageToType[
-                                                                                                                        recStage.stage]
-                                                                        ) {
-                                                                                healthConnectData
-                                                                                                .addAll(
-                                                                                                                convertRecordStage(
-                                                                                                                                recStage,
-                                                                                                                                dataType,
-                                                                                                                                rec.metadata.dataOrigin
-                                                                                                                                                .packageName
-                                                                                                                )
-                                                                                                )
+
+                                        // Workout needs distance and total calories burned too
+                                        if (dataType == WORKOUT) {
+                                                for (rec in records) {
+                                                        val record = rec as ExerciseSessionRecord
+                                                        val distanceRequest =
+                                                                        healthConnectClient.readRecords(
+                                                                                        ReadRecordsRequest(
+                                                                                                        recordType =
+                                                                                                                        DistanceRecord::class,
+                                                                                                        timeRangeFilter =
+                                                                                                                        TimeRangeFilter.between(
+                                                                                                                                        record.startTime,
+                                                                                                                                        record.endTime,
+                                                                                                                        ),
+                                                                                        ),
+                                                                        )
+                                                        var totalDistance = 0.0
+                                                        for (distanceRec in distanceRequest.records) {
+                                                                totalDistance +=
+                                                                                distanceRec.distance
+                                                                                                .inMeters
+                                                        }
+
+                                                        val energyBurnedRequest =
+                                                                        healthConnectClient.readRecords(
+                                                                                        ReadRecordsRequest(
+                                                                                                        recordType =
+                                                                                                                        TotalCaloriesBurnedRecord::class,
+                                                                                                        timeRangeFilter =
+                                                                                                                        TimeRangeFilter.between(
+                                                                                                                                        record.startTime,
+                                                                                                                                        record.endTime,
+                                                                                                                        ),
+                                                                                        ),
+                                                                        )
+                                                        var totalEnergyBurned = 0.0
+                                                        for (energyBurnedRec in
+                                                                        energyBurnedRequest.records) {
+                                                                totalEnergyBurned +=
+                                                                                energyBurnedRec.energy
+                                                                                                .inKilocalories
+                                                        }
+
+                                                        val stepRequest =
+                                                                        healthConnectClient.readRecords(
+                                                                                        ReadRecordsRequest(
+                                                                                                        recordType =
+                                                                                                                        StepsRecord::class,
+                                                                                                        timeRangeFilter =
+                                                                                                                        TimeRangeFilter.between(
+                                                                                                                                        record.startTime,
+                                                                                                                                        record.endTime
+                                                                                                                        ),
+                                                                                        ),
+                                                                        )
+                                                        var totalSteps = 0.0
+                                                        for (stepRec in stepRequest.records) {
+                                                                totalSteps += stepRec.count
+                                                        }
+
+                                                        // val metadata = (rec as Record).metadata
+                                                        // Add final datapoint
+                                                        healthConnectData.add(
+                                                                        // mapOf(
+                                                                        mapOf<String, Any?>(
+                                                                                        "workoutActivityType" to
+                                                                                                        (workoutTypeMapHealthConnect
+                                                                                                                        .filterValues {
+                                                                                                                                it ==
+                                                                                                                                                record.exerciseType
+                                                                                                                        }
+                                                                                                                        .keys
+                                                                                                                        .firstOrNull()
+                                                                                                                        ?: "OTHER"),
+                                                                                        "totalDistance" to
+                                                                                                        if (totalDistance ==
+                                                                                                                                        0.0
+                                                                                                        )
+                                                                                                                        null
+                                                                                                        else
+                                                                                                                        totalDistance,
+                                                                                        "totalDistanceUnit" to
+                                                                                                        "METER",
+                                                                                        "totalEnergyBurned" to
+                                                                                                        if (totalEnergyBurned ==
+                                                                                                                                        0.0
+                                                                                                        )
+                                                                                                                        null
+                                                                                                        else
+                                                                                                                        totalEnergyBurned,
+                                                                                        "totalEnergyBurnedUnit" to
+                                                                                                        "KILOCALORIE",
+                                                                                        "totalSteps" to
+                                                                                                        if (totalSteps ==
+                                                                                                                                        0.0
+                                                                                                        )
+                                                                                                                        null
+                                                                                                        else
+                                                                                                                        totalSteps,
+                                                                                        "totalStepsUnit" to
+                                                                                                        "COUNT",
+                                                                                        "unit" to "MINUTES",
+                                                                                        "date_from" to
+                                                                                                        rec.startTime
+                                                                                                                        .toEpochMilli(),
+                                                                                        "date_to" to
+                                                                                                        rec.endTime.toEpochMilli(),
+                                                                                        "source_id" to "",
+                                                                                        "source_name" to
+                                                                                                        record.metadata
+                                                                                                                        .dataOrigin
+                                                                                                                        .packageName,
+                                                                        ),
+                                                        )
+                                                }
+                                                // Filter sleep stages for requested stage
+                                        } else if (classType == SleepSessionRecord::class) {
+                                                for (rec in response.records) {
+                                                        if (rec is SleepSessionRecord) {
+                                                                if (dataType == SLEEP_SESSION) {
+                                                                        healthConnectData.addAll(
+                                                                                        convertRecord(
+                                                                                                        rec,
+                                                                                                        dataType
+                                                                                        )
+                                                                        )
+                                                                } else {
+                                                                        for (recStage in rec.stages) {
+                                                                                if (dataType ==
+                                                                                                                MapSleepStageToType[
+                                                                                                                                recStage.stage]
+                                                                                ) {
+                                                                                        healthConnectData
+                                                                                                        .addAll(
+                                                                                                                        convertRecordStage(
+                                                                                                                                        recStage,
+                                                                                                                                        dataType,
+                                                                                                                                        rec.metadata.dataOrigin
+                                                                                                                                                        .packageName
+                                                                                                                        )
+                                                                                                        )
+                                                                                }
                                                                         }
                                                                 }
                                                         }
                                                 }
-                                        }
-                                } else {
-                                        for (rec in records) {
-                                                healthConnectData.addAll(
-                                                                convertRecord(rec, dataType)
-                                                )
+                                        } else {
+                                                for (rec in records) {
+                                                        healthConnectData.addAll(
+                                                                        convertRecord(rec, dataType)
+                                                        )
+                                                }
                                         }
                                 }
+                                Handler(context!!.mainLooper).run { result.success(healthConnectData) }
+                        } catch (e: Exception) {
+                                Log.i("FLUTTER_HEALTH::ERROR", "Unable to return $dataType due to the following exception:")
+                                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                                result.success(null)
                         }
-                        Handler(context!!.mainLooper).run { result.success(healthConnectData) }
                 }
         }
 
@@ -2865,66 +2980,72 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
                 val healthConnectData = mutableListOf<Map<String, Any?>>()
                 scope.launch {
-                        MapToHCAggregateMetric[dataType]?.let { metricClassType ->
-                                val request =
-                                                AggregateGroupByDurationRequest(
-                                                                metrics = setOf(metricClassType),
-                                                                timeRangeFilter =
-                                                                                TimeRangeFilter.between(
-                                                                                                startTime,
-                                                                                                endTime
-                                                                                ),
-                                                                timeRangeSlicer =
-                                                                                Duration.ofSeconds(
-                                                                                                interval
-                                                                                )
-                                                )
-                                val response = healthConnectClient.aggregateGroupByDuration(request)
-
-                                for (durationResult in response) {
-                                        // The result may be null if no data is available in the
-                                        // time range
-                                        var totalValue = durationResult.result[metricClassType]
-                                        if (totalValue is Length) {
-                                                totalValue = totalValue.inMeters
-                                        } else if (totalValue is Energy) {
-                                                totalValue = totalValue.inKilocalories
-                                        }
-
-                                        val packageNames =
-                                                        durationResult.result.dataOrigins
-                                                                        .joinToString { origin ->
-                                                                                "${origin.packageName}"
-                                                                        }
-
-                                        val data =
-                                                        mapOf<String, Any>(
-                                                                        "value" to
-                                                                                        (totalValue
-                                                                                                        ?: 0),
-                                                                        "date_from" to
-                                                                                        durationResult.startTime
-                                                                                                        .toEpochMilli(),
-                                                                        "date_to" to
-                                                                                        durationResult.endTime
-                                                                                                        .toEpochMilli(),
-                                                                        "source_name" to
-                                                                                        packageNames,
-                                                                        "source_id" to "",
-                                                                        "is_manual_entry" to
-                                                                                        packageNames.contains(
-                                                                                                        "user_input"
+                        try {
+                                MapToHCAggregateMetric[dataType]?.let { metricClassType ->
+                                        val request =
+                                                        AggregateGroupByDurationRequest(
+                                                                        metrics = setOf(metricClassType),
+                                                                        timeRangeFilter =
+                                                                                        TimeRangeFilter.between(
+                                                                                                        startTime,
+                                                                                                        endTime
+                                                                                        ),
+                                                                        timeRangeSlicer =
+                                                                                        Duration.ofSeconds(
+                                                                                                        interval
                                                                                         )
                                                         )
-                                        healthConnectData.add(data)
+                                        val response = healthConnectClient.aggregateGroupByDuration(request)
+
+                                        for (durationResult in response) {
+                                                // The result may be null if no data is available in the
+                                                // time range
+                                                var totalValue = durationResult.result[metricClassType]
+                                                if (totalValue is Length) {
+                                                        totalValue = totalValue.inMeters
+                                                } else if (totalValue is Energy) {
+                                                        totalValue = totalValue.inKilocalories
+                                                }
+
+                                                val packageNames =
+                                                                durationResult.result.dataOrigins
+                                                                                .joinToString { origin ->
+                                                                                        "${origin.packageName}"
+                                                                                }
+
+                                                val data =
+                                                                mapOf<String, Any>(
+                                                                                "value" to
+                                                                                                (totalValue
+                                                                                                                ?: 0),
+                                                                                "date_from" to
+                                                                                                durationResult.startTime
+                                                                                                                .toEpochMilli(),
+                                                                                "date_to" to
+                                                                                                durationResult.endTime
+                                                                                                                .toEpochMilli(),
+                                                                                "source_name" to
+                                                                                                packageNames,
+                                                                                "source_id" to "",
+                                                                                "is_manual_entry" to
+                                                                                                packageNames.contains(
+                                                                                                                "user_input"
+                                                                                                )
+                                                                )
+                                                healthConnectData.add(data)
+                                        }
                                 }
+                                Handler(context!!.mainLooper).run { result.success(healthConnectData) }
+                        } catch (e: Exception) {
+                                Log.i("FLUTTER_HEALTH::ERROR", "Unable to return $dataType due to the following exception:")
+                                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                                result.success(null)
                         }
-                        Handler(context!!.mainLooper).run { result.success(healthConnectData) }
                 }
         }
 
         // TODO: Find alternative to SOURCE_ID or make it nullable?
-        fun convertRecord(record: Any, dataType: String): List<Map<String, Any>> {
+        fun convertRecord(record: Any, dataType: String): List<Map<String, Any?>> {
                 val metadata = (record as Record).metadata
                 when (record) {
                         is WeightRecord ->
@@ -3286,19 +3407,51 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         )
                         is NutritionRecord ->
                                         return listOf(
-                                                        mapOf<String, Any>(
-                                                                        "calories" to
-                                                                                        record.energy!!.inKilocalories,
-                                                                        "protein" to
-                                                                                        record.protein!!.inGrams,
-                                                                        "carbs" to
-                                                                                        record.totalCarbohydrate!!
-                                                                                                        .inGrams,
-                                                                        "fat" to
-                                                                                        record.totalFat!!
-                                                                                                        .inGrams,
+                                                        mapOf<String, Any?>(
+                                                                        "calories" to record.energy?.inKilocalories,
+                                                                        "protein" to record.protein?.inGrams,
+                                                                        "carbs" to record.totalCarbohydrate?.inGrams,
+                                                                        "fat" to record.totalFat?.inGrams,
+                                                                        "caffeine" to record.caffeine?.inGrams,
+                                                                        "vitamin_a" to record.vitaminA?.inGrams,
+                                                                        "b1_thiamine" to record.thiamin?.inGrams,
+                                                                        "b2_riboflavin" to record.riboflavin?.inGrams,
+                                                                        "b3_niacin" to record.niacin?.inGrams,
+                                                                        "b5_pantothenic_acid" to record.pantothenicAcid?.inGrams,
+                                                                        "b6_pyridoxine" to record.vitaminB6?.inGrams,
+                                                                        "b7_biotin" to record.biotin?.inGrams,
+                                                                        "b9_folate" to record.folate?.inGrams,
+                                                                        "b12_cobalamin" to record.vitaminB12?.inGrams,
+                                                                        "vitamin_c" to record.vitaminC?.inGrams,
+                                                                        "vitamin_d" to record.vitaminD?.inGrams,
+                                                                        "vitamin_e" to record.vitaminE?.inGrams,
+                                                                        "vitamin_k" to record.vitaminK?.inGrams,
+                                                                        "calcium" to record.calcium?.inGrams,
+                                                                        "chloride" to record.chloride?.inGrams,
+                                                                        "cholesterol" to record.cholesterol?.inGrams,
+                                                                        "choline" to null,
+                                                                        "chromium" to record.chromium?.inGrams,
+                                                                        "copper" to record.copper?.inGrams,
+                                                                        "fat_unsaturated" to record.unsaturatedFat?.inGrams,
+                                                                        "fat_monounsaturated" to record.monounsaturatedFat?.inGrams,
+                                                                        "fat_polyunsaturated" to record.polyunsaturatedFat?.inGrams,
+                                                                        "fat_saturated" to record.saturatedFat?.inGrams,
+                                                                        "fat_trans_monoenoic" to record.transFat?.inGrams,
+                                                                        "fiber" to record.dietaryFiber?.inGrams,
+                                                                        "iodine" to record.iodine?.inGrams,
+                                                                        "iron" to record.iron?.inGrams,
+                                                                        "magnesium" to record.magnesium?.inGrams,
+                                                                        "manganese" to record.manganese?.inGrams,
+                                                                        "molybdenum" to record.molybdenum?.inGrams,
+                                                                        "phosphorus" to record.phosphorus?.inGrams,
+                                                                        "potassium" to record.potassium?.inGrams,
+                                                                        "selenium" to record.selenium?.inGrams,
+                                                                        "sodium" to record.sodium?.inGrams,
+                                                                        "sugar" to record.sugar?.inGrams,
+                                                                        "water" to null,
+                                                                        "zinc" to record.zinc?.inGrams,
                                                                         "name" to record.name!!,
-                                                                        "mealType" to
+                                                                        "meal_type" to
                                                                                         (MapTypeToMealTypeHC[
                                                                                                         record.mealType]
                                                                                                         ?: MEAL_TYPE_UNKNOWN),

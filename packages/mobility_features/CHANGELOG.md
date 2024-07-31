@@ -1,3 +1,9 @@
+## 5.0.0
+
+- upgrade to Dart 3.2 and Flutter 3.16
+- improvements to API docs
+- improvements to example apps (permissions - PR [#971](https://github.com/cph-cachet/flutter-plugins/pull/971)).
+
 ## 4.0.1
 
 - Fixed formatting

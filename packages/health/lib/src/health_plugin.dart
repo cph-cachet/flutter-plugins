@@ -19,8 +19,8 @@ part of '../health.dart';
 ///    and [getHealthAggregateDataFromTypes] methods.
 ///  * Reading total step counts using the [getTotalStepsInInterval] method.
 ///  * Writing different types of specialized health data like the [writeWorkoutData],
-///    [writeBloodPressure], [writeBloodOxygen], [writeAudiogram], and [writeMeal]
-///    methods.
+///    [writeBloodPressure], [writeBloodOxygen], [writeAudiogram], [writeMeal],
+///    [writeInsulinDelivery] methods.
 class Health {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   static final _instance = Health._();
@@ -54,13 +54,12 @@ class Health {
   /// If [useHealthConnectIfAvailable] is true, Google Health Connect on
   /// Android will be used. Has no effect on iOS.
   Future<void> configure({bool useHealthConnectIfAvailable = false}) async {
-    _deviceId ??= Platform.isAndroid
-        ? (await _deviceInfo.androidInfo).id
-        : (await _deviceInfo.iosInfo).identifierForVendor;
-
-    _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
-    if (_useHealthConnectIfAvailable) {
+    if (Platform.isAndroid) {
+      _deviceId = (await _deviceInfo.androidInfo).id;
+      _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
       await _channel.invokeMethod('useHealthConnectIfAvailable');
+    } else {
+      _deviceId = (await _deviceInfo.iosInfo).identifierForVendor;
     }
   }
 
@@ -518,11 +517,48 @@ class Health {
   ///    It must be equal to or earlier than [endTime].
   ///  * [endTime] - the end time when the meal was consumed.
   ///    It must be equal to or later than [startTime].
+  ///  * [name] - optional name information about this meal.
   ///  * [caloriesConsumed] - total calories consumed with this meal.
   ///  * [carbohydrates] - optional carbohydrates information.
   ///  * [protein] - optional protein information.
   ///  * [fatTotal] - optional total fat information.
-  ///  * [name] - optional name information about this meal.
+  ///  * [caffeine] - optional caffeine information.
+  ///  * [vitaminA] - optional vitamin A information.
+  ///  * [b1Thiamin] - optional vitamin B1 (thiamin) information.
+  ///  * [b2Riboflavin] - optional vitamin B2 (riboflavin) information.
+  ///  * [b3Niacin] - optional vitamin B3 (niacin) information.
+  ///  * [b5PantothenicAcid] - optional vitamin B5 (pantothenic acid) information.
+  ///  * [b6Pyridoxine] - optional vitamin B6 (pyridoxine) information.
+  ///  * [b7Biotin] - optional vitamin B7 (biotin) information.
+  ///  * [b9Folate] - optional vitamin B9 (folate) information.
+  ///  * [b12Cobalamin] - optional vitamin B12 (cobalamin) information.
+  ///  * [vitaminC] - optional vitamin C information.
+  ///  * [vitaminD] - optional vitamin D information.
+  ///  * [vitaminE] - optional vitamin E information.
+  ///  * [vitaminK] - optional vitamin K information.
+  ///  * [calcium] - optional calcium information.
+  ///  * [cholesterol] - optional cholesterol information.
+  ///  * [chloride] - optional chloride information.
+  ///  * [chromium] - optional chromium information.
+  ///  * [copper] - optional copper information.
+  ///  * [fatUnsaturated] - optional unsaturated fat information.
+  ///  * [fatMonounsaturated] - optional monounsaturated fat information.
+  ///  * [fatPolyunsaturated] - optional polyunsaturated fat information.
+  ///  * [fatSaturated] - optional saturated fat information.
+  ///  * [fatTransMonoenoic] - optional trans-monoenoic fat information.
+  ///  * [fiber] - optional fiber information.
+  ///  * [iodine] - optional iodine information.
+  ///  * [iron] - optional iron information.
+  ///  * [magnesium] - optional magnesium information.
+  ///  * [manganese] - optional manganese information.
+  ///  * [molybdenum] - optional molybdenum information.
+  ///  * [phosphorus] - optional phosphorus information.
+  ///  * [potassium] - optional potassium information.
+  ///  * [selenium] - optional selenium information.
+  ///  * [sodium] - optional sodium information.
+  ///  * [sugar] - optional sugar information.
+  ///  * [water] - optional water information.
+  ///  * [zinc] - optional zinc information.
   Future<bool> writeMeal({
     required MealType mealType,
     required DateTime startTime,
@@ -533,21 +569,93 @@ class Health {
     double? fatTotal,
     String? name,
     double? caffeine,
+    double? vitaminA,
+    double? b1Thiamin,
+    double? b2Riboflavin,
+    double? b3Niacin,
+    double? b5PantothenicAcid,
+    double? b6Pyridoxine,
+    double? b7Biotin,
+    double? b9Folate,
+    double? b12Cobalamin,
+    double? vitaminC,
+    double? vitaminD,
+    double? vitaminE,
+    double? vitaminK,
+    double? calcium,
+    double? cholesterol,
+    double? chloride,
+    double? chromium,
+    double? copper,
+    double? fatUnsaturated,
+    double? fatMonounsaturated,
+    double? fatPolyunsaturated,
+    double? fatSaturated,
+    double? fatTransMonoenoic,
+    double? fiber,
+    double? iodine,
+    double? iron,
+    double? magnesium,
+    double? manganese,
+    double? molybdenum,
+    double? phosphorus,
+    double? potassium,
+    double? selenium,
+    double? sodium,
+    double? sugar,
+    double? water,
+    double? zinc,
   }) async {
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
 
     Map<String, dynamic> args = {
-      'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch,
-      'caloriesConsumed': caloriesConsumed,
-      'carbohydrates': carbohydrates,
-      'protein': protein,
-      'fatTotal': fatTotal,
       'name': name,
+      'meal_type': mealType.name,
+      'start_time': startTime.millisecondsSinceEpoch,
+      'end_time': endTime.millisecondsSinceEpoch,
+      'calories': caloriesConsumed,
+      'carbs': carbohydrates,
+      'protein': protein,
+      'fat': fatTotal,
       'caffeine': caffeine,
-      'mealType': mealType.name,
+      'vitamin_a': vitaminA,
+      'b1_thiamin': b1Thiamin,
+      'b2_riboflavin': b2Riboflavin,
+      'b3_niacin': b3Niacin,
+      'b5_pantothenic_acid': b5PantothenicAcid,
+      'b6_pyridoxine': b6Pyridoxine,
+      'b7_biotin': b7Biotin,
+      'b9_folate': b9Folate,
+      'b12_cobalamin': b12Cobalamin,
+      'vitamin_c': vitaminC,
+      'vitamin_d': vitaminD,
+      'vitamin_e': vitaminE,
+      'vitamin_k': vitaminK,
+      'calcium': calcium,
+      'cholesterol': cholesterol,
+      'chloride': chloride,
+      'chromium': chromium,
+      'copper': copper,
+      'fat_unsaturated': fatUnsaturated,
+      'fat_monounsaturated': fatMonounsaturated,
+      'fat_polyunsaturated': fatPolyunsaturated,
+      'fat_saturated': fatSaturated,
+      'fat_trans_monoenoic': fatTransMonoenoic,
+      'fiber': fiber,
+      'iodine': iodine,
+      'iron': iron,
+      'magnesium': magnesium,
+      'manganese': manganese,
+      'molybdenum': molybdenum,
+      'phosphorus': phosphorus,
+      'potassium': potassium,
+      'selenium': selenium,
+      'sodium': sodium,
+      'sugar': sugar,
+      'water': water,
+      'zinc': zinc,
     };
     bool? success = await _channel.invokeMethod('writeMeal', args);
     return success ?? false;
@@ -606,6 +714,47 @@ class Health {
       'metadata': metadata,
     };
     return await _channel.invokeMethod('writeAudiogram', args) == true;
+  }
+
+  /// Saves insulin delivery record into Apple Health.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  ///  * [units] - the number of units of insulin taken.
+  ///  * [reason] - the insulin reason, basal or bolus.
+  ///  * [startTime] - the start time when the meal was consumed.
+  ///    It must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when the meal was consumed.
+  ///    It must be equal to or later than [startTime].
+  Future<bool> writeInsulinDelivery(
+    double units,
+    InsulinDeliveryReason reason,
+    DateTime startTime,
+    DateTime endTime,
+  ) async {
+    if (startTime.isAfter(endTime)) {
+      throw ArgumentError("startTime must be equal or earlier than endTime");
+    }
+
+    if (reason == InsulinDeliveryReason.NOT_SET) {
+      throw ArgumentError("set a valid insulin delivery reason");
+    }
+
+    if (Platform.isAndroid) {
+      throw UnsupportedError(
+          "writeInsulinDelivery is not supported on Android");
+    }
+
+    Map<String, dynamic> args = {
+      'units': units,
+      'reason': reason.index,
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
+
+    bool? success = await _channel.invokeMethod('writeInsulinDelivery', args);
+    return success ?? false;
   }
 
   /// Fetch a list of health data points based on [types].
@@ -842,10 +991,14 @@ class Health {
   Future<int?> getTotalStepsInInterval(
     DateTime startTime,
     DateTime endTime,
+    {
+      bool includeManualEntry = true
+    }
   ) async {
     final args = <String, dynamic>{
       'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
+      'endTime': endTime.millisecondsSinceEpoch,
+      'includeManualEntry': includeManualEntry
     };
     final stepsCount = await _channel.invokeMethod<int?>(
       'getTotalStepsInInterval',

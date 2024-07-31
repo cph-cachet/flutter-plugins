@@ -27,6 +27,9 @@ enum AppState {
   DATA_NOT_DELETED,
   STEPS_READY,
   HEALTH_CONNECT_STATUS,
+  PERMISSIONS_REVOKING,
+  PERMISSIONS_REVOKED,
+  PERMISSIONS_NOT_REVOKED,
 }
 
 class _HealthAppState extends State<HealthApp> {
@@ -269,6 +272,42 @@ class _HealthAppState extends State<HealthApp> {
       fatTotal: 50,
       name: "Banana",
       caffeine: 0.002,
+      vitaminA: 0.001,
+      vitaminC: 0.002,
+      vitaminD: 0.003,
+      vitaminE: 0.004,
+      vitaminK: 0.005,
+      b1Thiamin: 0.006,
+      b2Riboflavin: 0.007,
+      b3Niacin: 0.008,
+      b5PantothenicAcid: 0.009,
+      b6Pyridoxine: 0.010,
+      b7Biotin: 0.011,
+      b9Folate: 0.012,
+      b12Cobalamin: 0.013,
+      calcium: 0.015,
+      copper: 0.016,
+      iodine: 0.017,
+      iron: 0.018,
+      magnesium: 0.019,
+      manganese: 0.020,
+      phosphorus: 0.021,
+      potassium: 0.022,
+      selenium: 0.023,
+      sodium: 0.024,
+      zinc: 0.025,
+      water: 0.026,
+      molybdenum: 0.027,
+      chloride: 0.028,
+      chromium: 0.029,
+      cholesterol: 0.030,
+      fiber: 0.031,
+      fatMonounsaturated: 0.032,
+      fatPolyunsaturated: 0.033,
+      fatUnsaturated: 0.065,
+      fatTransMonoenoic: 0.65,
+      fatSaturated: 066,
+      sugar: 0.067,
     );
 
     // Store an Audiogram - only available on iOS
@@ -347,11 +386,21 @@ class _HealthAppState extends State<HealthApp> {
 
   /// Revoke access to health data. Note, this only has an effect on Android.
   Future<void> revokeAccess() async {
+    setState(() => _state = AppState.PERMISSIONS_REVOKING);
+
+    bool success = false;
     try {
       await Health().revokePermissions();
+      success = true;
     } catch (error) {
       debugPrint("Exception in revokeAccess: $error");
     }
+
+    setState(() {
+      _state = success
+          ? AppState.PERMISSIONS_REVOKED
+          : AppState.PERMISSIONS_NOT_REVOKED;
+    });
   }
 
   // UI building below
@@ -437,6 +486,23 @@ class _HealthAppState extends State<HealthApp> {
       ),
     );
   }
+
+  Widget get _permissionsRevoking => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(
+                strokeWidth: 10,
+              )),
+          Text('Revoking permissions...')
+        ],
+      );
+
+  Widget get _permissionsRevoked => const Text('Permissions revoked.');
+
+  Widget get _permissionsNotRevoked =>
+      const Text('Failed to revoke permissions');
 
   Widget get _contentFetchingData => Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -536,5 +602,8 @@ class _HealthAppState extends State<HealthApp> {
         AppState.DATA_NOT_DELETED => _dataNotDeleted,
         AppState.STEPS_READY => _stepsFetched,
         AppState.HEALTH_CONNECT_STATUS => _contentHealthConnectStatus,
+        AppState.PERMISSIONS_REVOKING => _permissionsRevoking,
+        AppState.PERMISSIONS_REVOKED => _permissionsRevoked,
+        AppState.PERMISSIONS_NOT_REVOKED => _permissionsNotRevoked,
       };
 }

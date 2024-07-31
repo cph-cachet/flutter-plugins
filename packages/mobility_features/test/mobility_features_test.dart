@@ -9,7 +9,7 @@ import 'dart:convert';
 part 'test_utils.dart';
 
 void main() async {
-  JsonEncoder jsonEncoder = JsonEncoder.withIndent('\t');
+  JsonEncoder jsonEncoder = const JsonEncoder.withIndent('\t');
   DateTime jan01 = DateTime(2020, 01, 01);
 
   // Poppelgade 7, home
@@ -64,11 +64,11 @@ void main() async {
         /// Todays data
         List<LocationSample> locationSamples = [
           // 5 hours spent at home
-          LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
-          LocationSample(pos1, date.add(Duration(hours: 6, minutes: 0))),
+          LocationSample(pos1, date.add(const Duration(hours: 0, minutes: 0))),
+          LocationSample(pos1, date.add(const Duration(hours: 6, minutes: 0))),
 
-          LocationSample(pos2, date.add(Duration(hours: 8, minutes: 0))),
-          LocationSample(pos2, date.add(Duration(hours: 9, minutes: 30))),
+          LocationSample(pos2, date.add(const Duration(hours: 8, minutes: 0))),
+          LocationSample(pos2, date.add(const Duration(hours: 9, minutes: 30))),
         ];
 
         /// Save
@@ -87,15 +87,15 @@ void main() async {
 
       List<LocationSample> samples = [
         // 5 hours spent at home
-        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
 
-        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
-        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 9, minutes: 0))),
 
-        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
-        LocationSample(
-            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 21, minutes: 0))),
+        LocationSample(pos1,
+            jan01.add(const Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
       await MobilityFeatures().saveSamples(samples);
@@ -109,38 +109,38 @@ void main() async {
 
       List<LocationSample> samplesNoDuplicates = [
         // 5 hours spent at home
-        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
 
-        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
-        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 9, minutes: 0))),
 
-        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
-        LocationSample(
-            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 21, minutes: 0))),
+        LocationSample(pos1,
+            jan01.add(const Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
       /// Todays data
       List<LocationSample> samplesWithDuplicates = [
         // 5 hours spent at home
-        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
 
-        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
-        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
-        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
-        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 9, minutes: 0))),
 
-        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
 
-        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
-        LocationSample(
-            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 21, minutes: 0))),
+        LocationSample(pos1,
+            jan01.add(const Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
       final samples = MobilityFeatures.uniqueElements(samplesWithDuplicates);
@@ -152,17 +152,17 @@ void main() async {
 
       List<LocationSample> samples = [
         /// Location 1
-        LocationSample(pos1, jan01.add(Duration(hours: 0, minutes: 0))),
-        LocationSample(pos1, jan01.add(Duration(hours: 6, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 6, minutes: 0))),
 
         /// Location 2
-        LocationSample(pos2, jan01.add(Duration(hours: 8, minutes: 0))),
-        LocationSample(pos2, jan01.add(Duration(hours: 9, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 8, minutes: 0))),
+        LocationSample(pos2, jan01.add(const Duration(hours: 9, minutes: 0))),
 
         /// Location 1
-        LocationSample(pos1, jan01.add(Duration(hours: 21, minutes: 0))),
-        LocationSample(
-            pos1, jan01.add(Duration(hours: 23, minutes: 59, seconds: 59))),
+        LocationSample(pos1, jan01.add(const Duration(hours: 21, minutes: 0))),
+        LocationSample(pos1,
+            jan01.add(const Duration(hours: 23, minutes: 59, seconds: 59))),
       ];
 
       // Save samples, one by one
@@ -181,30 +181,31 @@ void main() async {
 
       List<LocationSample> samples = [
         /// Location 1 (Home)
-        LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
-        LocationSample(pos1, date.add(Duration(hours: 1, minutes: 0))),
-        LocationSample(pos1, date.add(Duration(hours: 2, minutes: 0))),
-        LocationSample(pos1, date.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 1, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 2, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 8, minutes: 0))),
 
         /// end of stop 1
 
         /// Location 2
-        LocationSample(pos2, date.add(Duration(hours: 8, minutes: 30))),
-        LocationSample(pos2, date.add(Duration(hours: 9, minutes: 30))),
-        LocationSample(pos2, date.add(Duration(hours: 12, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 8, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 9, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 12, minutes: 30))),
 
         /// end of stop 2
 
         /// Gap in data
 
         // Location 1 (Home)
-        LocationSample(pos1, date.add(Duration(hours: 16, seconds: 1))),
-        LocationSample(pos1, date.add(Duration(hours: 20, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 16, seconds: 1))),
+        LocationSample(pos1, date.add(const Duration(hours: 20, minutes: 0))),
 
         /// end of stop 3
 
         // Location 0 (Home), New day
-        LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
+        LocationSample(
+            pos1, date.add(const Duration(days: 1, hours: 0, minutes: 2))),
       ];
 
       // Create stream controller to stream the individual samples
@@ -242,57 +243,58 @@ void main() async {
 
       List<LocationSample> samples = [
         /// Location 1 (Home)
-        LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
-        LocationSample(pos1, date.add(Duration(hours: 1, minutes: 0))),
-        LocationSample(pos1, date.add(Duration(hours: 2, minutes: 0))),
-        LocationSample(pos1, date.add(Duration(hours: 8, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 1, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 2, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 8, minutes: 0))),
 
         /// end of stop 1
 
         /// Path to Location 1
         LocationSample(GeoLocation(55.691806, 12.557528),
-            date.add(Duration(hours: 8, minutes: 1))),
+            date.add(const Duration(hours: 8, minutes: 1))),
         LocationSample(GeoLocation(55.691419, 12.556970),
-            date.add(Duration(hours: 8, minutes: 2))),
+            date.add(const Duration(hours: 8, minutes: 2))),
         LocationSample(GeoLocation(55.691081, 12.556455),
-            date.add(Duration(hours: 8, minutes: 3))),
+            date.add(const Duration(hours: 8, minutes: 3))),
         LocationSample(GeoLocation(55.690706, 12.555875),
-            date.add(Duration(hours: 8, minutes: 4))),
+            date.add(const Duration(hours: 8, minutes: 4))),
         LocationSample(GeoLocation(55.690434, 12.555457),
-            date.add(Duration(hours: 8, minutes: 5))),
+            date.add(const Duration(hours: 8, minutes: 5))),
         LocationSample(GeoLocation(55.690161, 12.555060),
-            date.add(Duration(hours: 8, minutes: 6))),
+            date.add(const Duration(hours: 8, minutes: 6))),
         LocationSample(GeoLocation(55.690542, 12.554481),
-            date.add(Duration(hours: 8, minutes: 7))),
+            date.add(const Duration(hours: 8, minutes: 7))),
         LocationSample(GeoLocation(55.690801, 12.550164),
-            date.add(Duration(hours: 8, minutes: 8))),
+            date.add(const Duration(hours: 8, minutes: 8))),
         LocationSample(GeoLocation(55.690825, 12.544910),
-            date.add(Duration(hours: 8, minutes: 9))),
+            date.add(const Duration(hours: 8, minutes: 9))),
         LocationSample(GeoLocation(55.689685, 12.543661),
-            date.add(Duration(hours: 8, minutes: 15))),
+            date.add(const Duration(hours: 8, minutes: 15))),
         LocationSample(GeoLocation(55.688083, 12.541852),
-            date.add(Duration(hours: 8, minutes: 20))),
+            date.add(const Duration(hours: 8, minutes: 20))),
         LocationSample(GeoLocation(55.686007, 12.539484),
-            date.add(Duration(hours: 8, minutes: 29))),
+            date.add(const Duration(hours: 8, minutes: 29))),
 
         /// Location 1
-        LocationSample(pos2, date.add(Duration(hours: 8, minutes: 30))),
-        LocationSample(pos2, date.add(Duration(hours: 10, minutes: 30))),
-        LocationSample(pos2, date.add(Duration(hours: 11, minutes: 30))),
-        LocationSample(pos2, date.add(Duration(hours: 12, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 8, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 10, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 11, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 12, minutes: 30))),
 
         /// end of stop 2
 
         /// Gap in data from 12:30 to 16:00
 
         /// Location 0 (Home)
-        LocationSample(pos1, date.add(Duration(hours: 16, seconds: 1))),
-        LocationSample(pos1, date.add(Duration(hours: 20, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 16, seconds: 1))),
+        LocationSample(pos1, date.add(const Duration(hours: 20, minutes: 0))),
 
         /// end of stop 3
 
         /// Location 0 (Home), New day
-        LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
+        LocationSample(
+            pos1, date.add(const Duration(days: 1, hours: 0, minutes: 2))),
       ];
 
       /// Create stream controller to stream the individual samples
@@ -322,44 +324,45 @@ void main() async {
 
       List<LocationSample> samples = [
         /// Location 1 (Home)
-        LocationSample(pos1, date.add(Duration(hours: 0, minutes: 0))),
-        LocationSample(pos1, date.add(Duration(hours: 1, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 0, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 1, minutes: 0))),
 
         /// end of stop 1
-        LocationSample(pos1, date.add(Duration(hours: 2, minutes: 0)))
+        LocationSample(pos1, date.add(const Duration(hours: 2, minutes: 0)))
             .addNoise(),
-        LocationSample(pos1, date.add(Duration(hours: 8, minutes: 0)))
+        LocationSample(pos1, date.add(const Duration(hours: 8, minutes: 0)))
             .addNoise(),
 
         /// end of stop 2
 
         /// Location 1
-        LocationSample(pos2, date.add(Duration(hours: 8, minutes: 30))),
-        LocationSample(pos2, date.add(Duration(hours: 9, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 8, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 9, minutes: 30))),
 
         /// end of stop 3
-        LocationSample(pos2, date.add(Duration(hours: 10, minutes: 30)))
+        LocationSample(pos2, date.add(const Duration(hours: 10, minutes: 30)))
             .addNoise(),
-        LocationSample(pos2, date.add(Duration(hours: 11, minutes: 30)))
+        LocationSample(pos2, date.add(const Duration(hours: 11, minutes: 30)))
             .addNoise(),
 
         /// end of stop 4
-        LocationSample(pos2, date.add(Duration(hours: 12, minutes: 00))),
-        LocationSample(pos2, date.add(Duration(hours: 12, minutes: 15))),
-        LocationSample(pos2, date.add(Duration(hours: 12, minutes: 30))),
+        LocationSample(pos2, date.add(const Duration(hours: 12, minutes: 00))),
+        LocationSample(pos2, date.add(const Duration(hours: 12, minutes: 15))),
+        LocationSample(pos2, date.add(const Duration(hours: 12, minutes: 30))),
 
         /// end of stop 5
 
         /// Gap in data (should get interpolated to Location 1)
 
         /// Location 0 (Home)
-        LocationSample(pos1, date.add(Duration(hours: 16, seconds: 1))),
-        LocationSample(pos1, date.add(Duration(hours: 20, minutes: 0))),
+        LocationSample(pos1, date.add(const Duration(hours: 16, seconds: 1))),
+        LocationSample(pos1, date.add(const Duration(hours: 20, minutes: 0))),
 
         /// end of stop 6
 
         /// Location 0 (Home), New day
-        LocationSample(pos1, date.add(Duration(days: 1, hours: 0, minutes: 2))),
+        LocationSample(
+            pos1, date.add(const Duration(days: 1, hours: 0, minutes: 2))),
       ];
 
       /// Create stream controller to stream the individual samples
@@ -390,11 +393,11 @@ void main() async {
       final samples = loadDataSet();
       print(samples.length);
 
-      final dates = samples.map((e) => e.datetime.midnight).toSet().toList();
+      final dates = samples.map((e) => e.dateTime.midnight).toSet().toList();
       printList(dates);
 
       final onLastDate =
-          samples.where((e) => e.datetime.midnight == dates[1]).toList();
+          samples.where((e) => e.dateTime.midnight == dates[1]).toList();
       print(onLastDate.length);
 
       print(onLastDate.last);

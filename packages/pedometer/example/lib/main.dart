@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:pedometer/pedometer.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 String formatDate(DateTime d) {
   return d.toString().substring(0, 19);
@@ -56,10 +57,25 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void initPlatformState() {
+  Future<bool> _checkActivityRecognitionPermission() async {
+    bool granted = await Permission.activityRecognition.isGranted;
+
+    if (!granted) {
+      granted = await Permission.activityRecognition.request() ==
+          PermissionStatus.granted;
+    }
+
+    return granted;
+  }
+
+  Future<void> initPlatformState() async {
+    bool granted = await _checkActivityRecognitionPermission();
+    if (!granted) {
+      // tell user, the app will not work
+    }
+
     _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
-    _pedestrianStatusStream
-        .listen(onPedestrianStatusChanged)
+    (await _pedestrianStatusStream.listen(onPedestrianStatusChanged))
         .onError(onPedestrianStatusError);
 
     _stepCountStream = Pedometer.stepCountStream;
