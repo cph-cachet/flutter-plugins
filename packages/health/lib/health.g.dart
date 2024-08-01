@@ -679,7 +679,6 @@ MenstruationFlowHealthValue _$MenstruationFlowHealthValueFromJson(
       flow: $enumDecodeNullable(_$MenstrualFlowEnumMap, json['flow']),
       isStartOfCycle: json['is_start_of_cycle'] as bool?,
       dateTime: DateTime.parse(json['date_time'] as String),
-      selfReported: json['self_reported'] as bool,
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$MenstruationFlowHealthValueToJson(
@@ -696,7 +695,6 @@ Map<String, dynamic> _$MenstruationFlowHealthValueToJson(
   writeNotNull('flow', _$MenstrualFlowEnumMap[instance.flow]);
   writeNotNull('is_start_of_cycle', instance.isStartOfCycle);
   val['date_time'] = instance.dateTime.toIso8601String();
-  val['self_reported'] = instance.selfReported;
   return val;
 }
 

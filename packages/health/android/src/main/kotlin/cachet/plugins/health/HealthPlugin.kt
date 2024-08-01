@@ -96,6 +96,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         private var BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
         private var FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
         private var RESPIRATORY_RATE = "RESPIRATORY_RATE"
+        private var MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
 
         // TODO support unknown?
         private var SLEEP_ASLEEP = "SLEEP_ASLEEP"
@@ -113,7 +114,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         private var DINNER = "DINNER"
         private var SNACK = "SNACK"
         private var MEAL_UNKNOWN = "UNKNOWN"
-        private var MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
 
         private var TOTAL_CALORIES_BURNED = "TOTAL_CALORIES_BURNED"
 
@@ -583,7 +583,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         SLEEP_DEEP -> DataType.TYPE_SLEEP_SEGMENT
                         WORKOUT -> DataType.TYPE_ACTIVITY_SEGMENT
                         NUTRITION -> DataType.TYPE_NUTRITION
-                        MENSTRUATION_FLOW -> HealthDataTypes.TYPE_MENSTRUATION
                         else -> throw IllegalArgumentException("Unsupported dataType: $type")
                 }
         }
@@ -612,7 +611,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         SLEEP_DEEP -> Field.FIELD_SLEEP_SEGMENT_TYPE
                         WORKOUT -> Field.FIELD_ACTIVITY
                         NUTRITION -> Field.FIELD_NUTRIENTS
-                        MENSTRUATION_FLOW -> HealthFields.FIELD_MENSTRUAL_FLOW
                         else -> throw IllegalArgumentException("Unsupported dataType: $type")
                 }
         }
@@ -1111,6 +1109,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         )
                 } catch (e3: Exception) {
                         result.success(false)
+                }
+        }
+
+        /**
+         * Save menstrual flow data
+         */
+        private fun writeMenstruationFlow(call: MethodCall, result: Result) {
+                if (useHealthConnectIfAvailable && healthConnectAvailable) {
+                        writeHCData(call, result)
+                        return
                 }
         }
 
@@ -2510,6 +2518,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         "writeWorkoutData" -> writeWorkoutData(call, result)
                         "writeBloodPressure" -> writeBloodPressure(call, result)
                         "writeBloodOxygen" -> writeBloodOxygen(call, result)
+                        "writeMenstruationFlow" -> writeMenstruationFlow(call, result)
                         "writeMeal" -> writeMeal(call, result)
                         "disconnect" -> disconnect(call, result)
                         else -> result.notImplemented()
@@ -3467,6 +3476,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                                                         .packageName,
                                                         )
                                         )
+                        is MenstruationFlowRecord ->
+                                        return listOf(
+                                                        mapOf<String, Any>(
+                                                                "value" to record.flow,
+                                                                "date_from" to record.time.toEpochMilli(),
+                                                                "date_to" to record.time.toEpochMilli(),
+                                                                "source_id" to "",
+                                                                "source_name" to
+                                                                                metadata.dataOrigin
+                                                                                                .packageName,
+                                                        )
+                                        )
                         // is ExerciseSessionRecord -> return listOf(mapOf<String, Any>("value" to ,
                         //                                             "date_from" to ,
                         //                                             "date_to" to ,
@@ -3902,6 +3923,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                         startZoneOffset = null,
                                                                         endZoneOffset = null,
                                                         )
+                                        MENSTRUATION_FLOW -> MenstruationFlowRecord(
+                                                        time = Instant.ofEpochMilli(startTime),
+                                                        flow = value.toInt(),
+                                                        zoneOffset = null,
+                                                )
                                         BLOOD_PRESSURE_SYSTOLIC ->
                                                         throw IllegalArgumentException(
                                                                         "You must use the [writeBloodPressure] API "
@@ -4148,7 +4174,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         BASAL_ENERGY_BURNED to BasalMetabolicRateRecord::class,
                                         FLIGHTS_CLIMBED to FloorsClimbedRecord::class,
                                         RESPIRATORY_RATE to RespiratoryRateRecord::class,
-                                        TOTAL_CALORIES_BURNED to TotalCaloriesBurnedRecord::class
+                                        TOTAL_CALORIES_BURNED to TotalCaloriesBurnedRecord::class,
+                                        MENSTRUATION_FLOW to MenstruationFlowRecord::class,
                                         // MOVE_MINUTES to TODO: Find alternative?
                                         // TODO: Implement remaining types
                                         // "ActiveCaloriesBurned" to
@@ -4172,7 +4199,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         // "Height" to HeightRecord::class,
                                         // "Hydration" to HydrationRecord::class,
                                         // "LeanBodyMass" to LeanBodyMassRecord::class,
-                                        // "MenstruationFlow" to MenstruationFlowRecord::class,
                                         // "MenstruationPeriod" to MenstruationPeriodRecord::class,
                                         // "Nutrition" to NutritionRecord::class,
                                         // "OvulationTest" to OvulationTestRecord::class,

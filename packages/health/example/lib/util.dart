@@ -93,4 +93,5 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.FLIGHTS_CLIMBED,
   HealthDataType.NUTRITION,
   HealthDataType.TOTAL_CALORIES_BURNED,
+  HealthDataType.MENSTRUATION_FLOW,
 ];

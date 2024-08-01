@@ -768,18 +768,18 @@ enum MenstrualFlow {
   heavy,
   spotting;
 
-  static MenstrualFlow fromGoogleFit(int value) {
+  static MenstrualFlow fromHealthConnect(int value) {
     switch (value) {
+      case 0:
+        return MenstrualFlow.unspecified;
       case 1:
-        return MenstrualFlow.spotting;
-      case 2:
         return MenstrualFlow.light;
-      case 3:
+      case 2:
         return MenstrualFlow.medium;
-      case 4:
+      case 3:
         return MenstrualFlow.heavy;
       default:
-        return MenstrualFlow.none;
+        return MenstrualFlow.unspecified;
     }
   }
 
@@ -799,6 +799,21 @@ enum MenstrualFlow {
         return MenstrualFlow.unspecified;
     }
   }
+
+  static int toHealthConnect(MenstrualFlow value) {
+    switch (value) {
+      case MenstrualFlow.unspecified:
+        return 0;
+      case MenstrualFlow.light:
+        return 1;
+      case MenstrualFlow.medium:
+        return 2;
+      case MenstrualFlow.heavy:
+        return 3;
+      default:
+        return -1;
+    }
+  }
 }
 
 /// A [HealthValue] object for menstrual flow.
@@ -811,25 +826,23 @@ class MenstruationFlowHealthValue extends HealthValue {
   final MenstrualFlow? flow;
   final bool? isStartOfCycle;
   final DateTime dateTime;
-  final bool selfReported;
 
   MenstruationFlowHealthValue({
     required this.flow,
     required this.isStartOfCycle,
     required this.dateTime,
-    required this.selfReported,
   });
 
   @override
   String toString() =>
-      "flow: ${flow?.name}, startOfCycle: $isStartOfCycle, dateTime: $dateTime, selfReported: $selfReported";
+      "flow: ${flow?.name}, startOfCycle: $isStartOfCycle, dateTime: $dateTime";
 
   factory MenstruationFlowHealthValue.fromHealthDataPoint(dynamic dataPoint) {
     // Parse flow value safely
     final flowValueIndex = dataPoint['value'] as int? ?? 0;
     MenstrualFlow? menstrualFlow;
     if (Platform.isAndroid) {
-      menstrualFlow = MenstrualFlow.fromGoogleFit(flowValueIndex);
+      menstrualFlow = MenstrualFlow.fromHealthConnect(flowValueIndex);
     } else if (Platform.isIOS) {
       menstrualFlow = MenstrualFlow.fromHealthKit(flowValueIndex);
     }
@@ -840,7 +853,6 @@ class MenstruationFlowHealthValue extends HealthValue {
           dataPoint['metadata']?['HKMetadataKeyMenstrualCycleStart'] as bool?,
       dateTime:
           DateTime.fromMillisecondsSinceEpoch(dataPoint['date_from'] as int),
-      selfReported: dataPoint['self_reported'] as bool? ?? false,
     );
   }
 
@@ -860,10 +872,9 @@ class MenstruationFlowHealthValue extends HealthValue {
             runtimeType == other.runtimeType &&
             flow == other.flow &&
             isStartOfCycle == other.isStartOfCycle &&
-            dateTime == other.dateTime &&
-            selfReported == other.selfReported;
+            dateTime == other.dateTime;
   }
 
   @override
-  int get hashCode => Object.hash(flow, isStartOfCycle, dateTime, selfReported);
+  int get hashCode => Object.hash(flow, isStartOfCycle, dateTime);
 }
