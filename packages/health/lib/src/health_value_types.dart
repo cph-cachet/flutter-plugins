@@ -825,17 +825,19 @@ enum MenstrualFlow {
 class MenstruationFlowHealthValue extends HealthValue {
   final MenstrualFlow? flow;
   final bool? isStartOfCycle;
+  final bool? wasUserEntered;
   final DateTime dateTime;
 
   MenstruationFlowHealthValue({
     required this.flow,
-    required this.isStartOfCycle,
     required this.dateTime,
+    this.isStartOfCycle,
+    this.wasUserEntered,
   });
 
   @override
   String toString() =>
-      "flow: ${flow?.name}, startOfCycle: $isStartOfCycle, dateTime: $dateTime";
+      "flow: ${flow?.name}, startOfCycle: $isStartOfCycle, wasUserEntered: $wasUserEntered, dateTime: $dateTime";
 
   factory MenstruationFlowHealthValue.fromHealthDataPoint(dynamic dataPoint) {
     // Parse flow value safely
@@ -850,7 +852,13 @@ class MenstruationFlowHealthValue extends HealthValue {
     return MenstruationFlowHealthValue(
       flow: menstrualFlow,
       isStartOfCycle:
-          dataPoint['metadata']?['HKMetadataKeyMenstrualCycleStart'] as bool?,
+          dataPoint['metadata']?.containsKey('HKMenstrualCycleStart') == true
+              ? dataPoint['metadata']['HKMenstrualCycleStart'] == 1.0
+              : null,
+      wasUserEntered:
+          dataPoint['metadata']?.containsKey('HKWasUserEntered') == true
+              ? dataPoint['metadata']['HKWasUserEntered'] == 1.0
+              : null,
       dateTime:
           DateTime.fromMillisecondsSinceEpoch(dataPoint['date_from'] as int),
     );
@@ -872,9 +880,11 @@ class MenstruationFlowHealthValue extends HealthValue {
             runtimeType == other.runtimeType &&
             flow == other.flow &&
             isStartOfCycle == other.isStartOfCycle &&
+            wasUserEntered == other.wasUserEntered &&
             dateTime == other.dateTime;
   }
 
   @override
-  int get hashCode => Object.hash(flow, isStartOfCycle, dateTime);
+  int get hashCode =>
+      Object.hash(flow, isStartOfCycle, wasUserEntered, dateTime);
 }

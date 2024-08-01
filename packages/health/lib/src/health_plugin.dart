@@ -667,10 +667,13 @@ class Health {
   ///
   /// Parameters:
   /// * [flow] - the menstrual flow
-  /// * [dateTime] - the start time when the menstrual flow is measured.
+  /// * [startTime] - the start time when the menstrual flow is measured.
+  /// * [endTime] - the start time when the menstrual flow is measured.
   Future<bool> writeMenstruationFlow({
     required MenstrualFlow flow,
-    required DateTime dateTime,
+    required DateTime startTime,
+    required DateTime endTime,
+    required bool isStartOfCycle,
   }) async {
     var value =
         Platform.isAndroid ? MenstrualFlow.toHealthConnect(flow) : flow.index;
@@ -682,8 +685,9 @@ class Health {
 
     Map<String, dynamic> args = {
       'value': value,
-      'startTime': dateTime.millisecondsSinceEpoch,
-      'endTime': dateTime.millisecondsSinceEpoch,
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch,
+      'isStartOfCycle': isStartOfCycle,
       'dataTypeKey': HealthDataType.MENSTRUATION_FLOW.name,
     };
     return await _channel.invokeMethod('writeMenstruationFlow', args) == true;
