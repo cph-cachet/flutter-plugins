@@ -1,46 +1,40 @@
-part of mobility_features;
+part of '../mobility_features.dart';
 
 /// Daily mobility context.
 ///
 /// All Stops and Moves are on the same [date].
 /// [places] are all places for which the duration on the given date is greater than 0.
 class MobilityContext {
-  late DateTime _timestamp, _date;
-  List<Stop> _stops;
-  List<Place> _places;
-  List<Move> _moves;
+  late final DateTime _timestamp, _date;
+  final List<Stop> _stops;
+  final List<Place> _places;
+  final List<Move> _moves;
   late List<Place> _significantPlaces;
   Place? _homePlace;
-
   late _HourMatrix _hourMatrix;
-
   double? _locationVariance,
       _entropy,
       _normalizedEntropy,
       _homeStay,
-      _distanceTravelled;
-  List<MobilityContext>? contexts;
+      _distanceTraveled;
 
-  /// Private constructor, cannot be instantiated from outside
+  /// Private constructor.
   MobilityContext._(this._stops, this._places, this._moves, this._date) {
     _timestamp = DateTime.now();
 
-    // if contexts array is null, init to empty array
-    contexts = contexts ?? [];
-
     // compute all the features
     _significantPlaces =
-        _places.where((p) => p.duration > Duration(minutes: 3)).toList();
+        _places.where((p) => p.duration > const Duration(minutes: 3)).toList();
     _hourMatrix = _HourMatrix.fromStops(_stops, _places.length);
     _homePlace = _findHomePlaceToday();
     _homeStay = _calculateHomeStay();
     _locationVariance = _calculateLocationVariance();
     _entropy = _calculateEntropy();
     _normalizedEntropy = _calculateNormalizedEntropy();
-    _distanceTravelled = _calculateDistanceTravelled();
+    _distanceTraveled = _calculateDistanceTraveled();
   }
 
-  // The date of this context.
+  /// The date of this context.
   DateTime get date => _date;
 
   /// Timestamp at which the features were computed
@@ -81,15 +75,14 @@ class MobilityContext {
   /// Normalized location entropy. A scalar between 0 and 1.
   double? get normalizedEntropy => _normalizedEntropy;
 
-  /// Distance travelled today in meters.
-  double? get distanceTravelled => _distanceTravelled;
+  /// Distance traveled today in meters.
+  double? get distanceTraveled => _distanceTraveled;
 
-  /// Private home stay calculation
   double? _calculateHomeStay() {
     if (stops.isEmpty) return null;
 
     // Latest known sample time
-    DateTime latestTime = _stops.last.departure;
+    final latestTime = _stops.last.departure;
 
     // Total time elapsed from midnight until the last stop
     int totalTime = latestTime.millisecondsSinceEpoch -
@@ -108,9 +101,8 @@ class MobilityContext {
 
   Place? _findHomePlaceToday() => (_hourMatrix.homePlaceId == -1)
       ? null
-      : _places.where((p) => p.id == _hourMatrix.homePlaceId).first;
+      : _places.where((p) => p._id == _hourMatrix.homePlaceId).first;
 
-  /// Location variance calculation
   double? _calculateLocationVariance() {
     // Require at least 2 observations
     if (_stops.length < 2) return 0.0;
@@ -125,16 +117,18 @@ class MobilityContext {
 
   double? _calculateEntropy() {
     // if no places were visited return null
-    if (places.isEmpty)
+    // else - the Entropy is zero when one outcome is certain to occur
+    if (places.isEmpty) {
       return null;
-    // the Entropy is zero when one outcome is certain to occur
-    else if (places.length == 1) return 0.0;
+    } else if (places.length == 1) {
+      return 0.0;
+    }
 
     // calculate time spent at different places
     List<Duration> durations =
         places.map((p) => p.durationForDate(date)).toList();
 
-    Duration totalTimeSpent = durations.fold(Duration(), (a, b) => a + b);
+    Duration totalTimeSpent = durations.fold(const Duration(), (a, b) => a + b);
 
     List<double> distribution = durations
         .map((d) => (d.inMilliseconds.toDouble() /
@@ -144,12 +138,10 @@ class MobilityContext {
     return -distribution.map((p) => p * log(p)).reduce((a, b) => (a + b));
   }
 
-  /// Private normalized entropy calculation
   double _calculateNormalizedEntropy() =>
       (places.length == 1) ? 0.0 : entropy! / log(places.length);
 
-  /// Private distance travelled calculation
-  double _calculateDistanceTravelled() =>
+  double _calculateDistanceTraveled() =>
       _moves.map((m) => (m.distance)).fold(0.0, (a, b) => a + b!);
 
   Map<String, dynamic> toJson() => {
@@ -160,7 +152,7 @@ class MobilityContext {
         "num_of_significant_places": significantPlaces.length,
         "normalized_entropy": normalizedEntropy,
         "home_stay": homeStay,
-        "distance_travelled": distanceTravelled,
+        "distance_traveled": distanceTraveled,
         "location_variance": locationVariance
       };
 }

@@ -12,7 +12,7 @@ These are the available plugins in this repository.
 
 | Plugin | Description | Android | iOS |    http://pub.dev/    | 
 |--------|-------------|:-------:|:---:|:---------:|
-| [screen_state](./packages/screen_state) | Track screen state changes | ✔️ | ❌ | [![pub package](https://img.shields.io/pub/v/screen_state.svg)](https://pub.dartlang.org/packages/screen_state) |
+| [screen_state](./packages/screen_state) | Track screen state changes | ✔️ | ✔️ | [![pub package](https://img.shields.io/pub/v/screen_state.svg)](https://pub.dartlang.org/packages/screen_state) |
 | [light](./packages/light) | Track light sensor readings | ✔️ | ❌ |  [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light) |
 | [pedometer](./packages/pedometer) | Track step count |  ✔️ | ✔️ | [![pub package](https://img.shields.io/pub/v/pedometer.svg)](https://pub.dartlang.org/packages/pedometer) |
 | [noise_meter](./packages/noise_meter) | Read noise level in Decibel | ✔️ | ✔️  | [![pub package](https://img.shields.io/pub/v/noise_meter.svg)](https://pub.dartlang.org/packages/noise_meter) |

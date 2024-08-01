@@ -1,4 +1,4 @@
-part of mobility_features;
+part of '../mobility_features.dart';
 
 /// Returns an [Iterable] of [List]s where the nth element in the returned
 /// iterable contains the nth element from every Iterable in [iterables]. The
@@ -25,21 +25,15 @@ Iterable<int> range(int low, int high) sync* {
 
 extension CompareDates on DateTime {
   bool geq(DateTime other) {
-    return this.isAfter(other) || this.isAtSameMomentAs(other);
+    return isAfter(other) || isAtSameMomentAs(other);
   }
 
   bool leq(DateTime other) {
-    return this.isBefore(other) || this.isAtSameMomentAs(other);
+    return isBefore(other) || isAtSameMomentAs(other);
   }
 
   DateTime get midnight {
-    return DateTime(this.year, this.month, this.day);
-  }
-}
-
-extension AverageIterable on Iterable {
-  double? get mean {
-    return this.fold(0, (dynamic a, b) => a + b) / this.length.toDouble();
+    return DateTime(year, month, day);
   }
 }
 
@@ -69,59 +63,49 @@ int argmaxInt(List<int> list) {
   return i;
 }
 
-void printMatrix(List<List> m) {
-  for (List row in m) {
-    String s = '';
-    for (var e in row) {
-      s += '$e ';
-    }
-    print(s);
-  }
-}
-
-List<List<double>> zeroMatrix(int rows, int cols) {
-  return new List.generate(rows, (_) => new List<double>.filled(cols, 0.0));
-}
+List<List<double>> zeroMatrix(int rows, int cols) =>
+    List.generate(rows, (_) => List<double>.filled(cols, 0.0));
 
 List<Stop> _mergeStops(List<Stop> stops) {
   List<Stop> merged = [];
   if (stops.length < 2) return stops;
 
-  /// Should be applied after places have been found
+  // Should be applied after places have been found
   List<Stop> toMerge = [];
 
-  void _merge() {
+  void merge() {
     if (toMerge.isEmpty) return;
     GeoLocation geoLocation = _computeCentroid(toMerge);
     DateTime arr = toMerge.first.arrival;
     DateTime dep = toMerge.last.departure;
-    Stop s = Stop._(geoLocation, arr, dep, placeId: toMerge.first.placeId);
+    Stop s = Stop(geoLocation, arr, dep, toMerge.first.placeId);
     merged.add(s);
     toMerge = [];
   }
 
   for (Stop stop in stops) {
-    /// If stop is noisy, just add it to the merged list, dont do anything to it
+    // If stop is noisy, just add it to the merged list, don't do anything to it
     if (stop.placeId == -1) {
       merged.add(stop);
     } else {
-      /// If no stops to merge, we cannot merge and we therefore add the current
-      /// stop and go to the next one
+      // If no stops to merge, we cannot merge and we therefore add the current
+      // stop and go to the next one
       if (toMerge.isEmpty) {
         toMerge.add(stop);
       }
 
-      /// Otherwise check if we should add it or merge
+      // Otherwise check if we should add it or merge
       else {
         if (stop.placeId != toMerge.last.placeId) {
-          _merge();
+          merge();
         }
         toMerge.add(stop);
       }
     }
   }
 
-  /// Merge remaining stops in the toMerge list
-  _merge();
+  // Merge remaining stops in the toMerge list
+  merge();
+
   return merged;
 }

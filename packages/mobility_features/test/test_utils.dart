@@ -1,4 +1,4 @@
-part of mobility_test;
+part of 'mobility_features_test.dart';
 
 const String datasetPath = 'lib/data/example-multi.json';
 const String testDataDir = 'test/testdata';
@@ -10,16 +10,16 @@ Duration takeTime(DateTime start, DateTime end) {
 
 /// Clean file every time test is run
 void flushFiles() async {
-  File samples = new File('$testDataDir/location_samples.json');
-  File stops = new File('$testDataDir/stops.json');
-  File moves = new File('$testDataDir/moves.json');
+  File samples = File('$testDataDir/location_samples.json');
+  File stops = File('$testDataDir/stops.json');
+  File moves = File('$testDataDir/moves.json');
 
   await samples.writeAsString('');
   await stops.writeAsString('');
   await moves.writeAsString('');
 }
 
-void printList(List l) {
+void printList(List<dynamic> l) {
   for (int i = 0; i < l.length; i++) {
     print('[$i] ${l[i]}');
   }
@@ -36,20 +36,22 @@ class LocationDTO {
 }
 
 List<LocationSample> loadDataSet() {
-  File f = new File('$testDataDir/data-example-munich.json');
+  File f = File('$testDataDir/data-example-munich.json');
   String content = f.readAsStringSync();
   List<String> lines = content.split('\n');
 
   List<LocationSample> samples = [];
-  lines.forEach((e) {
+  for (var e in lines) {
     try {
-      Map m = json.decode(e);
-      GeoLocation geoLocation =
-          GeoLocation(double.parse(m['lat']), double.parse(m['lon']));
-      DateTime dateTime =
-          DateTime.fromMillisecondsSinceEpoch(int.parse(m['datetime']));
+      Map<String, dynamic> m = json.decode(e) as Map<String, dynamic>;
+      GeoLocation geoLocation = GeoLocation(
+          double.parse(m['lat'] as String), double.parse(m['lon'] as String));
+      DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(
+          int.parse(m['datetime'] as String));
       samples.add(LocationSample(geoLocation, dateTime));
-    } catch (error) {}
-  });
+    } catch (error) {
+      print('ERROR - $error');
+    }
+  }
   return samples;
 }
