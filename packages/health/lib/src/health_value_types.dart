@@ -820,7 +820,9 @@ enum MenstrualFlow {
 ///
 /// Parameters:
 /// * [flowValue] - the flow value
-/// * [isStartOfCycle] - indicator whether or not this occurrence is the first day of the menstrual cycle
+/// * [isStartOfCycle] - indicator whether or not this occurrence is the first day of the menstrual cycle (iOS only)
+/// * [wasUserEntered] - indicator whether or not the data was entered by the user (iOS only)
+/// * [dateTime] - the date and time of the menstrual flow
 @JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
 class MenstruationFlowHealthValue extends HealthValue {
   final MenstrualFlow? flow;
