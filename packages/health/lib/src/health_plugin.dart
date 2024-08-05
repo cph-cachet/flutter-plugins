@@ -666,9 +666,11 @@ class Health {
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  /// * [flow] - the menstrual flow
-  /// * [startTime] - the start time when the menstrual flow is measured.
-  /// * [endTime] - the start time when the menstrual flow is measured.
+  ///  * [flow] - the menstrual flow
+  ///  * [startTime] - the start time when the menstrual flow is measured.
+  ///  * [endTime] - the start time when the menstrual flow is measured.
+  ///  * [isStartOfCycle] - A bool that indicates whether the sample represents
+  ///    the start of a menstrual cycle.
   Future<bool> writeMenstruationFlow({
     required MenstrualFlow flow,
     required DateTime startTime,

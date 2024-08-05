@@ -140,6 +140,9 @@ const _$HealthDataTypeEnumMap = {
   HealthDataType.HEADACHE_SEVERE: 'HEADACHE_SEVERE',
   HealthDataType.HEADACHE_UNSPECIFIED: 'HEADACHE_UNSPECIFIED',
   HealthDataType.NUTRITION: 'NUTRITION',
+  HealthDataType.GENDER: 'GENDER',
+  HealthDataType.BIRTH_DATE: 'BIRTH_DATE',
+  HealthDataType.BLOOD_TYPE: 'BLOOD_TYPE',
   HealthDataType.MENSTRUATION_FLOW: 'MENSTRUATION_FLOW',
   HealthDataType.HIGH_HEART_RATE_EVENT: 'HIGH_HEART_RATE_EVENT',
   HealthDataType.LOW_HEART_RATE_EVENT: 'LOW_HEART_RATE_EVENT',
@@ -147,9 +150,6 @@ const _$HealthDataTypeEnumMap = {
   HealthDataType.ELECTRODERMAL_ACTIVITY: 'ELECTRODERMAL_ACTIVITY',
   HealthDataType.ELECTROCARDIOGRAM: 'ELECTROCARDIOGRAM',
   HealthDataType.TOTAL_CALORIES_BURNED: 'TOTAL_CALORIES_BURNED',
-  HealthDataType.BIRTH_DATE: 'BIRTH_DATE',
-  HealthDataType.BLOOD_TYPE: 'BLOOD_TYPE',
-  HealthDataType.GENDER: 'GENDER',
 };
 
 const _$HealthDataUnitEnumMap = {
@@ -677,9 +677,9 @@ MenstruationFlowHealthValue _$MenstruationFlowHealthValueFromJson(
         Map<String, dynamic> json) =>
     MenstruationFlowHealthValue(
       flow: $enumDecodeNullable(_$MenstrualFlowEnumMap, json['flow']),
+      dateTime: DateTime.parse(json['date_time'] as String),
       isStartOfCycle: json['is_start_of_cycle'] as bool?,
       wasUserEntered: json['was_user_entered'] as bool?,
-      dateTime: DateTime.parse(json['date_time'] as String),
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$MenstruationFlowHealthValueToJson(
