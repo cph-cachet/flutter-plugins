@@ -336,7 +336,6 @@ The plugin supports the following [`HealthDataType`](https://pub.dev/documentati
 | WEIGHT                       | KILOGRAMS               | yes              | yes                       |                                        |
 | DISTANCE_WALKING_RUNNING     | METERS                  | yes              |                           |                                        |
 | FLIGHTS_CLIMBED              | COUNT                   | yes              | yes                       |                                        |
-| MOVE_MINUTES                 | MINUTES                 |                  |                           |                                        |
 | DISTANCE_DELTA               | METERS                  |                  | yes                       |                                        |
 | MINDFULNESS                  | MINUTES                 | yes              |                           |                                        |
 | SLEEP_IN_BED                 | MINUTES                 | yes              |                           |                                        |
@@ -371,7 +370,6 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 
 | **Workout Type**                 | **Apple Health** | **Google Health Connect** | **Comments**                                                      |
 | -------------------------------- | ---------------- | ------------------------- | ----------------------------------------------------------------- |
-| AEROBICS                         |                  |                           |                                                                   |
 | AMERICAN_FOOTBALL                | yes              | yes                       |                                                                   |
 | ARCHERY                          | yes              |                           |                                                                   |
 | AUSTRALIAN_FOOTBALL              | yes              | yes                       |                                                                   |
@@ -379,37 +377,29 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | BARRE                            | yes              |                           |                                                                   |
 | BASEBALL                         | yes              | yes                       |                                                                   |
 | BASKETBALL                       | yes              | yes                       |                                                                   |
-| BIATHLON                         |                  |                           |                                                                   |
 | BIKING                           | yes              | yes                       | on iOS this is CYCLING, but name changed here to fit with Android |
 | BOWLING                          | yes              |                           |                                                                   |
 | BOXING                           | yes              | yes                       |                                                                   |
 | CALISTHENICS                     |                  | yes                       |                                                                   |
 | CARDIO_DANCE                     | yes              |                           |                                                                   |
-| CIRCUIT_TRAINING                 |                  |                           |                                                                   |
 | CLIMBING                         | yes              |                           |                                                                   |
 | COOLDOWN                         | yes              |                           |                                                                   |
 | CORE_TRAINING                    | yes              |                           |                                                                   |
 | CRICKET                          | yes              | yes                       |                                                                   |
 | CROSS_COUNTRY_SKIING             | yes              |                           |                                                                   |
-| CROSS_FIT                        |                  |                           |                                                                   |
 | CROSS_TRAINING                   | yes              |                           |                                                                   |
 | CURLING                          | yes              |                           |                                                                   |
 | DANCING                          |                  | yes                       |                                                                   |
 | DISC_SPORTS                      | yes              |                           |                                                                   |
-| DIVING                           |                  |                           |                                                                   |
 | DOWNHILL_SKIING                  | yes              |                           |                                                                   |
-| ELEVATOR                         |                  |                           |                                                                   |
 | ELLIPTICAL                       | yes              | yes                       |                                                                   |
 | EQUESTRIAN_SPORTS                | yes              |                           |                                                                   |
-| ERGOMETER                        |                  |                           |                                                                   |
-| ESCALATOR                        |                  |                           |                                                                   |
 | FENCING                          | yes              | yes                       |                                                                   |
 | FISHING                          | yes              |                           |                                                                   |
 | FITNESS_GAMING                   | yes              |                           |                                                                   |
 | FLEXIBILITY                      | yes              |                           |                                                                   |
 | FRISBEE_DISC                     |                  | yes                       |                                                                   |
 | FUNCTIONAL_STRENGTH_TRAINING     | yes              |                           |                                                                   |
-| GARDENING                        |                  |                           |                                                                   |
 | GOLF                             | yes              | yes                       |                                                                   |
 | GUIDED_BREATHING                 |                  | yes                       |                                                                   |
 | GYMNASTICS                       | yes              | yes                       |                                                                   |
@@ -418,30 +408,18 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | HIGH_INTENSITY_INTERVAL_TRAINING | yes              | yes                       |                                                                   |
 | HIKING                           | yes              | yes                       |                                                                   |
 | HOCKEY                           | yes              |                           |                                                                   |
-| HORSEBACK_RIDING                 |                  |                           |                                                                   |
-| HOUSEWORK                        |                  |                           |                                                                   |
 | HUNTING                          | yes              |                           |                                                                   |
-| IN_VEHICLE                       |                  |                           |                                                                   |
-| INTERVAL_TRAINING                |                  |                           |                                                                   |
 | JUMP_ROPE                        | yes              |                           |                                                                   |
-| KAYAKING                         |                  |                           |                                                                   |
-| KETTLEBELL_TRAINING              |                  |                           |                                                                   |
-| KICK_SCOOTER                     |                  |                           |                                                                   |
 | KICKBOXING                       | yes              |                           |                                                                   |
-| KITE_SURFING                     |                  |                           |                                                                   |
 | LACROSSE                         | yes              |                           |                                                                   |
 | MARTIAL_ARTS                     | yes              | yes                       |                                                                   |
-| MEDITATION                       |                  |                           |                                                                   |
 | MIND_AND_BODY                    | yes              |                           |                                                                   |
 | MIXED_CARDIO                     | yes              |                           |                                                                   |
-| MIXED_MARTIAL_ARTS               |                  |                           |                                                                   |
-| P90X                             |                  |                           |                                                                   |
 | PADDLE_SPORTS                    | yes              |                           |                                                                   |
 | PARAGLIDING                      |                  | yes                       |                                                                   |
 | PICKLEBALL                       | yes              |                           |                                                                   |
 | PILATES                          | yes              | yes                       |                                                                   |
 | PLAY                             | yes              |                           |                                                                   |
-| POLO                             |                  |                           |                                                                   |
 | PREPARATION_AND_RECOVERY         | yes              |                           |                                                                   |
 | RACQUETBALL                      | yes              | yes                       |                                                                   |
 | ROCK_CLIMBING                    | (yes)            | yes                       | on iOS this will be stored as CLIMBING                            |
@@ -460,7 +438,6 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | SKIING_BACK_COUNTRY              |                  |                           |                                                                   |
 | SKIING_KITE                      |                  |                           |                                                                   |
 | SKIING_ROLLER                    |                  |                           |                                                                   |
-| SLEDDING                         |                  |                           |                                                                   |
 | SNOW_SPORTS                      | yes              |                           |                                                                   |
 | SNOWBOARDING                     | yes              | yes                       |                                                                   |
 | SOCCER                           | yes              |                           |                                                                   |
@@ -472,7 +449,6 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | STAIRS                           | yes              |                           |                                                                   |
 | STANDUP_PADDLEBOARDING           |                  |                           |                                                                   |
 | STEP_TRAINING                    | yes              |                           |                                                                   |
-| STILL                            |                  |                           |                                                                   |
 | STRENGTH_TRAINING                |                  | yes                       |                                                                   |
 | SURFING                          |                  | yes                       |                                                                   |
 | SURFING_SPORTS                   | yes              |                           |                                                                   |
@@ -481,7 +457,6 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | SWIMMING_POOL                    |                  | yes                       |                                                                   |
 | TABLE_TENNIS                     | yes              | yes                       |                                                                   |
 | TAI_CHI                          | yes              |                           |                                                                   |
-| TEAM_SPORTS                      |                  |                           |                                                                   |
 | TENNIS                           | yes              | yes                       |                                                                   |
 | TILTING                          |                  |                           |                                                                   |
 | TRACK_AND_FIELD                  | yes              |                           |                                                                   |
@@ -492,10 +467,6 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | VOLLEYBALL_INDOOR                |                  |                           |                                                                   |
 | WAKEBOARDING                     |                  |                           |                                                                   |
 | WALKING                          | yes              | yes                       |                                                                   |
-| WALKING_FITNESS                  |                  |                           |                                                                   |
-| WALKING_NORDIC                   |                  |                           |                                                                   |
-| WALKING_STROLLER                 |                  |                           |                                                                   |
-| WALKING_TREADMILL                |                  |                           |                                                                   |
 | WATER_FITNESS                    | yes              |                           |                                                                   |
 | WATER_POLO                       | yes              | yes                       |                                                                   |
 | WATER_SPORTS                     | yes              |                           |                                                                   |
@@ -503,8 +474,6 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | WHEELCHAIR                       |                  | yes                       |                                                                   |
 | WHEELCHAIR_RUN_PACE              | yes              |                           |                                                                   |
 | WHEELCHAIR_WALK_PACE             | yes              |                           |                                                                   |
-| WINDSURFING                      |                  |                           |                                                                   |
 | WRESTLING                        | yes              |                           |                                                                   |
 | YOGA                             | yes              | yes                       |                                                                   |
-| ZUMBA                            |                  |                           |                                                                   |
-| OTHER                            | yes              |                           |                                                                   |
+| OTHER                            | yes              | yes                       |                                                                   |
