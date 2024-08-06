@@ -58,13 +58,26 @@ class _HealthAppState extends State<HealthApp> {
   // ];
 
   // Set up corresponding permissions
+
   // READ only
-  List<HealthDataAccess> get permissions =>
-      types.map((e) => HealthDataAccess.READ).toList();
+  // List<HealthDataAccess> get permissions =>
+  //     types.map((e) => HealthDataAccess.READ).toList();
 
   // Or both READ and WRITE
-  // List<HealthDataAccess> get permissions =>
-  //     types.map((e) => HealthDataAccess.READ_WRITE).toList();
+  List<HealthDataAccess> get permissions => types
+      .map((type) =>
+          // can only request READ permissions to the following list of types on iOS
+          [
+            HealthDataType.WALKING_HEART_RATE,
+            HealthDataType.ELECTROCARDIOGRAM,
+            HealthDataType.HIGH_HEART_RATE_EVENT,
+            HealthDataType.LOW_HEART_RATE_EVENT,
+            HealthDataType.IRREGULAR_HEART_RATE_EVENT,
+            HealthDataType.EXERCISE_TIME,
+          ].contains(type)
+              ? HealthDataAccess.READ
+              : HealthDataAccess.READ_WRITE)
+      .toList();
 
   void initState() {
     // configure the health plugin before use.
@@ -330,6 +343,13 @@ class _HealthAppState extends State<HealthApp> {
     //     "HKDeviceName": "bluetooth headphone",
     //   },
     // );
+
+    success &= await Health().writeMenstruationFlow(
+      flow: MenstrualFlow.medium,
+      isStartOfCycle: true,
+      startTime: earlier,
+      endTime: now,
+    );
 
     setState(() {
       _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;

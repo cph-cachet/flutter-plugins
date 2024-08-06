@@ -353,8 +353,8 @@ The plugin supports the following [`HealthDataType`](https://pub.dev/documentati
 | HIGH_HEART_RATE_EVENT        | NO_UNIT                 | yes              |                |                           | Requires Apple Watch to write the data |
 | LOW_HEART_RATE_EVENT         | NO_UNIT                 | yes              |                |                           | Requires Apple Watch to write the data |
 | IRREGULAR_HEART_RATE_EVENT   | NO_UNIT                 | yes              |                |                           | Requires Apple Watch to write the data |
-| HEART_RATE_VARIABILITY_SDNN  | MILLISECONDS            | yes              |                |                           | Requires Apple Watch to write the data |
 | HEART_RATE_VARIABILITY_RMSSD | MILLISECONDS            |                  |                | yes                       |                                        |
+| HEART_RATE_VARIABILITY_SDNN  | MILLISECONDS            | yes              |                |                           | Requires Apple Watch to write the data |
 | HEADACHE_NOT_PRESENT         | MINUTES                 | yes              |                |                           |                                        |
 | HEADACHE_MILD                | MINUTES                 | yes              |                |                           |                                        |
 | HEADACHE_MODERATE            | MINUTES                 | yes              |                |                           |                                        |

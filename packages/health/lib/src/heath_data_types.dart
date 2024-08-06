@@ -91,6 +91,11 @@ enum HealthDataType {
   HEADACHE_SEVERE,
   HEADACHE_UNSPECIFIED,
   NUTRITION,
+  // HealthKit Characteristics
+  GENDER,
+  BIRTH_DATE,
+  BLOOD_TYPE,
+  MENSTRUATION_FLOW,
 
   // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
@@ -199,6 +204,10 @@ const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.HEADACHE_UNSPECIFIED,
   HealthDataType.ELECTROCARDIOGRAM,
   HealthDataType.NUTRITION,
+  HealthDataType.GENDER,
+  HealthDataType.BIRTH_DATE,
+  HealthDataType.BLOOD_TYPE,
+  HealthDataType.MENSTRUATION_FLOW,
 ];
 
 /// List of data types available on Android
@@ -235,6 +244,7 @@ const List<HealthDataType> dataTypeKeysAndroid = [
   HealthDataType.RESPIRATORY_RATE,
   HealthDataType.NUTRITION,
   HealthDataType.TOTAL_CALORIES_BURNED,
+  HealthDataType.MENSTRUATION_FLOW,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
@@ -331,6 +341,10 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.HEADACHE_SEVERE: HealthDataUnit.MINUTE,
   HealthDataType.HEADACHE_UNSPECIFIED: HealthDataUnit.MINUTE,
 
+  HealthDataType.GENDER: HealthDataUnit.NO_UNIT,
+  HealthDataType.BIRTH_DATE: HealthDataUnit.NO_UNIT,
+  HealthDataType.BLOOD_TYPE: HealthDataUnit.NO_UNIT,
+
   // Heart Rate events (specific to Apple Watch)
   HealthDataType.HIGH_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
   HealthDataType.LOW_HEART_RATE_EVENT: HealthDataUnit.NO_UNIT,
@@ -340,6 +354,7 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.ELECTROCARDIOGRAM: HealthDataUnit.VOLT,
 
   HealthDataType.NUTRITION: HealthDataUnit.NO_UNIT,
+  HealthDataType.MENSTRUATION_FLOW: HealthDataUnit.NO_UNIT,
 
   // Health Connect
   HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,
