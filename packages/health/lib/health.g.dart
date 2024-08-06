@@ -140,6 +140,10 @@ const _$HealthDataTypeEnumMap = {
   HealthDataType.HEADACHE_SEVERE: 'HEADACHE_SEVERE',
   HealthDataType.HEADACHE_UNSPECIFIED: 'HEADACHE_UNSPECIFIED',
   HealthDataType.NUTRITION: 'NUTRITION',
+  HealthDataType.GENDER: 'GENDER',
+  HealthDataType.BIRTH_DATE: 'BIRTH_DATE',
+  HealthDataType.BLOOD_TYPE: 'BLOOD_TYPE',
+  HealthDataType.MENSTRUATION_FLOW: 'MENSTRUATION_FLOW',
   HealthDataType.HIGH_HEART_RATE_EVENT: 'HIGH_HEART_RATE_EVENT',
   HealthDataType.LOW_HEART_RATE_EVENT: 'LOW_HEART_RATE_EVENT',
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: 'IRREGULAR_HEART_RATE_EVENT',
@@ -668,6 +672,42 @@ Map<String, dynamic> _$NutritionHealthValueToJson(
   writeNotNull('zinc', instance.zinc);
   return val;
 }
+
+MenstruationFlowHealthValue _$MenstruationFlowHealthValueFromJson(
+        Map<String, dynamic> json) =>
+    MenstruationFlowHealthValue(
+      flow: $enumDecodeNullable(_$MenstrualFlowEnumMap, json['flow']),
+      dateTime: DateTime.parse(json['date_time'] as String),
+      isStartOfCycle: json['is_start_of_cycle'] as bool?,
+      wasUserEntered: json['was_user_entered'] as bool?,
+    )..$type = json['__type'] as String?;
+
+Map<String, dynamic> _$MenstruationFlowHealthValueToJson(
+    MenstruationFlowHealthValue instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('__type', instance.$type);
+  writeNotNull('flow', _$MenstrualFlowEnumMap[instance.flow]);
+  writeNotNull('is_start_of_cycle', instance.isStartOfCycle);
+  writeNotNull('was_user_entered', instance.wasUserEntered);
+  val['date_time'] = instance.dateTime.toIso8601String();
+  return val;
+}
+
+const _$MenstrualFlowEnumMap = {
+  MenstrualFlow.unspecified: 'unspecified',
+  MenstrualFlow.none: 'none',
+  MenstrualFlow.light: 'light',
+  MenstrualFlow.medium: 'medium',
+  MenstrualFlow.heavy: 'heavy',
+  MenstrualFlow.spotting: 'spotting',
+};
 
 WorkoutSummary _$WorkoutSummaryFromJson(Map<String, dynamic> json) =>
     WorkoutSummary(

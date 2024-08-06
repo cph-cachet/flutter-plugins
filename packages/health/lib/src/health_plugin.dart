@@ -20,7 +20,7 @@ part of '../health.dart';
 ///  * Reading total step counts using the [getTotalStepsInInterval] method.
 ///  * Writing different types of specialized health data like the [writeWorkoutData],
 ///    [writeBloodPressure], [writeBloodOxygen], [writeAudiogram], [writeMeal],
-///    [writeInsulinDelivery] methods.
+///    [writeMenstruationFlow], [writeInsulinDelivery] methods.
 class Health {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   static final _instance = Health._();
@@ -661,6 +661,40 @@ class Health {
     return success ?? false;
   }
 
+  /// Save menstruation flow into Apple Health and Google Health Connect.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  ///  * [flow] - the menstrual flow
+  ///  * [startTime] - the start time when the menstrual flow is measured.
+  ///  * [endTime] - the start time when the menstrual flow is measured.
+  ///  * [isStartOfCycle] - A bool that indicates whether the sample represents
+  ///    the start of a menstrual cycle.
+  Future<bool> writeMenstruationFlow({
+    required MenstrualFlow flow,
+    required DateTime startTime,
+    required DateTime endTime,
+    required bool isStartOfCycle,
+  }) async {
+    var value =
+        Platform.isAndroid ? MenstrualFlow.toHealthConnect(flow) : flow.index;
+
+    if (value == -1) {
+      throw ArgumentError(
+          "$flow is not a valid menstrual flow value for $platformType");
+    }
+
+    Map<String, dynamic> args = {
+      'value': value,
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch,
+      'isStartOfCycle': isStartOfCycle,
+      'dataTypeKey': HealthDataType.MENSTRUATION_FLOW.name,
+    };
+    return await _channel.invokeMethod('writeMenstruationFlow', args) == true;
+  }
+
   /// Saves audiogram into Apple Health. Not supported on Android.
   ///
   /// Returns true if successful, false otherwise.
@@ -988,13 +1022,8 @@ class Health {
   /// Returns null if not successful.
   ///
   /// Is a fix according to https://stackoverflow.com/questions/29414386/step-count-retrieved-through-google-fit-api-does-not-match-step-count-displayed/29415091#29415091
-  Future<int?> getTotalStepsInInterval(
-    DateTime startTime,
-    DateTime endTime,
-    {
-      bool includeManualEntry = true
-    }
-  ) async {
+  Future<int?> getTotalStepsInInterval(DateTime startTime, DateTime endTime,
+      {bool includeManualEntry = true}) async {
     final args = <String, dynamic>{
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
