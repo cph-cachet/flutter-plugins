@@ -89,6 +89,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         private var BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
         private var BLOOD_OXYGEN = "BLOOD_OXYGEN"
         private var BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
+        private var HEART_RATE_VARIABILITY_RMSSD = "HEART_RATE_VARIABILITY_RMSSD"
         private var MOVE_MINUTES = "MOVE_MINUTES"
         private var DISTANCE_DELTA = "DISTANCE_DELTA"
         private var WATER = "WATER"
@@ -2527,7 +2528,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         override fun onAttachedToActivity(binding: ActivityPluginBinding) {
                 if (channel == null) {
-                        return
+                        return 
                 }
                 binding.addActivityResultListener(this)
                 activity = binding.activity
@@ -3158,6 +3159,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                                                 .packageName,
                                                 )
                                         }
+                        is HeartRateVariabilityRmssdRecord ->
+                                        return listOf(
+                                                        mapOf<String, Any>(
+                                                                        "value" to
+                                                                                        record.heartRateVariabilityMillis,
+                                                                        "date_from" to
+                                                                                        record.time
+                                                                                                        .toEpochMilli(),
+                                                                        "date_to" to
+                                                                                        record.time
+                                                                                                        .toEpochMilli(),
+                                                                        "source_id" to "",
+                                                                        "source_name" to
+                                                                                        metadata.dataOrigin
+                                                                                                        .packageName,
+                                                        ),
+                                        )
                         is BodyTemperatureRecord ->
                                         return listOf(
                                                         mapOf<String, Any>(
@@ -3649,6 +3667,17 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                                                         BloodGlucose.milligramsPerDeciliter(
                                                                                                         value
                                                                                         ),
+                                                                        zoneOffset = null,
+                                                        )
+                                        HEART_RATE_VARIABILITY_RMSSD ->
+                                                        HeartRateVariabilityRmssdRecord(
+                                                                        time =
+                                                                                        Instant.ofEpochMilli(
+                                                                                                        startTime
+                                                                                        ),
+                                                                        heartRateVariabilityMillis =
+                                                                                                        value,
+                                                                                        
                                                                         zoneOffset = null,
                                                         )
                                         DISTANCE_DELTA ->
@@ -4159,6 +4188,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         BLOOD_PRESSURE_DIASTOLIC to BloodPressureRecord::class,
                                         BLOOD_OXYGEN to OxygenSaturationRecord::class,
                                         BLOOD_GLUCOSE to BloodGlucoseRecord::class,
+                                        HEART_RATE_VARIABILITY_RMSSD to HeartRateVariabilityRmssdRecord::class,
                                         DISTANCE_DELTA to DistanceRecord::class,
                                         WATER to HydrationRecord::class,
                                         SLEEP_ASLEEP to SleepSessionRecord::class,

@@ -218,6 +218,11 @@ class _HealthAppState extends State<HealthApp> {
         startTime: earlier,
         endTime: now);
     success &= await Health().writeHealthData(
+        value: 30,
+        type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
+        startTime: earlier,
+        endTime: now);
+    success &= await Health().writeHealthData(
         value: 37,
         type: HealthDataType.BODY_TEMPERATURE,
         startTime: earlier,
