@@ -2182,7 +2182,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // TODO: add skating
             // TODO: add soccer
             // TOOD: look into paddling
-            // TODO: add runnning_treadmill
+            // TODO: add runnning
+            // TODO: look into hockey
+            // TODO: look into volleyball
             "AMERICAN_FOOTBALL" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_FOOTBALL_AMERICAN,
@@ -2198,29 +2200,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_BASKETBALL,
             "BIKING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
-            // "BIKING_HAND" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_BIKING_HAND,
-            // "BIKING_MOUNTAIN" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
-            // "BIKING_ROAD" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_BIKING_ROAD,
-            // "BIKING_SPINNING" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_BIKING_SPINNING,
-            // "BIKING_STATIONARY" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
-            // "BIKING_UTILITY" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_BIKING_UTILITY,
+            // "BIKING_HAND" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_HAND,
+            // "BIKING_MOUNTAIN" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_MOUNTAIN,
+            // "BIKING_ROAD" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_ROAD,
+            // "BIKING_SPINNING" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_SPINNING,
+            // "BIKING_STATIONARY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
+            // "BIKING_UTILITY" to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_UTILITY,
             "BOXING" to ExerciseSessionRecord.EXERCISE_TYPE_BOXING,
             "CALISTHENICS" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_CALISTHENICS,
             "CRICKET" to ExerciseSessionRecord.EXERCISE_TYPE_CRICKET,
-            // "CROSS_COUNTRY_SKIING" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SKIING_CROSS_COUNTRY,
-            // "CURLING" to ExerciseSessionRecord.EXERCISE_TYPE_CURLING,
+            // "CROSS_COUNTRY_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_CROSS_COUNTRY,
             "DANCING" to ExerciseSessionRecord.EXERCISE_TYPE_DANCING,
-            // "DOWNHILL_SKIING" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SKIING_DOWNHILL,
+            // "DOWNHILL_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_DOWNHILL,
             "ELLIPTICAL" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_ELLIPTICAL,
@@ -2244,10 +2237,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "ICE_SKATING" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_ICE_SKATING,
-            // "JUMP_ROPE" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_JUMP_ROPE,
-            // "KICKBOXING" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_KICKBOXING,
             "MARTIAL_ARTS" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_MARTIAL_ARTS,
@@ -2266,10 +2255,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_ROWING_MACHINE,
             "RUGBY" to ExerciseSessionRecord.EXERCISE_TYPE_RUGBY,
-            // "RUNNING_JOGGING" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_JOGGING,
-            // "RUNNING_SAND" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_SAND,
+            // "RUNNING_JOGGING" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_JOGGING,
+            // "RUNNING_SAND" to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_SAND,
             "RUNNING_TREADMILL" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_RUNNING_TREADMILL,
@@ -2278,30 +2265,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "SCUBA_DIVING" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_SCUBA_DIVING,
-            // "SKATING_CROSS" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SKATING_CROSS,
-            // "SKATING_INDOOR" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INDOOR,
-            // "SKATING_INLINE" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INLINE,
+            // "SKATING_CROSS" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_CROSS,
+            // "SKATING_INDOOR" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INDOOR,
+            // "SKATING_INLINE" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING_INLINE,
             "SKATING" to ExerciseSessionRecord.EXERCISE_TYPE_SKATING,
             "SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING,
-            // "SKIING_BACK_COUNTRY" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SKIING_BACK_COUNTRY,
-            // "SKIING_KITE" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SKIING_KITE,
-            // "SKIING_ROLLER" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SKIING_ROLLER,
+            // "SKIING_BACK_COUNTRY" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_BACK_COUNTRY,
+            // "SKIING_KITE" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_KITE,
+            // "SKIING_ROLLER" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_ROLLER,
             "SNOWBOARDING" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_SNOWBOARDING,
-            // "SNOWMOBILE" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SNOWMOBILE,
             "SNOWSHOEING" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_SNOWSHOEING,
-            // "SOCCER" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_SOCCER,
+            // "SOCCER" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_SOCCER,
             "SOFTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_SOFTBALL,
             "SQUASH" to ExerciseSessionRecord.EXERCISE_TYPE_SQUASH,
             "STAIR_CLIMBING_MACHINE" to
@@ -2310,8 +2288,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "STAIR_CLIMBING" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_STAIR_CLIMBING,
-            // "STANDUP_PADDLEBOARDING" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_STANDUP_PADDLEBOARDING,
             "STRENGTH_TRAINING" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_STRENGTH_TRAINING,
@@ -2322,22 +2298,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "SWIMMING_POOL" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_SWIMMING_POOL,
-            // "SWIMMING" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING,
             "TABLE_TENNIS" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_TABLE_TENNIS,
             "TENNIS" to ExerciseSessionRecord.EXERCISE_TYPE_TENNIS,
-            // "TILTING" to ExerciseSessionRecord.EXERCISE_TYPE_TILTING,
-            // "VOLLEYBALL_BEACH" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_BEACH,
-            // "VOLLEYBALL_INDOOR" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_INDOOR,
+            // "VOLLEYBALL_BEACH" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_BEACH,
+            // "VOLLEYBALL_INDOOR" to ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL_INDOOR,
             "VOLLEYBALL" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_VOLLEYBALL,
-            // "WAKEBOARDING" to
-            // ExerciseSessionRecord.EXERCISE_TYPE_WAKEBOARDING,
             "WALKING" to ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
             "WATER_POLO" to
                     ExerciseSessionRecord

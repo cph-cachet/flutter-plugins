@@ -447,7 +447,6 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | STAIR_CLIMBING                   | yes              | yes                       |                                                                   |
 | STAIR_CLIMBING_MACHINE           |                  | yes                       |                                                                   |
 | STAIRS                           | yes              |                           |                                                                   |
-| STANDUP_PADDLEBOARDING           |                  |                           |                                                                   |
 | STEP_TRAINING                    | yes              |                           |                                                                   |
 | STRENGTH_TRAINING                |                  | yes                       |                                                                   |
 | SURFING                          |                  | yes                       |                                                                   |
@@ -458,14 +457,12 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | TABLE_TENNIS                     | yes              | yes                       |                                                                   |
 | TAI_CHI                          | yes              |                           |                                                                   |
 | TENNIS                           | yes              | yes                       |                                                                   |
-| TILTING                          |                  |                           |                                                                   |
 | TRACK_AND_FIELD                  | yes              |                           |                                                                   |
 | TRADITIONAL_STRENGTH_TRAINING    | yes              |                           |                                                                   |
 | TREADMILL                        |                  |                           |                                                                   |
 | VOLLEYBALL                       | yes              | yes                       |                                                                   |
 | VOLLEYBALL_BEACH                 |                  |                           |                                                                   |
 | VOLLEYBALL_INDOOR                |                  |                           |                                                                   |
-| WAKEBOARDING                     |                  |                           |                                                                   |
 | WALKING                          | yes              | yes                       |                                                                   |
 | WATER_FITNESS                    | yes              |                           |                                                                   |
 | WATER_POLO                       | yes              | yes                       |                                                                   |
