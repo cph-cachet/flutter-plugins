@@ -543,16 +543,8 @@ enum HealthWorkoutActivityType {
   PARAGLIDING,
   ROCK_CLIMBING, // on iOS this is the same as CLIMBING
   ROWING_MACHINE,
-  RUNNING_JOGGING, // on iOS this is the same as RUNNING
-  RUNNING_SAND, // on iOS this is the same as RUNNING
   RUNNING_TREADMILL, // on iOS this is the same as RUNNING
   SCUBA_DIVING,
-  SKATING_CROSS, // on iOS this is the same as SKATING
-  SKATING_INDOOR, // on iOS this is the same as SKATING
-  SKATING_INLINE, // on iOS this is the same as SKATING
-  SKIING_BACK_COUNTRY,
-  SKIING_KITE,
-  SKIING_ROLLER,
   SKIING,
   SNOWSHOEING,
   STAIR_CLIMBING_MACHINE,
@@ -560,8 +552,6 @@ enum HealthWorkoutActivityType {
   SURFING,
   SWIMMING_OPEN_WATER,
   SWIMMING_POOL,
-  VOLLEYBALL_BEACH,
-  VOLLEYBALL_INDOOR,
   WALKING_FITNESS,
   WALKING_NORDIC,
   WALKING_STROLLER,

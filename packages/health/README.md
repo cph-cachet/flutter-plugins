@@ -391,18 +391,10 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | ROWING                           | yes              | yes                       |                                                                   |
 | RUGBY                            | yes              | yes                       |                                                                   |
 | RUNNING                          | yes              | yes                       |                                                                   |
-| RUNNING_JOGGING                  | (yes)            |                           | on iOS this will be stored as RUNNING                             |
-| RUNNING_SAND                     | (yes)            |                           | on iOS this will be stored as RUNNING                             |
 | RUNNING_TREADMILL                | (yes)            | yes                       | on iOS this will be stored as RUNNING                             |
 | SAILING                          | yes              | yes                       |                                                                   |
 | SCUBA_DIVING                     |                  | yes                       |                                                                   |
 | SKATING                          | yes              | yes                       | On iOS this is skating_sports                                     |
-| SKATING_CROSS                    | (yes)            |                           | on iOS this will be stored as SKATING                             |
-| SKATING_INDOOR                   | (yes)            |                           | on iOS this will be stored as SKATING                             |
-| SKATING_INLINE                   | (yes)            |                           | on iOS this will be stored as SKATING                             |
-| SKIING_BACK_COUNTRY              |                  |                           |                                                                   |
-| SKIING_KITE                      |                  |                           |                                                                   |
-| SKIING_ROLLER                    |                  |                           |                                                                   |
 | SNOW_SPORTS                      | yes              |                           |                                                                   |
 | SNOWBOARDING                     | yes              | yes                       |                                                                   |
 | SOCCER                           | yes              |                           |                                                                   |
@@ -424,10 +416,7 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | TENNIS                           | yes              | yes                       |                                                                   |
 | TRACK_AND_FIELD                  | yes              |                           |                                                                   |
 | TRADITIONAL_STRENGTH_TRAINING    | yes              |                           |                                                                   |
-| TREADMILL                        |                  |                           |                                                                   |
 | VOLLEYBALL                       | yes              | yes                       |                                                                   |
-| VOLLEYBALL_BEACH                 |                  |                           |                                                                   |
-| VOLLEYBALL_INDOOR                |                  |                           |                                                                   |
 | WALKING                          | yes              | yes                       |                                                                   |
 | WATER_FITNESS                    | yes              |                           |                                                                   |
 | WATER_POLO                       | yes              | yes                       |                                                                   |
