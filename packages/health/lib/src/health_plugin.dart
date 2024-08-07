@@ -158,33 +158,6 @@ class Health {
     }
   }
 
-  /// Disconnect from Google fit.
-  ///
-  /// Not supported on iOS and Google Health Connect, and the method does nothing.
-  Future<bool?> disconnect(
-    List<HealthDataType> types, {
-    List<HealthDataAccess>? permissions,
-  }) async {
-    if (permissions != null && permissions.length != types.length) {
-      throw ArgumentError(
-          'The length of [types] must be same as that of [permissions].');
-    }
-
-    final mTypes = List<HealthDataType>.from(types, growable: true);
-    final mPermissions = permissions == null
-        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
-            growable: true)
-        : permissions.map((permission) => permission.index).toList();
-
-    // on Android, if BMI is requested, then also ask for weight and height
-    if (Platform.isAndroid) _handleBMI(mTypes, mPermissions);
-
-    List<String> keys = mTypes.map((dataType) => dataType.name).toList();
-
-    return await _channel.invokeMethod(
-        'disconnect', {'types': keys, "permissions": mPermissions});
-  }
-
   /// Requests permissions to access health data [types].
   ///
   /// Returns true if successful, false otherwise.

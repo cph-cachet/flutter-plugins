@@ -17,7 +17,7 @@ The plugin supports:
 - cleaning up duplicate data points via the `removeDuplicates` method.
 - removing data of a given type in a selected period of time using the `delete` method.
 
-Note that for Android, the target phone **needs** to have [Google Fit](https://www.google.com/fit/) or [Health Connect](https://health.google/health-connect-android/) (which is currently in beta) installed and have access to the internet, otherwise this plugin will not work.
+Note that for Android, the target phone **needs** to have [Health Connect](https://health.google/health-connect-android/) (which is currently in beta) installed and have access to the internet, otherwise this plugin will not work.
 
 See the tables below for supported health and workout data types.
 
@@ -51,42 +51,7 @@ Additionally, for workouts, if the distance of a workout is requested then the l
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 ```
 
-#### Google Fit (Android option 1)
-
-Follow the guide at <https://developers.google.com/fit/android/get-api-key>. Below is an example of following the guide.
-
-Change directory to your key-store directory (MacOS):
-
-`cd ~/.android/`
-
-Get your keystore SHA1 fingerprint:
-
-`keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
-
-Example output:
-
-```bash
-Alias name: androiddebugkey
-Creation date: Jan 01, 2013
-Entry type: PrivateKeyEntry
-Certificate chain length: 1
-Certificate[1]:
-Owner: CN=Android Debug, O=Android, C=US
-Issuer: CN=Android Debug, O=Android, C=US
-Serial number: 4aa9b300
-Valid from: Mon Jan 01 08:04:04 UTC 2013 until: Mon Jan 01 18:04:04 PST 2033
-Certificate fingerprints:
-     MD5:  AE:9F:95:D0:A6:86:89:BC:A8:70:BA:34:FF:6A:AC:F9
-     SHA1: BB:0D:AC:74:D3:21:E1:43:07:71:9B:62:90:AF:A1:66:6E:44:5D:75
-     Signature algorithm name: SHA1withRSA
-     Version: 3
-```
-
-Follow the instructions at <https://developers.google.com/fit/android/get-api-key> for setting up an OAuth2 Client ID for a Google project, and adding the SHA1 fingerprint to that OAuth2 credential.
-
-The client id will look something like `YOUR_CLIENT_ID.apps.googleusercontent.com`.
-
-#### Health Connect (Android option 2)
+#### Health Connect 
 
 Health Connect requires the following lines in the `AndroidManifest.xml` file (see also the example app):
 
@@ -185,7 +150,7 @@ android.useAndroidX=true
 
 See the example app for detailed examples of how to use the Health API.
 
-The Health plugin is used via the `Health()` singleton using the different methods for handling permissions and getting and adding data to Apple Health, Google Fit, or Google Health Connect.
+The Health plugin is used via the `Health()` singleton using the different methods for handling permissions and getting and adding data to Apple Health or Google Health Connect.
 Below is a simplified flow of how to use the plugin.
 
 ```dart

@@ -291,13 +291,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if call.method.elementsEqual("delete") {
             try! delete(call: call, result: result)
         }
-        
-        /// Disconnect
-        else if (call.method.elementsEqual("disconnect")){
-            // Do nothing.
-            result(true)
-        }
-        
     }
     
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
