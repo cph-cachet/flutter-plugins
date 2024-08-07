@@ -424,8 +424,6 @@ class Health {
   ///
   /// Parameters:
   ///  * [saturation] - the saturation of the blood oxygen in percentage
-  ///  * [flowRate] - optional supplemental oxygen flow rate, only supported on
-  ///    Google Fit (default 0.0)
   ///  * [startTime] - the start time when this [saturation] is measured.
   ///    Must be equal to or earlier than [endTime].
   ///  * [endTime] - the end time when this [saturation] is measured.
@@ -434,7 +432,6 @@ class Health {
   ///    is measured only at a specific point in time (default).
   Future<bool> writeBloodOxygen({
     required double saturation,
-    double flowRate = 0.0,
     required DateTime startTime,
     DateTime? endTime,
   }) async {
@@ -453,7 +450,6 @@ class Health {
     } else if (Platform.isAndroid) {
       Map<String, dynamic> args = {
         'value': saturation,
-        'flowRate': flowRate,
         'startTime': startTime.millisecondsSinceEpoch,
         'endTime': endTime.millisecondsSinceEpoch,
         'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,

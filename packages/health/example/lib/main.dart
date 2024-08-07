@@ -265,7 +265,6 @@ class _HealthAppState extends State<HealthApp> {
       saturation: 98,
       startTime: earlier,
       endTime: now,
-      flowRate: 1.0,
     );
     success &= await Health().writeWorkoutData(
       activityType: HealthWorkoutActivityType.AMERICAN_FOOTBALL,

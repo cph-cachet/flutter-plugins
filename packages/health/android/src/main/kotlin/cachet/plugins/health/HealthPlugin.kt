@@ -307,7 +307,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     /**
-     * Save the blood oxygen saturation, without supplemental flow rate
+     * Save the blood oxygen saturation
      */
     private fun writeBloodOxygen(call: MethodCall, result: Result) {
         writeData(call, result)
