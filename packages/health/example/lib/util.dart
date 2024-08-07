@@ -62,7 +62,7 @@ const List<HealthDataType> dataTypesIOS = [
 /// List of data types available on Android.
 ///
 /// Note that these are only the ones supported on Android's Health Connect API.
-/// Android's Google Fit have more types that we support in the [HealthDataType]
+/// Android's Health Connect has more types that we support in the [HealthDataType]
 /// enumeration.
 const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.ACTIVE_ENERGY_BURNED,

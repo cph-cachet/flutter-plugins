@@ -88,7 +88,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var activity: Activity? = null
     private var context: Context? = null
     private var threadPoolExecutor: ExecutorService? = null
-    private var useHealthConnectIfAvailable: Boolean = false
     private var healthConnectRequestPermissionsLauncher: ActivityResultLauncher<Set<String>>? =
         null
     private lateinit var healthConnectClient: HealthConnectClient
@@ -378,7 +377,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "installHealthConnect" -> installHealthConnect(call, result)
-            "useHealthConnectIfAvailable" -> useHealthConnectIfAvailable(call, result)
             "getHealthConnectSdkStatus" -> getHealthConnectSdkStatus(call, result)
             "hasPermissions" -> hasPermissions(call, result)
             "requestAuthorization" -> requestAuthorization(call, result)
@@ -451,11 +449,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 putExtra("callerId", context!!.packageName)
             }
         )
-        result.success(null)
-    }
-
-    private fun useHealthConnectIfAvailable(call: MethodCall, result: Result) {
-        useHealthConnectIfAvailable = true
         result.success(null)
     }
 

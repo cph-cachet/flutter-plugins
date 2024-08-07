@@ -27,7 +27,6 @@ class Health {
 
   String? _deviceId;
   final _deviceInfo = DeviceInfoPlugin();
-  bool _useHealthConnectIfAvailable = false;
 
   Health._() {
     _registerFromJsonFunctions();
@@ -39,9 +38,7 @@ class Health {
   /// The type of platform of this device.
   HealthPlatformType get platformType => Platform.isIOS
       ? HealthPlatformType.appleHealth
-      : useHealthConnectIfAvailable
-          ? HealthPlatformType.googleHealthConnect
-          : HealthPlatformType.googleFit;
+      : HealthPlatformType.googleHealthConnect;
 
   /// The id of this device.
   ///
@@ -50,23 +47,11 @@ class Health {
   String get deviceId => _deviceId ?? 'unknown';
 
   /// Configure the health plugin. Must be called before using the plugin.
-  ///
-  /// If [useHealthConnectIfAvailable] is true, Google Health Connect on
-  /// Android will be used. Has no effect on iOS.
-  Future<void> configure({bool useHealthConnectIfAvailable = false}) async {
-    if (Platform.isAndroid) {
-      _deviceId = (await _deviceInfo.androidInfo).id;
-      _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
-      await _channel.invokeMethod('useHealthConnectIfAvailable');
-    } else {
-      _deviceId = (await _deviceInfo.iosInfo).identifierForVendor;
-    }
+  Future<void> configure() async {
+    _deviceId = Platform.isAndroid
+        ? (await _deviceInfo.androidInfo).id
+        : (await _deviceInfo.iosInfo).identifierForVendor;
   }
-
-  /// Is this plugin using Health Connect (true) or Google Fit (false)?
-  ///
-  /// This is set in the [configure] method.
-  bool get useHealthConnectIfAvailable => _useHealthConnectIfAvailable;
 
   /// Check if a given data type is available on the platform
   bool isDataTypeAvailable(HealthDataType dataType) => Platform.isAndroid
@@ -121,9 +106,7 @@ class Health {
     });
   }
 
-  /// Revokes permissions of all types.
-  ///
-  /// Uses `disableFit()` on Google Fit.
+  /// Revokes Android permissions of all types.
   ///
   /// Not implemented on iOS as there is no way to programmatically remove access.
   Future<void> revokePermissions() async {
@@ -507,7 +490,7 @@ class Health {
     return success ?? false;
   }
 
-  /// Saves meal record into Apple Health or Google Fit / Health Connect.
+  /// Saves meal record into Apple Health or Health Connect.
   ///
   /// Returns true if successful, false otherwise.
   ///
@@ -1055,7 +1038,7 @@ class Health {
             "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues"),
       };
 
-  /// Write workout data to Apple Health or Google Fit or Google Health Connect.
+  /// Write workout data to Apple Health or Google Health Connect.
   ///
   /// Returns true if the workout data was successfully added.
   ///

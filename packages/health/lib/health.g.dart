@@ -206,7 +206,6 @@ const _$HealthDataUnitEnumMap = {
 
 const _$HealthPlatformTypeEnumMap = {
   HealthPlatformType.appleHealth: 'appleHealth',
-  HealthPlatformType.googleFit: 'googleFit',
   HealthPlatformType.googleHealthConnect: 'googleHealthConnect',
 };
 

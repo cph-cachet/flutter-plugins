@@ -190,7 +190,7 @@ Below is a simplified flow of how to use the plugin.
 
 ```dart
   // configure the health plugin before use.
-  Health().configure(useHealthConnectIfAvailable: true);
+  Health().configure();
 
 
   // define the types to get
@@ -389,7 +389,7 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | CROSS_COUNTRY_SKIING             | yes              |                           |                                                                   |
 | CROSS_TRAINING                   | yes              |                           |                                                                   |
 | CURLING                          | yes              |                           |                                                                   |
-| DANCING                          |                  | yes                       |                                                                   |
+| DANCING                          | yes              | yes                       | on iOS this is DANCE, but name changed here to fit with Android |
 | DISC_SPORTS                      | yes              |                           |                                                                   |
 | DOWNHILL_SKIING                  | yes              |                           |                                                                   |
 | ELLIPTICAL                       | yes              | yes                       |                                                                   |
