@@ -1,6 +1,6 @@
 # Health
 
-Enables reading and writing health data from/to Apple Health, Google Fit and Health Connect.
+Enables reading and writing health data from/to Apple Health and Health Connect.
 
 > Google Fitness API is deprecated and will be turned down in 2024, thus this package will also transition to only support Health Connect.
 
@@ -80,7 +80,7 @@ In the Health Connect permissions activity there is a link to your privacy polic
 </activity-alias>
 ```
 
-If using Health Connect on Android it requires special permissions in the `AndroidManifest.xml` file. The permissions can be found here: <https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types>
+Health Connect on Android it requires special permissions in the `AndroidManifest.xml` file. The permissions can be found here: <https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types>
 
 Example shown here (can also be found in the example app):
 

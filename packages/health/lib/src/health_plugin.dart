@@ -972,8 +972,6 @@ class Health {
 
   /// Get the total number of steps within a specific time period.
   /// Returns null if not successful.
-  ///
-  /// Is a fix according to https://stackoverflow.com/questions/29414386/step-count-retrieved-through-google-fit-api-does-not-match-step-count-displayed/29415091#29415091
   Future<int?> getTotalStepsInInterval(DateTime startTime, DateTime endTime,
       {bool includeManualEntry = true}) async {
     final args = <String, dynamic>{
@@ -1185,7 +1183,6 @@ class Health {
       HealthWorkoutActivityType.YOGA,
 
       // Android only
-      // Once Google Fit is removed, this list needs to be changed
       HealthWorkoutActivityType.BIKING_HAND,
       HealthWorkoutActivityType.BIKING_MOUNTAIN,
       HealthWorkoutActivityType.BIKING_ROAD,
