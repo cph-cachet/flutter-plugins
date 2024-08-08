@@ -1202,7 +1202,6 @@ class Health {
       HealthWorkoutActivityType.SURFING,
       HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
       HealthWorkoutActivityType.SWIMMING_POOL,
-      HealthWorkoutActivityType.WALKING_STROLLER,
       HealthWorkoutActivityType.WALKING_TREADMILL,
       HealthWorkoutActivityType.WEIGHTLIFTING,
       HealthWorkoutActivityType.WHEELCHAIR,
