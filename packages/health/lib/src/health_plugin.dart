@@ -265,6 +265,7 @@ class Health {
           (weights[i].value as NumericHealthValue).numericValue.toDouble() /
               (h * h);
       final x = HealthDataPoint(
+        uuid: '',
         value: NumericHealthValue(numericValue: bmiValue),
         type: dataType,
         unit: unit,
