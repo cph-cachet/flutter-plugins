@@ -2,7 +2,8 @@
 
 Enables reading and writing health data from/to Apple Health and Health Connect.
 
-> Google Fitness API is deprecated and will be turned down in 2024, thus this package will also transition to only support Health Connect.
+> [!IMPORTANT]
+> Google has deprecated the Google Fit API. According to the [documentation](https://developers.google.com/fit/android), the API will no longer be available after **June 30, 2025**. As such, this package has removed support for Google Fit as of version 11.0.0 and users are urged to upgrade as soon as possible.
 
 The plugin supports:
 
