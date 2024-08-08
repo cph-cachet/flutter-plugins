@@ -156,10 +156,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         handler?.post { mResult?.error(errorCode, errorMessage, errorDetails) }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        return false
-    }
-
     /** Handle calls from the MethodChannel */
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
@@ -546,6 +542,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
      * type.
      */
     private fun requestAuthorization(call: MethodCall, result: Result) {
+        if (context == null) {
+            result.success(false)
+            return
+        }
+
         val args = call.arguments as HashMap<*, *>
         val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()!!
         val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()!!
@@ -617,6 +618,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             return
         }
 
+        // Store the result to be called in [onHealthConnectPermissionCallback]
+        mResult = result
         healthConnectRequestPermissionsLauncher!!.launch(permList.toSet())
     }
 
