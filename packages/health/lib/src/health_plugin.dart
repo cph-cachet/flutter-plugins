@@ -1184,12 +1184,7 @@ class Health {
       HealthWorkoutActivityType.YOGA,
 
       // Android only
-      HealthWorkoutActivityType.BIKING_HAND,
-      HealthWorkoutActivityType.BIKING_MOUNTAIN,
-      HealthWorkoutActivityType.BIKING_ROAD,
-      HealthWorkoutActivityType.BIKING_SPINNING,
       HealthWorkoutActivityType.BIKING_STATIONARY,
-      HealthWorkoutActivityType.BIKING_UTILITY,
       HealthWorkoutActivityType.CALISTHENICS,
       HealthWorkoutActivityType.DANCING,
       HealthWorkoutActivityType.FRISBEE_DISC,
@@ -1207,8 +1202,6 @@ class Health {
       HealthWorkoutActivityType.SURFING,
       HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
       HealthWorkoutActivityType.SWIMMING_POOL,
-      HealthWorkoutActivityType.WALKING_FITNESS,
-      HealthWorkoutActivityType.WALKING_NORDIC,
       HealthWorkoutActivityType.WALKING_STROLLER,
       HealthWorkoutActivityType.WALKING_TREADMILL,
       HealthWorkoutActivityType.WEIGHTLIFTING,
