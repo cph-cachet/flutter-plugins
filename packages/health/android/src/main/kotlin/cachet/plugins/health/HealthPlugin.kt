@@ -29,6 +29,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.time.*
@@ -158,6 +159,84 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         return false
+    }
+
+    /** Handle calls from the MethodChannel */
+    override fun onMethodCall(call: MethodCall, result: Result) {
+        when (call.method) {
+            "installHealthConnect" -> installHealthConnect(call, result)
+            "getHealthConnectSdkStatus" -> getHealthConnectSdkStatus(call, result)
+            "hasPermissions" -> hasPermissions(call, result)
+            "requestAuthorization" -> requestAuthorization(call, result)
+            "revokePermissions" -> revokePermissions(call, result)
+            "getData" -> getData(call, result)
+            "getIntervalData" -> getIntervalData(call, result)
+            "writeData" -> writeData(call, result)
+            "delete" -> deleteData(call, result)
+            "getAggregateData" -> getAggregateData(call, result)
+            "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
+            "writeWorkoutData" -> writeWorkoutData(call, result)
+            "writeBloodPressure" -> writeBloodPressure(call, result)
+            "writeBloodOxygen" -> writeBloodOxygen(call, result)
+            "writeMenstruationFlow" -> writeMenstruationFlow(call, result)
+            "writeMeal" -> writeMeal(call, result)
+            else -> result.notImplemented()
+        }
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        if (channel == null) {
+            return
+        }
+        binding.addActivityResultListener(this)
+        activity = binding.activity
+
+        val requestPermissionActivityContract =
+            PermissionController.createRequestPermissionResultContract()
+
+        healthConnectRequestPermissionsLauncher =
+            (activity as ComponentActivity).registerForActivityResult(
+                requestPermissionActivityContract
+            ) { granted -> onHealthConnectPermissionCallback(granted) }
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity()
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        onAttachedToActivity(binding)
+    }
+
+    override fun onDetachedFromActivity() {
+        if (channel == null) {
+            return
+        }
+        activity = null
+        healthConnectRequestPermissionsLauncher = null
+    }
+
+    private var healthConnectAvailable = false
+    private var healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
+
+    private fun checkAvailability() {
+        healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
+        healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
+    }
+
+    private fun installHealthConnect(call: MethodCall, result: Result) {
+        val uriString =
+            "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
+        context!!.startActivity(
+            Intent(Intent.ACTION_VIEW).apply {
+                setPackage("com.android.vending")
+                data = Uri.parse(uriString)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtra("overlay", true)
+                putExtra("callerId", context!!.packageName)
+            }
+        )
+        result.success(null)
     }
 
     private fun onHealthConnectPermissionCallback(permissionGranted: Set<String>) {
@@ -298,7 +377,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
-
     /**
      * Save menstrual flow data
      */
@@ -373,83 +451,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
-    /** Handle calls from the MethodChannel */
-    override fun onMethodCall(call: MethodCall, result: Result) {
-        when (call.method) {
-            "installHealthConnect" -> installHealthConnect(call, result)
-            "getHealthConnectSdkStatus" -> getHealthConnectSdkStatus(call, result)
-            "hasPermissions" -> hasPermissions(call, result)
-            "requestAuthorization" -> requestAuthorization(call, result)
-            "revokePermissions" -> revokePermissions(call, result)
-            "getData" -> getData(call, result)
-            "getIntervalData" -> getIntervalData(call, result)
-            "writeData" -> writeData(call, result)
-            "delete" -> deleteData(call, result)
-            "getAggregateData" -> getAggregateData(call, result)
-            "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
-            "writeWorkoutData" -> writeWorkoutData(call, result)
-            "writeBloodPressure" -> writeBloodPressure(call, result)
-            "writeBloodOxygen" -> writeBloodOxygen(call, result)
-            "writeMenstruationFlow" -> writeMenstruationFlow(call, result)
-            "writeMeal" -> writeMeal(call, result)
-            else -> result.notImplemented()
-        }
-    }
-
-    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        if (channel == null) {
-            return
-        }
-        binding.addActivityResultListener(this)
-        activity = binding.activity
-
-        val requestPermissionActivityContract =
-            PermissionController.createRequestPermissionResultContract()
-
-        healthConnectRequestPermissionsLauncher =
-            (activity as ComponentActivity).registerForActivityResult(
-                requestPermissionActivityContract
-            ) { granted -> onHealthConnectPermissionCallback(granted) }
-    }
-
-    override fun onDetachedFromActivityForConfigChanges() {
-        onDetachedFromActivity()
-    }
-
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        onAttachedToActivity(binding)
-    }
-
-    override fun onDetachedFromActivity() {
-        if (channel == null) {
-            return
-        }
-        activity = null
-        healthConnectRequestPermissionsLauncher = null
-    }
-
-    private var healthConnectAvailable = false
-    private var healthConnectStatus = HealthConnectClient.SDK_UNAVAILABLE
-
-    private fun checkAvailability() {
-        healthConnectStatus = HealthConnectClient.getSdkStatus(context!!)
-        healthConnectAvailable = healthConnectStatus == HealthConnectClient.SDK_AVAILABLE
-    }
-
-    private fun installHealthConnect(call: MethodCall, result: Result) {
-        val uriString =
-            "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
-        context!!.startActivity(
-            Intent(Intent.ACTION_VIEW).apply {
-                setPackage("com.android.vending")
-                data = Uri.parse(uriString)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                putExtra("overlay", true)
-                putExtra("callerId", context!!.packageName)
-            }
-        )
-        result.success(null)
-    }
 
     private fun getHealthConnectSdkStatus(call: MethodCall, result: Result) {
         checkAvailability()
@@ -2293,6 +2294,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_WHEELCHAIR,
             "YOGA" to ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
-            "OTHER" to ExerciseSessionRecord.OTHER_WORKOUT,
+            "OTHER" to ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,
         )
 }

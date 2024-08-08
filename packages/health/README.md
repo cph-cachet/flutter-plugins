@@ -51,7 +51,7 @@ Additionally, for workouts, if the distance of a workout is requested then the l
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 ```
 
-#### Health Connect 
+#### Health Connect
 
 Health Connect requires the following lines in the `AndroidManifest.xml` file (see also the example app):
 
@@ -342,7 +342,7 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | BARRE                            | yes              |                           |                                                                   |
 | BASEBALL                         | yes              | yes                       |                                                                   |
 | BASKETBALL                       | yes              | yes                       |                                                                   |
-| BIKING                           | yes              | yes                       | on iOS this is CYCLING, but name changed here to fit with Android |
+| BIKING                           | yes              | yes                       | on iOS this is CYCLING, but name changed here to fit with Android  |
 | BOWLING                          | yes              |                           |                                                                   |
 | BOXING                           | yes              | yes                       |                                                                   |
 | CALISTHENICS                     |                  | yes                       |                                                                   |
@@ -354,7 +354,7 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | CROSS_COUNTRY_SKIING             | yes              |                           |                                                                   |
 | CROSS_TRAINING                   | yes              |                           |                                                                   |
 | CURLING                          | yes              |                           |                                                                   |
-| DANCING                          | yes              | yes                       | on iOS this is DANCE, but name changed here to fit with Android |
+| DANCING                          | yes              | yes                       | on iOS this is DANCE, but name changed here to fit with Android   |
 | DISC_SPORTS                      | yes              |                           |                                                                   |
 | DOWNHILL_SKIING                  | yes              |                           |                                                                   |
 | ELLIPTICAL                       | yes              | yes                       |                                                                   |
