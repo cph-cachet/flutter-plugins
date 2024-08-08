@@ -106,8 +106,9 @@ class Health {
     });
   }
 
-  /// Revokes Android permissions of all types.
+  /// Revokes Google Health Connect permissions on Android of all types.
   ///
+  /// NOTE: The app must be completely killed and restarted for the changes to take effect.
   /// Not implemented on iOS as there is no way to programmatically remove access.
   Future<void> revokePermissions() async {
     try {

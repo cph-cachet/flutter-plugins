@@ -62,7 +62,6 @@ const val STEPS = "STEPS"
 const val WATER = "WATER"
 const val WEIGHT = "WEIGHT"
 
-// TODO support unknown?
 const val BREAKFAST = "BREAKFAST"
 const val DINNER = "DINNER"
 const val LUNCH = "LUNCH"
@@ -1402,8 +1401,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     // TODO rewrite sleep to fit new update better --> compare with Apple and see if we should
-    // not
-    // adopt a single type with attached stages approach
+    // not adopt a single type with attached stages approach
     private fun writeData(call: MethodCall, result: Result) {
         val type = call.argument<String>("dataTypeKey")!!
         val startTime = call.argument<Long>("startTime")!!
@@ -2171,7 +2169,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     TotalCaloriesBurnedRecord.ENERGY_TOTAL
         )
 
-    // TODO: Update with new workout types when Health Connect becomes the standard.
     private val workoutTypeMap =
         mapOf(
             // TODO: add skiing
