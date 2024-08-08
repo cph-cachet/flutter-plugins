@@ -155,6 +155,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     ) {
         handler?.post { mResult?.error(errorCode, errorMessage, errorDetails) }
     }
+    
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        return false
+    }
 
     /** Handle calls from the MethodChannel */
     override fun onMethodCall(call: MethodCall, result: Result) {
