@@ -398,7 +398,6 @@ const _$HealthWorkoutActivityTypeEnumMap = {
   HealthWorkoutActivityType.STAIRS: 'STAIRS',
   HealthWorkoutActivityType.STEP_TRAINING: 'STEP_TRAINING',
   HealthWorkoutActivityType.STRENGTH_TRAINING: 'STRENGTH_TRAINING',
-  HealthWorkoutActivityType.SURFING_SPORTS: 'SURFING_SPORTS',
   HealthWorkoutActivityType.SURFING: 'SURFING',
   HealthWorkoutActivityType.SWIMMING_OPEN_WATER: 'SWIMMING_OPEN_WATER',
   HealthWorkoutActivityType.SWIMMING_POOL: 'SWIMMING_POOL',

@@ -2199,10 +2199,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "CALISTHENICS" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_CALISTHENICS,
+            "CARDIO_DANCE" to
+                    ExerciseSessionRecord
+                        .EXERCISE_TYPE_DANCING,
             "CRICKET" to ExerciseSessionRecord.EXERCISE_TYPE_CRICKET,
-            // "CROSS_COUNTRY_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_CROSS_COUNTRY,
+            "CROSS_COUNTRY_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING,
             "DANCING" to ExerciseSessionRecord.EXERCISE_TYPE_DANCING,
-            // "DOWNHILL_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING_DOWNHILL,
+            "DOWNHILL_SKIING" to ExerciseSessionRecord.EXERCISE_TYPE_SKIING,
             "ELLIPTICAL" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_ELLIPTICAL,
@@ -2261,6 +2264,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_SNOWSHOEING,
             // "SOCCER" to ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_SOCCER,
+            "SOCIAL_DANCE" to
+                    ExerciseSessionRecord
+                        .EXERCISE_TYPE_DANCING,
             "SOFTBALL" to ExerciseSessionRecord.EXERCISE_TYPE_SOFTBALL,
             "SQUASH" to ExerciseSessionRecord.EXERCISE_TYPE_SQUASH,
             "STAIR_CLIMBING_MACHINE" to
@@ -2294,6 +2300,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_WEIGHTLIFTING,
             "WHEELCHAIR" to
+                    ExerciseSessionRecord
+                        .EXERCISE_TYPE_WHEELCHAIR,
+            "WHEELCHAIR_RUN_PACE" to
+                    ExerciseSessionRecord
+                        .EXERCISE_TYPE_WHEELCHAIR,
+            "WHEELCHAIR_WALK_PACE" to
                     ExerciseSessionRecord
                         .EXERCISE_TYPE_WHEELCHAIR,
             "YOGA" to ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
