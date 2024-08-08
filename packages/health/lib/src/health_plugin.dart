@@ -1119,7 +1119,7 @@ class Health {
       HealthWorkoutActivityType.STAIR_CLIMBING,
       HealthWorkoutActivityType.STAIRS,
       HealthWorkoutActivityType.STEP_TRAINING,
-      HealthWorkoutActivityType.SURFING_SPORTS,
+      HealthWorkoutActivityType.SURFING,
       HealthWorkoutActivityType.SWIMMING,
       HealthWorkoutActivityType.TABLE_TENNIS,
       HealthWorkoutActivityType.TAI_CHI,
@@ -1135,6 +1135,8 @@ class Health {
       HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE,
       HealthWorkoutActivityType.WRESTLING,
       HealthWorkoutActivityType.YOGA,
+      HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
+      HealthWorkoutActivityType.SWIMMING_POOL,
     }.contains(type);
   }
 
@@ -1151,6 +1153,7 @@ class Health {
       HealthWorkoutActivityType.BASKETBALL,
       HealthWorkoutActivityType.BIKING,
       HealthWorkoutActivityType.BOXING,
+      HealthWorkoutActivityType.CARDIO_DANCE,
       HealthWorkoutActivityType.CRICKET,
       HealthWorkoutActivityType.CROSS_COUNTRY_SKIING,
       HealthWorkoutActivityType.CURLING,
@@ -1173,6 +1176,7 @@ class Health {
       HealthWorkoutActivityType.SKATING,
       HealthWorkoutActivityType.SNOWBOARDING,
       HealthWorkoutActivityType.SOCCER,
+      HealthWorkoutActivityType.SOCIAL_DANCE,
       HealthWorkoutActivityType.SOFTBALL,
       HealthWorkoutActivityType.SQUASH,
       HealthWorkoutActivityType.STAIR_CLIMBING,
@@ -1181,6 +1185,8 @@ class Health {
       HealthWorkoutActivityType.VOLLEYBALL,
       HealthWorkoutActivityType.WALKING,
       HealthWorkoutActivityType.WATER_POLO,
+      HealthWorkoutActivityType.WHEELCHAIR_RUN_PACE,
+      HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE,
       HealthWorkoutActivityType.YOGA,
 
       // Android only

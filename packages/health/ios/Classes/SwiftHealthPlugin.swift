@@ -1339,8 +1339,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["PADDLE_SPORTS"] = .paddleSports
         workoutActivityTypeMap["ROWING"] = .rowing
         workoutActivityTypeMap["SAILING"] = .sailing
-        workoutActivityTypeMap["SURFING_SPORTS"] = .surfingSports
+        workoutActivityTypeMap["SURFING"] = .surfingSports
         workoutActivityTypeMap["SWIMMING"] = .swimming
+        workoutActivityTypeMap["SWIMMING_OPEN_WATER"] = .swimming
+        workoutActivityTypeMap["SWIMMING_POOL"] = .swimming
         workoutActivityTypeMap["WATER_FITNESS"] = .waterFitness
         workoutActivityTypeMap["WATER_POLO"] = .waterPolo
         workoutActivityTypeMap["WATER_SPORTS"] = .waterSports
