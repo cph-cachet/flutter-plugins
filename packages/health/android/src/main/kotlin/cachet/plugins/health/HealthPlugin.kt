@@ -18,6 +18,7 @@ import androidx.health.connect.client.records.MealType.MEAL_TYPE_DINNER
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_LUNCH
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_SNACK
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_UNKNOWN
+import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -743,6 +744,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             healthConnectData.add(
                                 // mapOf(
                                 mapOf<String, Any?>(
+                                    "uuid" to record.metadata.id,
                                     "workoutActivityType" to
                                             (workoutTypeMap
                                                 .filterValues {
@@ -815,8 +817,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                                     convertRecordStage(
                                                         recStage,
                                                         dataType,
-                                                        rec.metadata.dataOrigin
-                                                            .packageName
+                                                        rec.metadata
                                                     )
                                                 )
                                         }
@@ -847,10 +848,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private fun convertRecordStage(
         stage: SleepSessionRecord.Stage,
         dataType: String,
-        sourceName: String
+        metadata: Metadata
     ): List<Map<String, Any>> {
+        var sourceName = metadata.dataOrigin
+            .packageName
         return listOf(
             mapOf<String, Any>(
+                "uuid" to metadata.id,
                 "stage" to stage.stage,
                 "value" to
                         ChronoUnit.MINUTES.between(
@@ -946,6 +950,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is WeightRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.weight
                                     .inKilograms,
@@ -965,6 +971,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is HeightRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.height
                                     .inMeters,
@@ -984,6 +992,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is BodyFatRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.percentage
                                     .value,
@@ -1003,6 +1013,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is StepsRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to record.count,
                         "date_from" to
                                 record.startTime
@@ -1020,6 +1032,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is ActiveCaloriesBurnedRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.energy
                                     .inKilocalories,
@@ -1039,6 +1053,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is HeartRateRecord ->
                 return record.samples.map {
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to it.beatsPerMinute,
                         "date_from" to
                                 it.time.toEpochMilli(),
@@ -1053,6 +1069,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is HeartRateVariabilityRmssdRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.heartRateVariabilityMillis,
                         "date_from" to
@@ -1071,6 +1089,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is BodyTemperatureRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.temperature
                                     .inCelsius,
@@ -1090,6 +1110,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is BodyWaterMassRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.mass
                                     .inKilograms,
@@ -1109,6 +1131,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is BloodPressureRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 if (dataType ==
                                     BLOOD_PRESSURE_DIASTOLIC
@@ -1134,6 +1158,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is OxygenSaturationRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.percentage
                                     .value,
@@ -1153,6 +1179,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is BloodGlucoseRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.level
                                     .inMilligramsPerDeciliter,
@@ -1172,6 +1200,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is DistanceRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.distance
                                     .inMeters,
@@ -1191,6 +1221,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is HydrationRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.volume
                                     .inLiters,
@@ -1210,6 +1242,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is TotalCaloriesBurnedRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.energy
                                     .inKilocalories,
@@ -1229,6 +1263,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is BasalMetabolicRateRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.basalMetabolicRate
                                     .inKilocaloriesPerDay,
@@ -1248,6 +1284,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is SleepSessionRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "date_from" to
                                 record.startTime
                                     .toEpochMilli(),
@@ -1270,6 +1308,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is RestingHeartRateRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to
                                 record.beatsPerMinute,
                         "date_from" to
@@ -1288,6 +1328,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is FloorsClimbedRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to record.floors,
                         "date_from" to
                                 record.startTime
@@ -1305,6 +1347,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is RespiratoryRateRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
                         "value" to record.rate,
                         "date_from" to
                                 record.time
@@ -1322,6 +1366,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is NutritionRecord ->
                 return listOf(
                     mapOf<String, Any?>(
+                        "uuid" to metadata.id,
                         "calories" to record.energy?.inKilocalories,
                         "protein" to record.protein?.inGrams,
                         "carbs" to record.totalCarbohydrate?.inGrams,
@@ -1385,6 +1430,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             is MenstruationFlowRecord ->
                 return listOf(
                     mapOf<String, Any>(
+                        "uuid" to metadata.id,
                         "value" to record.flow,
                         "date_from" to record.time.toEpochMilli(),
                         "date_to" to record.time.toEpochMilli(),

@@ -6,28 +6,31 @@ part of 'health.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-HealthDataPoint _$HealthDataPointFromJson(Map<String, dynamic> json) =>
-    HealthDataPoint(
-      value: HealthValue.fromJson(json['value'] as Map<String, dynamic>),
-      type: $enumDecode(_$HealthDataTypeEnumMap, json['type']),
-      unit: $enumDecode(_$HealthDataUnitEnumMap, json['unit']),
-      dateFrom: DateTime.parse(json['date_from'] as String),
-      dateTo: DateTime.parse(json['date_to'] as String),
-      sourcePlatform:
-          $enumDecode(_$HealthPlatformTypeEnumMap, json['source_platform']),
-      sourceDeviceId: json['source_device_id'] as String,
-      sourceId: json['source_id'] as String,
-      sourceName: json['source_name'] as String,
-      isManualEntry: json['is_manual_entry'] as bool? ?? false,
-      workoutSummary: json['workout_summary'] == null
-          ? null
-          : WorkoutSummary.fromJson(
-              json['workout_summary'] as Map<String, dynamic>),
-      metadata: json['metadata'] as Map<String, dynamic>?,
-    );
+HealthDataPoint _$HealthDataPointFromJson(Map<String, dynamic> json) {
+  return HealthDataPoint(
+    uuid: json['uuid'] as String? ?? '',
+    value: HealthValue.fromJson(json['value'] as Map<String, dynamic>),
+    type: $enumDecode(_$HealthDataTypeEnumMap, json['type']),
+    unit: $enumDecode(_$HealthDataUnitEnumMap, json['unit']),
+    dateFrom: DateTime.parse(json['date_from'] as String),
+    dateTo: DateTime.parse(json['date_to'] as String),
+    sourcePlatform:
+        $enumDecode(_$HealthPlatformTypeEnumMap, json['source_platform']),
+    sourceDeviceId: json['source_device_id'] as String,
+    sourceId: json['source_id'] as String,
+    sourceName: json['source_name'] as String,
+    isManualEntry: json['is_manual_entry'] as bool? ?? false,
+    workoutSummary: json['workout_summary'] == null
+        ? null
+        : WorkoutSummary.fromJson(
+            json['workout_summary'] as Map<String, dynamic>),
+    metadata: json['metadata'] as Map<String, dynamic>?,
+  );
+}
 
 Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) {
   final val = <String, dynamic>{
+    'uuid': instance.uuid,
     'value': instance.value,
     'type': _$HealthDataTypeEnumMap[instance.type]!,
     'unit': _$HealthDataUnitEnumMap[instance.unit]!,
