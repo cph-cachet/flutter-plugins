@@ -62,7 +62,7 @@ const List<HealthDataType> dataTypesIOS = [
 /// List of data types available on Android.
 ///
 /// Note that these are only the ones supported on Android's Health Connect API.
-/// Android's Google Fit have more types that we support in the [HealthDataType]
+/// Android's Health Connect has more types that we support in the [HealthDataType]
 /// enumeration.
 const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
@@ -79,7 +79,6 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.HEART_RATE,
   HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
   HealthDataType.STEPS,
-  // HealthDataType.MOVE_MINUTES, // TODO: Find alternative for Health Connect
   HealthDataType.DISTANCE_DELTA,
   HealthDataType.RESPIRATORY_RATE,
   HealthDataType.SLEEP_AWAKE,

@@ -4,9 +4,9 @@
 Pod::Spec.new do |s|
   s.name             = 'health'
   s.version          = '1.0.4'
-  s.summary          = 'Wrapper for the iOS HealthKit and Android GoogleFit services.'
+  s.summary          = 'Wrapper for Apple\'s HealthKit on iOS and Google\'s Health Connect on Android.'
   s.description      = <<-DESC
-Wrapper for the iOS HealthKit and Android GoogleFit services.
+Wrapper for Apple's HealthKit on iOS and Google's Health Connect on Android.
                        DESC
   s.homepage         = 'https://pub.dev/packages/health'
   s.license          = { :file => '../LICENSE' }
