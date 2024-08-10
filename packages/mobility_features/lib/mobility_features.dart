@@ -9,10 +9,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
-part 'package:mobility_features/src/mobility_functions.dart';
-part 'package:mobility_features/src/mobility_domain.dart';
-part 'package:mobility_features/src/mobility_intermediate.dart';
-part 'package:mobility_features/src/mobility_context.dart';
-part 'package:mobility_features/src/mobility_serializer.dart';
-part 'package:mobility_features/src/mobility_features.dart';
-part 'package:mobility_features/src/mobility_file_util.dart';
+part 'src/context.dart';
+part 'src/domain.dart';
+part 'src/features.dart';
+part 'src/file_util.dart';
+part 'src/functions.dart';
+part 'src/intermediate.dart';
+part 'src/serializer.dart';

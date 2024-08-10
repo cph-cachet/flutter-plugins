@@ -1,4 +1,4 @@
-part of mobility_app;
+part of 'main.dart';
 
 class PlacesPage extends StatelessWidget {
   final List<Place> places;
@@ -19,16 +19,10 @@ class PlacesPage extends StatelessWidget {
         ));
   }
 
-  Widget list() {
-    return ListView.builder(
-        itemCount: places.length,
-        itemBuilder: (ctx, index) => placeEntry(places[index]));
-  }
+  Widget list() => ListView.builder(
+      itemCount: places.length,
+      itemBuilder: (ctx, index) => placeEntry(places[index]));
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: list(),
-    );
-  }
+  Widget build(BuildContext context) => Container(child: list());
 }

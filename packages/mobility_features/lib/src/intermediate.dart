@@ -1,4 +1,4 @@
-part of mobility_features;
+part of '../mobility_features.dart';
 
 /// Find the stops in a sequence of gps data points
 //List<Stop> _findStops(List<LocationSample> data,
@@ -66,11 +66,13 @@ List<Place> _findPlaces(List<Stop> stops, {double placeRadius = 50.0}) {
     List<Stop> stopsForPlace = indices.map((i) => (stops[i])).toList();
 
     /// Add place to the list
-    Place p = Place._(label, stopsForPlace);
+    Place p = Place(label, stopsForPlace);
     places.add(p);
 
     /// Set placeId field for the stops belonging to this place
-    stopsForPlace.forEach((s) => s.placeId = p._id);
+    for (var s in stopsForPlace) {
+      s._placeId = p.id;
+    }
   }
   return places;
 }
@@ -83,10 +85,10 @@ List<Move> _findMoves(List<Stop> stops, List<LocationSample> samples) {
     if (previous != null) {
       final path = samples
           .where((s) =>
-              previous!.datetime.leq(s.datetime) &&
-              previous.datetime.geq(s.datetime))
+              previous!.dateTime.leq(s.dateTime) &&
+              previous.dateTime.geq(s.dateTime))
           .toList();
-      Move m = Move._fromPath(previous, current, path);
+      Move m = Move.fromPath(previous, current, path);
       moves.add(m);
     }
     previous = current;
@@ -94,12 +96,13 @@ List<Move> _findMoves(List<Stop> stops, List<LocationSample> samples) {
   return moves;
 }
 
-GeoLocation _computeCentroid(List<_Geospatial> data) {
+GeoLocation _computeCentroid(List<GeoSpatial> data) {
   double lat =
       Stats.fromData(data.map((d) => (d.geoLocation.latitude)).toList()).median
           as double;
   double lon =
       Stats.fromData(data.map((d) => (d.geoLocation.longitude)).toList()).median
           as double;
+
   return GeoLocation(lat, lon);
 }

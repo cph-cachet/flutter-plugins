@@ -13,6 +13,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
   HealthDataType.DIETARY_CARBS_CONSUMED,
+  HealthDataType.DIETARY_CAFFEINE,
   HealthDataType.DIETARY_ENERGY_CONSUMED,
   HealthDataType.DIETARY_FATS_CONSUMED,
   HealthDataType.DIETARY_PROTEIN_CONSUMED,
@@ -52,6 +53,10 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.WALKING_HEART_RATE,
 
   HealthDataType.NUTRITION,
+  HealthDataType.GENDER,
+  HealthDataType.BLOOD_TYPE,
+  HealthDataType.BIRTH_DATE,
+  HealthDataType.MENSTRUATION_FLOW,
 ];
 
 /// List of data types available on Android.
@@ -72,6 +77,7 @@ const List<HealthDataType> dataTypesAndroid = [
   // HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
   HealthDataType.HEART_RATE,
+  HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
   HealthDataType.STEPS,
   // HealthDataType.MOVE_MINUTES, // TODO: Find alternative for Health Connect
   HealthDataType.DISTANCE_DELTA,
@@ -87,4 +93,6 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.RESTING_HEART_RATE,
   HealthDataType.FLIGHTS_CLIMBED,
   HealthDataType.NUTRITION,
+  HealthDataType.TOTAL_CALORIES_BURNED,
+  HealthDataType.MENSTRUATION_FLOW,
 ];

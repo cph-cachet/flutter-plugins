@@ -60,6 +60,11 @@
     <uses-permission android:name="android.permission.health.WRITE_RESPIRATORY_RATE"/>
     <uses-permission android:name="android.permission.health.WRITE_NUTRITION"/>
     <uses-permission android:name="android.permission.health.READ_NUTRITION"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"/>
+    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE_VARIABILITY"/>
+    <uses-permission android:name="android.permission.health.BODY_SENSORS"/>
+    <uses-permission android:name="android.permission.health.READ_MENSTRUATION"/>
+    <uses-permission android:name="android.permission.health.WRITE_MENSTRUATION"/>
 
     <application android:label="health_example"
         android:icon="@mipmap/ic_launcher">
