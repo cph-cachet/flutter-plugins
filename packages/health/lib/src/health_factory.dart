@@ -566,6 +566,7 @@ class HealthFactory {
         'endDate': DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(endDate).toString(),
       };
       var success = await _channel.invokeMethod('getHealthConnectData', args);
+      if (success is bool) return [];
       if (success.length > 0) {
         if (type == HealthDataType.WEIGHT) {
           return success.map<HealthConnectWeight>((e) {
