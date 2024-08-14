@@ -1534,6 +1534,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val startTime = call.argument<Long>("startTime")!!
         val endTime = call.argument<Long>("endTime")!!
         val value = call.argument<Double>("value")!!
+        val recordingMethod = call.argument<Int>("recordingMethod")!!
+
         val record =
             when (type) {
                 BODY_FAT_PERCENTAGE ->
@@ -1547,6 +1549,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             value
                         ),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 HEIGHT ->
@@ -1560,6 +1565,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             value
                         ),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 WEIGHT ->
@@ -1573,6 +1581,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             value
                         ),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 STEPS ->
@@ -1588,6 +1599,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         count = value.toLong(),
                         startZoneOffset = null,
                         endZoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 ACTIVE_ENERGY_BURNED ->
@@ -1606,6 +1620,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         startZoneOffset = null,
                         endZoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 HEART_RATE ->
@@ -1631,6 +1648,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         startZoneOffset = null,
                         endZoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 BODY_TEMPERATURE ->
@@ -1644,6 +1664,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             value
                         ),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 BODY_WATER_MASS ->
@@ -1657,6 +1680,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             value
                         ),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 BLOOD_OXYGEN ->
@@ -1670,6 +1696,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             value
                         ),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 BLOOD_GLUCOSE ->
@@ -1683,6 +1712,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             value
                         ),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 HEART_RATE_VARIABILITY_RMSSD ->
@@ -1695,6 +1727,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         value,
 
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 DISTANCE_DELTA ->
@@ -1713,6 +1748,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         startZoneOffset = null,
                         endZoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 WATER ->
@@ -1731,6 +1769,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         startZoneOffset = null,
                         endZoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 SLEEP_ASLEEP ->
@@ -1758,6 +1799,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                     SleepSessionRecord
                                         .STAGE_TYPE_SLEEPING
                                 )
+                        ),
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
                         ),
                     )
 
@@ -1787,6 +1831,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         .STAGE_TYPE_LIGHT
                                 )
                         ),
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 SLEEP_DEEP ->
@@ -1814,6 +1861,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                     SleepSessionRecord
                                         .STAGE_TYPE_DEEP
                                 )
+                        ),
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
                         ),
                     )
 
@@ -1843,6 +1893,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         .STAGE_TYPE_REM
                                 )
                         ),
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 SLEEP_OUT_OF_BED ->
@@ -1870,6 +1923,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                     SleepSessionRecord
                                         .STAGE_TYPE_OUT_OF_BED
                                 )
+                        ),
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
                         ),
                     )
 
@@ -1899,6 +1955,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         .STAGE_TYPE_AWAKE
                                 )
                         ),
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 SLEEP_SESSION ->
@@ -1913,6 +1972,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         startZoneOffset = null,
                         endZoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 RESTING_HEART_RATE ->
@@ -1924,6 +1986,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         beatsPerMinute =
                         value.toLong(),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 BASAL_ENERGY_BURNED ->
@@ -1937,6 +2002,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             value
                         ),
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 FLIGHTS_CLIMBED ->
@@ -1952,6 +2020,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         floors = value,
                         startZoneOffset = null,
                         endZoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 RESPIRATORY_RATE ->
@@ -1962,6 +2033,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         rate = value,
                         zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
                 // AGGREGATE_STEP_COUNT -> StepsRecord()
                 TOTAL_CALORIES_BURNED ->
@@ -1980,12 +2054,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         startZoneOffset = null,
                         endZoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     )
 
                 MENSTRUATION_FLOW -> MenstruationFlowRecord(
                     time = Instant.ofEpochMilli(startTime),
                     flow = value.toInt(),
                     zoneOffset = null,
+                    metadata = Metadata(
+                        recordingMethod = recordingMethod,
+                    ),
                 )
 
                 BLOOD_PRESSURE_SYSTOLIC ->
@@ -2030,6 +2110,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val totalEnergyBurned = call.argument<Int>("totalEnergyBurned")
         val totalDistance = call.argument<Int>("totalDistance")
+        val recordingMethod = call.argument<Int>("recordingMethod")!!
+
         if (!workoutTypeMap.containsKey(type)) {
             result.success(false)
             Log.w(
@@ -2052,6 +2134,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         endZoneOffset = null,
                         exerciseType = workoutType,
                         title = title,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
                     ),
                 )
                 if (totalDistance != null) {
@@ -2064,6 +2149,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             distance =
                             Length.meters(
                                 totalDistance.toDouble()
+                            ),
+                            metadata = Metadata(
+                                recordingMethod = recordingMethod,
                             ),
                         ),
                     )
@@ -2079,6 +2167,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             Energy.kilocalories(
                                 totalEnergyBurned
                                     .toDouble()
+                            ),
+                            metadata = Metadata(
+                                recordingMethod = recordingMethod,
                             ),
                         ),
                     )
@@ -2108,6 +2199,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val systolic = call.argument<Double>("systolic")!!
         val diastolic = call.argument<Double>("diastolic")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
+        val recordingMethod = call.argument<Int>("recordingMethod")!!
 
         scope.launch {
             try {
@@ -2124,6 +2216,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                 diastolic
                             ),
                             zoneOffset = null,
+                            metadata = Metadata(
+                                recordingMethod = recordingMethod,
+                            ),
                         ),
                     ),
                 )

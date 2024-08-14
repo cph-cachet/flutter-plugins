@@ -3,7 +3,12 @@ part of '../health.dart';
 /// Types of health platforms.
 enum HealthPlatformType { appleHealth, googleHealthConnect }
 
-enum RecordingMethod { active, automatic, manual, unknown }
+enum RecordingMethod {
+  unknown,
+  active,
+  automatic,
+  manual;
+}
 
 /// A [HealthDataPoint] object corresponds to a data point capture from
 /// Apple HealthKit or Google Health Connect with a [HealthValue]

@@ -212,10 +212,10 @@ const _$HealthPlatformTypeEnumMap = {
 };
 
 const _$RecordingMethodEnumMap = {
+  RecordingMethod.unknown: 'unknown',
   RecordingMethod.active: 'active',
   RecordingMethod.automatic: 'automatic',
   RecordingMethod.manual: 'manual',
-  RecordingMethod.unknown: 'unknown',
 };
 
 HealthValue _$HealthValueFromJson(Map<String, dynamic> json) =>

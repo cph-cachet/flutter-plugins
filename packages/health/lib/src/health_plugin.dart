@@ -305,6 +305,7 @@ class Health {
     required HealthDataType type,
     required DateTime startTime,
     DateTime? endTime,
+    RecordingMethod recordingMethod = RecordingMethod.unknown,
   }) async {
     if (type == HealthDataType.WORKOUT) {
       throw ArgumentError(
@@ -351,7 +352,8 @@ class Health {
       'dataTypeKey': type.name,
       'dataUnitKey': unit.name,
       'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
+      'endTime': endTime.millisecondsSinceEpoch,
+      'recordingMethod': recordingMethod.index,
     };
     bool? success = await _channel.invokeMethod('writeData', args);
     return success ?? false;
@@ -367,6 +369,7 @@ class Health {
   ///    Must be equal to or earlier than [endTime].
   ///  * [endTime] - the end time when this [value] is measured.
   ///    Must be equal to or later than [startTime].
+  ///  * [recordingMethod] - the recording method of the data point.
   Future<bool> delete({
     required HealthDataType type,
     required DateTime startTime,
@@ -399,11 +402,13 @@ class Health {
   ///    Must be equal to or later than [startTime].
   ///    Simply set [endTime] equal to [startTime] if the blood pressure is measured
   ///    only at a specific point in time. If omitted, [endTime] is set to [startTime].
+  ///  * [recordingMethod] - the recording method of the data point.
   Future<bool> writeBloodPressure({
     required int systolic,
     required int diastolic,
     required DateTime startTime,
     DateTime? endTime,
+    RecordingMethod recordingMethod = RecordingMethod.unknown,
   }) async {
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
@@ -414,7 +419,8 @@ class Health {
       'systolic': systolic,
       'diastolic': diastolic,
       'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
+      'endTime': endTime.millisecondsSinceEpoch,
+      'recordingMethod': recordingMethod.index,
     };
     return await _channel.invokeMethod('writeBloodPressure', args) == true;
   }
@@ -431,10 +437,12 @@ class Health {
   ///    Must be equal to or later than [startTime].
   ///    Simply set [endTime] equal to [startTime] if the blood oxygen saturation
   ///    is measured only at a specific point in time (default).
+  ///  * [recordingMethod] - the recording method of the data point.
   Future<bool> writeBloodOxygen({
     required double saturation,
     required DateTime startTime,
     DateTime? endTime,
+    RecordingMethod recordingMethod = RecordingMethod.unknown,
   }) async {
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
@@ -454,6 +462,7 @@ class Health {
         'startTime': startTime.millisecondsSinceEpoch,
         'endTime': endTime.millisecondsSinceEpoch,
         'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,
+        'recordingMethod': recordingMethod.index,
       };
       success = await _channel.invokeMethod('writeBloodOxygen', args);
     }
@@ -512,6 +521,7 @@ class Health {
   ///  * [sugar] - optional sugar information.
   ///  * [water] - optional water information.
   ///  * [zinc] - optional zinc information.
+  ///  * [recordingMethod] - the recording method of the data point.
   Future<bool> writeMeal({
     required MealType mealType,
     required DateTime startTime,
@@ -558,6 +568,7 @@ class Health {
     double? sugar,
     double? water,
     double? zinc,
+    RecordingMethod recordingMethod = RecordingMethod.unknown,
   }) async {
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
@@ -609,6 +620,7 @@ class Health {
       'sugar': sugar,
       'water': water,
       'zinc': zinc,
+      'recordingMethod': recordingMethod.index,
     };
     bool? success = await _channel.invokeMethod('writeMeal', args);
     return success ?? false;
@@ -624,11 +636,13 @@ class Health {
   ///  * [endTime] - the start time when the menstrual flow is measured.
   ///  * [isStartOfCycle] - A bool that indicates whether the sample represents
   ///    the start of a menstrual cycle.
+  ///  * [recordingMethod] - the recording method of the data point.
   Future<bool> writeMenstruationFlow({
     required MenstrualFlow flow,
     required DateTime startTime,
     required DateTime endTime,
     required bool isStartOfCycle,
+    RecordingMethod recordingMethod = RecordingMethod.unknown,
   }) async {
     var value =
         Platform.isAndroid ? MenstrualFlow.toHealthConnect(flow) : flow.index;
@@ -644,6 +658,7 @@ class Health {
       'endTime': endTime.millisecondsSinceEpoch,
       'isStartOfCycle': isStartOfCycle,
       'dataTypeKey': HealthDataType.MENSTRUATION_FLOW.name,
+      'recordingMethod': recordingMethod.index,
     };
     return await _channel.invokeMethod('writeMenstruationFlow', args) == true;
   }
@@ -664,6 +679,7 @@ class Health {
   ///     only at a specific point in time (default).
   ///   * [metadata] - optional map of keys, both HKMetadataKeyExternalUUID
   ///     and HKMetadataKeyDeviceName are required
+  ///  * [recordingMethod] - the recording method of the data point.
   Future<bool> writeAudiogram({
     required List<double> frequencies,
     required List<double> leftEarSensitivities,
@@ -1022,6 +1038,7 @@ class Health {
   ///    *ONLY FOR IOS* Default value is METER.
   ///  - [title] The title of the workout.
   ///    *ONLY FOR HEALTH CONNECT* Default value is the [activityType], e.g. "STRENGTH_TRAINING".
+  ///  - [recorrdingMethod] The recording method of the data point.
   Future<bool> writeWorkoutData({
     required HealthWorkoutActivityType activityType,
     required DateTime start,
@@ -1031,6 +1048,7 @@ class Health {
     int? totalDistance,
     HealthDataUnit totalDistanceUnit = HealthDataUnit.METER,
     String? title,
+    RecordingMethod recordingMethod = RecordingMethod.unknown,
   }) async {
     // Check that value is on the current Platform
     if (Platform.isIOS && !_isOnIOS(activityType)) {
@@ -1049,6 +1067,7 @@ class Health {
       'totalDistance': totalDistance,
       'totalDistanceUnit': totalDistanceUnit.name,
       'title': title,
+      'recordingMethod': recordingMethod.index,
     };
     return await _channel.invokeMethod('writeWorkoutData', args) == true;
   }
