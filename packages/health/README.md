@@ -205,7 +205,7 @@ HealthPlatformType sourcePlatform;
 String sourceDeviceId;
 String sourceId;
 String sourceName;
-bool isManualEntry;
+RecordingMethod recordingMethod;
 WorkoutSummary? workoutSummary;
 ```
 

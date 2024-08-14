@@ -548,7 +548,7 @@ class _HealthAppState extends State<HealthApp> {
           return ListTile(
             title: Text("${p.typeString}: ${p.value}"),
             trailing: Text('${p.unitString}'),
-            subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+            subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
         if (p.value is WorkoutHealthValue) {
@@ -557,7 +557,7 @@ class _HealthAppState extends State<HealthApp> {
                 "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
             trailing: Text(
                 '${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
-            subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+            subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
         if (p.value is NutritionHealthValue) {
@@ -566,13 +566,13 @@ class _HealthAppState extends State<HealthApp> {
                 "${p.typeString} ${(p.value as NutritionHealthValue).mealType}: ${(p.value as NutritionHealthValue).name}"),
             trailing:
                 Text('${(p.value as NutritionHealthValue).calories} kcal'),
-            subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+            subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
         return ListTile(
           title: Text("${p.typeString}: ${p.value}"),
           trailing: Text('${p.unitString}'),
-          subtitle: Text('${p.dateFrom} - ${p.dateTo}'),
+          subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
         );
       });
 

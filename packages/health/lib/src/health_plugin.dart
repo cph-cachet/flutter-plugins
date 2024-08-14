@@ -274,7 +274,7 @@ class Health {
         sourceDeviceId: _deviceId!,
         sourceId: '',
         sourceName: '',
-        isManualEntry: !includeManualEntry,
+        recordingMethod: RecordingMethod.unknown,
       );
 
       bmiHealthPoints.add(x);
