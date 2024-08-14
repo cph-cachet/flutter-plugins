@@ -353,7 +353,7 @@ class Health {
       'dataUnitKey': unit.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
-      'recordingMethod': recordingMethod.index,
+      'recordingMethod': recordingMethod.toInt(),
     };
     bool? success = await _channel.invokeMethod('writeData', args);
     return success ?? false;
@@ -420,7 +420,7 @@ class Health {
       'diastolic': diastolic,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
-      'recordingMethod': recordingMethod.index,
+      'recordingMethod': recordingMethod.toInt(),
     };
     return await _channel.invokeMethod('writeBloodPressure', args) == true;
   }
@@ -462,7 +462,7 @@ class Health {
         'startTime': startTime.millisecondsSinceEpoch,
         'endTime': endTime.millisecondsSinceEpoch,
         'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,
-        'recordingMethod': recordingMethod.index,
+        'recordingMethod': recordingMethod.toInt(),
       };
       success = await _channel.invokeMethod('writeBloodOxygen', args);
     }
@@ -620,7 +620,7 @@ class Health {
       'sugar': sugar,
       'water': water,
       'zinc': zinc,
-      'recordingMethod': recordingMethod.index,
+      'recordingMethod': recordingMethod.toInt(),
     };
     bool? success = await _channel.invokeMethod('writeMeal', args);
     return success ?? false;
@@ -658,7 +658,7 @@ class Health {
       'endTime': endTime.millisecondsSinceEpoch,
       'isStartOfCycle': isStartOfCycle,
       'dataTypeKey': HealthDataType.MENSTRUATION_FLOW.name,
-      'recordingMethod': recordingMethod.index,
+      'recordingMethod': recordingMethod.toInt(),
     };
     return await _channel.invokeMethod('writeMenstruationFlow', args) == true;
   }
@@ -1067,7 +1067,7 @@ class Health {
       'totalDistance': totalDistance,
       'totalDistanceUnit': totalDistanceUnit.name,
       'title': title,
-      'recordingMethod': recordingMethod.index,
+      'recordingMethod': recordingMethod.toInt(),
     };
     return await _channel.invokeMethod('writeWorkoutData', args) == true;
   }

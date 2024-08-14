@@ -3,13 +3,6 @@ part of '../health.dart';
 /// Types of health platforms.
 enum HealthPlatformType { appleHealth, googleHealthConnect }
 
-enum RecordingMethod {
-  unknown,
-  active,
-  automatic,
-  manual;
-}
-
 /// A [HealthDataPoint] object corresponds to a data point capture from
 /// Apple HealthKit or Google Health Connect with a [HealthValue]
 /// as value.
@@ -159,26 +152,10 @@ class HealthDataPoint {
       sourceDeviceId: Health().deviceId,
       sourceId: sourceId,
       sourceName: sourceName,
-      recordingMethod: _alignRecordingMethod(recordingMethod),
+      recordingMethod: RecordingMethod.fromInt(recordingMethod),
       workoutSummary: workoutSummary,
       metadata: metadata,
     );
-  }
-
-  /// align recording method with the platform
-  static RecordingMethod _alignRecordingMethod(int? recordingMethod) {
-    switch (recordingMethod) {
-      case 0:
-        return RecordingMethod.unknown;
-      case 1:
-        return RecordingMethod.active;
-      case 2:
-        return RecordingMethod.automatic;
-      case 3:
-        return RecordingMethod.manual;
-      default:
-        return RecordingMethod.unknown;
-    }
   }
 
   @override
