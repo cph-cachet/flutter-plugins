@@ -241,17 +241,17 @@ class Health {
   Future<List<HealthDataPoint>> _computeAndroidBMI(
     DateTime startTime,
     DateTime endTime,
-    bool includeManualEntry,
+    List<RecordingMethod> recordingMethodsToFilter,
   ) async {
     List<HealthDataPoint> heights = await _prepareQuery(
-        startTime, endTime, HealthDataType.HEIGHT, includeManualEntry);
+        startTime, endTime, HealthDataType.HEIGHT, recordingMethodsToFilter);
 
     if (heights.isEmpty) {
       return [];
     }
 
     List<HealthDataPoint> weights = await _prepareQuery(
-        startTime, endTime, HealthDataType.WEIGHT, includeManualEntry);
+        startTime, endTime, HealthDataType.WEIGHT, recordingMethodsToFilter);
 
     double h =
         (heights.last.value as NumericHealthValue).numericValue.toDouble();
@@ -761,17 +761,19 @@ class Health {
   }
 
   /// Fetch a list of health data points based on [types].
+  /// You can also specify the [recordingMethodsToFilter] to filter the data points.
+  /// If not specified, all data points will be included.
   Future<List<HealthDataPoint>> getHealthDataFromTypes({
     required List<HealthDataType> types,
     required DateTime startTime,
     required DateTime endTime,
-    bool includeManualEntry = true,
+    List<RecordingMethod> recordingMethodsToFilter = const [],
   }) async {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
-      final result =
-          await _prepareQuery(startTime, endTime, type, includeManualEntry);
+      final result = await _prepareQuery(
+          startTime, endTime, type, recordingMethodsToFilter);
       dataPoints.addAll(result);
     }
 
@@ -823,7 +825,7 @@ class Health {
     DateTime startTime,
     DateTime endTime,
     HealthDataType dataType,
-    bool includeManualEntry,
+    List<RecordingMethod> recordingMethodsToFilter,
   ) async {
     // Ask for device ID only once
     _deviceId ??= Platform.isAndroid
@@ -838,9 +840,10 @@ class Health {
 
     // If BodyMassIndex is requested on Android, calculate this manually
     if (dataType == HealthDataType.BODY_MASS_INDEX && Platform.isAndroid) {
-      return _computeAndroidBMI(startTime, endTime, includeManualEntry);
+      return _computeAndroidBMI(startTime, endTime, recordingMethodsToFilter);
     }
-    return await _dataQuery(startTime, endTime, dataType, includeManualEntry);
+    return await _dataQuery(
+        startTime, endTime, dataType, recordingMethodsToFilter);
   }
 
   /// Prepares an interval query, i.e. checks if the types are available, etc.
@@ -889,14 +892,18 @@ class Health {
   }
 
   /// Fetches data points from Android/iOS native code.
-  Future<List<HealthDataPoint>> _dataQuery(DateTime startTime, DateTime endTime,
-      HealthDataType dataType, bool includeManualEntry) async {
+  Future<List<HealthDataPoint>> _dataQuery(
+      DateTime startTime,
+      DateTime endTime,
+      HealthDataType dataType,
+      List<RecordingMethod> recordingMethodsToFilter) async {
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
       'dataUnitKey': dataTypeToUnit[dataType]!.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
-      'includeManualEntry': includeManualEntry
+      'recordingMethodsToFilter':
+          recordingMethodsToFilter.map((e) => e.toInt()).toList(),
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
 

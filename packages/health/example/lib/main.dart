@@ -194,9 +194,13 @@ class _HealthAppState extends State<HealthApp> {
         value: 1.925,
         type: HealthDataType.HEIGHT,
         startTime: earlier,
-        endTime: now);
+        endTime: now,
+        recordingMethod: RecordingMethod.manual);
     success &= await Health().writeHealthData(
-        value: 90, type: HealthDataType.WEIGHT, startTime: now);
+        value: 90,
+        type: HealthDataType.WEIGHT,
+        startTime: now,
+        recordingMethod: RecordingMethod.manual);
     success &= await Health().writeHealthData(
         value: 90,
         type: HealthDataType.HEART_RATE,
@@ -206,12 +210,14 @@ class _HealthAppState extends State<HealthApp> {
         value: 90,
         type: HealthDataType.STEPS,
         startTime: earlier,
-        endTime: now);
+        endTime: now,
+        recordingMethod: RecordingMethod.active);
     success &= await Health().writeHealthData(
         value: 200,
         type: HealthDataType.ACTIVE_ENERGY_BURNED,
         startTime: earlier,
-        endTime: now);
+        endTime: now,
+        recordingMethod: RecordingMethod.automatic);
     success &= await Health().writeHealthData(
         value: 70,
         type: HealthDataType.HEART_RATE,

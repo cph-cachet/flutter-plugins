@@ -415,12 +415,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
         val start = call.argument<Long>("startTime")!!
         val end = call.argument<Long>("endTime")!!
-        val includeManualEntry = call.argument<Boolean>("includeManualEntry")!!
+        val recordingMethodsToFilter = call.argument<List<Int>>("recordingMethodsToFilter")!!
 
-        if (includeManualEntry) {
+        if (recordingMethodsToFilter.isEmpty()) {
             getAggregatedStepCount(start, end, result)
         } else {
-            getStepCountManual(start, end, result)
+            getStepCountFiltered(start, end, recordingMethodsToFilter, result)
         }
     }
 
@@ -465,7 +465,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     /** get the step records manually and filter out manual entries **/
-    private fun getStepCountManual(start: Long, end: Long, result: Result) {
+    private fun getStepCountFiltered(start: Long, end: Long, recordingMethodsToFilter: List<Int>, result: Result) {
         scope.launch {
             try {
                 val request =
@@ -478,8 +478,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     )
                 val response = healthConnectClient.readRecords(request)
-                val filteredRecords = filterManualEntry(
-                     false,
+                val filteredRecords = filterRecordsByRecordingMethods(
+                     recordingMethodsToFilter,
                     response.records
                 )
                 val totalSteps = filteredRecords.sumOf { (it as StepsRecord).count.toInt() }
@@ -673,22 +673,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         healthConnectRequestPermissionsLauncher!!.launch(permList.toSet())
     }
 
-    /** Filter manually recorded data */
-    private fun filterManualEntry(
-        includeManualEntry: Boolean,
+    /** Filter records by recording methods */
+    private fun filterRecordsByRecordingMethods(
+        recordingMethodsToFilter: List<Int>,
         records: List<Record>
     ): List<Record> {
-        if (includeManualEntry) {
+        if (recordingMethodsToFilter.isEmpty()) {
             return records
         }
 
         return records.filter { record ->
-            return@filter isManualEntry(record)
+            Log.i(
+                "FLUTTER_HEALTH",
+                "Filtering record with recording method ${record.metadata.recordingMethod}, filtering by $recordingMethodsToFilter. Result: ${recordingMethodsToFilter.contains(record.metadata.recordingMethod)}"
+            )
+            return@filter !recordingMethodsToFilter.contains(record.metadata.recordingMethod)
         }
-    }
-
-    private fun isManualEntry(record: Record): Boolean {
-        return record.metadata.recordingMethod == Metadata.RECORDING_METHOD_MANUAL_ENTRY
     }
 
     /** Get all datapoints of the DataType within the given time range */
@@ -697,7 +697,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val healthConnectData = mutableListOf<Map<String, Any?>>()
-        val includeManualEntry = call.argument<Boolean>("includeManualEntry")!!
+        val recordingMethodsToFilter = call.argument<List<Int>>("recordingMethodsToFilter")!!
+
+        Log.i(
+            "FLUTTER_HEALTH",
+            "Getting data for $dataType between $startTime and $endTime, filtering by $recordingMethodsToFilter"
+        )
 
         scope.launch {
             try {
@@ -722,13 +727,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     var response = healthConnectClient.readRecords(request)
                     var pageToken = response.pageToken
 
-                    var filteredRecords = filterManualEntry(
-                        includeManualEntry,
-                        response.records
-                    )
-
                     // Add the records from the initial response to the records list
-                    records.addAll(filteredRecords)
+                    records.addAll(response.records)
 
                     // Continue making requests and fetching records while there is a
                     // page token
@@ -746,17 +746,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         response = healthConnectClient.readRecords(request)
 
                         pageToken = response.pageToken
-                        filteredRecords = filterManualEntry(
-                            includeManualEntry,
-                            response.records
-                        )
 
-                        records.addAll(filteredRecords)
+                        records.addAll(response.records)
                     }
 
                     // Workout needs distance and total calories burned too
                     if (dataType == WORKOUT) {
-                        for (rec in records) {
+                        var filteredRecords = filterRecordsByRecordingMethods(
+                            recordingMethodsToFilter,
+                            records
+                        )
+
+                        for (rec in filteredRecords) {
                             val record = rec as ExerciseSessionRecord
                             val distanceRequest =
                                 healthConnectClient.readRecords(
@@ -871,7 +872,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         }
                         // Filter sleep stages for requested stage
                     } else if (classType == SleepSessionRecord::class) {
-                        for (rec in response.records) {
+                        val filteredRecords = filterRecordsByRecordingMethods(
+                            recordingMethodsToFilter,
+                            response.records
+                        )
+
+                        for (rec in filteredRecords) {
                             if (rec is SleepSessionRecord) {
                                 if (dataType == SLEEP_SESSION) {
                                     healthConnectData.addAll(
@@ -901,13 +907,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                             }
                         }
                     } else {
-                        for (rec in records) {
+                        val filteredRecords = filterRecordsByRecordingMethods(
+                            recordingMethodsToFilter,
+                            records
+                        )
+                        for (rec in filteredRecords) {
                             healthConnectData.addAll(
                                 convertRecord(rec, dataType)
                             )
                         }
                     }
                 }
+
                 Handler(context!!.mainLooper).run { result.success(healthConnectData) }
             } catch (e: Exception) {
                 Log.i(
@@ -1535,6 +1546,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val endTime = call.argument<Long>("endTime")!!
         val value = call.argument<Double>("value")!!
         val recordingMethod = call.argument<Int>("recordingMethod")!!
+
+        Log.i(
+            "FLUTTER_HEALTH",
+            "Writing data for $type between $startTime and $endTime, value: $value, recording method: $recordingMethod"
+        )
 
         val record =
             when (type) {
