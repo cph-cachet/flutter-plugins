@@ -425,7 +425,8 @@ class HealthFactory {
     for (var i = 0; i < types.length; i++) {
       if (types[i] != HealthDataType.WEIGHT &&
           types[i] != HealthDataType.BODY_FAT_PERCENTAGE &&
-          types[i] != HealthDataType.NUTRITION) {
+          types[i] != HealthDataType.NUTRITION &&
+          types[i] != HealthDataType.WATER) {
         var tempType = types[i];
         types.removeAt(i);
         permissions?.removeAt(i);
