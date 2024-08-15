@@ -154,6 +154,7 @@ class _HealthAppState extends State<HealthApp> {
         types: types,
         startTime: yesterday,
         endTime: now,
+        recordingMethodsToFilter: recordingMethodsToFilter,
       );
 
       debugPrint('Total number of data points: ${healthData.length}. '
@@ -539,12 +540,17 @@ class _HealthAppState extends State<HealthApp> {
         children: [
           Wrap(
             children: [
-              for (final method in [
-                RecordingMethod.manual,
-                RecordingMethod.automatic,
-                RecordingMethod.active,
-                RecordingMethod.unknown,
-              ])
+              for (final method in Platform.isAndroid
+                  ? [
+                      RecordingMethod.manual,
+                      RecordingMethod.automatic,
+                      RecordingMethod.active,
+                      RecordingMethod.unknown,
+                    ]
+                  : [
+                      RecordingMethod.automatic,
+                      RecordingMethod.manual,
+                    ])
                 SizedBox(
                   width: 150,
                   child: CheckboxListTile(
@@ -558,6 +564,7 @@ class _HealthAppState extends State<HealthApp> {
                         } else {
                           recordingMethodsToFilter.add(method);
                         }
+                        fetchData();
                       });
                     },
                     controlAffinity: ListTileControlAffinity.leading,
