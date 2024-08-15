@@ -36,6 +36,7 @@ class _HealthAppState extends State<HealthApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 0;
+  List<RecordingMethod> filteredEntries = [];
 
   // All types available depending on platform (iOS ot Android).
   List<HealthDataType> get types => (Platform.isAndroid)
@@ -158,6 +159,9 @@ class _HealthAppState extends State<HealthApp> {
       debugPrint('Total number of data points: ${healthData.length}. '
           '${healthData.length > 100 ? 'Only showing the first 100.' : ''}');
 
+      // sort the data points by date
+      healthData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
+
       // save all the new data points (only the first 100)
       _healthDataList.addAll(
           (healthData.length < 100) ? healthData : healthData.sublist(0, 100));
@@ -205,7 +209,8 @@ class _HealthAppState extends State<HealthApp> {
         value: 90,
         type: HealthDataType.HEART_RATE,
         startTime: earlier,
-        endTime: now);
+        endTime: now,
+        recordingMethod: RecordingMethod.manual);
     success &= await Health().writeHealthData(
         value: 90,
         type: HealthDataType.STEPS,
@@ -294,52 +299,52 @@ class _HealthAppState extends State<HealthApp> {
       startTime: now,
     );
     success &= await Health().writeMeal(
-      mealType: MealType.SNACK,
-      startTime: earlier,
-      endTime: now,
-      caloriesConsumed: 1000,
-      carbohydrates: 50,
-      protein: 25,
-      fatTotal: 50,
-      name: "Banana",
-      caffeine: 0.002,
-      vitaminA: 0.001,
-      vitaminC: 0.002,
-      vitaminD: 0.003,
-      vitaminE: 0.004,
-      vitaminK: 0.005,
-      b1Thiamin: 0.006,
-      b2Riboflavin: 0.007,
-      b3Niacin: 0.008,
-      b5PantothenicAcid: 0.009,
-      b6Pyridoxine: 0.010,
-      b7Biotin: 0.011,
-      b9Folate: 0.012,
-      b12Cobalamin: 0.013,
-      calcium: 0.015,
-      copper: 0.016,
-      iodine: 0.017,
-      iron: 0.018,
-      magnesium: 0.019,
-      manganese: 0.020,
-      phosphorus: 0.021,
-      potassium: 0.022,
-      selenium: 0.023,
-      sodium: 0.024,
-      zinc: 0.025,
-      water: 0.026,
-      molybdenum: 0.027,
-      chloride: 0.028,
-      chromium: 0.029,
-      cholesterol: 0.030,
-      fiber: 0.031,
-      fatMonounsaturated: 0.032,
-      fatPolyunsaturated: 0.033,
-      fatUnsaturated: 0.065,
-      fatTransMonoenoic: 0.65,
-      fatSaturated: 066,
-      sugar: 0.067,
-    );
+        mealType: MealType.SNACK,
+        startTime: earlier,
+        endTime: now,
+        caloriesConsumed: 1000,
+        carbohydrates: 50,
+        protein: 25,
+        fatTotal: 50,
+        name: "Banana",
+        caffeine: 0.002,
+        vitaminA: 0.001,
+        vitaminC: 0.002,
+        vitaminD: 0.003,
+        vitaminE: 0.004,
+        vitaminK: 0.005,
+        b1Thiamin: 0.006,
+        b2Riboflavin: 0.007,
+        b3Niacin: 0.008,
+        b5PantothenicAcid: 0.009,
+        b6Pyridoxine: 0.010,
+        b7Biotin: 0.011,
+        b9Folate: 0.012,
+        b12Cobalamin: 0.013,
+        calcium: 0.015,
+        copper: 0.016,
+        iodine: 0.017,
+        iron: 0.018,
+        magnesium: 0.019,
+        manganese: 0.020,
+        phosphorus: 0.021,
+        potassium: 0.022,
+        selenium: 0.023,
+        sodium: 0.024,
+        zinc: 0.025,
+        water: 0.026,
+        molybdenum: 0.027,
+        chloride: 0.028,
+        chromium: 0.029,
+        cholesterol: 0.030,
+        fiber: 0.031,
+        fatMonounsaturated: 0.032,
+        fatPolyunsaturated: 0.033,
+        fatUnsaturated: 0.065,
+        fatTransMonoenoic: 0.65,
+        fatSaturated: 066,
+        sugar: 0.067,
+        recordingMethod: RecordingMethod.manual);
 
     // Store an Audiogram - only available on iOS
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
@@ -405,7 +410,9 @@ class _HealthAppState extends State<HealthApp> {
 
     if (stepsPermission) {
       try {
-        steps = await Health().getTotalStepsInInterval(midnight, now);
+        steps = await Health().getTotalStepsInInterval(midnight, now,
+            includeManualEntry:
+                !filteredEntries.contains(RecordingMethod.manual));
       } catch (error) {
         debugPrint("Exception in getTotalStepsInInterval: $error");
       }
@@ -427,6 +434,7 @@ class _HealthAppState extends State<HealthApp> {
     setState(() => _state = AppState.PERMISSIONS_REVOKING);
 
     bool success = false;
+
     try {
       await Health().revokePermissions();
       success = true;
@@ -517,6 +525,8 @@ class _HealthAppState extends State<HealthApp> {
                 ],
               ),
               Divider(thickness: 3),
+              if (_state == AppState.DATA_READY) _dataFiltration,
+              if (_state == AppState.STEPS_READY) _stepsFiltration,
               Expanded(child: Center(child: _content))
             ],
           ),
@@ -524,6 +534,78 @@ class _HealthAppState extends State<HealthApp> {
       ),
     );
   }
+
+  Widget get _dataFiltration => Column(
+        children: [
+          Wrap(
+            children: [
+              for (final method in [
+                RecordingMethod.manual,
+                RecordingMethod.automatic,
+                RecordingMethod.active,
+                RecordingMethod.unknown,
+              ])
+                SizedBox(
+                  width: 150,
+                  child: CheckboxListTile(
+                    title: Text(
+                        '${method.name[0].toUpperCase()}${method.name.substring(1)} entries'),
+                    value: !filteredEntries.contains(method),
+                    onChanged: (value) {
+                      setState(() {
+                        if (value!) {
+                          filteredEntries.remove(method);
+                        } else {
+                          filteredEntries.add(method);
+                        }
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                  ),
+                ),
+              // Add other entries here if needed
+            ],
+          ),
+          Divider(thickness: 3),
+        ],
+      );
+
+  Widget get _stepsFiltration => Column(
+        children: [
+          Wrap(
+            children: [
+              for (final method in [
+                RecordingMethod.manual,
+              ])
+                SizedBox(
+                  width: 150,
+                  child: CheckboxListTile(
+                    title: Text(
+                        '${method.name[0].toUpperCase()}${method.name.substring(1)} entries'),
+                    value: !filteredEntries.contains(method),
+                    onChanged: (value) {
+                      setState(() {
+                        if (value!) {
+                          filteredEntries.remove(method);
+                        } else {
+                          filteredEntries.add(method);
+                        }
+                        fetchStepData();
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                  ),
+                ),
+              // Add other entries here if needed
+            ],
+          ),
+          Divider(thickness: 3),
+        ],
+      );
 
   Widget get _permissionsRevoking => Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -557,6 +639,11 @@ class _HealthAppState extends State<HealthApp> {
   Widget get _contentDataReady => ListView.builder(
       itemCount: _healthDataList.length,
       itemBuilder: (_, index) {
+        // filter out manual entires if not wanted
+        if (filteredEntries.contains(_healthDataList[index].recordingMethod)) {
+          return Container();
+        }
+
         HealthDataPoint p = _healthDataList[index];
         if (p.value is AudiogramHealthValue) {
           return ListTile(

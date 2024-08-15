@@ -770,7 +770,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
         let limit = (arguments?["limit"] as? Int) ?? HKObjectQueryNoLimit
         let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
-        let includeManualEntry = recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
+        let includeManualEntry = !recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
         
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
@@ -846,7 +846,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             switch samplesOrNil {
             case let (samples as [HKQuantitySample]) as Any:
                 let dictionaries = samples.map { sample -> NSDictionary in
-                    print(sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool)
                     return [
                         "uuid": "\(sample.uuid)",
                         "value": sample.quantity.doubleValue(for: unit ?? HKUnit.internationalUnit()),
@@ -1081,7 +1080,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let endDate = (arguments?["endTime"] as? NSNumber) ?? 0
         let intervalInSecond = (arguments?["interval"] as? Int) ?? 1
         let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
-        let includeManualEntry = recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
+        let includeManualEntry = !recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
         
         // Set interval in seconds.
         var interval = DateComponents()
@@ -1166,7 +1165,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
         let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
         let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
-        let includeManualEntry = recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
+        let includeManualEntry = !recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
         
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
