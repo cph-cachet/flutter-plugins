@@ -421,26 +421,33 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
               let type = (arguments["dataTypeKey"] as? String),
               let unit = (arguments["dataUnitKey"] as? String),
               let startTime = (arguments["startTime"] as? NSNumber),
-              let endTime = (arguments["endTime"] as? NSNumber)
+              let endTime = (arguments["endTime"] as? NSNumber),
+              let recordingMethod = (arguments["recordingMethod"] as? Int)
         else {
             throw PluginError(message: "Invalid Arguments")
         }
         
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let isManualEntry = recordingMethod == RecordingMethod.manual.rawValue
+        let metadata: [String: Any] = [
+            HKMetadataKeyWasUserEntered: NSNumber(value: isManualEntry)
+        ]
         
         let sample: HKObject
         
         if dataTypeLookUp(key: type).isKind(of: HKCategoryType.self) {
             sample = HKCategorySample(
                 type: dataTypeLookUp(key: type) as! HKCategoryType, value: Int(value), start: dateFrom,
-                end: dateTo)
+                end: dateTo, metadata: metadata)
         } else {
             let quantity = HKQuantity(unit: unitDict[unit]!, doubleValue: value)
             sample = HKQuantitySample(
                 type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom,
-                end: dateTo)
+                end: dateTo, metadata: metadata)
         }
+        print(sample.metadata?["HKWasUserEntered"] ?? "No metadata")
         
         HKHealthStore().save(
             sample,
@@ -513,21 +520,27 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
               let systolic = (arguments["systolic"] as? Double),
               let diastolic = (arguments["diastolic"] as? Double),
               let startTime = (arguments["startTime"] as? NSNumber),
-              let endTime = (arguments["endTime"] as? NSNumber)
+              let endTime = (arguments["endTime"] as? NSNumber),
+              let recordingMethod = (arguments["recordingMethod"] as? Int)
         else {
             throw PluginError(message: "Invalid Arguments")
         }
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let isManualEntry = recordingMethod == RecordingMethod.manual.rawValue
+        let metadata = [
+            HKMetadataKeyWasUserEntered: NSNumber(value: isManualEntry)
+        ]
         
         let systolic_sample = HKQuantitySample(
             type: HKSampleType.quantityType(forIdentifier: .bloodPressureSystolic)!,
             quantity: HKQuantity(unit: HKUnit.millimeterOfMercury(), doubleValue: systolic),
-            start: dateFrom, end: dateTo)
+            start: dateFrom, end: dateTo, metadata: metadata)
         let diastolic_sample = HKQuantitySample(
             type: HKSampleType.quantityType(forIdentifier: .bloodPressureDiastolic)!,
             quantity: HKQuantity(unit: HKUnit.millimeterOfMercury(), doubleValue: diastolic),
-            start: dateFrom, end: dateTo)
+            start: dateFrom, end: dateTo, metadata: metadata)
         let bpCorrelationType = HKCorrelationType.correlationType(forIdentifier: .bloodPressure)!
         let bpCorrelation = Set(arrayLiteral: systolic_sample, diastolic_sample)
         let blood_pressure_sample = HKCorrelation(type: bpCorrelationType , start: dateFrom, end: dateTo, objects: bpCorrelation)
@@ -549,7 +562,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
               let name = (arguments["name"] as? String?),
               let startTime = (arguments["start_time"] as? NSNumber),
               let endTime = (arguments["end_time"] as? NSNumber),
-              let mealType = (arguments["meal_type"] as? String?)
+              let mealType = (arguments["meal_type"] as? String?),
+              let recordingMethod = arguments["recordingMethod"] as? Int
         else {
             throw PluginError(message: "Invalid Arguments")
         }
@@ -558,12 +572,14 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
         
         let mealTypeString = mealType ?? "UNKNOWN"
-        var metadata = ["HKFoodMeal": "\(mealTypeString)"]
+
+        let isManualEntry = recordingMethod == RecordingMethod.manual.rawValue
         
-        if(name != nil) {
+        var metadata = ["HKFoodMeal": mealTypeString, HKMetadataKeyWasUserEntered: NSNumber(value: isManualEntry)] as [String : Any]
+        if (name != nil) {
             metadata[HKMetadataKeyFoodType] = "\(name!)"
         }
-        
+
         var nutrition = Set<HKSample>()
         for (key, identifier) in NUTRITION_KEYS {
             let value = arguments[key] as? Double
@@ -622,7 +638,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         guard let arguments = call.arguments as? NSDictionary,
               let flow = (arguments["value"] as? Int),
               let endTime = (arguments["endTime"] as? NSNumber),
-              let isStartOfCycle = (arguments["isStartOfCycle"] as? NSNumber)
+              let isStartOfCycle = (arguments["isStartOfCycle"] as? NSNumber),
+              let recordingMethod = (arguments["recordingMethod"] as? Int)
         else {
             throw PluginError(message: "Invalid Arguments - value, startTime, endTime or isStartOfCycle invalid")
         }
@@ -632,11 +649,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         let dateTime = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
 
+        let isManualEntry = recordingMethod == RecordingMethod.manual.rawValue
+
         guard let categoryType = HKSampleType.categoryType(forIdentifier: .menstrualFlow) else {
             throw PluginError(message: "Invalid Menstrual Flow Type")
         }
 
-        let metadata = [HKMetadataKeyMenstrualCycleStart: isStartOfCycle]
+        let metadata = [HKMetadataKeyMenstrualCycleStart: isStartOfCycle, HKMetadataKeyWasUserEntered: NSNumber(value: isManualEntry)] as [String : Any]
         
         let sample = HKCategorySample(
             type: categoryType,
@@ -827,6 +846,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             switch samplesOrNil {
             case let (samples as [HKQuantitySample]) as Any:
                 let dictionaries = samples.map { sample -> NSDictionary in
+                    print(sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool)
                     return [
                         "uuid": "\(sample.uuid)",
                         "value": sample.quantity.doubleValue(for: unit ?? HKUnit.internationalUnit()),
@@ -834,7 +854,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true) ? RecordingMethod.manual.rawValue : RecordingMethod.automatic.rawValue,
+                        "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true)
+                            ? RecordingMethod.manual.rawValue
+                            : RecordingMethod.automatic.rawValue,
                         "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil
                     ]
                 }
@@ -977,6 +999,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                             "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                             "source_id": sample.sourceRevision.source.bundleIdentifier,
                             "source_name": sample.sourceRevision.source.name,
+                            "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true)
+                                ? RecordingMethod.manual.rawValue
+                                : RecordingMethod.automatic.rawValue
                         ]
                         for sample in samples {
                             if let quantitySample = sample as? HKQuantitySample {

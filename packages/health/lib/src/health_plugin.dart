@@ -305,8 +305,14 @@ class Health {
     required HealthDataType type,
     required DateTime startTime,
     DateTime? endTime,
-    RecordingMethod recordingMethod = RecordingMethod.unknown,
+    RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    if (Platform.isIOS &&
+        [RecordingMethod.active, RecordingMethod.unknown]
+            .contains(recordingMethod)) {
+      throw ArgumentError("recordingMethod must be manual or automatic on iOS");
+    }
+
     if (type == HealthDataType.WORKOUT) {
       throw ArgumentError(
           "Adding workouts should be done using the writeWorkoutData method.");
@@ -369,7 +375,6 @@ class Health {
   ///    Must be equal to or earlier than [endTime].
   ///  * [endTime] - the end time when this [value] is measured.
   ///    Must be equal to or later than [startTime].
-  ///  * [recordingMethod] - the recording method of the data point.
   Future<bool> delete({
     required HealthDataType type,
     required DateTime startTime,
@@ -408,8 +413,14 @@ class Health {
     required int diastolic,
     required DateTime startTime,
     DateTime? endTime,
-    RecordingMethod recordingMethod = RecordingMethod.unknown,
+    RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    if (Platform.isIOS &&
+        [RecordingMethod.active, RecordingMethod.unknown]
+            .contains(recordingMethod)) {
+      throw ArgumentError("recordingMethod must be manual or automatic on iOS");
+    }
+
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
@@ -442,8 +453,14 @@ class Health {
     required double saturation,
     required DateTime startTime,
     DateTime? endTime,
-    RecordingMethod recordingMethod = RecordingMethod.unknown,
+    RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    if (Platform.isIOS &&
+        [RecordingMethod.active, RecordingMethod.unknown]
+            .contains(recordingMethod)) {
+      throw ArgumentError("recordingMethod must be manual or automatic on iOS");
+    }
+
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
@@ -455,7 +472,8 @@ class Health {
           value: saturation,
           type: HealthDataType.BLOOD_OXYGEN,
           startTime: startTime,
-          endTime: endTime);
+          endTime: endTime,
+          recordingMethod: recordingMethod);
     } else if (Platform.isAndroid) {
       Map<String, dynamic> args = {
         'value': saturation,
@@ -568,8 +586,14 @@ class Health {
     double? sugar,
     double? water,
     double? zinc,
-    RecordingMethod recordingMethod = RecordingMethod.unknown,
+    RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    if (Platform.isIOS &&
+        [RecordingMethod.active, RecordingMethod.unknown]
+            .contains(recordingMethod)) {
+      throw ArgumentError("recordingMethod must be manual or automatic on iOS");
+    }
+
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
@@ -642,8 +666,14 @@ class Health {
     required DateTime startTime,
     required DateTime endTime,
     required bool isStartOfCycle,
-    RecordingMethod recordingMethod = RecordingMethod.unknown,
+    RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    if (Platform.isIOS &&
+        [RecordingMethod.active, RecordingMethod.unknown]
+            .contains(recordingMethod)) {
+      throw ArgumentError("recordingMethod must be manual or automatic on iOS");
+    }
+
     var value =
         Platform.isAndroid ? MenstrualFlow.toHealthConnect(flow) : flow.index;
 
@@ -679,7 +709,6 @@ class Health {
   ///     only at a specific point in time (default).
   ///   * [metadata] - optional map of keys, both HKMetadataKeyExternalUUID
   ///     and HKMetadataKeyDeviceName are required
-  ///  * [recordingMethod] - the recording method of the data point.
   Future<bool> writeAudiogram({
     required List<double> frequencies,
     required List<double> leftEarSensitivities,
@@ -1048,7 +1077,7 @@ class Health {
   ///    *ONLY FOR IOS* Default value is METER.
   ///  - [title] The title of the workout.
   ///    *ONLY FOR HEALTH CONNECT* Default value is the [activityType], e.g. "STRENGTH_TRAINING".
-  ///  - [recorrdingMethod] The recording method of the data point.
+  ///  - [recordingMethod] The recording method of the data point.
   Future<bool> writeWorkoutData({
     required HealthWorkoutActivityType activityType,
     required DateTime start,
@@ -1058,8 +1087,14 @@ class Health {
     int? totalDistance,
     HealthDataUnit totalDistanceUnit = HealthDataUnit.METER,
     String? title,
-    RecordingMethod recordingMethod = RecordingMethod.unknown,
+    RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    if (Platform.isIOS &&
+        [RecordingMethod.active, RecordingMethod.unknown]
+            .contains(recordingMethod)) {
+      throw ArgumentError("recordingMethod must be manual or automatic on iOS");
+    }
+
     // Check that value is on the current Platform
     if (Platform.isIOS && !_isOnIOS(activityType)) {
       throw HealthException(activityType,
