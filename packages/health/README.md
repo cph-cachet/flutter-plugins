@@ -227,7 +227,7 @@ A `HealthDataPoint` object can be serialized to and from JSON using the `toJson(
   "source_device_id": "F74938B9-C011-4DE4-AA5E-CF41B60B96E7",
   "source_id": "com.apple.health.81AE7156-EC05-47E3-AC93-2D6F65C717DF",
   "source_name": "iPhone12.bardram.net",
-  "is_manual_entry": false
+  "recordingMethod": 3
   "value": {
     "__type": "NumericHealthValue",
     "numeric_value": 141.0
@@ -240,7 +240,7 @@ A `HealthDataPoint` object can be serialized to and from JSON using the `toJson(
   "source_device_id": "F74938B9-C011-4DE4-AA5E-CF41B60B96E7",
   "source_id": "com.apple.health.81AE7156-EC05-47E3-AC93-2D6F65C717DF",
   "source_name": "iPhone12.bardram.net",
-  "is_manual_entry": false
+  "recording_method": 2
 }
 ```
 

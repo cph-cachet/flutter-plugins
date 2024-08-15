@@ -296,6 +296,8 @@ class Health {
   ///    It must be equal to or later than [startTime].
   ///    Simply set [endTime] equal to [startTime] if the [value] is measured
   ///    only at a specific point in time (default).
+  ///  * [recordingMethod] - the recording method of the data point, automatic by default.
+  ///    (on iOS this must be manual or automatic)
   ///
   /// Values for Sleep and Headache are ignored and will be automatically assigned
   /// the default value.
@@ -815,6 +817,8 @@ class Health {
   }
 
   /// Fetch a list of health data points based on [types].
+  /// You can also specify the [recordingMethodsToFilter] to filter the data points.
+  /// If not specified, all data points will be included.Vkk
   Future<List<HealthDataPoint>> getHealthIntervalDataFromTypes(
       {required DateTime startDate,
       required DateTime endDate,
@@ -1077,7 +1081,7 @@ class Health {
   ///    *ONLY FOR IOS* Default value is METER.
   ///  - [title] The title of the workout.
   ///    *ONLY FOR HEALTH CONNECT* Default value is the [activityType], e.g. "STRENGTH_TRAINING".
-  ///  - [recordingMethod] The recording method of the data point.
+  ///  - [recordingMethod] The recording method of the data point, automatic by default (on iOS this can only be automatic or manual).
   Future<bool> writeWorkoutData({
     required HealthWorkoutActivityType activityType,
     required DateTime start,
