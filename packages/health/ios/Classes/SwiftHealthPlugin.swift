@@ -2,6 +2,13 @@ import Flutter
 import HealthKit
 import UIKit
 
+enum RecordingMethod: Int {
+    case unknown = 0           // RECORDING_METHOD_UNKNOWN
+    case active = 1   // RECORDING_METHOD_ACTIVELY_RECORDED
+    case automatic = 2  // RECORDING_METHOD_AUTOMATICALLY_RECORDED
+    case manual = 3        // RECORDING_METHOD_MANUAL_ENTRY
+}
+
 public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     
     let healthStore = HKHealthStore()
@@ -743,7 +750,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
         let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
         let limit = (arguments?["limit"] as? Int) ?? HKObjectQueryNoLimit
-        let includeManualEntry = (arguments?["includeManualEntry"] as? Bool) ?? true
+        let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
+        let includeManualEntry = recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
         
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
@@ -768,7 +776,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     "date_to": Int(dateTo.timeIntervalSince1970 * 1000),
                     "source_id": sourceIdForCharacteristic,
                     "source_name": sourceNameForCharacteristic,
-                    "is_manual_entry": true
+                    "recording_method": RecordingMethod.manual.rawValue
                 ]
             ])
             return
@@ -781,7 +789,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     "date_to": Int(dateTo.timeIntervalSince1970 * 1000),
                     "source_id": sourceIdForCharacteristic,
                     "source_name": sourceNameForCharacteristic,
-                    "is_manual_entry": true
+                    "recording_method": RecordingMethod.manual.rawValue
                 ]
             ])
             return
@@ -794,7 +802,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     "date_to": Int(dateTo.timeIntervalSince1970 * 1000),
                     "source_id": sourceIdForCharacteristic,
                     "source_name": sourceNameForCharacteristic,
-                    "is_manual_entry": true
+                    "recording_method": RecordingMethod.manual.rawValue
                 ]
             ])
             return
@@ -826,7 +834,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "is_manual_entry": sample.metadata?[HKMetadataKeyWasUserEntered] != nil,
+                        "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true) ? RecordingMethod.manual.rawValue : RecordingMethod.automatic.rawValue,
                         "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil
                     ]
                 }
@@ -891,7 +899,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "is_manual_entry": sample.metadata?[HKMetadataKeyWasUserEntered] != nil,
+                        "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true) ? RecordingMethod.manual.rawValue : RecordingMethod.automatic.rawValue,
                         "metadata": metadata
                     ]
                 }
@@ -915,7 +923,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
-                        "is_manual_entry": sample.metadata?[HKMetadataKeyWasUserEntered] != nil,
+                        "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true) ? RecordingMethod.manual.rawValue : RecordingMethod.automatic.rawValue,
                         "workout_type": self.getWorkoutType(type: sample.workoutActivityType),
                         "total_distance": sample.totalDistance != nil ? Int(sample.totalDistance!.doubleValue(for: HKUnit.meter())) : 0,
                         "total_energy_burned": sample.totalEnergyBurned != nil ? Int(sample.totalEnergyBurned!.doubleValue(for: HKUnit.kilocalorie())) : 0
@@ -1047,7 +1055,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let startDate = (arguments?["startTime"] as? NSNumber) ?? 0
         let endDate = (arguments?["endTime"] as? NSNumber) ?? 0
         let intervalInSecond = (arguments?["interval"] as? Int) ?? 1
-        let includeManualEntry = (arguments?["includeManualEntry"] as? Bool) ?? true
+        let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
+        let includeManualEntry = recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
         
         // Set interval in seconds.
         var interval = DateComponents()
@@ -1131,7 +1140,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         let arguments = call.arguments as? NSDictionary
         let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
         let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
-        let includeManualEntry = (arguments?["includeManualEntry"] as? Bool) ?? true
+        let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
+        let includeManualEntry = recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
         
         // Convert dates from milliseconds to Date()
         let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
@@ -1741,5 +1751,5 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         default:
             return "other"
         }
-    }
+   }
 }
