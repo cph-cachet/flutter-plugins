@@ -211,7 +211,7 @@ class _HealthAppState extends State<HealthApp> {
         type: HealthDataType.STEPS,
         startTime: earlier,
         endTime: now,
-        recordingMethod: RecordingMethod.active);
+        recordingMethod: RecordingMethod.manual);
     success &= await Health().writeHealthData(
         value: 200,
         type: HealthDataType.ACTIVE_ENERGY_BURNED,

@@ -791,12 +791,12 @@ class Health {
       required DateTime endDate,
       required List<HealthDataType> types,
       required int interval,
-      bool includeManualEntry = true}) async {
+      List<RecordingMethod> recordingMethodsToFilter = const []}) async {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
       final result = await _prepareIntervalQuery(
-          startDate, endDate, type, interval, includeManualEntry);
+          startDate, endDate, type, interval, recordingMethodsToFilter);
       dataPoints.addAll(result);
     }
 
@@ -852,7 +852,7 @@ class Health {
       DateTime endDate,
       HealthDataType dataType,
       int interval,
-      bool includeManualEntry) async {
+      List<RecordingMethod> recordingMethodsToFilter) async {
     // Ask for device ID only once
     _deviceId ??= Platform.isAndroid
         ? (await _deviceInfo.androidInfo).id
@@ -865,7 +865,7 @@ class Health {
     }
 
     return await _dataIntervalQuery(
-        startDate, endDate, dataType, interval, includeManualEntry);
+        startDate, endDate, dataType, interval, recordingMethodsToFilter);
   }
 
   /// Prepares an aggregate query, i.e. checks if the types are available, etc.
@@ -930,14 +930,15 @@ class Health {
       DateTime endDate,
       HealthDataType dataType,
       int interval,
-      bool includeManualEntry) async {
+      List<RecordingMethod> recordingMethodsToFilter) async {
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
       'dataUnitKey': dataTypeToUnit[dataType]!.name,
       'startTime': startDate.millisecondsSinceEpoch,
       'endTime': endDate.millisecondsSinceEpoch,
       'interval': interval,
-      'includeManualEntry': includeManualEntry
+      'recordingMethodsToFilter':
+          recordingMethodsToFilter.map((e) => e.toInt()).toList(),
     };
 
     final fetchedDataPoints =
@@ -1001,7 +1002,9 @@ class Health {
     final args = <String, dynamic>{
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
-      'includeManualEntry': includeManualEntry
+      'recordingMethodsToFilter': includeManualEntry
+          ? <RecordingMethod>[]
+          : [RecordingMethod.manual.toInt()],
     };
     final stepsCount = await _channel.invokeMethod<int?>(
       'getTotalStepsInInterval',
