@@ -36,7 +36,7 @@ class _HealthAppState extends State<HealthApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 0;
-  List<RecordingMethod> filteredEntries = [];
+  List<RecordingMethod> recordingMethodsToFilter = [];
 
   // All types available depending on platform (iOS ot Android).
   List<HealthDataType> get types => (Platform.isAndroid)
@@ -218,11 +218,11 @@ class _HealthAppState extends State<HealthApp> {
         endTime: now,
         recordingMethod: RecordingMethod.manual);
     success &= await Health().writeHealthData(
-        value: 200,
-        type: HealthDataType.ACTIVE_ENERGY_BURNED,
-        startTime: earlier,
-        endTime: now,
-        recordingMethod: RecordingMethod.automatic);
+      value: 200,
+      type: HealthDataType.ACTIVE_ENERGY_BURNED,
+      startTime: earlier,
+      endTime: now,
+    );
     success &= await Health().writeHealthData(
         value: 70,
         type: HealthDataType.HEART_RATE,
@@ -412,7 +412,7 @@ class _HealthAppState extends State<HealthApp> {
       try {
         steps = await Health().getTotalStepsInInterval(midnight, now,
             includeManualEntry:
-                !filteredEntries.contains(RecordingMethod.manual));
+                !recordingMethodsToFilter.contains(RecordingMethod.manual));
       } catch (error) {
         debugPrint("Exception in getTotalStepsInInterval: $error");
       }
@@ -550,13 +550,13 @@ class _HealthAppState extends State<HealthApp> {
                   child: CheckboxListTile(
                     title: Text(
                         '${method.name[0].toUpperCase()}${method.name.substring(1)} entries'),
-                    value: !filteredEntries.contains(method),
+                    value: !recordingMethodsToFilter.contains(method),
                     onChanged: (value) {
                       setState(() {
                         if (value!) {
-                          filteredEntries.remove(method);
+                          recordingMethodsToFilter.remove(method);
                         } else {
-                          filteredEntries.add(method);
+                          recordingMethodsToFilter.add(method);
                         }
                       });
                     },
@@ -584,13 +584,13 @@ class _HealthAppState extends State<HealthApp> {
                   child: CheckboxListTile(
                     title: Text(
                         '${method.name[0].toUpperCase()}${method.name.substring(1)} entries'),
-                    value: !filteredEntries.contains(method),
+                    value: !recordingMethodsToFilter.contains(method),
                     onChanged: (value) {
                       setState(() {
                         if (value!) {
-                          filteredEntries.remove(method);
+                          recordingMethodsToFilter.remove(method);
                         } else {
-                          filteredEntries.add(method);
+                          recordingMethodsToFilter.add(method);
                         }
                         fetchStepData();
                       });
@@ -640,7 +640,8 @@ class _HealthAppState extends State<HealthApp> {
       itemCount: _healthDataList.length,
       itemBuilder: (_, index) {
         // filter out manual entires if not wanted
-        if (filteredEntries.contains(_healthDataList[index].recordingMethod)) {
+        if (recordingMethodsToFilter
+            .contains(_healthDataList[index].recordingMethod)) {
           return Container();
         }
 

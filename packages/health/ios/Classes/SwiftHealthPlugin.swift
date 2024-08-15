@@ -447,7 +447,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 type: dataTypeLookUp(key: type) as! HKQuantityType, quantity: quantity, start: dateFrom,
                 end: dateTo, metadata: metadata)
         }
-        print(sample.metadata?["HKWasUserEntered"] ?? "No metadata")
         
         HKHealthStore().save(
             sample,
