@@ -230,6 +230,7 @@ const List<HealthDataType> dataTypeKeysAndroid = [
   HealthDataType.SLEEP_LIGHT,
   HealthDataType.SLEEP_REM,
   HealthDataType.SLEEP_OUT_OF_BED,
+  HealthDataType.SLEEP_UNKNOWN,
   HealthDataType.SLEEP_SESSION,
   HealthDataType.WATER,
   HealthDataType.WORKOUT,

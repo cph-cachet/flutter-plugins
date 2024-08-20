@@ -75,6 +75,7 @@ const val SLEEP_LIGHT = "SLEEP_LIGHT"
 const val SLEEP_OUT_OF_BED = "SLEEP_OUT_OF_BED"
 const val SLEEP_REM = "SLEEP_REM"
 const val SLEEP_SESSION = "SLEEP_SESSION"
+const val SLEEP_UNKNOWN = "SLEEP_UNKNOWN"
 const val SNACK = "SNACK"
 const val WORKOUT = "WORKOUT"
 
@@ -1780,6 +1781,34 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                 )
                         ),
                     )
+                
+                SLEEP_UNKNOWN ->
+                    SleepSessionRecord(
+                        startTime =
+                        Instant.ofEpochMilli(
+                            startTime
+                        ),
+                        endTime =
+                        Instant.ofEpochMilli(
+                            endTime
+                        ),
+                        startZoneOffset = null,
+                        endZoneOffset = null,
+                        stages =
+                        listOf(
+                            SleepSessionRecord
+                                .Stage(
+                                    Instant.ofEpochMilli(
+                                        startTime
+                                    ),
+                                    Instant.ofEpochMilli(
+                                        endTime
+                                    ),
+                                    SleepSessionRecord
+                                        .STAGE_TYPE_UNKNOWN
+                                )
+                        ),
+                    )
 
                 SLEEP_SESSION ->
                     SleepSessionRecord(
@@ -2055,12 +2084,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
     private val mapSleepStageToType =
         hashMapOf(
+            0 to SLEEP_UNKNOWN,
             1 to SLEEP_AWAKE,
             2 to SLEEP_ASLEEP,
             3 to SLEEP_OUT_OF_BED,
             4 to SLEEP_LIGHT,
             5 to SLEEP_DEEP,
             6 to SLEEP_REM,
+            7 to SLEEP_AWAKE_IN_BED
         )
 
     private val mapMealTypeToType =
@@ -2107,6 +2138,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             SLEEP_REM to SleepSessionRecord::class,
             SLEEP_OUT_OF_BED to SleepSessionRecord::class,
             SLEEP_SESSION to SleepSessionRecord::class,
+            SLEEP_UNKNOWN to SleepSessionRecord::class,
             WORKOUT to ExerciseSessionRecord::class,
             NUTRITION to NutritionRecord::class,
             RESTING_HEART_RATE to RestingHeartRateRecord::class,
