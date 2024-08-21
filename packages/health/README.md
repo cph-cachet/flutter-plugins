@@ -281,6 +281,7 @@ The plugin supports the following [`HealthDataType`](https://pub.dev/documentati
 | **Data Type**                | **Unit**                | **Apple Health** | **Google Health Connect** | **Comments**                           |
 | ---------------------------- | ----------------------- | ---------------- | ------------------------- | -------------------------------------- |
 | ACTIVE_ENERGY_BURNED         | CALORIES                | yes              | yes                       |                                        |
+| ATRIAL_FIBRILLATION_BURDEN   | PERCENTAGE              | yes              |                           |                                        |
 | BASAL_ENERGY_BURNED          | CALORIES                | yes              | yes                       |                                        |
 | BLOOD_GLUCOSE                | MILLIGRAM_PER_DECILITER | yes              | yes                       |                                        |
 | BLOOD_OXYGEN                 | PERCENTAGE              | yes              | yes                       |                                        |
@@ -343,7 +344,7 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | BARRE                            | yes              |                           |                                                                   |
 | BASEBALL                         | yes              | yes                       |                                                                   |
 | BASKETBALL                       | yes              | yes                       |                                                                   |
-| BIKING                           | yes              | yes                       | on iOS this is CYCLING, but name changed here to fit with Android  |
+| BIKING                           | yes              | yes                       | on iOS this is CYCLING, but name changed here to fit with Android |
 | BOWLING                          | yes              |                           |                                                                   |
 | BOXING                           | yes              | yes                       |                                                                   |
 | CALISTHENICS                     |                  | yes                       |                                                                   |
