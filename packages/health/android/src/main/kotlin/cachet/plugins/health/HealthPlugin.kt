@@ -69,6 +69,7 @@ const val MEAL_UNKNOWN = "UNKNOWN"
 const val NUTRITION = "NUTRITION"
 const val SLEEP_ASLEEP = "SLEEP_ASLEEP"
 const val SLEEP_AWAKE = "SLEEP_AWAKE"
+const val SLEEP_AWAKE_IN_BED = "SLEEP_AWAKE_IN_BED"
 const val SLEEP_DEEP = "SLEEP_DEEP"
 const val SLEEP_IN_BED = "SLEEP_IN_BED"
 const val SLEEP_LIGHT = "SLEEP_LIGHT"
@@ -1781,6 +1782,34 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                 )
                         ),
                     )
+
+                SLEEP_AWAKE_IN_BED ->
+                    SleepSessionRecord(
+                        startTime =
+                        Instant.ofEpochMilli(
+                            startTime
+                        ),
+                        endTime =
+                        Instant.ofEpochMilli(
+                            endTime
+                        ),
+                        startZoneOffset = null,
+                        endZoneOffset = null,
+                        stages =
+                        listOf(
+                            SleepSessionRecord
+                                .Stage(
+                                    Instant.ofEpochMilli(
+                                        startTime
+                                    ),
+                                    Instant.ofEpochMilli(
+                                        endTime
+                                    ),
+                                    SleepSessionRecord
+                                        .STAGE_TYPE_AWAKE_IN_BED
+                                )
+                        ),
+                    )
                 
                 SLEEP_UNKNOWN ->
                     SleepSessionRecord(
@@ -2133,6 +2162,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             WATER to HydrationRecord::class,
             SLEEP_ASLEEP to SleepSessionRecord::class,
             SLEEP_AWAKE to SleepSessionRecord::class,
+            SLEEP_AWAKE_IN_BED to SleepSessionRecord::class,
             SLEEP_LIGHT to SleepSessionRecord::class,
             SLEEP_DEEP to SleepSessionRecord::class,
             SLEEP_REM to SleepSessionRecord::class,

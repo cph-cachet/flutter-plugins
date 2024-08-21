@@ -38,18 +38,24 @@ class _HealthAppState extends State<HealthApp> {
   int _nofSteps = 0;
 
   // All types available depending on platform (iOS ot Android).
-  // List<HealthDataType> get types => (Platform.isAndroid)
-  //     ? dataTypesAndroid
-  //     : (Platform.isIOS)
-  //         ? dataTypesIOS
-  //         : [];
+  List<HealthDataType> get types => (Platform.isAndroid)
+      ? dataTypesAndroid
+      : (Platform.isIOS)
+          ? dataTypesIOS
+          : [];
 
   // // Or specify specific types
-  static final types = [
-    HealthDataType.SLEEP_ASLEEP,
-    // Uncomment this line on iOS - only available on iOS
-    // HealthDataType.AUDIOGRAM
-  ];
+  // static final types = [
+  //   HealthDataType.WEIGHT,
+  //   HealthDataType.STEPS,
+  //   HealthDataType.HEIGHT,
+  //   HealthDataType.BLOOD_GLUCOSE,
+  //   HealthDataType.WORKOUT,
+  //   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+  //   HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+  //   // Uncomment this line on iOS - only available on iOS
+  //   // HealthDataType.AUDIOGRAM
+  // ];
 
   // Set up corresponding permissions
 
@@ -136,7 +142,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(days: 100));
+    final yesterday = now.subtract(Duration(hours: 24));
 
     // Clear old data points
     _healthDataList.clear();
