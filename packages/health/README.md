@@ -2,8 +2,7 @@
 
 Enables reading and writing health data from/to Apple Health and Health Connect.
 
-> [!IMPORTANT]
-> Google has deprecated the Google Fit API. According to the [documentation](https://developers.google.com/fit/android), the API will no longer be available after **June 30, 2025**. As such, this package has removed support for Google Fit as of version 11.0.0 and users are urged to upgrade as soon as possible.
+> **NOTE:** Google has deprecated the Google Fit API. According to the [documentation](https://developers.google.com/fit/android), as of **May 1st 2014** developers cannot sign up for using the API. As such, this package has removed support for Google Fit as of version 11.0.0 and users are urged to upgrade as soon as possible.
 
 The plugin supports:
 
@@ -26,7 +25,7 @@ See the tables below for supported health and workout data types.
 
 ### Apple Health (iOS)
 
-Step 1: Append the `Info.plist` with the following 2 entries
+First, add the following 2 entries to the `Info.plist`:
 
 ```xml
 <key>NSHealthShareUsageDescription</key>
@@ -35,24 +34,9 @@ Step 1: Append the `Info.plist` with the following 2 entries
 <string>We will sync your data with the Apple Health app to give you better insights</string>
 ```
 
-Step 2: Open your Flutter project in Xcode by right clicking on the "ios" folder and selecting "Open in Xcode". Next, enable "HealthKit" by adding a capability inside the "Signing & Capabilities" tab of the Runner target's settings.
+Then, open your Flutter project in Xcode by right clicking on the "ios" folder and selecting "Open in Xcode". Next, enable "HealthKit" by adding a capability inside the "Signing & Capabilities" tab of the Runner target's settings.
 
-### Android
-
-Starting from API level 28 (Android 9.0) accessing some fitness data (e.g. Steps) requires a special permission. To set it add the following line to your `AndroidManifest.xml` file.
-
-```xml
-<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
-```
-
-Additionally, for workouts, if the distance of a workout is requested then the location permissions below are needed.
-
-```xml
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-```
-
-#### Health Connect
+### Google Health Connect (Android)
 
 Health Connect requires the following lines in the `AndroidManifest.xml` file (see also the example app):
 
@@ -81,17 +65,38 @@ In the Health Connect permissions activity there is a link to your privacy polic
 </activity-alias>
 ```
 
-Health Connect on Android it requires special permissions in the `AndroidManifest.xml` file. The permissions can be found here: <https://developer.android.com/guide/health-and-fitness/health-connect/data-and-data-types/data-types>
+For each data type you want to access, the READ and WRITE permissions need to be added to the `AndroidManifest.xml` file. The list of [permissions](https://developer.android.com/health-and-fitness/guides/health-connect/plan/data-types#permissions) can be found here on the [data types](https://developer.android.com/health-and-fitness/guides/health-connect/plan/data-types) page.
 
-Example shown here (can also be found in the example app):
+An example of asking for permission to read and write heart rate data is shown below and more examples can also be found in the example app.
 
 ```xml
 <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
 <uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
-...
 ```
 
-Furthermore, an `intent-filter` needs to be added to the `.MainActivity` activity.
+Accessing fitness data (e.g. Steps) requires permission to access the "Activity Recognition" API. To set it add the following line to your `AndroidManifest.xml` file.
+
+```xml
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+```
+
+Additionally, for workouts, if the distance of a workout is requested then the location permissions below are needed.
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+Because this is labeled as a `dangerous` protection level, the permission system will not grant it automatically and it requires the user's action.
+You can prompt the user for it using the [permission_handler](https://pub.dev/packages/permission_handler) plugin.
+Follow the plugin setup instructions and add the following line before requesting the data:
+
+```dart
+await Permission.activityRecognition.request();
+await Permission.location.request();
+```
+
+Finally, an `intent-filter` needs to be added to the `.MainActivity` activity.
 
 ```xml
 <activity
@@ -109,17 +114,7 @@ Furthermore, an `intent-filter` needs to be added to the `.MainActivity` activit
 
 There's a `debug`, `main` and `profile` version which are chosen depending on how you start your app. In general, it's sufficient to add permission only to the `main` version.
 
-Because this is labeled as a `dangerous` protection level, the permission system will not grant it automatically and it requires the user's action.
-
-You can prompt the user for it using the [permission_handler](https://pub.dev/packages/permission_handler) plugin.
-Follow the plugin setup instructions and add the following line before requesting the data:
-
-```dart
-await Permission.activityRecognition.request();
-await Permission.location.request();
-```
-
-### Android 14
+#### Android 14
 
 This plugin uses the new `registerForActivityResult` when requesting permissions from Health Connect.
 In order for that to work, the Main app's activity should extend `FlutterFragmentActivity` instead of `FlutterActivity`.
@@ -137,7 +132,7 @@ class MainActivity: FlutterFragmentActivity() {
 }
 ```
 
-### Android X
+#### Android X
 
 Replace the content of the `android/gradle.properties` file with the following lines:
 
