@@ -324,7 +324,6 @@ const _$HealthWorkoutActivityTypeEnumMap = {
   HealthWorkoutActivityType.BOXING: 'BOXING',
   HealthWorkoutActivityType.CRICKET: 'CRICKET',
   HealthWorkoutActivityType.CROSS_COUNTRY_SKIING: 'CROSS_COUNTRY_SKIING',
-  HealthWorkoutActivityType.CROSS_TRAINING: 'CROSS_TRAINING',
   HealthWorkoutActivityType.CURLING: 'CURLING',
   HealthWorkoutActivityType.DOWNHILL_SKIING: 'DOWNHILL_SKIING',
   HealthWorkoutActivityType.ELLIPTICAL: 'ELLIPTICAL',
