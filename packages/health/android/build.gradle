@@ -54,10 +54,7 @@ dependencies {
     def composeBom = platform('androidx.compose:compose-bom:2022.10.00')
     implementation(composeBom)
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation("com.google.android.gms:play-services-fitness:21.1.0")
-    implementation("com.google.android.gms:play-services-auth:20.2.0")
 
-    // The new health connect api
     implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
     def fragment_version = "1.6.2"
     implementation "androidx.fragment:fragment-ktx:$fragment_version"

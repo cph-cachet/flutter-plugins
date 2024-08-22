@@ -81,7 +81,7 @@ class _HealthAppState extends State<HealthApp> {
 
   void initState() {
     // configure the health plugin before use.
-    Health().configure(useHealthConnectIfAvailable: true);
+    Health().configure();
 
     super.initState();
   }
@@ -185,7 +185,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // Add data for supported types
     // NOTE: These are only the ones supported on Androids new API Health Connect.
-    // Both Android's Google Fit and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
+    // Both Android's Health Connect and iOS' HealthKit have more types that we support in the enum list [HealthDataType]
     // Add more - like AUDIOGRAM, HEADACHE_SEVERE etc. to try them.
     bool success = true;
 
@@ -215,11 +215,6 @@ class _HealthAppState extends State<HealthApp> {
     success &= await Health().writeHealthData(
         value: 70,
         type: HealthDataType.HEART_RATE,
-        startTime: earlier,
-        endTime: now);
-    success &= await Health().writeHealthData(
-        value: 30,
-        type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
         startTime: earlier,
         endTime: now);
     success &= await Health().writeHealthData(
@@ -265,7 +260,6 @@ class _HealthAppState extends State<HealthApp> {
       saturation: 98,
       startTime: earlier,
       endTime: now,
-      flowRate: 1.0,
     );
     success &= await Health().writeWorkoutData(
       activityType: HealthWorkoutActivityType.AMERICAN_FOOTBALL,
@@ -591,8 +585,6 @@ class _HealthAppState extends State<HealthApp> {
   Widget _authorizationNotGranted = const Column(
     children: [
       const Text('Authorization not given.'),
-      const Text(
-          'For Google Fit please check your OAUTH2 client ID is correct in Google Developer Console.'),
       const Text(
           'For Google Health Connect please check if you have added the right permissions and services to the manifest file.'),
       const Text('For Apple Health check your permissions in Apple Health.'),

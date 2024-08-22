@@ -13,7 +13,7 @@ class HealthValue extends Serializable {
   Map<String, dynamic> toJson() => _$HealthValueToJson(this);
 }
 
-/// A numerical value from Apple HealthKit or Google Fit
+/// A numerical value from Apple HealthKit or Google Health Connect
 /// such as integer or double. E.g. 1, 2.9, -3
 ///
 /// Parameters:

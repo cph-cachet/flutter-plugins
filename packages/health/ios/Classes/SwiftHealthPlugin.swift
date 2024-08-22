@@ -291,13 +291,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if call.method.elementsEqual("delete") {
             try! delete(call: call, result: result)
         }
-        
-        /// Disconnect
-        else if (call.method.elementsEqual("disconnect")){
-            // Do nothing.
-            result(true)
-        }
-        
     }
     
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -1303,8 +1296,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["FLEXIBILITY"] = .flexibility
         workoutActivityTypeMap["WALKING"] = .walking
         workoutActivityTypeMap["RUNNING"] = .running
-        workoutActivityTypeMap["RUNNING_JOGGING"] = .running  // Supported due to combining with Android naming
-        workoutActivityTypeMap["RUNNING_SAND"] = .running  // Supported due to combining with Android naming
         workoutActivityTypeMap["RUNNING_TREADMILL"] = .running  // Supported due to combining with Android naming
         workoutActivityTypeMap["WHEELCHAIR_WALK_PACE"] = .wheelchairWalkPace
         workoutActivityTypeMap["WHEELCHAIR_RUN_PACE"] = .wheelchairRunPace
@@ -1345,9 +1336,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["SNOW_SPORTS"] = .snowSports
         workoutActivityTypeMap["SNOWBOARDING"] = .snowboarding
         workoutActivityTypeMap["SKATING"] = .skatingSports
-        workoutActivityTypeMap["SKATING_CROSS,"] = .skatingSports  // Supported due to combining with Android naming
-        workoutActivityTypeMap["SKATING_INDOOR,"] = .skatingSports  // Supported due to combining with Android naming
-        workoutActivityTypeMap["SKATING_INLINE,"] = .skatingSports  // Supported due to combining with Android naming
         workoutActivityTypeMap["PADDLE_SPORTS"] = .paddleSports
         workoutActivityTypeMap["ROWING"] = .rowing
         workoutActivityTypeMap["SAILING"] = .sailing

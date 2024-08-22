@@ -27,7 +27,6 @@ class Health {
 
   String? _deviceId;
   final _deviceInfo = DeviceInfoPlugin();
-  bool _useHealthConnectIfAvailable = false;
 
   Health._() {
     _registerFromJsonFunctions();
@@ -39,9 +38,7 @@ class Health {
   /// The type of platform of this device.
   HealthPlatformType get platformType => Platform.isIOS
       ? HealthPlatformType.appleHealth
-      : useHealthConnectIfAvailable
-          ? HealthPlatformType.googleHealthConnect
-          : HealthPlatformType.googleFit;
+      : HealthPlatformType.googleHealthConnect;
 
   /// The id of this device.
   ///
@@ -50,23 +47,11 @@ class Health {
   String get deviceId => _deviceId ?? 'unknown';
 
   /// Configure the health plugin. Must be called before using the plugin.
-  ///
-  /// If [useHealthConnectIfAvailable] is true, Google Health Connect on
-  /// Android will be used. Has no effect on iOS.
-  Future<void> configure({bool useHealthConnectIfAvailable = false}) async {
-    if (Platform.isAndroid) {
-      _deviceId = (await _deviceInfo.androidInfo).id;
-      _useHealthConnectIfAvailable = useHealthConnectIfAvailable;
-      await _channel.invokeMethod('useHealthConnectIfAvailable');
-    } else {
-      _deviceId = (await _deviceInfo.iosInfo).identifierForVendor;
-    }
+  Future<void> configure() async {
+    _deviceId = Platform.isAndroid
+        ? (await _deviceInfo.androidInfo).id
+        : (await _deviceInfo.iosInfo).identifierForVendor;
   }
-
-  /// Is this plugin using Health Connect (true) or Google Fit (false)?
-  ///
-  /// This is set in the [configure] method.
-  bool get useHealthConnectIfAvailable => _useHealthConnectIfAvailable;
 
   /// Check if a given data type is available on the platform
   bool isDataTypeAvailable(HealthDataType dataType) => Platform.isAndroid
@@ -121,10 +106,9 @@ class Health {
     });
   }
 
-  /// Revokes permissions of all types.
+  /// Revokes Google Health Connect permissions on Android of all types.
   ///
-  /// Uses `disableFit()` on Google Fit.
-  ///
+  /// NOTE: The app must be completely killed and restarted for the changes to take effect.
   /// Not implemented on iOS as there is no way to programmatically remove access.
   Future<void> revokePermissions() async {
     try {
@@ -173,33 +157,6 @@ class Health {
     } catch (e) {
       debugPrint('$runtimeType - Exception in installHealthConnect(): $e');
     }
-  }
-
-  /// Disconnect from Google fit.
-  ///
-  /// Not supported on iOS and Google Health Connect, and the method does nothing.
-  Future<bool?> disconnect(
-    List<HealthDataType> types, {
-    List<HealthDataAccess>? permissions,
-  }) async {
-    if (permissions != null && permissions.length != types.length) {
-      throw ArgumentError(
-          'The length of [types] must be same as that of [permissions].');
-    }
-
-    final mTypes = List<HealthDataType>.from(types, growable: true);
-    final mPermissions = permissions == null
-        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
-            growable: true)
-        : permissions.map((permission) => permission.index).toList();
-
-    // on Android, if BMI is requested, then also ask for weight and height
-    if (Platform.isAndroid) _handleBMI(mTypes, mPermissions);
-
-    List<String> keys = mTypes.map((dataType) => dataType.name).toList();
-
-    return await _channel.invokeMethod(
-        'disconnect', {'types': keys, "permissions": mPermissions});
   }
 
   /// Requests permissions to access health data [types].
@@ -353,6 +310,10 @@ class Health {
       throw ArgumentError(
           "Adding workouts should be done using the writeWorkoutData method.");
     }
+    // If not implemented on platform, throw an exception
+    if (!isDataTypeAvailable(type)) {
+      throw HealthException(type, 'Not available on platform $platformType');
+    }
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
@@ -468,8 +429,6 @@ class Health {
   ///
   /// Parameters:
   ///  * [saturation] - the saturation of the blood oxygen in percentage
-  ///  * [flowRate] - optional supplemental oxygen flow rate, only supported on
-  ///    Google Fit (default 0.0)
   ///  * [startTime] - the start time when this [saturation] is measured.
   ///    Must be equal to or earlier than [endTime].
   ///  * [endTime] - the end time when this [saturation] is measured.
@@ -478,7 +437,6 @@ class Health {
   ///    is measured only at a specific point in time (default).
   Future<bool> writeBloodOxygen({
     required double saturation,
-    double flowRate = 0.0,
     required DateTime startTime,
     DateTime? endTime,
   }) async {
@@ -497,7 +455,6 @@ class Health {
     } else if (Platform.isAndroid) {
       Map<String, dynamic> args = {
         'value': saturation,
-        'flowRate': flowRate,
         'startTime': startTime.millisecondsSinceEpoch,
         'endTime': endTime.millisecondsSinceEpoch,
         'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,
@@ -507,7 +464,7 @@ class Health {
     return success ?? false;
   }
 
-  /// Saves meal record into Apple Health or Google Fit / Health Connect.
+  /// Saves meal record into Apple Health or Health Connect.
   ///
   /// Returns true if successful, false otherwise.
   ///
@@ -1020,8 +977,6 @@ class Health {
 
   /// Get the total number of steps within a specific time period.
   /// Returns null if not successful.
-  ///
-  /// Is a fix according to https://stackoverflow.com/questions/29414386/step-count-retrieved-through-google-fit-api-does-not-match-step-count-displayed/29415091#29415091
   Future<int?> getTotalStepsInInterval(DateTime startTime, DateTime endTime,
       {bool includeManualEntry = true}) async {
     final args = <String, dynamic>{
@@ -1055,7 +1010,7 @@ class Health {
             "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues"),
       };
 
-  /// Write workout data to Apple Health or Google Fit or Google Health Connect.
+  /// Write workout data to Apple Health or Google Health Connect.
   ///
   /// Returns true if the workout data was successfully added.
   ///
@@ -1106,84 +1061,84 @@ class Health {
   bool _isOnIOS(HealthWorkoutActivityType type) {
     // Returns true if the type is part of the iOS set
     return {
+      HealthWorkoutActivityType.AMERICAN_FOOTBALL,
       HealthWorkoutActivityType.ARCHERY,
+      HealthWorkoutActivityType.AUSTRALIAN_FOOTBALL,
       HealthWorkoutActivityType.BADMINTON,
+      HealthWorkoutActivityType.BARRE,
       HealthWorkoutActivityType.BASEBALL,
       HealthWorkoutActivityType.BASKETBALL,
       HealthWorkoutActivityType.BIKING,
+      HealthWorkoutActivityType.BOWLING,
       HealthWorkoutActivityType.BOXING,
+      HealthWorkoutActivityType.CARDIO_DANCE,
+      HealthWorkoutActivityType.CLIMBING,
+      HealthWorkoutActivityType.COOLDOWN,
+      HealthWorkoutActivityType.CORE_TRAINING,
       HealthWorkoutActivityType.CRICKET,
+      HealthWorkoutActivityType.CROSS_COUNTRY_SKIING,
+      HealthWorkoutActivityType.CROSS_TRAINING,
       HealthWorkoutActivityType.CURLING,
+      HealthWorkoutActivityType.DISC_SPORTS,
+      HealthWorkoutActivityType.DOWNHILL_SKIING,
       HealthWorkoutActivityType.ELLIPTICAL,
+      HealthWorkoutActivityType.EQUESTRIAN_SPORTS,
       HealthWorkoutActivityType.FENCING,
-      HealthWorkoutActivityType.AMERICAN_FOOTBALL,
-      HealthWorkoutActivityType.AUSTRALIAN_FOOTBALL,
-      HealthWorkoutActivityType.SOCCER,
+      HealthWorkoutActivityType.FISHING,
+      HealthWorkoutActivityType.FITNESS_GAMING,
+      HealthWorkoutActivityType.FLEXIBILITY,
+      HealthWorkoutActivityType.FUNCTIONAL_STRENGTH_TRAINING,
       HealthWorkoutActivityType.GOLF,
       HealthWorkoutActivityType.GYMNASTICS,
+      HealthWorkoutActivityType.HAND_CYCLING,
       HealthWorkoutActivityType.HANDBALL,
       HealthWorkoutActivityType.HIGH_INTENSITY_INTERVAL_TRAINING,
       HealthWorkoutActivityType.HIKING,
       HealthWorkoutActivityType.HOCKEY,
-      HealthWorkoutActivityType.SKATING,
+      HealthWorkoutActivityType.HUNTING,
       HealthWorkoutActivityType.JUMP_ROPE,
       HealthWorkoutActivityType.KICKBOXING,
+      HealthWorkoutActivityType.LACROSSE,
       HealthWorkoutActivityType.MARTIAL_ARTS,
+      HealthWorkoutActivityType.MIND_AND_BODY,
+      HealthWorkoutActivityType.MIXED_CARDIO,
+      HealthWorkoutActivityType.OTHER,
+      HealthWorkoutActivityType.PADDLE_SPORTS,
+      HealthWorkoutActivityType.PICKLEBALL,
       HealthWorkoutActivityType.PILATES,
+      HealthWorkoutActivityType.PLAY,
+      HealthWorkoutActivityType.PREPARATION_AND_RECOVERY,
       HealthWorkoutActivityType.RACQUETBALL,
       HealthWorkoutActivityType.ROWING,
       HealthWorkoutActivityType.RUGBY,
       HealthWorkoutActivityType.RUNNING,
       HealthWorkoutActivityType.SAILING,
-      HealthWorkoutActivityType.CROSS_COUNTRY_SKIING,
-      HealthWorkoutActivityType.DOWNHILL_SKIING,
+      HealthWorkoutActivityType.SKATING,
+      HealthWorkoutActivityType.SNOW_SPORTS,
       HealthWorkoutActivityType.SNOWBOARDING,
+      HealthWorkoutActivityType.SOCCER,
+      HealthWorkoutActivityType.SOCIAL_DANCE,
       HealthWorkoutActivityType.SOFTBALL,
       HealthWorkoutActivityType.SQUASH,
       HealthWorkoutActivityType.STAIR_CLIMBING,
-      HealthWorkoutActivityType.SWIMMING,
-      HealthWorkoutActivityType.TABLE_TENNIS,
-      HealthWorkoutActivityType.TENNIS,
-      HealthWorkoutActivityType.VOLLEYBALL,
-      HealthWorkoutActivityType.WALKING,
-      HealthWorkoutActivityType.WATER_POLO,
-      HealthWorkoutActivityType.YOGA,
-      HealthWorkoutActivityType.BOWLING,
-      HealthWorkoutActivityType.CROSS_TRAINING,
-      HealthWorkoutActivityType.TRACK_AND_FIELD,
-      HealthWorkoutActivityType.DISC_SPORTS,
-      HealthWorkoutActivityType.LACROSSE,
-      HealthWorkoutActivityType.PREPARATION_AND_RECOVERY,
-      HealthWorkoutActivityType.FLEXIBILITY,
-      HealthWorkoutActivityType.COOLDOWN,
-      HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE,
-      HealthWorkoutActivityType.WHEELCHAIR_RUN_PACE,
-      HealthWorkoutActivityType.HAND_CYCLING,
-      HealthWorkoutActivityType.CORE_TRAINING,
-      HealthWorkoutActivityType.FUNCTIONAL_STRENGTH_TRAINING,
-      HealthWorkoutActivityType.TRADITIONAL_STRENGTH_TRAINING,
-      HealthWorkoutActivityType.MIXED_CARDIO,
       HealthWorkoutActivityType.STAIRS,
       HealthWorkoutActivityType.STEP_TRAINING,
-      HealthWorkoutActivityType.FITNESS_GAMING,
-      HealthWorkoutActivityType.BARRE,
-      HealthWorkoutActivityType.CARDIO_DANCE,
-      HealthWorkoutActivityType.SOCIAL_DANCE,
-      HealthWorkoutActivityType.MIND_AND_BODY,
-      HealthWorkoutActivityType.PICKLEBALL,
-      HealthWorkoutActivityType.CLIMBING,
-      HealthWorkoutActivityType.EQUESTRIAN_SPORTS,
-      HealthWorkoutActivityType.FISHING,
-      HealthWorkoutActivityType.HUNTING,
-      HealthWorkoutActivityType.PLAY,
-      HealthWorkoutActivityType.SNOW_SPORTS,
-      HealthWorkoutActivityType.PADDLE_SPORTS,
       HealthWorkoutActivityType.SURFING_SPORTS,
-      HealthWorkoutActivityType.WATER_FITNESS,
-      HealthWorkoutActivityType.WATER_SPORTS,
+      HealthWorkoutActivityType.SWIMMING,
+      HealthWorkoutActivityType.TABLE_TENNIS,
       HealthWorkoutActivityType.TAI_CHI,
+      HealthWorkoutActivityType.TENNIS,
+      HealthWorkoutActivityType.TRACK_AND_FIELD,
+      HealthWorkoutActivityType.TRADITIONAL_STRENGTH_TRAINING,
+      HealthWorkoutActivityType.VOLLEYBALL,
+      HealthWorkoutActivityType.WALKING,
+      HealthWorkoutActivityType.WATER_FITNESS,
+      HealthWorkoutActivityType.WATER_POLO,
+      HealthWorkoutActivityType.WATER_SPORTS,
+      HealthWorkoutActivityType.WHEELCHAIR_RUN_PACE,
+      HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE,
       HealthWorkoutActivityType.WRESTLING,
-      HealthWorkoutActivityType.OTHER,
+      HealthWorkoutActivityType.YOGA,
     }.contains(type);
   }
 
@@ -1192,28 +1147,26 @@ class Health {
     // Returns true if the type is part of the Android set
     return {
       // Both
+      HealthWorkoutActivityType.AMERICAN_FOOTBALL,
       HealthWorkoutActivityType.ARCHERY,
+      HealthWorkoutActivityType.AUSTRALIAN_FOOTBALL,
       HealthWorkoutActivityType.BADMINTON,
       HealthWorkoutActivityType.BASEBALL,
       HealthWorkoutActivityType.BASKETBALL,
       HealthWorkoutActivityType.BIKING,
       HealthWorkoutActivityType.BOXING,
       HealthWorkoutActivityType.CRICKET,
+      HealthWorkoutActivityType.CROSS_COUNTRY_SKIING,
       HealthWorkoutActivityType.CURLING,
+      HealthWorkoutActivityType.DOWNHILL_SKIING,
       HealthWorkoutActivityType.ELLIPTICAL,
       HealthWorkoutActivityType.FENCING,
-      HealthWorkoutActivityType.AMERICAN_FOOTBALL,
-      HealthWorkoutActivityType.AUSTRALIAN_FOOTBALL,
-      HealthWorkoutActivityType.SOCCER,
       HealthWorkoutActivityType.GOLF,
       HealthWorkoutActivityType.GYMNASTICS,
       HealthWorkoutActivityType.HANDBALL,
       HealthWorkoutActivityType.HIGH_INTENSITY_INTERVAL_TRAINING,
       HealthWorkoutActivityType.HIKING,
       HealthWorkoutActivityType.HOCKEY,
-      HealthWorkoutActivityType.SKATING,
-      HealthWorkoutActivityType.JUMP_ROPE,
-      HealthWorkoutActivityType.KICKBOXING,
       HealthWorkoutActivityType.MARTIAL_ARTS,
       HealthWorkoutActivityType.PILATES,
       HealthWorkoutActivityType.RACQUETBALL,
@@ -1221,13 +1174,12 @@ class Health {
       HealthWorkoutActivityType.RUGBY,
       HealthWorkoutActivityType.RUNNING,
       HealthWorkoutActivityType.SAILING,
-      HealthWorkoutActivityType.CROSS_COUNTRY_SKIING,
-      HealthWorkoutActivityType.DOWNHILL_SKIING,
+      HealthWorkoutActivityType.SKATING,
       HealthWorkoutActivityType.SNOWBOARDING,
+      HealthWorkoutActivityType.SOCCER,
       HealthWorkoutActivityType.SOFTBALL,
       HealthWorkoutActivityType.SQUASH,
       HealthWorkoutActivityType.STAIR_CLIMBING,
-      HealthWorkoutActivityType.SWIMMING,
       HealthWorkoutActivityType.TABLE_TENNIS,
       HealthWorkoutActivityType.TENNIS,
       HealthWorkoutActivityType.VOLLEYBALL,
@@ -1236,76 +1188,27 @@ class Health {
       HealthWorkoutActivityType.YOGA,
 
       // Android only
-      // Once Google Fit is removed, this list needs to be changed
-      HealthWorkoutActivityType.AEROBICS,
-      HealthWorkoutActivityType.BIATHLON,
-      HealthWorkoutActivityType.BIKING_HAND,
-      HealthWorkoutActivityType.BIKING_MOUNTAIN,
-      HealthWorkoutActivityType.BIKING_ROAD,
-      HealthWorkoutActivityType.BIKING_SPINNING,
       HealthWorkoutActivityType.BIKING_STATIONARY,
-      HealthWorkoutActivityType.BIKING_UTILITY,
       HealthWorkoutActivityType.CALISTHENICS,
-      HealthWorkoutActivityType.CIRCUIT_TRAINING,
-      HealthWorkoutActivityType.CROSS_FIT,
       HealthWorkoutActivityType.DANCING,
-      HealthWorkoutActivityType.DIVING,
-      HealthWorkoutActivityType.ELEVATOR,
-      HealthWorkoutActivityType.ERGOMETER,
-      HealthWorkoutActivityType.ESCALATOR,
       HealthWorkoutActivityType.FRISBEE_DISC,
-      HealthWorkoutActivityType.GARDENING,
       HealthWorkoutActivityType.GUIDED_BREATHING,
-      HealthWorkoutActivityType.HORSEBACK_RIDING,
-      HealthWorkoutActivityType.HOUSEWORK,
-      HealthWorkoutActivityType.INTERVAL_TRAINING,
-      HealthWorkoutActivityType.IN_VEHICLE,
       HealthWorkoutActivityType.ICE_SKATING,
-      HealthWorkoutActivityType.KAYAKING,
-      HealthWorkoutActivityType.KETTLEBELL_TRAINING,
-      HealthWorkoutActivityType.KICK_SCOOTER,
-      HealthWorkoutActivityType.KITE_SURFING,
-      HealthWorkoutActivityType.MEDITATION,
-      HealthWorkoutActivityType.MIXED_MARTIAL_ARTS,
-      HealthWorkoutActivityType.P90X,
       HealthWorkoutActivityType.PARAGLIDING,
-      HealthWorkoutActivityType.POLO,
       HealthWorkoutActivityType.ROCK_CLIMBING,
       HealthWorkoutActivityType.ROWING_MACHINE,
-      HealthWorkoutActivityType.RUNNING_JOGGING,
-      HealthWorkoutActivityType.RUNNING_SAND,
       HealthWorkoutActivityType.RUNNING_TREADMILL,
       HealthWorkoutActivityType.SCUBA_DIVING,
-      HealthWorkoutActivityType.SKATING_CROSS,
-      HealthWorkoutActivityType.SKATING_INDOOR,
-      HealthWorkoutActivityType.SKATING_INLINE,
       HealthWorkoutActivityType.SKIING,
-      HealthWorkoutActivityType.SKIING_BACK_COUNTRY,
-      HealthWorkoutActivityType.SKIING_KITE,
-      HealthWorkoutActivityType.SKIING_ROLLER,
-      HealthWorkoutActivityType.SLEDDING,
-      HealthWorkoutActivityType.SNOWMOBILE,
       HealthWorkoutActivityType.SNOWSHOEING,
       HealthWorkoutActivityType.STAIR_CLIMBING_MACHINE,
-      HealthWorkoutActivityType.STANDUP_PADDLEBOARDING,
-      HealthWorkoutActivityType.STILL,
       HealthWorkoutActivityType.STRENGTH_TRAINING,
       HealthWorkoutActivityType.SURFING,
       HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
       HealthWorkoutActivityType.SWIMMING_POOL,
-      HealthWorkoutActivityType.TEAM_SPORTS,
-      HealthWorkoutActivityType.TILTING,
-      HealthWorkoutActivityType.VOLLEYBALL_BEACH,
-      HealthWorkoutActivityType.VOLLEYBALL_INDOOR,
-      HealthWorkoutActivityType.WAKEBOARDING,
-      HealthWorkoutActivityType.WALKING_FITNESS,
-      HealthWorkoutActivityType.WALKING_NORDIC,
-      HealthWorkoutActivityType.WALKING_STROLLER,
       HealthWorkoutActivityType.WALKING_TREADMILL,
       HealthWorkoutActivityType.WEIGHTLIFTING,
       HealthWorkoutActivityType.WHEELCHAIR,
-      HealthWorkoutActivityType.WINDSURFING,
-      HealthWorkoutActivityType.ZUMBA,
       HealthWorkoutActivityType.OTHER,
     }.contains(type);
   }
