@@ -310,6 +310,10 @@ class Health {
       throw ArgumentError(
           "Adding workouts should be done using the writeWorkoutData method.");
     }
+    // If not implemented on platform, throw an exception
+    if (!isDataTypeAvailable(type)) {
+      throw HealthException(type, 'Not available on platform $platformType');
+    }
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
