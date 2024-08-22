@@ -385,7 +385,7 @@ const _$HealthWorkoutActivityTypeEnumMap = {
   HealthWorkoutActivityType.SOCIAL_DANCE: 'SOCIAL_DANCE',
   HealthWorkoutActivityType.STAIRS: 'STAIRS',
   HealthWorkoutActivityType.STEP_TRAINING: 'STEP_TRAINING',
-  HealthWorkoutActivityType.SURFING_SPORTS: 'SURFING_SPORTS',
+  HealthWorkoutActivityType.SURFING: 'SURFING',
   HealthWorkoutActivityType.TAI_CHI: 'TAI_CHI',
   HealthWorkoutActivityType.TRACK_AND_FIELD: 'TRACK_AND_FIELD',
   HealthWorkoutActivityType.TRADITIONAL_STRENGTH_TRAINING:
@@ -410,7 +410,6 @@ const _$HealthWorkoutActivityTypeEnumMap = {
   HealthWorkoutActivityType.SNOWSHOEING: 'SNOWSHOEING',
   HealthWorkoutActivityType.STAIR_CLIMBING_MACHINE: 'STAIR_CLIMBING_MACHINE',
   HealthWorkoutActivityType.STRENGTH_TRAINING: 'STRENGTH_TRAINING',
-  HealthWorkoutActivityType.SURFING: 'SURFING',
   HealthWorkoutActivityType.SWIMMING_OPEN_WATER: 'SWIMMING_OPEN_WATER',
   HealthWorkoutActivityType.SWIMMING_POOL: 'SWIMMING_POOL',
   HealthWorkoutActivityType.WALKING_TREADMILL: 'WALKING_TREADMILL',
