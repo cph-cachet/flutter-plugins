@@ -153,7 +153,9 @@ class WorkoutHealthValue extends HealthValue {
   factory WorkoutHealthValue.fromHealthDataPoint(dynamic dataPoint) =>
       WorkoutHealthValue(
           workoutActivityType: HealthWorkoutActivityType.values.firstWhere(
-              (element) => element.name == dataPoint['workoutActivityType']),
+            (element) => element.name == dataPoint['workoutActivityType'],
+            orElse: () => HealthWorkoutActivityType.OTHER,
+          ),
           totalEnergyBurned: dataPoint['totalEnergyBurned'] != null
               ? (dataPoint['totalEnergyBurned'] as num).toInt()
               : null,

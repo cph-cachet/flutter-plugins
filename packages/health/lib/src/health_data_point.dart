@@ -8,6 +8,9 @@ enum HealthPlatformType { appleHealth, googleHealthConnect }
 /// as value.
 @JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
 class HealthDataPoint {
+  /// UUID of the data point.
+  String uuid;
+
   /// The quantity value of the data point
   HealthValue value;
 
@@ -53,6 +56,7 @@ class HealthDataPoint {
   Map<String, dynamic>? metadata;
 
   HealthDataPoint({
+    required this.uuid,
     required this.value,
     required this.type,
     required this.unit,
@@ -130,6 +134,7 @@ class HealthDataPoint {
         ? null
         : Map<String, dynamic>.from(dataPoint['metadata'] as Map);
     final unit = dataTypeToUnit[dataType] ?? HealthDataUnit.UNKNOWN_UNIT;
+    final String? uuid = dataPoint["uuid"] as String?;
 
     // Set WorkoutSummary, if available.
     WorkoutSummary? workoutSummary;
@@ -143,6 +148,7 @@ class HealthDataPoint {
     var recordingMethod = dataPoint["recording_method"] as int?;
 
     return HealthDataPoint(
+      uuid: uuid ?? "",
       value: value,
       type: dataType,
       unit: unit,
@@ -160,6 +166,7 @@ class HealthDataPoint {
 
   @override
   String toString() => """$runtimeType -
+    uuid: $uuid,
     value: ${value.toString()},
     unit: ${unit.name},
     dateFrom: $dateFrom,
@@ -176,6 +183,7 @@ class HealthDataPoint {
   @override
   bool operator ==(Object other) =>
       other is HealthDataPoint &&
+      uuid == other.uuid &&
       value == other.value &&
       unit == other.unit &&
       dateFrom == other.dateFrom &&
@@ -189,6 +197,6 @@ class HealthDataPoint {
       metadata == other.metadata;
 
   @override
-  int get hashCode => Object.hash(value, unit, dateFrom, dateTo, type,
+  int get hashCode => Object.hash(uuid, value, unit, dateFrom, dateTo, type,
       sourcePlatform, sourceDeviceId, sourceId, sourceName, metadata);
 }

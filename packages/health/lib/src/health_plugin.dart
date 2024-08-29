@@ -265,6 +265,7 @@ class Health {
           (weights[i].value as NumericHealthValue).numericValue.toDouble() /
               (h * h);
       final x = HealthDataPoint(
+        uuid: '',
         value: NumericHealthValue(numericValue: bmiValue),
         type: dataType,
         unit: unit,
@@ -318,6 +319,10 @@ class Health {
     if (type == HealthDataType.WORKOUT) {
       throw ArgumentError(
           "Adding workouts should be done using the writeWorkoutData method.");
+    }
+    // If not implemented on platform, throw an exception
+    if (!isDataTypeAvailable(type)) {
+      throw HealthException(type, 'Not available on platform $platformType');
     }
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
@@ -1187,7 +1192,7 @@ class Health {
       HealthWorkoutActivityType.STAIR_CLIMBING,
       HealthWorkoutActivityType.STAIRS,
       HealthWorkoutActivityType.STEP_TRAINING,
-      HealthWorkoutActivityType.SURFING_SPORTS,
+      HealthWorkoutActivityType.SURFING,
       HealthWorkoutActivityType.SWIMMING,
       HealthWorkoutActivityType.TABLE_TENNIS,
       HealthWorkoutActivityType.TAI_CHI,
@@ -1203,6 +1208,8 @@ class Health {
       HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE,
       HealthWorkoutActivityType.WRESTLING,
       HealthWorkoutActivityType.YOGA,
+      HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
+      HealthWorkoutActivityType.SWIMMING_POOL,
     }.contains(type);
   }
 
@@ -1219,6 +1226,7 @@ class Health {
       HealthWorkoutActivityType.BASKETBALL,
       HealthWorkoutActivityType.BIKING,
       HealthWorkoutActivityType.BOXING,
+      HealthWorkoutActivityType.CARDIO_DANCE,
       HealthWorkoutActivityType.CRICKET,
       HealthWorkoutActivityType.CROSS_COUNTRY_SKIING,
       HealthWorkoutActivityType.CURLING,
@@ -1241,6 +1249,7 @@ class Health {
       HealthWorkoutActivityType.SKATING,
       HealthWorkoutActivityType.SNOWBOARDING,
       HealthWorkoutActivityType.SOCCER,
+      HealthWorkoutActivityType.SOCIAL_DANCE,
       HealthWorkoutActivityType.SOFTBALL,
       HealthWorkoutActivityType.SQUASH,
       HealthWorkoutActivityType.STAIR_CLIMBING,
@@ -1249,6 +1258,8 @@ class Health {
       HealthWorkoutActivityType.VOLLEYBALL,
       HealthWorkoutActivityType.WALKING,
       HealthWorkoutActivityType.WATER_POLO,
+      HealthWorkoutActivityType.WHEELCHAIR_RUN_PACE,
+      HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE,
       HealthWorkoutActivityType.YOGA,
 
       // Android only
