@@ -191,6 +191,7 @@ Below is a simplified flow of how to use the plugin.
 A [`HealthDataPoint`](https://pub.dev/documentation/health/latest/health/HealthDataPoint-class.html) object contains the following data fields:
 
 ```dart
+String uuid;
 HealthValue value;
 HealthDataType type;
 HealthDataUnit unit;
