@@ -2168,6 +2168,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val totalEnergyBurned = call.argument<Int>("totalEnergyBurned")
         val totalDistance = call.argument<Int>("totalDistance")
+        val recordingMethod = call.argument<Int>("recordingMethod")!!
         if (!workoutTypeMap.containsKey(type)) {
             result.success(false)
             Log.w(
