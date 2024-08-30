@@ -349,9 +349,7 @@ class Health {
         type == HealthDataType.SLEEP_IN_BED ||
         type == HealthDataType.SLEEP_DEEP ||
         type == HealthDataType.SLEEP_REM ||
-        type == HealthDataType.SLEEP_ASLEEP_CORE ||
-        type == HealthDataType.SLEEP_ASLEEP_DEEP ||
-        type == HealthDataType.SLEEP_ASLEEP_REM ||
+        type == HealthDataType.SLEEP_LIGHT ||
         type == HealthDataType.HEADACHE_NOT_PRESENT ||
         type == HealthDataType.HEADACHE_MILD ||
         type == HealthDataType.HEADACHE_MODERATE ||
@@ -1054,13 +1052,11 @@ class Health {
   /// Assigns numbers to specific [HealthDataType]s.
   int _alignValue(HealthDataType type) => switch (type) {
         HealthDataType.SLEEP_IN_BED => 0,
+        HealthDataType.SLEEP_ASLEEP => 1,
         HealthDataType.SLEEP_AWAKE => 2,
         HealthDataType.SLEEP_ASLEEP => 3,
         HealthDataType.SLEEP_DEEP => 4,
         HealthDataType.SLEEP_REM => 5,
-        HealthDataType.SLEEP_ASLEEP_CORE => 3,
-        HealthDataType.SLEEP_ASLEEP_DEEP => 4,
-        HealthDataType.SLEEP_ASLEEP_REM => 5,
         HealthDataType.HEADACHE_UNSPECIFIED => 0,
         HealthDataType.HEADACHE_NOT_PRESENT => 1,
         HealthDataType.HEADACHE_MILD => 2,

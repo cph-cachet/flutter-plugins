@@ -69,12 +69,14 @@ const val MEAL_UNKNOWN = "UNKNOWN"
 const val NUTRITION = "NUTRITION"
 const val SLEEP_ASLEEP = "SLEEP_ASLEEP"
 const val SLEEP_AWAKE = "SLEEP_AWAKE"
+const val SLEEP_AWAKE_IN_BED = "SLEEP_AWAKE_IN_BED"
 const val SLEEP_DEEP = "SLEEP_DEEP"
 const val SLEEP_IN_BED = "SLEEP_IN_BED"
 const val SLEEP_LIGHT = "SLEEP_LIGHT"
 const val SLEEP_OUT_OF_BED = "SLEEP_OUT_OF_BED"
 const val SLEEP_REM = "SLEEP_REM"
 const val SLEEP_SESSION = "SLEEP_SESSION"
+const val SLEEP_UNKNOWN = "SLEEP_UNKNOWN"
 const val SNACK = "SNACK"
 const val WORKOUT = "WORKOUT"
 
@@ -1995,6 +1997,61 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     )
 
+                SLEEP_AWAKE_IN_BED ->
+                    SleepSessionRecord(
+                        startTime =
+                        Instant.ofEpochMilli(
+                            startTime
+                        ),
+                        endTime =
+                        Instant.ofEpochMilli(
+                            endTime
+                        ),
+                        startZoneOffset = null,
+                        endZoneOffset = null,
+                        stages =
+                        listOf(
+                            SleepSessionRecord
+                                .Stage(
+                                    Instant.ofEpochMilli(
+                                        startTime
+                                    ),
+                                    Instant.ofEpochMilli(
+                                        endTime
+                                    ),
+                                    SleepSessionRecord
+                                        .STAGE_TYPE_AWAKE_IN_BED
+                                )
+                        ),
+                    )
+
+                SLEEP_UNKNOWN ->
+                    SleepSessionRecord(
+                        startTime =
+                        Instant.ofEpochMilli(
+                            startTime
+                        ),
+                        endTime =
+                        Instant.ofEpochMilli(
+                            endTime
+                        ),
+                        startZoneOffset = null,
+                        endZoneOffset = null,
+                        stages =
+                        listOf(
+                            SleepSessionRecord
+                                .Stage(
+                                    Instant.ofEpochMilli(
+                                        startTime
+                                    ),
+                                    Instant.ofEpochMilli(
+                                        endTime
+                                    ),
+                                    SleepSessionRecord
+                                        .STAGE_TYPE_UNKNOWN
+                                )
+                        ),
+                    )
                 SLEEP_SESSION ->
                     SleepSessionRecord(
                         startTime =
@@ -2304,12 +2361,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
     private val mapSleepStageToType =
         hashMapOf(
+            0 to SLEEP_UNKNOWN,
             1 to SLEEP_AWAKE,
             2 to SLEEP_ASLEEP,
             3 to SLEEP_OUT_OF_BED,
             4 to SLEEP_LIGHT,
             5 to SLEEP_DEEP,
             6 to SLEEP_REM,
+            7 to SLEEP_AWAKE_IN_BED
         )
 
     private val mapMealTypeToType =
@@ -2351,11 +2410,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             WATER to HydrationRecord::class,
             SLEEP_ASLEEP to SleepSessionRecord::class,
             SLEEP_AWAKE to SleepSessionRecord::class,
+            SLEEP_AWAKE_IN_BED to SleepSessionRecord::class,
             SLEEP_LIGHT to SleepSessionRecord::class,
             SLEEP_DEEP to SleepSessionRecord::class,
             SLEEP_REM to SleepSessionRecord::class,
             SLEEP_OUT_OF_BED to SleepSessionRecord::class,
             SLEEP_SESSION to SleepSessionRecord::class,
+            SLEEP_UNKNOWN to SleepSessionRecord::class,
             WORKOUT to ExerciseSessionRecord::class,
             NUTRITION to NutritionRecord::class,
             RESTING_HEART_RATE to RestingHeartRateRecord::class,
