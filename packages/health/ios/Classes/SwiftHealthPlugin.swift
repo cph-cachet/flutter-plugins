@@ -27,6 +27,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     
     // Health Data Type Keys
     let ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
+    let ATRIAL_FIBRILLATION_BURDEN = "ATRIAL_FIBRILLATION_BURDEN"
     let AUDIOGRAM = "AUDIOGRAM"
     let BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
     let BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
@@ -1607,6 +1608,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             workoutActivityTypeMap["PICKLEBALL"] = HKWorkoutActivityType.pickleball
             workoutActivityTypeMap["COOLDOWN"] = HKWorkoutActivityType.cooldown
         }
+
+        if #available(iOS 16.0, *) {
+            dataTypesDict[ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
+        } 
         
         // Concatenate heart events, headache and health data types (both may be empty)
         allDataTypes = Set(heartRateEventTypes + healthDataTypes)

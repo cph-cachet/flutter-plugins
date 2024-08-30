@@ -3,6 +3,7 @@ part of '../health.dart';
 /// List of all available health data types.
 enum HealthDataType {
   ACTIVE_ENERGY_BURNED,
+  ATRIAL_FIBRILLATION_BURDEN,
   AUDIOGRAM,
   BASAL_ENERGY_BURNED,
   BLOOD_GLUCOSE,
@@ -116,6 +117,7 @@ enum HealthDataAccess {
 /// List of data types available on iOS.
 const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.ATRIAL_FIBRILLATION_BURDEN,
   HealthDataType.AUDIOGRAM,
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
@@ -246,6 +248,7 @@ const List<HealthDataType> dataTypeKeysAndroid = [
 /// Maps a [HealthDataType] to a [HealthDataUnit].
 const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataUnit.KILOCALORIE,
+  HealthDataType.ATRIAL_FIBRILLATION_BURDEN: HealthDataUnit.PERCENT,
   HealthDataType.AUDIOGRAM: HealthDataUnit.DECIBEL_HEARING_LEVEL,
   HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.KILOCALORIE,
   HealthDataType.BLOOD_GLUCOSE: HealthDataUnit.MILLIGRAM_PER_DECILITER,

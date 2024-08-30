@@ -52,6 +52,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.LOW_HEART_RATE_EVENT,
   HealthDataType.RESTING_HEART_RATE,
   HealthDataType.WALKING_HEART_RATE,
+  HealthDataType.ATRIAL_FIBRILLATION_BURDEN,
 
   HealthDataType.NUTRITION,
   HealthDataType.GENDER,
