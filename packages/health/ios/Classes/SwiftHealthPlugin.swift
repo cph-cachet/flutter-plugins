@@ -3,10 +3,10 @@ import HealthKit
 import UIKit
 
 enum RecordingMethod: Int {
-    case unknown = 0           // RECORDING_METHOD_UNKNOWN
-    case active = 1   // RECORDING_METHOD_ACTIVELY_RECORDED
-    case automatic = 2  // RECORDING_METHOD_AUTOMATICALLY_RECORDED
-    case manual = 3        // RECORDING_METHOD_MANUAL_ENTRY
+    case unknown = 0           // RECORDING_METHOD_UNKNOWN (not supported on iOS)
+    case active = 1            // RECORDING_METHOD_ACTIVELY_RECORDED (not supported on iOS)
+    case automatic = 2         // RECORDING_METHOD_AUTOMATICALLY_RECORDED
+    case manual = 3            // RECORDING_METHOD_MANUAL_ENTRY
 }
 
 public class SwiftHealthPlugin: NSObject, FlutterPlugin {
