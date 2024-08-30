@@ -181,6 +181,11 @@ Below is a simplified flow of how to use the plugin.
   bool success = await Health().writeHealthData(10, HealthDataType.STEPS, now, now);
   success = await Health().writeHealthData(3.1, HealthDataType.BLOOD_GLUCOSE, now, now);
 
+  // you can also specify the recording method to store in the metadata (default is RecordingMethod.automatic)
+  // on iOS only `RecordingMethod.automatic` and `RecordingMethod.manual` are supported
+  // Android additionally supports `RecordingMethod.active` and `RecordingMethod.unknown`
+  success &= await Health().writeHealthData(10, HealthDataType.STEPS, now, now, recordingMethod: RecordingMethod.manual);
+
   // get the number of steps for today
   var midnight = DateTime(now.year, now.month, now.day);
   int? steps = await Health().getTotalStepsInInterval(midnight, now);
@@ -201,7 +206,7 @@ HealthPlatformType sourcePlatform;
 String sourceDeviceId;
 String sourceId;
 String sourceName;
-bool isManualEntry;
+RecordingMethod recordingMethod;
 WorkoutSummary? workoutSummary;
 ```
 
@@ -223,7 +228,7 @@ A `HealthDataPoint` object can be serialized to and from JSON using the `toJson(
   "source_device_id": "F74938B9-C011-4DE4-AA5E-CF41B60B96E7",
   "source_id": "com.apple.health.81AE7156-EC05-47E3-AC93-2D6F65C717DF",
   "source_name": "iPhone12.bardram.net",
-  "is_manual_entry": false
+  "recording_method": 3
   "value": {
     "__type": "NumericHealthValue",
     "numeric_value": 141.0
@@ -236,7 +241,7 @@ A `HealthDataPoint` object can be serialized to and from JSON using the `toJson(
   "source_device_id": "F74938B9-C011-4DE4-AA5E-CF41B60B96E7",
   "source_id": "com.apple.health.81AE7156-EC05-47E3-AC93-2D6F65C717DF",
   "source_name": "iPhone12.bardram.net",
-  "is_manual_entry": false
+  "recording_method": 2
 }
 ```
 
@@ -250,6 +255,28 @@ See the example app for a showcasing of how it's done.
 flutter: Health Plugin Error:
 flutter:  PlatformException(FlutterHealth, Results are null, Optional(Error Domain=com.apple.healthkit Code=6 "Protected health data is inaccessible" UserInfo={NSLocalizedDescription=Protected health data is inaccessible}))
 ```
+
+### Filtering by recording method
+Google Health Connect and Apple HealthKit both provide ways to distinguish samples collected "automatically" and manually entered data by the user. 
+
+- Android provides an enum with 4 variations: https://developer.android.com/reference/kotlin/androidx/health/connect/client/records/metadata/Metadata#summary
+- iOS has a boolean value: https://developer.apple.com/documentation/healthkit/hkmetadatakeywasuserentered
+
+As such, when fetching data you have the option to filter the fetched data by recording method as such:
+
+```dart
+List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
+  types: types,
+  startTime: yesterday,
+  endTime: now,
+  recordingMethodsToFilter: [RecordingMethod.manual, RecordingMethod.unknown],
+);
+```
+
+**Note that for this to work, the information needs to have been provided when writing the data to Health Connect or Apple Health**. For example, steps added manually through the Apple Health App will set `HKWasUserEntered` to true (corresponding to `RecordingMethod.manual`), however it seems that adding steps manually to Google Fit does not write the data with the `RecordingMethod.manual` in the metadata, instead it shows up as `RecordingMethod.unknown`. This is an open issue, and as such filtering manual entries when querying step count on Android with `getTotalStepsInInterval(includeManualEntries: false)` does not necessarily filter out manual steps.
+
+**NOTE**: On iOS, you can only filter by `RecordingMethod.automatic` and `RecordingMethod`.manual` as it is stored `HKMetadataKeyWasUserEntered` is a boolean value in the metadata. 
+
 
 ### Filtering out duplicates
 

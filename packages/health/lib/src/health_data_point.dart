@@ -44,8 +44,10 @@ class HealthDataPoint {
   /// The name of the source from which the data point was fetched.
   String sourceName;
 
-  /// The user entered state of the data point.
-  bool isManualEntry;
+  /// How the data point was recorded
+  /// (on Android: https://developer.android.com/reference/kotlin/androidx/health/connect/client/records/metadata/Metadata#summary)
+  /// on iOS: either user entered or manual https://developer.apple.com/documentation/healthkit/hkmetadatakeywasuserentered)
+  RecordingMethod recordingMethod;
 
   /// The summary of the workout data point, if available.
   WorkoutSummary? workoutSummary;
@@ -64,7 +66,7 @@ class HealthDataPoint {
     required this.sourceDeviceId,
     required this.sourceId,
     required this.sourceName,
-    this.isManualEntry = false,
+    this.recordingMethod = RecordingMethod.unknown,
     this.workoutSummary,
     this.metadata,
   }) {
@@ -128,7 +130,6 @@ class HealthDataPoint {
         DateTime.fromMillisecondsSinceEpoch(dataPoint['date_to'] as int);
     final String sourceId = dataPoint["source_id"] as String;
     final String sourceName = dataPoint["source_name"] as String;
-    final bool isManualEntry = dataPoint["is_manual_entry"] as bool? ?? false;
     final Map<String, dynamic>? metadata = dataPoint["metadata"] == null
         ? null
         : Map<String, dynamic>.from(dataPoint['metadata'] as Map);
@@ -144,6 +145,8 @@ class HealthDataPoint {
       workoutSummary = WorkoutSummary.fromHealthDataPoint(dataPoint);
     }
 
+    var recordingMethod = dataPoint["recording_method"] as int?;
+
     return HealthDataPoint(
       uuid: uuid ?? "",
       value: value,
@@ -155,7 +158,7 @@ class HealthDataPoint {
       sourceDeviceId: Health().deviceId,
       sourceId: sourceId,
       sourceName: sourceName,
-      isManualEntry: isManualEntry,
+      recordingMethod: RecordingMethod.fromInt(recordingMethod),
       workoutSummary: workoutSummary,
       metadata: metadata,
     );
@@ -173,7 +176,7 @@ class HealthDataPoint {
     deviceId: $sourceDeviceId,
     sourceId: $sourceId,
     sourceName: $sourceName
-    isManualEntry: $isManualEntry
+    recordingMethod: $recordingMethod
     workoutSummary: $workoutSummary
     metadata: $metadata""";
 
@@ -190,7 +193,7 @@ class HealthDataPoint {
       sourceDeviceId == other.sourceDeviceId &&
       sourceId == other.sourceId &&
       sourceName == other.sourceName &&
-      isManualEntry == other.isManualEntry &&
+      recordingMethod == other.recordingMethod &&
       metadata == other.metadata;
 
   @override

@@ -19,7 +19,9 @@ HealthDataPoint _$HealthDataPointFromJson(Map<String, dynamic> json) =>
       sourceDeviceId: json['source_device_id'] as String,
       sourceId: json['source_id'] as String,
       sourceName: json['source_name'] as String,
-      isManualEntry: json['is_manual_entry'] as bool? ?? false,
+      recordingMethod: $enumDecodeNullable(
+              _$RecordingMethodEnumMap, json['recording_method']) ??
+          RecordingMethod.unknown,
       workoutSummary: json['workout_summary'] == null
           ? null
           : WorkoutSummary.fromJson(
@@ -39,7 +41,7 @@ Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) {
     'source_device_id': instance.sourceDeviceId,
     'source_id': instance.sourceId,
     'source_name': instance.sourceName,
-    'is_manual_entry': instance.isManualEntry,
+    'recording_method': _$RecordingMethodEnumMap[instance.recordingMethod]!,
   };
 
   void writeNotNull(String key, dynamic value) {
@@ -209,6 +211,13 @@ const _$HealthDataUnitEnumMap = {
 const _$HealthPlatformTypeEnumMap = {
   HealthPlatformType.appleHealth: 'appleHealth',
   HealthPlatformType.googleHealthConnect: 'googleHealthConnect',
+};
+
+const _$RecordingMethodEnumMap = {
+  RecordingMethod.unknown: 'unknown',
+  RecordingMethod.active: 'active',
+  RecordingMethod.automatic: 'automatic',
+  RecordingMethod.manual: 'manual',
 };
 
 HealthValue _$HealthValueFromJson(Map<String, dynamic> json) =>
