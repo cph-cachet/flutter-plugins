@@ -90,51 +90,59 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        // Set up all data types
-        initializeTypes()
-
-        /// Handle checkIfHealthDataAvailable
-        if (call.method.elementsEqual("checkIfHealthDataAvailable")){
-            checkIfHealthDataAvailable(call: call, result: result)
-        }
-        /// Handle requestAuthorization
-        else if (call.method.elementsEqual("requestAuthorization")){
-            try! requestAuthorization(call: call, result: result)
-        }
-
-        /// Handle getData
-        else if (call.method.elementsEqual("getData")){
-            getData(call: call, result: result)
-        }
-        
-        /// Handle deleteData
-        else if (call.method.elementsEqual("deleteData")){
-            try! deleteData(call: call, result: result)
-        }
-        
-        /// Handle deleteFoodData
-        else if (call.method.elementsEqual("deleteFoodData")){
-            try! deleteFoodData(call: call, result: result)
-        }
-        
-        /// Handle writeFoodData
-        else if (call.method.elementsEqual("writeFoodData")){
-            try! writeFoodData(call: call, result: result)
-        }
-
-        /// Handle getTotalStepsInInterval
-        else if (call.method.elementsEqual("getTotalStepsInInterval")){
-            getTotalStepsInInterval(call: call, result: result)
-        }
-
-        /// Handle writeData
-        else if (call.method.elementsEqual("writeData")){
-            try! writeData(call: call, result: result)
-        }
-        /// Handle hasPermission
-        else if (call.method.elementsEqual("hasPermissions")){
-            try! hasPermissions(call: call, result: result)
-        }
+            // Set up all data types
+            self.initializeTypes()
+            
+            /// Handle checkIfHealthDataAvailable
+            if (call.method.elementsEqual("checkIfHealthDataAvailable")){
+                self.checkIfHealthDataAvailable(call: call, result: result)
+            }
+            /// Handle requestAuthorization
+            else if (call.method.elementsEqual("requestAuthorization")){
+                try! self.requestAuthorization(call: call, result: result)
+            }
+            
+            /// Handle getData
+            else if (call.method.elementsEqual("getData")){
+                self.getData(call: call, result: result)
+            }
+            
+            /// Handle deleteData
+            else if (call.method.elementsEqual("deleteData")){
+                DispatchQueue.global(qos: .userInitiated).async{
+                    try! self.deleteData(call: call, result: result)
+                }
+            }
+            
+            /// Handle deleteFoodData
+            else if (call.method.elementsEqual("deleteFoodData")){
+                DispatchQueue.global(qos: .userInitiated).async{
+                    try! self.deleteFoodData(call: call, result: result)
+                }
+            }
+            
+            /// Handle writeFoodData
+            else if (call.method.elementsEqual("writeFoodData")){
+                DispatchQueue.global(qos: .userInitiated).async{
+                    try! self.writeFoodData(call: call, result: result)
+                }
+            }
+            
+            /// Handle getTotalStepsInInterval
+            else if (call.method.elementsEqual("getTotalStepsInInterval")){
+                self.getTotalStepsInInterval(call: call, result: result)
+            }
+            
+            /// Handle writeData
+            else if (call.method.elementsEqual("writeData")){
+                DispatchQueue.global(qos: .userInitiated).async{
+                    try! self.writeData(call: call, result: result)
+                }
+            }
+            /// Handle hasPermission
+            else if (call.method.elementsEqual("hasPermissions")){
+                try! self.hasPermissions(call: call, result: result)
+            }
     }
 
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
