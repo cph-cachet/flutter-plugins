@@ -272,6 +272,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("writeMeal")){
             try! writeMeal(call: call, result: result)
         }
+
+        /// Handle writeUVExposure
+        else if (call.method.elementsEqual("writeUVExposure")){
+            try! writeUVExposure(call: call, result: result)
+        }
         
         /// Handle writeInsulinDelivery
         else if (call.method.elementsEqual("writeInsulinDelivery")){
@@ -553,6 +558,39 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     result(success)
                 }
             })
+    }
+
+    func writeUVExposure(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+              let value = (arguments["value"] as? Double),
+              let startTime = (arguments["startTime"] as? NSNumber),
+              let endTime = (arguments["endTime"] as? NSNumber),
+              let recordingMethod = (arguments["recordingMethod"] as? Int)
+        else {
+            throw PluginError(message: "Invalid Arguments")
+        }
+
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let isManualEntry = recordingMethod == RecordingMethod.manual.rawValue
+        let metadata: [String: Any] = [
+            HKMetadataKeyWasUserEntered: NSNumber(value: isManualEntry)
+        ]
+
+        let quantity = HKQuantity(unit: HKUnit.count(), doubleValue: value)
+        let sample = HKQuantitySample(
+            type: HKQuantityType.quantityType(forIdentifier: .uvExposure)!,
+            quantity: quantity, start: dateFrom, end: dateTo, metadata: metadata)
+
+        HKHealthStore().save(sample, withCompletion: { (success, error) in
+            if let err = error {
+                print("Error Saving UV Exposure Sample: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
+        })
     }
     
     func writeMeal(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
@@ -1298,6 +1336,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[MILLIGRAM_PER_DECILITER] = HKUnit.init(from: "mg/dL")
         unitDict[UNKNOWN_UNIT] = HKUnit.init(from: "")
         unitDict[NO_UNIT] = HKUnit.init(from: "")
+        unitDict[UV_INDEX] = HKUnit.count()
         
         // Initialize workout types
         workoutActivityTypeMap["ARCHERY"] = .archery
@@ -1509,6 +1548,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataQuantityTypesDict[BODY_FAT_PERCENTAGE] = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
             dataQuantityTypesDict[BODY_MASS_INDEX] = HKQuantityType.quantityType(forIdentifier: .bodyMassIndex)!
             dataQuantityTypesDict[BODY_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!
+            dataQuantityTypesDict[UV_INDEX] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
             
             // Nutrition
             dataQuantityTypesDict[DIETARY_CARBS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!

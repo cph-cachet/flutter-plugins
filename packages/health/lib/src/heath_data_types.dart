@@ -90,6 +90,7 @@ enum HealthDataType {
   HEADACHE_SEVERE,
   HEADACHE_UNSPECIFIED,
   NUTRITION,
+  UV_EXPOSURE,
   // HealthKit Characteristics
   GENDER,
   BIRTH_DATE,
@@ -206,6 +207,7 @@ const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.BIRTH_DATE,
   HealthDataType.BLOOD_TYPE,
   HealthDataType.MENSTRUATION_FLOW,
+  HealthDataType.UV_EXPOSURE,
 ];
 
 /// List of data types available on Android
@@ -352,6 +354,7 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
 
   HealthDataType.NUTRITION: HealthDataUnit.NO_UNIT,
   HealthDataType.MENSTRUATION_FLOW: HealthDataUnit.NO_UNIT,
+  HealthDataType.UV_EXPOSURE: HealthDataUnit.COUNT,
 
   // Health Connect
   HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,
