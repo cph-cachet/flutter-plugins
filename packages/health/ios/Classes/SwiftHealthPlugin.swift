@@ -161,7 +161,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let GENDER = "GENDER"
     let BLOOD_TYPE = "BLOOD_TYPE"
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
-    
+    let UV_INDEX = "UV_INDEX"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
