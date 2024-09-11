@@ -413,21 +413,24 @@ class Health {
   ///    Simply set [endTime] equal to [startTime] if the UV Record is measured
   ///    only at a specific point in time. If omitted, [endTime] is set to [startTime].
   ///  * [recordingMethod] - the recording method of the data point.
-  Future<bool> writeUVExposureData({double uvIndex, DateTime startTime, DateTime endTime, RecordingMethod recordingMethod = RecordingMethod.automatic}) async {
-  if (Platform.isAndroid) {
-  throw UnsupportedError(
-  "writeUVExposureData is not supported on Android");
-  }
+  Future<bool> writeUVExposureData(
+      {required double uvIndex,
+      required DateTime startTime,
+      required DateTime endTime,
+      RecordingMethod recordingMethod = RecordingMethod.automatic}) async {
+    if (Platform.isAndroid) {
+      throw UnsupportedError("writeUVExposureData is not supported on Android");
+    }
 
-  Map<String, dynamic> args = {
-  'value': uvIndex,
-  'recordingMethod': recordingMethod.toInt(),
-  'startTime': startTime.millisecondsSinceEpoch,
-  'endTime': endTime.millisecondsSinceEpoch
-  };
+    Map<String, dynamic> args = {
+      'value': uvIndex,
+      'recordingMethod': recordingMethod.toInt(),
+      'startTime': startTime.millisecondsSinceEpoch,
+      'endTime': endTime.millisecondsSinceEpoch
+    };
 
-  bool? success = await _channel.invokeMethod('writeUVExposure', args);
-  return success ?? false;
+    bool? success = await _channel.invokeMethod('writeUVExposure', args);
+    return success ?? false;
   }
 
   /// Saves a blood pressure record.
