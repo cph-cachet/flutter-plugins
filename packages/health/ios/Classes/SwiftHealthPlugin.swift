@@ -161,7 +161,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let GENDER = "GENDER"
     let BLOOD_TYPE = "BLOOD_TYPE"
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
-    let UV_INDEX = "UV_INDEX"
+    let UV_EXPOSURE = "UV_EXPOSURE"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -372,11 +372,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else {
             throw PluginError(message: "Invalid Arguments!")
         }
-        
+                print("Eze log :\(types).\(permissions)")
+
         var typesToRead = Set<HKObjectType>()
         var typesToWrite = Set<HKSampleType>()
         for (index, key) in types.enumerated() {
             if (key == NUTRITION) {
+
                 for nutritionType in nutritionList {
                     let nutritionData = dataTypeLookUp(key: nutritionType)
                     typesToWrite.insert(nutritionData)
@@ -384,6 +386,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             } else {
                 let dataType = dataTypeLookUp(key: key)
                 let access = permissions[index]
+                print("Eze log : we're not in nutrition \(dataTypeLookUp(key: key)).\(access)")
                 switch access {
                 case 0:
                     typesToRead.insert(dataType)
@@ -1336,7 +1339,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[MILLIGRAM_PER_DECILITER] = HKUnit.init(from: "mg/dL")
         unitDict[UNKNOWN_UNIT] = HKUnit.init(from: "")
         unitDict[NO_UNIT] = HKUnit.init(from: "")
-        unitDict[UV_INDEX] = HKUnit.count()
+        unitDict[UV_EXPOSURE] = HKUnit.count()
         
         // Initialize workout types
         workoutActivityTypeMap["ARCHERY"] = .archery
@@ -1522,7 +1525,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[SLEEP_REM] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[SLEEP_ASLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[MENSTRUATION_FLOW] = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
-            
+
+            dataTypesDict[UV_EXPOSURE] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
             
             dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
             dataTypesDict[WORKOUT] = HKSampleType.workoutType()
@@ -1548,7 +1552,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataQuantityTypesDict[BODY_FAT_PERCENTAGE] = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
             dataQuantityTypesDict[BODY_MASS_INDEX] = HKQuantityType.quantityType(forIdentifier: .bodyMassIndex)!
             dataQuantityTypesDict[BODY_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!
-            dataQuantityTypesDict[UV_INDEX] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
+            dataQuantityTypesDict[UV_EXPOSURE] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
             
             // Nutrition
             dataQuantityTypesDict[DIETARY_CARBS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!
