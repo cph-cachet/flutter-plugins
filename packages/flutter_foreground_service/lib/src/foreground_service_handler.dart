@@ -231,7 +231,7 @@ class ForegroundServiceNotification {
   ///(see android plugin implementation for details)
   Future<void> setPriority(AndroidNotificationPriority newPriority) async {
     await _invokeMainChannel(
-        "setNotificationPriority", <dynamic>[describeEnum(newPriority)]);
+        "setNotificationPriority", <dynamic>[newPriority.name]);
   }
 
   ///(*see README for warning about notification-related "gets")
