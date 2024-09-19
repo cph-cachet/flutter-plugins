@@ -50,22 +50,21 @@ class Health {
 
   /// Configure the health plugin. Must be called before using the plugin.
   Future<void> configure() async {
-    if (Platform.isAndroid) {
-      await _checkIfHealthConnectAvailable();
-    }
-
+    await _checkIfHealthConnectAvailableOnAndroid();
     _deviceId = Platform.isAndroid
         ? (await _deviceInfo.androidInfo).id
         : (await _deviceInfo.iosInfo).identifierForVendor;
   }
 
-  Future<void> _checkIfHealthConnectAvailable() async {
+  Future<void> _checkIfHealthConnectAvailableOnAndroid() async {
     if (!Platform.isAndroid) return;
 
     _healthConnectSdkStatus = await getHealthConnectSdkStatus() ??
         HealthConnectSdkStatus.sdkUnavailable;
 
-    if (_healthConnectSdkStatus == HealthConnectSdkStatus.sdkUnavailable  || _healthConnectSdkStatus == HealthConnectSdkStatus.sdkUnavailableProviderUpdateRequired) {
+    if (_healthConnectSdkStatus == HealthConnectSdkStatus.sdkUnavailable ||
+        _healthConnectSdkStatus ==
+            HealthConnectSdkStatus.sdkUnavailableProviderUpdateRequired) {
       throw UnsupportedError(
           'Health Connect is not available on this device, prompt the user to install it using installHealthConnect.');
     }
@@ -104,7 +103,7 @@ class Health {
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (permissions != null && permissions.length != types.length) {
       throw ArgumentError(
           "The lists of types and permissions must be of same length.");
@@ -130,7 +129,7 @@ class Health {
   /// NOTE: The app must be completely killed and restarted for the changes to take effect.
   /// Not implemented on iOS as there is no way to programmatically remove access.
   Future<void> revokePermissions() async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     try {
       if (Platform.isIOS) {
         throw UnsupportedError(
@@ -203,7 +202,7 @@ class Health {
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (permissions != null && permissions.length != types.length) {
       throw ArgumentError(
           'The length of [types] must be same as that of [permissions].');
@@ -332,7 +331,7 @@ class Health {
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -408,7 +407,7 @@ class Health {
     required DateTime startTime,
     DateTime? endTime,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
@@ -444,7 +443,7 @@ class Health {
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -485,7 +484,7 @@ class Health {
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -619,7 +618,7 @@ class Health {
     double? zinc,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -700,7 +699,7 @@ class Health {
     required bool isStartOfCycle,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -831,7 +830,7 @@ class Health {
     required DateTime endTime,
     List<RecordingMethod> recordingMethodsToFilter = const [],
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
@@ -857,7 +856,7 @@ class Health {
       required List<HealthDataType> types,
       required int interval,
       List<RecordingMethod> recordingMethodsToFilter = const []}) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
@@ -877,7 +876,7 @@ class Health {
     int activitySegmentDuration = 1,
     bool includeManualEntry = true,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     List<HealthDataPoint> dataPoints = [];
 
     final result = await _prepareAggregateQuery(
@@ -1125,7 +1124,7 @@ class Health {
     String? title,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
-    await _checkIfHealthConnectAvailable();
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
