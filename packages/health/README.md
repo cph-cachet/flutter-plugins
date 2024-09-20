@@ -1,6 +1,6 @@
 # Health
 
-Enables reading and writing health data from/to Apple Health and Health Connect.
+Enables reading and writing health data from/to [Apple Health](https://www.apple.com/health/) and [Google Health Connect](https://health.google/health-connect-android/).
 
 > **NOTE:** Google has deprecated the Google Fit API. According to the [documentation](https://developers.google.com/fit/android), as of **May 1st 2024** developers cannot sign up for using the API. As such, this package has removed support for Google Fit as of version 11.0.0 and users are urged to upgrade as soon as possible.
 
@@ -17,7 +17,7 @@ The plugin supports:
 - cleaning up duplicate data points via the `removeDuplicates` method.
 - removing data of a given type in a selected period of time using the `delete` method.
 
-Note that for Android, the target phone **needs** to have [Health Connect](https://health.google/health-connect-android/) (which is currently in beta) installed and have access to the internet, otherwise this plugin will not work.
+Note that for Android, the target phone **needs** to have the [Health Connect](https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata&hl=en) app installed (which is currently in beta) and have access to the internet.
 
 See the tables below for supported health and workout data types.
 
@@ -260,8 +260,8 @@ flutter:  PlatformException(FlutterHealth, Results are null, Optional(Error Doma
 
 Google Health Connect and Apple HealthKit both provide ways to distinguish samples collected "automatically" and manually entered data by the user.
 
-- Android provides an enum with 4 variations: https://developer.android.com/reference/kotlin/androidx/health/connect/client/records/metadata/Metadata#summary
-- iOS has a boolean value: https://developer.apple.com/documentation/healthkit/hkmetadatakeywasuserentered
+- Android provides an enum with 4 variations: <https://developer.android.com/reference/kotlin/androidx/health/connect/client/records/metadata/Metadata#summary>
+- iOS has a boolean value: <https://developer.apple.com/documentation/healthkit/hkmetadatakeywasuserentered>
 
 As such, when fetching data you have the option to filter the fetched data by recording method as such:
 
