@@ -91,6 +91,7 @@ enum HealthDataType {
   HEADACHE_UNSPECIFIED,
   NUTRITION,
   UV_EXPOSURE,
+  UV_EXPOSURE_BATCH,
   // HealthKit Characteristics
   GENDER,
   BIRTH_DATE,
@@ -208,6 +209,7 @@ const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.BLOOD_TYPE,
   HealthDataType.MENSTRUATION_FLOW,
   HealthDataType.UV_EXPOSURE,
+  HealthDataType.UV_EXPOSURE_BATCH,
 ];
 
 /// List of data types available on Android

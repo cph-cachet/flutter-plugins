@@ -277,6 +277,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("writeUVExposure")){
             try! writeUVExposure(call: call, result: result)
         }
+
+         /// Handle writeBatchUVExposure
+        else if (call.method.elementsEqual("writeBatchUVExposure")){
+            try! writeBatchUVExposure(call: call, result: result)
+        }
         
         /// Handle writeInsulinDelivery
         else if (call.method.elementsEqual("writeInsulinDelivery")){
@@ -563,6 +568,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             })
     }
 
+
     func writeUVExposure(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
         guard let arguments = call.arguments as? NSDictionary,
               let value = (arguments["value"] as? Double),
@@ -594,6 +600,55 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 result(success)
             }
         })
+    }
+
+    func writeBatchUVExposure(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+              let samplesData = arguments["samples"] as? [[String: Any]] else {
+            throw PluginError(message: "Invalid Arguments")
+        }
+
+        var samplesToSave: [HKQuantitySample] = []
+
+        for sampleData in samplesData {
+            guard let value = sampleData["value"] as? Double,
+                  let startTime = sampleData["startTime"] as? NSNumber,
+                  let endTime = sampleData["endTime"] as? NSNumber,
+                  let recordingMethod = sampleData["recordingMethod"] as? Int else {
+                throw PluginError(message: "Invalid Sample Data")
+            }
+
+            let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+            let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+            let isManualEntry = recordingMethod == RecordingMethod.manual.rawValue
+
+            let metadata: [String: Any] = [
+                HKMetadataKeyWasUserEntered: NSNumber(value: isManualEntry)
+            ]
+
+            let quantity = HKQuantity(unit: HKUnit.count(), doubleValue: value)
+            if let uvExposureType = HKQuantityType.quantityType(forIdentifier: .uvExposure) {
+                let sample = HKQuantitySample(
+                    type: uvExposureType,
+                    quantity: quantity,
+                    start: dateFrom,
+                    end: dateTo,
+                    metadata: metadata)
+                samplesToSave.append(sample)
+            } else {
+                throw PluginError(message: "UV Exposure Type Not Available")
+            }
+        }
+
+        // Save all samples in one operation
+        HKHealthStore().save(samplesToSave) { (success, error) in
+            if let err = error {
+                print("Error Saving UV Exposure Samples: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
+        }
     }
     
     func writeMeal(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
