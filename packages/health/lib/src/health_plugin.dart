@@ -1,8 +1,8 @@
 part of '../health.dart';
 
-/// Main class for the Plugin. This class works as a singleton and should be accessed
-/// via `Health()` factory method. The plugin must be configured using the [configure] method
-/// before used.
+/// Main class for the Plugin. This class works as a singleton and should be
+/// accessed via `Health()` factory method. The plugin must be configured using
+/// the [configure] method before used.
 ///
 /// Overall, the plugin supports:
 ///
@@ -21,19 +21,35 @@ part of '../health.dart';
 ///  * Writing different types of specialized health data like the [writeWorkoutData],
 ///    [writeBloodPressure], [writeBloodOxygen], [writeAudiogram], [writeMeal],
 ///    [writeMenstruationFlow], [writeInsulinDelivery] methods.
+///
+/// On **Android**, this plugin relies on the Google Health Connect (GHC) SDK.
+/// Since Health Connect is not installed on SDK level < 34, the plugin has a
+/// set of specialized methods to handle GHC:
+///
+///  * [getHealthConnectSdkStatus] to check the status of GHC
+///  * [isHealthConnectAvailable] to check if GHC is installed on this phone
+///  * [installHealthConnect] to direct the user to the app store to install GHC
+///
+/// **Note** that you should check the availability of GHC before using any setter
+/// or getter methods. Otherwise, the plugin will throw an exception.
 class Health {
   static const MethodChannel _channel = MethodChannel('flutter_health');
   static final _instance = Health._();
 
   String? _deviceId;
   final _deviceInfo = DeviceInfoPlugin();
+  HealthConnectSdkStatus _healthConnectSdkStatus =
+      HealthConnectSdkStatus.sdkUnavailable;
 
   Health._() {
     _registerFromJsonFunctions();
   }
 
-  /// Get the singleton [Health] instance.
+  /// The singleton [Health] instance.
   factory Health() => _instance;
+
+  /// The latest status on availability of Health Connect SDK on this phone.
+  HealthConnectSdkStatus get healthConnectSdkStatus => _healthConnectSdkStatus;
 
   /// The type of platform of this device.
   HealthPlatformType get platformType => Platform.isIOS
@@ -86,6 +102,7 @@ class Health {
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (permissions != null && permissions.length != types.length) {
       throw ArgumentError(
           "The lists of types and permissions must be of same length.");
@@ -110,52 +127,74 @@ class Health {
   ///
   /// NOTE: The app must be completely killed and restarted for the changes to take effect.
   /// Not implemented on iOS as there is no way to programmatically remove access.
+  ///
+  /// Android only. On iOS this does nothing.
   Future<void> revokePermissions() async {
+    if (Platform.isIOS) return;
+
+    await _checkIfHealthConnectAvailableOnAndroid();
     try {
-      if (Platform.isIOS) {
-        throw UnsupportedError(
-            'Revoke permissions is not supported on iOS. Please revoke permissions manually in the settings.');
-      }
       await _channel.invokeMethod('revokePermissions');
-      return;
     } catch (e) {
       debugPrint('$runtimeType - Exception in revokePermissions(): $e');
     }
   }
 
-  /// Returns the current status of Health Connect availability.
+  /// Checks the current status of Health Connect availability.
   ///
   /// See this for more info:
   /// https://developer.android.com/reference/kotlin/androidx/health/connect/client/HealthConnectClient#getSdkStatus(android.content.Context,kotlin.String)
   ///
-  /// Android only.
+  /// Android only. Returns null on iOS or if an error occurs.
   Future<HealthConnectSdkStatus?> getHealthConnectSdkStatus() async {
+    if (Platform.isIOS) return null;
+
     try {
-      if (Platform.isIOS) {
-        throw UnsupportedError('Health Connect is not available on iOS.');
-      }
-      final int status =
-          (await _channel.invokeMethod('getHealthConnectSdkStatus'))!;
-      return HealthConnectSdkStatus.fromNativeValue(status);
+      final status =
+          await _channel.invokeMethod<int>('getHealthConnectSdkStatus');
+      _healthConnectSdkStatus = status != null
+          ? HealthConnectSdkStatus.fromNativeValue(status)
+          : HealthConnectSdkStatus.sdkUnavailable;
+
+      return _healthConnectSdkStatus;
     } catch (e) {
       debugPrint('$runtimeType - Exception in getHealthConnectSdkStatus(): $e');
       return null;
     }
   }
 
-  /// Prompt the user to install the Health Connect app via the installed store
-  /// (most likely Play Store).
+  /// Is Google Health Connect available on this phone?
   ///
-  /// Android only.
+  /// Android only. Returns always true on iOS.
+  Future<bool> isHealthConnectAvailable() async => !Platform.isAndroid
+      ? true
+      : (await getHealthConnectSdkStatus() ==
+          HealthConnectSdkStatus.sdkAvailable);
+
+  /// Prompt the user to install the Google Health Connect app via the
+  /// installed store (most likely Play Store).
+  ///
+  /// Android only. On iOS this does nothing.
   Future<void> installHealthConnect() async {
+    if (Platform.isIOS) return;
+
     try {
-      if (!Platform.isAndroid) {
-        throw UnsupportedError(
-            'installHealthConnect is only available on Android');
-      }
       await _channel.invokeMethod('installHealthConnect');
     } catch (e) {
       debugPrint('$runtimeType - Exception in installHealthConnect(): $e');
+    }
+  }
+
+  /// Checks if Google Health Connect is available and throws an [UnsupportedError]
+  /// if not.
+  /// Internal methods used to check availability before any getter or setter methods.
+  Future<void> _checkIfHealthConnectAvailableOnAndroid() async {
+    if (!Platform.isAndroid) return;
+
+    if (!(await isHealthConnectAvailable())) {
+      throw UnsupportedError(
+          "Google Health Connect is not available on this Android device. "
+          "You may prompt the user to install it using the 'installHealthConnect' method");
     }
   }
 
@@ -183,6 +222,7 @@ class Health {
     List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (permissions != null && permissions.length != types.length) {
       throw ArgumentError(
           'The length of [types] must be same as that of [permissions].');
@@ -311,6 +351,7 @@ class Health {
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -386,6 +427,7 @@ class Health {
     required DateTime startTime,
     DateTime? endTime,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
@@ -421,6 +463,7 @@ class Health {
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -461,6 +504,7 @@ class Health {
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -594,6 +638,7 @@ class Health {
     double? zinc,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -674,6 +719,7 @@ class Health {
     required bool isStartOfCycle,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {
@@ -804,6 +850,7 @@ class Health {
     required DateTime endTime,
     List<RecordingMethod> recordingMethodsToFilter = const [],
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
@@ -829,6 +876,7 @@ class Health {
       required List<HealthDataType> types,
       required int interval,
       List<RecordingMethod> recordingMethodsToFilter = const []}) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
@@ -848,6 +896,7 @@ class Health {
     int activitySegmentDuration = 1,
     bool includeManualEntry = true,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     List<HealthDataPoint> dataPoints = [];
 
     final result = await _prepareAggregateQuery(
@@ -1095,6 +1144,7 @@ class Health {
     String? title,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
     if (Platform.isIOS &&
         [RecordingMethod.active, RecordingMethod.unknown]
             .contains(recordingMethod)) {

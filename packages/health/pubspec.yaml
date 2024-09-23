@@ -1,6 +1,6 @@
 name: health
 description: Wrapper for Apple's HealthKit on iOS and Google's Health Connect on Android.
-version: 11.0.0
+version: 11.1.0
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/health
 
 environment:
@@ -13,7 +13,7 @@ dependencies:
   intl: '>=0.18.0 <0.20.0'
   device_info_plus: '>=9.0.0 <11.0.0'
   json_annotation: ^4.8.0
-  carp_serializable: ^1.1.0 # polymorphic json serialization
+  carp_serializable: ^2.0.0 # polymorphic json serialization
 
 dev_dependencies:
   flutter_test:
