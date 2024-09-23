@@ -1,14 +1,14 @@
 part of '../health.dart';
 
 /// An abstract class for health values.
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class HealthValue extends Serializable {
   HealthValue();
 
   @override
   Function get fromJsonFunction => _$HealthValueFromJson;
   factory HealthValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as HealthValue;
+      FromJsonFactory().fromJson<HealthValue>(json);
   @override
   Map<String, dynamic> toJson() => _$HealthValueToJson(this);
 }
@@ -18,7 +18,7 @@ class HealthValue extends Serializable {
 ///
 /// Parameters:
 /// * [numericValue] - a [num] value for the [HealthDataPoint]
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class NumericHealthValue extends HealthValue {
   /// A [num] value for the [HealthDataPoint].
   num numericValue;
@@ -35,7 +35,7 @@ class NumericHealthValue extends HealthValue {
   @override
   Function get fromJsonFunction => _$NumericHealthValueFromJson;
   factory NumericHealthValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as NumericHealthValue;
+      FromJsonFactory().fromJson<NumericHealthValue>(json);
   @override
   Map<String, dynamic> toJson() => _$NumericHealthValueToJson(this);
 
@@ -53,7 +53,7 @@ class NumericHealthValue extends HealthValue {
 /// * [frequencies] - array of frequencies of the test
 /// * [leftEarSensitivities] threshold in decibel for the left ear
 /// * [rightEarSensitivities] threshold in decibel for the left ear
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class AudiogramHealthValue extends HealthValue {
   /// Array of frequencies of the test.
   List<num> frequencies;
@@ -87,7 +87,7 @@ class AudiogramHealthValue extends HealthValue {
   @override
   Function get fromJsonFunction => _$AudiogramHealthValueFromJson;
   factory AudiogramHealthValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as AudiogramHealthValue;
+      FromJsonFactory().fromJson<AudiogramHealthValue>(json);
   @override
   Map<String, dynamic> toJson() => _$AudiogramHealthValueToJson(this);
 
@@ -111,7 +111,7 @@ class AudiogramHealthValue extends HealthValue {
 /// * [totalEnergyBurnedUnit] - the unit of the total energy burned
 /// * [totalDistance] - the total distance of the workout
 /// * [totalDistanceUnit] - the unit of the total distance
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class WorkoutHealthValue extends HealthValue {
   /// The type of the workout.
   HealthWorkoutActivityType workoutActivityType;
@@ -181,7 +181,7 @@ class WorkoutHealthValue extends HealthValue {
   @override
   Function get fromJsonFunction => _$WorkoutHealthValueFromJson;
   factory WorkoutHealthValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as WorkoutHealthValue;
+      FromJsonFactory().fromJson<WorkoutHealthValue>(json);
   @override
   Map<String, dynamic> toJson() => _$WorkoutHealthValueToJson(this);
 
@@ -224,7 +224,7 @@ class WorkoutHealthValue extends HealthValue {
 /// * [averageHeartRate] - the average heart rate during the ECG (in BPM)
 /// * [samplingFrequency] - the frequency at which the Apple Watch sampled the voltage.
 /// * [classification] - an [ElectrocardiogramClassification]
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class ElectrocardiogramHealthValue extends HealthValue {
   /// An array of [ElectrocardiogramVoltageValue]s.
   List<ElectrocardiogramVoltageValue> voltageValues;
@@ -248,7 +248,7 @@ class ElectrocardiogramHealthValue extends HealthValue {
   @override
   Function get fromJsonFunction => _$ElectrocardiogramHealthValueFromJson;
   factory ElectrocardiogramHealthValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as ElectrocardiogramHealthValue;
+      FromJsonFactory().fromJson<ElectrocardiogramHealthValue>(json);
   @override
   Map<String, dynamic> toJson() => _$ElectrocardiogramHealthValueToJson(this);
 
@@ -283,7 +283,7 @@ class ElectrocardiogramHealthValue extends HealthValue {
 }
 
 /// Single voltage value belonging to a [ElectrocardiogramHealthValue]
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class ElectrocardiogramVoltageValue extends HealthValue {
   /// Voltage of the ECG.
   num voltage;
@@ -306,7 +306,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
   @override
   Function get fromJsonFunction => _$ElectrocardiogramVoltageValueFromJson;
   factory ElectrocardiogramVoltageValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as ElectrocardiogramVoltageValue;
+      FromJsonFactory().fromJson<ElectrocardiogramVoltageValue>(json);
   @override
   Map<String, dynamic> toJson() => _$ElectrocardiogramVoltageValueToJson(this);
 
@@ -324,7 +324,7 @@ class ElectrocardiogramVoltageValue extends HealthValue {
 }
 
 /// A [HealthValue] object from insulin delivery (iOS only)
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class InsulinDeliveryHealthValue extends HealthValue {
   /// The amount of units of insulin taken
   double units;
@@ -355,7 +355,7 @@ class InsulinDeliveryHealthValue extends HealthValue {
   @override
   Function get fromJsonFunction => _$InsulinDeliveryHealthValueFromJson;
   factory InsulinDeliveryHealthValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as InsulinDeliveryHealthValue;
+      FromJsonFactory().fromJson<InsulinDeliveryHealthValue>(json);
   @override
   Map<String, dynamic> toJson() => _$InsulinDeliveryHealthValueToJson(this);
 
@@ -420,7 +420,7 @@ class InsulinDeliveryHealthValue extends HealthValue {
 ///  * [water] - the amount of water in grams
 ///  * [zinc] - the amount of zinc in grams
 
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class NutritionHealthValue extends HealthValue {
   /// The name of the food.
   String? name;
@@ -604,7 +604,7 @@ class NutritionHealthValue extends HealthValue {
   @override
   Function get fromJsonFunction => _$NutritionHealthValueFromJson;
   factory NutritionHealthValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as NutritionHealthValue;
+      (json) as NutritionHealthValue;
   @override
   Map<String, dynamic> toJson() => _$NutritionHealthValueToJson(this);
 
@@ -865,7 +865,7 @@ enum RecordingMethod {
 /// * [isStartOfCycle] - indicator whether or not this occurrence is the first day of the menstrual cycle (iOS only)
 /// * [wasUserEntered] - indicator whether or not the data was entered by the user (iOS only)
 /// * [dateTime] - the date and time of the menstrual flow
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class MenstruationFlowHealthValue extends HealthValue {
   final MenstrualFlow? flow;
   final bool? isStartOfCycle;
@@ -912,7 +912,7 @@ class MenstruationFlowHealthValue extends HealthValue {
   Function get fromJsonFunction => _$MenstruationFlowHealthValueFromJson;
 
   factory MenstruationFlowHealthValue.fromJson(Map<String, dynamic> json) =>
-      FromJsonFactory().fromJson(json) as MenstruationFlowHealthValue;
+      FromJsonFactory().fromJson<MenstruationFlowHealthValue>(json);
 
   @override
   Map<String, dynamic> toJson() => _$MenstruationFlowHealthValueToJson(this);

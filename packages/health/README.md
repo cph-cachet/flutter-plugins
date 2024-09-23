@@ -455,3 +455,8 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | WRESTLING                        | yes              |                           |                                                                                                 |
 | YOGA                             | yes              | yes                       |                                                                                                 |
 | OTHER                            | yes              | yes                       |                                                                                                 |
+
+## License
+
+This software is copyright (c) the [Technical University of Denmark (DTU)](https://www.dtu.dk) and is part of the [Copenhagen Research Platform](https://carp.cachet.dk/).
+This software is available 'as-is' under a [MIT license](LICENSE).

@@ -1,3 +1,8 @@
+## 11.1.0
+
+* Fix of [#1043](https://github.com/cph-cachet/flutter-plugins/issues/1043)
+* Type-safe JSON deserialization using carp_serializable v. 2.0
+
 ## 11.0.0
 
 * **BREAKING** Remove Google Fit support in the Android code, as well as Google FIt related dependencies and references throughout the documentation
