@@ -1,7 +1,6 @@
 name: mobility_features_example
 description: An example app for the Mobility Features package.
 publish_to: "none" 
-version: 5.0.0
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -10,14 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   permission_handler: ^11.3.1
+  carp_background_location: ^4.0.0
 
   mobility_features:
     path: ../
-  carp_background_location:
-    ^4.0.0
-    # path: ../../carp_background_location
 
 
 dev_dependencies:

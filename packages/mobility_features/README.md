@@ -21,7 +21,7 @@ Read more on the [theoretical background](#theoretical-background) on these mobi
 
 The Mobility Features package is designed to work independent of the location plugin. You may choose you own location plugin, since you may already use this in your app.
 
-In the example app we use our own plugin [`carp_background_location`](https://pub.dev/packages/carp_background_location) which works on both Android and iOS as of August 2020. However, the [location](https://pub.dev/packages/location) plugin will also work. The important thing, however, is to make sure that the app runs in the background. On Android this is tied to running the app as a foreground service.
+In the example app we use our own plugin [carp_background_location](https://pub.dev/packages/carp_background_location) which works on both Android and iOS as of August 2020. However, the [location](https://pub.dev/packages/location) plugin will also work. The important thing, however, is to make sure that the app runs in the background. On Android this is tied to running the app as a foreground service.
 
 Add the package to your `pubspec.yaml` file and import the package
 
@@ -62,21 +62,17 @@ For example, given a low stop duration, stopping for a red light in traffic will
 
 ### Step 2 - Set up location streaming
 
-Collection of location data is not directly supported by this package, for this you have to use a location plugin such as [`carp_background_location`](https://pub.dev/packages/carp_background_location). You can to convert from whichever location object is used by the location plugin to a `LocationSample` object.
-Next, you can start listening to location updates and subscribe to the `MobilityFeatures()`'s `contextStream` to be be notified each time a new set of features has been computed.
+Collection of location data is not directly supported by this package, for this you have to use a location plugin such as [carp_background_location](https://pub.dev/packages/carp_background_location). You can to convert from whichever location object is used by the location plugin to a `LocationSample` object.
+Next, you can start listening to location updates and subscribe to the `contextStream` to be be notified each time a new set of features has been computed.
 
-Below is shown an example using the [`carp_background_location`](https://pub.dev/packages/carp_background_location) plugin, where a `LocationDto` stream is converted into a `LocationSample` stream by using a map-function.
+Below is shown an example using the [carp_background_location](https://pub.dev/packages/carp_background_location) plugin, where a `LocationDto` stream is converted into a `LocationSample` stream by using a map-function.
 
 ```dart
   /// Set up streams:
-  /// * Location streaming to MobilityContext
-  /// * Subscribe to MobilityContext updates
+  ///  * Location streaming to MobilityContext
+  ///  * Subscribe to MobilityContext updates
   void streamInit() async {
     locationStream = LocationManager().locationStream;
-
-    // subscribe to location stream - in case this is needed in the app
-    if (locationSubscription != null) locationSubscription.cancel();
-    locationSubscription = locationStream.listen(onLocationUpdate);
 
     // start the location service (specific to carp_background_location)
     await LocationManager().start();
@@ -94,14 +90,9 @@ Below is shown an example using the [`carp_background_location`](https://pub.dev
     mobilitySubscription =
         MobilityFeatures().contextStream.listen(onMobilityContext);
   }
-
-  /// Called whenever location changes.
-  void onLocationUpdate(LocationDto dto) {
-    print(dtoToString(dto));
-  }
 ```
 
-> **Note** that access to location data needs permissions from the OS. This is **not** handled by the plugin but should be handled on an app-level. See the example app for this. Note also, that permissions for access location "ALWAYS" needs to be granted by the user in order to collect location information in the background.
+> **NOTE** that access to location data needs permissions from the OS. This is **NOT** handled by the plugin but should be handled on an app-level. See the example app for this. Note also, that permissions for access location "ALWAYS" needs to be granted by the user in order to collect location information in the background.
 
 ### Step 3 - Listen to mobility features
 
@@ -115,20 +106,21 @@ void onMobilityContext(MobilityContext context) {
 }
 ```
 
-All the mobility features are accessible in the `MobilityContext` object:
+Mobility features are accessible in the `MobilityContext` object which can be serialized to JSON using the `toJson()` method:
 
-```dart
-/// Location features
-context.places;
-context.stops;
-context.moves;
-
-/// Derived features
-context.numberOfSignificantPlaces;
-context.homeStay;
-context.entropy;
-context.normalizedEntropy;
-context.distanceTraveled;
+```json
+{
+ "timestamp": "2024-09-26T10:56:21.397768",
+ "date": "2020-01-01T00:00:00.000",
+ "numberOfStops": 2,
+ "numberOfMoves": 1,
+ "numberOfSignificantPlaces": 2,
+ "locationVariance": 0.00011097661986704458,
+ "entropy": 0.6365141682948128,
+ "normalizedEntropy": 0.9182958340544894,
+ "homeStay": 0.64,
+ "distanceTraveled": 0.0
+}
 ```
 
 ## Feature errors
@@ -145,10 +137,7 @@ For example:
 The example application included in the package shows the feature values, including separate pages for stops, moves and places.
 It also illustrates how to ask the user for permissions to access location data, also when the app is in the background.
 
-![mobility_app_1](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/features.jpeg)
-![mobility_app_2](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/stops.jpeg)
-![mobility_app_3](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/places.jpeg)
-![mobility_app_4](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/moves.jpeg)
+![mobility_app_1](https://raw.githubusercontent.com/cph-cachet/flutter-plugins/master/packages/mobility_features/images/app.jpeg)
 
 ## Theoretical Background
 
