@@ -20,11 +20,14 @@ class WorkoutSummary {
   /// The total steps value of the workout.
   num totalSteps;
 
+  List<RouteLocation>? route;
+
   WorkoutSummary({
     required this.workoutType,
     required this.totalDistance,
     required this.totalEnergyBurned,
     required this.totalSteps,
+    this.route,
   });
 
   /// Create a [WorkoutSummary] based on a health data point from native data format.
@@ -34,6 +37,15 @@ class WorkoutSummary {
         totalDistance: dataPoint['total_distance'] as num? ?? 0,
         totalEnergyBurned: dataPoint['total_energy_burned'] as num? ?? 0,
         totalSteps: dataPoint['total_steps'] as num? ?? 0,
+        route: (dataPoint['route'] as List<dynamic>?)?.isNotEmpty ?? false
+            ? (dataPoint['route'] as List<dynamic>?)!
+                .map((l) => RouteLocation(
+                    longitude: l['longitude'] as double,
+                    latitude: l['latitude'] as double,
+                    altitude: l['altitude'] as double,
+                    timestamp: l['timestamp'] as int))
+                .toList()
+            : null,
       );
 
   /// Create a [HealthDataPoint] from json.
@@ -48,5 +60,6 @@ class WorkoutSummary {
       'workoutType: $workoutType'
       'totalDistance: $totalDistance, '
       'totalEnergyBurned: $totalEnergyBurned, '
-      'totalSteps: $totalSteps';
+      'totalSteps: $totalSteps, '
+      'route: ${route?.map((l) => l.toString()).join('\n')}';
 }
