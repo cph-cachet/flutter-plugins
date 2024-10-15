@@ -6,6 +6,7 @@ part of '../health.dart';
 ///  * [totalDistance] - The total distance that was traveled during a workout.
 ///  * [totalEnergyBurned] - The amount of energy that was burned during a workout.
 ///  * [totalSteps] - The number of steps during a workout.
+///  * [route] - The route of the workout.
 @JsonSerializable(includeIfNull: false, explicitToJson: true)
 class WorkoutSummary {
   /// Workout type.
@@ -20,7 +21,8 @@ class WorkoutSummary {
   /// The total steps value of the workout.
   num totalSteps;
 
-  List<RouteLocation>? route;
+  /// The route of the workout.
+  List<RoutePoint>? route;
 
   WorkoutSummary({
     required this.workoutType,
@@ -39,11 +41,13 @@ class WorkoutSummary {
         totalSteps: dataPoint['total_steps'] as num? ?? 0,
         route: (dataPoint['route'] as List<dynamic>?)?.isNotEmpty ?? false
             ? (dataPoint['route'] as List<dynamic>?)!
-                .map((l) => RouteLocation(
+                .map((l) => RoutePoint(
                     longitude: l['longitude'] as double,
                     latitude: l['latitude'] as double,
                     altitude: l['altitude'] as double,
-                    timestamp: l['timestamp'] as int))
+                    timestamp: l['timestamp'] as int,
+                    horizontalAccuracy: l['horizontal_accuracy'] as double?,
+                    verticalAccuracy: l['vertical_accuracy'] as double?))
                 .toList()
             : null,
       );
