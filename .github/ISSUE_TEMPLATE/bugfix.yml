@@ -1,6 +1,6 @@
 name: 🐞 Bug fix
 description: Create a report to help us improve any bug you may experience.
-title: "a brief, descriptive title for the bug"
+title: "[<plugin> <version>] a brief, descriptive title for the bug"
 labels: ["bugfix"]
 assignees: []
 body:
