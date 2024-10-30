@@ -37,6 +37,10 @@ android {
         disable 'InvalidPackage'
     }
     namespace "dk.cachet.screen_state"
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
