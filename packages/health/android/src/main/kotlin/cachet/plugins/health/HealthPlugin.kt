@@ -94,6 +94,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         null
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var scope: CoroutineScope
+    private var isReplySubmitted = false
 
 
     override fun onAttachedToEngine(
@@ -219,15 +220,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     private fun onHealthConnectPermissionCallback(permissionGranted: Set<String>) {
-        if (permissionGranted.isEmpty()) {
-            mResult?.success(false)
-            Log.i("FLUTTER_HEALTH", "Health Connect permissions were not granted! Make sure to declare the required permissions in the AndroidManifest.xml file.")
-        } else {
-            mResult?.success(true)
-            Log.i("FLUTTER_HEALTH", "${permissionGranted.size} Health Connect permissions were granted!")
-            
-            // log the permissions granted for debugging
-            Log.i("FLUTTER_HEALTH", "Permissions granted: $permissionGranted") 
+        if (!isReplySubmitted) {
+            if (permissionGranted.isEmpty()) {
+                mResult?.success(false)
+                Log.i("FLUTTER_HEALTH", "Health Connect permissions were not granted! Make sure to declare the required permissions in the AndroidManifest.xml file.")
+            } else {
+                mResult?.success(true)
+                Log.i("FLUTTER_HEALTH", "${permissionGranted.size} Health Connect permissions were granted!")
+                
+                // log the permissions granted for debugging
+                Log.i("FLUTTER_HEALTH", "Permissions granted: $permissionGranted") 
+            }
+            isReplySubmitted = true
         }
     }
 
@@ -666,6 +670,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         // Store the result to be called in [onHealthConnectPermissionCallback]
         mResult = result
+        isReplySubmitted = false
         healthConnectRequestPermissionsLauncher!!.launch(permList.toSet())
     }
 
