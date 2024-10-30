@@ -1,3 +1,7 @@
+## 11.1.1
+
+* Fix of [#1059](https://github.com/cph-cachet/flutter-plugins/issues/1059)
+
 ## 11.1.0
 
 * Fix of [#1043](https://github.com/cph-cachet/flutter-plugins/issues/1043)
