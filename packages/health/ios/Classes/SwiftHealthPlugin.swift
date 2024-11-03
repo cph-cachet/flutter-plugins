@@ -161,7 +161,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let GENDER = "GENDER"
     let BLOOD_TYPE = "BLOOD_TYPE"
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
-    
+    let WRIST_TEMPERATURE = "WRIST_TEMPERATURE"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -1616,6 +1616,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         if #available(iOS 16.0, *) {
             dataTypesDict[ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
+            dataTypesDict[WRIST_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .appleSleepingWristTemperature)!
         } 
         
         // Concatenate heart events, headache and health data types (both may be empty)

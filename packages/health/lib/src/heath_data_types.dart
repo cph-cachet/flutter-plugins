@@ -84,6 +84,7 @@ enum HealthDataType {
   SLEEP_UNKNOWN,
   EXERCISE_TIME,
   WORKOUT,
+  WRIST_TEMPERATURE,
   HEADACHE_NOT_PRESENT,
   HEADACHE_MILD,
   HEADACHE_MODERATE,
@@ -206,6 +207,7 @@ const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.BIRTH_DATE,
   HealthDataType.BLOOD_TYPE,
   HealthDataType.MENSTRUATION_FLOW,
+  HealthDataType.WRIST_TEMPERATURE
 ];
 
 /// List of data types available on Android
@@ -355,6 +357,8 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
 
   // Health Connect
   HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,
+  
+  HealthDataType.WRIST_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
 };
 
 // const PlatformTypeJsonValue = {
