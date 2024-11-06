@@ -109,6 +109,14 @@ body:
       description: What actually happened? Include stack traces and exception print-outs.
     validations:
       required: true
+  
+  - type: textarea
+    id: flutter-logs
+    attributes:
+      label: Flutter Logs
+      description: Add flutter logs in here.
+    validations:
+      required: false
 
   - type: textarea
     id: screenshots
