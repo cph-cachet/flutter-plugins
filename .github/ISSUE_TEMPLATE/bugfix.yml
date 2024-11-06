@@ -115,6 +115,7 @@ body:
     attributes:
       label: Flutter Logs
       description: Add flutter logs in here.
+      render: shell
     validations:
       required: false
 
