@@ -161,7 +161,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let GENDER = "GENDER"
     let BLOOD_TYPE = "BLOOD_TYPE"
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
-    
+    let UV_EXPOSURE = "UV_EXPOSURE"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -272,6 +272,16 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if (call.method.elementsEqual("writeMeal")){
             try! writeMeal(call: call, result: result)
         }
+
+        /// Handle writeUVExposure
+        else if (call.method.elementsEqual("writeUVExposure")){
+            try! writeUVExposure(call: call, result: result)
+        }
+
+         /// Handle writeBatchUVExposure
+        else if (call.method.elementsEqual("writeBatchUVExposure")){
+            try! writeBatchUVExposure(call: call, result: result)
+        }
         
         /// Handle writeInsulinDelivery
         else if (call.method.elementsEqual("writeInsulinDelivery")){
@@ -367,11 +377,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else {
             throw PluginError(message: "Invalid Arguments!")
         }
-        
+                print("Eze log :\(types).\(permissions)")
+
         var typesToRead = Set<HKObjectType>()
         var typesToWrite = Set<HKSampleType>()
         for (index, key) in types.enumerated() {
             if (key == NUTRITION) {
+
                 for nutritionType in nutritionList {
                     let nutritionData = dataTypeLookUp(key: nutritionType)
                     typesToWrite.insert(nutritionData)
@@ -379,6 +391,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             } else {
                 let dataType = dataTypeLookUp(key: key)
                 let access = permissions[index]
+                print("Eze log : we're not in nutrition \(dataTypeLookUp(key: key)).\(access)")
                 switch access {
                 case 0:
                     typesToRead.insert(dataType)
@@ -553,6 +566,89 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     result(success)
                 }
             })
+    }
+
+
+    func writeUVExposure(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+              let value = (arguments["value"] as? Double),
+              let startTime = (arguments["startTime"] as? NSNumber),
+              let endTime = (arguments["endTime"] as? NSNumber),
+              let recordingMethod = (arguments["recordingMethod"] as? Int)
+        else {
+            throw PluginError(message: "Invalid Arguments")
+        }
+
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+
+        let isManualEntry = recordingMethod == RecordingMethod.manual.rawValue
+        let metadata: [String: Any] = [
+            HKMetadataKeyWasUserEntered: NSNumber(value: isManualEntry)
+        ]
+
+        let quantity = HKQuantity(unit: HKUnit.count(), doubleValue: value)
+        let sample = HKQuantitySample(
+            type: HKQuantityType.quantityType(forIdentifier: .uvExposure)!,
+            quantity: quantity, start: dateFrom, end: dateTo, metadata: metadata)
+
+        HKHealthStore().save(sample, withCompletion: { (success, error) in
+            if let err = error {
+                print("Error Saving UV Exposure Sample: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
+        })
+    }
+
+    func writeBatchUVExposure(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+              let samplesData = arguments["samples"] as? [[String: Any]] else {
+            throw PluginError(message: "Invalid Arguments")
+        }
+
+        var samplesToSave: [HKQuantitySample] = []
+
+        for sampleData in samplesData {
+            guard let value = sampleData["value"] as? Double,
+                  let startTime = sampleData["startTime"] as? NSNumber,
+                  let endTime = sampleData["endTime"] as? NSNumber,
+                  let recordingMethod = sampleData["recordingMethod"] as? Int else {
+                throw PluginError(message: "Invalid Sample Data")
+            }
+
+            let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+            let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+            let isManualEntry = recordingMethod == RecordingMethod.manual.rawValue
+
+            let metadata: [String: Any] = [
+                HKMetadataKeyWasUserEntered: NSNumber(value: isManualEntry)
+            ]
+
+            let quantity = HKQuantity(unit: HKUnit.count(), doubleValue: value)
+            if let uvExposureType = HKQuantityType.quantityType(forIdentifier: .uvExposure) {
+                let sample = HKQuantitySample(
+                    type: uvExposureType,
+                    quantity: quantity,
+                    start: dateFrom,
+                    end: dateTo,
+                    metadata: metadata)
+                samplesToSave.append(sample)
+            } else {
+                throw PluginError(message: "UV Exposure Type Not Available")
+            }
+        }
+
+        // Save all samples in one operation
+        HKHealthStore().save(samplesToSave) { (success, error) in
+            if let err = error {
+                print("Error Saving UV Exposure Samples: \(err.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                result(success)
+            }
+        }
     }
     
     func writeMeal(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
@@ -1298,6 +1394,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[MILLIGRAM_PER_DECILITER] = HKUnit.init(from: "mg/dL")
         unitDict[UNKNOWN_UNIT] = HKUnit.init(from: "")
         unitDict[NO_UNIT] = HKUnit.init(from: "")
+        unitDict[UV_EXPOSURE] = HKUnit.count()
         
         // Initialize workout types
         workoutActivityTypeMap["ARCHERY"] = .archery
@@ -1483,7 +1580,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[SLEEP_REM] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[SLEEP_ASLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[MENSTRUATION_FLOW] = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
-            
+
+            dataTypesDict[UV_EXPOSURE] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
             
             dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
             dataTypesDict[WORKOUT] = HKSampleType.workoutType()
@@ -1509,6 +1607,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataQuantityTypesDict[BODY_FAT_PERCENTAGE] = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
             dataQuantityTypesDict[BODY_MASS_INDEX] = HKQuantityType.quantityType(forIdentifier: .bodyMassIndex)!
             dataQuantityTypesDict[BODY_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!
+            dataQuantityTypesDict[UV_EXPOSURE] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
             
             // Nutrition
             dataQuantityTypesDict[DIETARY_CARBS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!
