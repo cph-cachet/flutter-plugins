@@ -1,0 +1,145 @@
+name: 🐞 Bug fix
+description: Create a report to help us improve any bug you may experience.
+title: "[<plugin> <version>] a brief, descriptive title for the bug"
+labels: ["bugfix"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report Details
+        Please fill in the information below to help us understand and fix the bug.
+
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin Name
+      description: Select the plugin that has the bug
+      options:
+        - screen_state
+        - light
+        - pedometer
+        - noise_meter
+        - app_usage
+        - weather
+        - air_quality
+        - notifications
+        - movisens_flutter
+        - esense_flutter
+        - health
+        - activity_recognition
+        - audio_streamer
+        - mobility_features
+        - carp_background_location
+        - flutter_foreground_service
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Plugin Version
+      description: What version of the plugin are you using?
+      placeholder: "e.g. 2.4.1"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ### Device / Emulator and OS Information
+        Please provide information for each device/emulator where you experience this bug.
+        
+        **Note:** 
+        - For iOS, only the latest OS is supported
+        - For Android, see [the OS versions for which Google support security fixes](https://en.wikipedia.org/wiki/Android_version_history)
+        - Bugs pertaining to old devices/OS versions will likely not be fixed.
+
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: What device are you using?
+      placeholder: "e.g. iPhone 6s"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: What OS version is installed?
+      placeholder: "e.g. iOS 13.1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include stack traces and exception print-outs.
+    validations:
+      required: true
+  
+  - type: textarea
+    id: flutter-logs
+    attributes:
+      label: Flutter Logs
+      description: Add flutter logs in here.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+    validations:
+      required: false
+
+  - type: textarea
+    id: flutter-doctor
+    attributes:
+      label: Flutter Doctor Output
+      description: Please run `flutter doctor` and paste the output here.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Add any other relevant information about the problem here.
+    validations:
+      required: false
