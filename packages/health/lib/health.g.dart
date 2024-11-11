@@ -406,6 +406,7 @@ const _$HealthWorkoutActivityTypeEnumMap = {
   HealthWorkoutActivityType.WHEELCHAIR_RUN_PACE: 'WHEELCHAIR_RUN_PACE',
   HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE: 'WHEELCHAIR_WALK_PACE',
   HealthWorkoutActivityType.WRESTLING: 'WRESTLING',
+  HealthWorkoutActivityType.UNDERWATER_DIVING: 'UNDERWATER_DIVING',
   HealthWorkoutActivityType.BIKING_STATIONARY: 'BIKING_STATIONARY',
   HealthWorkoutActivityType.CALISTHENICS: 'CALISTHENICS',
   HealthWorkoutActivityType.DANCING: 'DANCING',

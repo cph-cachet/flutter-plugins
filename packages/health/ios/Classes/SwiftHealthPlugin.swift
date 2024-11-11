@@ -928,6 +928,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
                 for sample in samplesWorkout {
                     dispatchGroup.enter()
+                    print("sample.workoutActivityType, \(sample.workoutActivityType)")
                     var workoutDict: [String: Any] = [
                         "uuid": "\(sample.uuid)",
                         "workoutActivityType": workoutActivityTypeMap.first(where: {
@@ -952,11 +953,14 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     let routeQuery = HKSampleQuery(sampleType: HKSeriesType.workoutRoute(), predicate: workoutPredicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, routeSamplesOrNil, error) in
                         if let error = error {
                             print("Error fetching route data: \(error.localizedDescription)")
+                            // Continue without route data
+                            dictionaries.append(workoutDict)
                             dispatchGroup.leave()
                             return
                         }
                         guard let routeSamples = routeSamplesOrNil as? [HKWorkoutRoute], !routeSamples.isEmpty else {
                             // No route data
+                            dictionaries.append(workoutDict)
                             dispatchGroup.leave()
                             return
                         }
@@ -1434,6 +1438,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["KICKBOXING"] = .kickboxing
         workoutActivityTypeMap["MARTIAL_ARTS"] = .martialArts
         workoutActivityTypeMap["TAI_CHI"] = .taiChi
+        if #available(iOS 17.0, *) {
+            workoutActivityTypeMap["UNDERWATER_DIVING"] = .underwaterDiving
+        }
         workoutActivityTypeMap["WRESTLING"] = .wrestling
         workoutActivityTypeMap["OTHER"] = .other
         nutritionList = [
@@ -1677,6 +1684,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
     
     func getWorkoutType(type: HKWorkoutActivityType) -> String {
+
+      if #available(iOS 17.0, *) {
+        if type == .underwaterDiving {
+            return "underwaterDiving"
+        }
+      }
+        
         switch type {
         case .americanFootball:
             return "americanFootball"
@@ -1790,6 +1804,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             return "waterSports"
         case .wrestling:
             return "wrestling"
+            
+        
         case .yoga:
             return "yoga"
         case .barre:
