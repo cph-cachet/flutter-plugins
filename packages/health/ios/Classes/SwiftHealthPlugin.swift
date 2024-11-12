@@ -35,6 +35,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
     let BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
     let BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+    let LEAN_BODY_MASS = "LEAN_BODY_MASS"
     let BODY_MASS_INDEX = "BODY_MASS_INDEX"
     let BODY_TEMPERATURE = "BODY_TEMPERATURE"
     // Nutrition
@@ -1409,6 +1410,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 forIdentifier: .bloodPressureSystolic)!
             dataTypesDict[BODY_FAT_PERCENTAGE] = HKSampleType.quantityType(
                 forIdentifier: .bodyFatPercentage)!
+            dataTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
             dataTypesDict[BODY_MASS_INDEX] = HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!
             dataTypesDict[BODY_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .bodyTemperature)!
             
@@ -1507,6 +1509,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataQuantityTypesDict[BLOOD_PRESSURE_DIASTOLIC] = HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!
             dataQuantityTypesDict[BLOOD_PRESSURE_SYSTOLIC] = HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!
             dataQuantityTypesDict[BODY_FAT_PERCENTAGE] = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
+            dataQuantityTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
             dataQuantityTypesDict[BODY_MASS_INDEX] = HKQuantityType.quantityType(forIdentifier: .bodyMassIndex)!
             dataQuantityTypesDict[BODY_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!
             

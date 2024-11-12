@@ -48,6 +48,7 @@ const val BLOOD_OXYGEN = "BLOOD_OXYGEN"
 const val BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
 const val BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
 const val BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+const val LEAN_BODY_MASS = "LEAN_BODY_MASS"
 const val BODY_TEMPERATURE = "BODY_TEMPERATURE"
 const val BODY_WATER_MASS = "BODY_WATER_MASS"
 const val DISTANCE_DELTA = "DISTANCE_DELTA"
@@ -1596,6 +1597,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     )
 
+                LEAN_BODY_MASS ->
+                    LeanBodyMassRecord(
+                        time =
+                        Instant.ofEpochMilli(
+                            startTime
+                        ),
+                        mass =
+                        Mass.kilograms(
+                            value
+                        ),
+                        zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
+                    )
+
                 HEIGHT ->
                     HeightRecord(
                         time =
@@ -2398,6 +2415,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private val mapToType =
         hashMapOf(
             BODY_FAT_PERCENTAGE to BodyFatRecord::class,
+            LEAN_BODY_MASS to LeanBodyMassRecord::class,
             HEIGHT to HeightRecord::class,
             WEIGHT to WeightRecord::class,
             STEPS to StepsRecord::class,
@@ -2451,7 +2469,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // "HeartRate" to HeartRateRecord::class,
             // "Height" to HeightRecord::class,
             // "Hydration" to HydrationRecord::class,
-            // "LeanBodyMass" to LeanBodyMassRecord::class,
             // "MenstruationPeriod" to MenstruationPeriodRecord::class,
             // "Nutrition" to NutritionRecord::class,
             // "OvulationTest" to OvulationTestRecord::class,
