@@ -833,7 +833,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         var predicate = HKQuery.predicateForSamples(
-            withStart: dateFrom, end: dateTo, options: .strictStartDate)
+            withStart: dateFrom, end: dateTo)
         if (!includeManualEntry) {
             let manualPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
             predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
