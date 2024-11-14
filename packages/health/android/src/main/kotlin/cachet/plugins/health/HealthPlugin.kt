@@ -1084,6 +1084,29 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ),
                 )
 
+            is LeanMassRecord ->
+                return listOf(
+                    mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
+                        "value" to
+                                record.weight
+                                    .inKilograms,
+                        "date_from" to
+                                record.time
+                                    .toEpochMilli(),
+                        "date_to" to
+                                record.time
+                                    .toEpochMilli(),
+                        "source_id" to "",
+                        "source_name" to
+                                metadata.dataOrigin
+                                    .packageName,
+                        "recording_method" to
+                                metadata.recordingMethod
+                    ),
+                )
+
             is StepsRecord ->
                 return listOf(
                     mapOf<String, Any>(
@@ -2456,7 +2479,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // "BasalMetabolicRate" to BasalMetabolicRateRecord::class,
             // "BloodGlucose" to BloodGlucoseRecord::class,
             // "BloodPressure" to BloodPressureRecord::class,
-            // "BodyFat" to BodyFatRecord::class,
             // "BodyTemperature" to BodyTemperatureRecord::class,
             // "BoneMass" to BoneMassRecord::class,
             // "CervicalMucus" to CervicalMucusRecord::class,
