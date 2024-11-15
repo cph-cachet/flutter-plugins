@@ -1084,13 +1084,13 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ),
                 )
 
-            is LeanMassRecord ->
+            is LeanBodyMassRecord ->
                 return listOf(
                     mapOf<String, Any>(
                         "uuid" to
                                 metadata.id,
                         "value" to
-                                record.weight
+                                record.mass
                                     .inKilograms,
                         "date_from" to
                                 record.time
