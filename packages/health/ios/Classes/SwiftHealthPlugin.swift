@@ -1471,7 +1471,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 forIdentifier: .waistCircumference)!
             dataTypesDict[WALKING_HEART_RATE] = HKSampleType.quantityType(
                 forIdentifier: .walkingHeartRateAverage)!
-            dataTypesDict[WEIGHT] = HKSampleType.quantityType(forIdentifier: .leanBodyMass)!
+            dataTypesDict[WEIGHT] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
             dataTypesDict[DISTANCE_WALKING_RUNNING] = HKSampleType.quantityType(
                 forIdentifier: .distanceWalkingRunning)!
             dataTypesDict[DISTANCE_SWIMMING] = HKSampleType.quantityType(forIdentifier: .distanceSwimming)!
