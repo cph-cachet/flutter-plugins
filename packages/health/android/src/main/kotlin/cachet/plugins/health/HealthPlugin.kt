@@ -32,11 +32,11 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
+import kotlinx.coroutines.*
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.*
-import kotlinx.coroutines.*
 
 const val CHANNEL_NAME = "flutter_health"
 
@@ -677,9 +677,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val healthConnectData = mutableListOf<Map<String, Any?>>()
         val recordingMethodsToFilter = call.argument<List<Int>>("recordingMethodsToFilter")!!
 
+        val zoneId = ZoneId.systemDefault() // Use the system default time zone
+        val localDate = startTime.atZone(zoneId)
+            .toLocalDate()
+            .atStartOfDay(zoneId)
+        val localDateInstant = localDate
+            .toInstant()
+
+
+        Log.i("ZONE_ID", "$zoneId")
+        Log.i("DATE_TIME", "$localDate")
+        Log.i("DATE_TIME_INSTANT", "$localDateInstant")
+
         Log.i(
             "FLUTTER_HEALTH",
-            "Getting data for $dataType between $startTime and $endTime, filtering by $recordingMethodsToFilter"
+            "Getting data $dataType between $startTime - $endTime"
         )
 
         scope.launch {
