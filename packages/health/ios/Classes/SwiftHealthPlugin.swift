@@ -1171,33 +1171,36 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
         }
         
-        let query = HKStatisticsQuery(
+        // TODO: [NOTE] Computational heavy
+        let query = HKStatisticsCollectionQuery(
             quantityType: sampleType,
             quantitySamplePredicate: predicate,
-            options: .cumulativeSum
-        ) { query, queryResult, error in
-            
-            guard let queryResult = queryResult else {
+            options: .cumulativeSum,
+            anchorDate: dateFrom,
+            intervalComponents: DateComponents(day: 1)
+        )
+        query.initialResultsHandler = { query, results, error in
+            guard let results = results else { 
                 let error = error! as NSError
                 print("Error getting total steps in interval \(error.localizedDescription)")
-                
+
                 DispatchQueue.main.async {
                     result(nil)
                 }
                 return
-            }
-            
-            var steps = 0.0
-            
-            if let quantity = queryResult.sumQuantity() {
-                let unit = HKUnit.count()
-                steps = quantity.doubleValue(for: unit)
-            }
-            
-            let totalSteps = Int(steps)
-            DispatchQueue.main.async {
-                result(totalSteps)
-            }
+             }
+
+             var totalSteps = 0.0
+             results.enumerateStatistics(from: dateFrom, to: dateTo) { statistics, stop in
+                if let quantity = statistics.sumQuantity() {
+                    let unit = HKUnit.count()
+                    totalSteps += quantity.doubleValue(for: unit)
+                }
+             }
+
+             DispatchQueue.main.async {
+                result(Int(totalSteps))
+             }
         }
         
         HKHealthStore().execute(query)
