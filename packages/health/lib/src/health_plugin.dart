@@ -1254,6 +1254,7 @@ class Health {
       HealthWorkoutActivityType.WHEELCHAIR_RUN_PACE,
       HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE,
       HealthWorkoutActivityType.WRESTLING,
+      HealthWorkoutActivityType.UNDERWATER_DIVING,
       HealthWorkoutActivityType.YOGA,
       HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
       HealthWorkoutActivityType.SWIMMING_POOL,

@@ -28,6 +28,8 @@
 	<string>We will sync your data with the Apple Health app to give you better insights</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>We will sync your data with the Apple Health app to give you better insights</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -47,7 +49,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
 </dict>
 </plist>

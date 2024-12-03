@@ -6,6 +6,7 @@ part of '../health.dart';
 ///  * [totalDistance] - The total distance that was traveled during a workout.
 ///  * [totalEnergyBurned] - The amount of energy that was burned during a workout.
 ///  * [totalSteps] - The number of steps during a workout.
+///  * [route] - The route of the workout.
 @JsonSerializable(includeIfNull: false, explicitToJson: true)
 class WorkoutSummary {
   /// Workout type.
@@ -20,11 +21,15 @@ class WorkoutSummary {
   /// The total steps value of the workout.
   num totalSteps;
 
+  /// The route of the workout.
+  List<RoutePoint>? route;
+
   WorkoutSummary({
     required this.workoutType,
     required this.totalDistance,
     required this.totalEnergyBurned,
     required this.totalSteps,
+    this.route,
   });
 
   /// Create a [WorkoutSummary] based on a health data point from native data format.
@@ -34,6 +39,17 @@ class WorkoutSummary {
         totalDistance: dataPoint['total_distance'] as num? ?? 0,
         totalEnergyBurned: dataPoint['total_energy_burned'] as num? ?? 0,
         totalSteps: dataPoint['total_steps'] as num? ?? 0,
+        route: (dataPoint['route'] as List<dynamic>?)?.isNotEmpty ?? false
+            ? (dataPoint['route'] as List<dynamic>?)!
+                .map((l) => RoutePoint(
+                    longitude: l['longitude'] as double,
+                    latitude: l['latitude'] as double,
+                    altitude: l['altitude'] as double,
+                    timestamp: l['timestamp'] as int,
+                    horizontalAccuracy: l['horizontal_accuracy'] as double?,
+                    verticalAccuracy: l['vertical_accuracy'] as double?))
+                .toList()
+            : null,
       );
 
   /// Create a [HealthDataPoint] from json.
@@ -48,5 +64,6 @@ class WorkoutSummary {
       'workoutType: $workoutType'
       'totalDistance: $totalDistance, '
       'totalEnergyBurned: $totalEnergyBurned, '
-      'totalSteps: $totalSteps';
+      'totalSteps: $totalSteps, '
+      'route: ${route?.map((l) => l.toString()).join('\n')}';
 }

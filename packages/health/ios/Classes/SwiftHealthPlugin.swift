@@ -1,6 +1,7 @@
 import Flutter
 import HealthKit
 import UIKit
+import CoreLocation
 
 enum RecordingMethod: Int {
     case unknown = 0           // RECORDING_METHOD_UNKNOWN (not supported on iOS)
@@ -922,8 +923,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 
             case let (samplesWorkout as [HKWorkout]) as Any:
                 
-                let dictionaries = samplesWorkout.map { sample -> NSDictionary in
-                    return [
+                var dictionaries = [[String: Any]]()
+                let dispatchGroup = DispatchGroup()
+
+                for sample in samplesWorkout {
+                    dispatchGroup.enter()
+                    print("sample.workoutActivityType, \(sample.workoutActivityType)")
+                    var workoutDict: [String: Any] = [
                         "uuid": "\(sample.uuid)",
                         "workoutActivityType": workoutActivityTypeMap.first(where: {
                             $0.value == sample.workoutActivityType
@@ -941,9 +947,65 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "total_distance": sample.totalDistance != nil ? Int(sample.totalDistance!.doubleValue(for: HKUnit.meter())) : 0,
                         "total_energy_burned": sample.totalEnergyBurned != nil ? Int(sample.totalEnergyBurned!.doubleValue(for: HKUnit.kilocalorie())) : 0
                     ]
+                    
+                    // Fetch associated route data
+                    let workoutPredicate = HKQuery.predicateForObjects(from: sample)
+                    let routeQuery = HKSampleQuery(sampleType: HKSeriesType.workoutRoute(), predicate: workoutPredicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, routeSamplesOrNil, error) in
+                        if let error = error {
+                            print("Error fetching route data: \(error.localizedDescription)")
+                            // Continue without route data
+                            dictionaries.append(workoutDict)
+                            dispatchGroup.leave()
+                            return
+                        }
+                        guard let routeSamples = routeSamplesOrNil as? [HKWorkoutRoute], !routeSamples.isEmpty else {
+                            // No route data
+                            dictionaries.append(workoutDict)
+                            dispatchGroup.leave()
+                            return
+                        }
+                        
+                        var routeLocations = [[String: Any]]()
+                        let routeDispatchGroup = DispatchGroup()
+                        
+                        for routeSample in routeSamples {
+                            routeDispatchGroup.enter()
+                            var locations = [CLLocation]()
+                            let locationQuery = HKWorkoutRouteQuery(route: routeSample) { (query, locationData, done, error) in
+                                if let error = error {
+                                    print("Error fetching locations: \(error.localizedDescription)")
+                                    routeDispatchGroup.leave()
+                                    return
+                                }
+                                if let locationData = locationData {
+                                    locations.append(contentsOf: locationData)
+                                }
+                                if done {
+                                    let locationDicts = locations.map { loc in
+                                        return [
+                                            "latitude": loc.coordinate.latitude,
+                                            "longitude": loc.coordinate.longitude,
+                                            "altitude": loc.altitude,
+                                            "timestamp": Int(loc.timestamp.timeIntervalSince1970 * 1000)
+                                        ]
+                                    }
+                                    routeLocations.append(contentsOf: locationDicts)
+                                    routeDispatchGroup.leave()
+                                }
+                            }
+                            self.healthStore.execute(locationQuery)
+                        }
+                        
+                        routeDispatchGroup.notify(queue: .main) {
+                            workoutDict["route"] = routeLocations
+                            dictionaries.append(workoutDict)
+                            dispatchGroup.leave()
+                        }
+                    }
+                    self.healthStore.execute(routeQuery)
                 }
                 
-                DispatchQueue.main.async {
+                dispatchGroup.notify(queue: DispatchQueue.main) {
                     result(dictionaries)
                 }
                 
@@ -1376,6 +1438,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["KICKBOXING"] = .kickboxing
         workoutActivityTypeMap["MARTIAL_ARTS"] = .martialArts
         workoutActivityTypeMap["TAI_CHI"] = .taiChi
+        if #available(iOS 17.0, *) {
+            workoutActivityTypeMap["UNDERWATER_DIVING"] = .underwaterDiving
+        }
         workoutActivityTypeMap["WRESTLING"] = .wrestling
         workoutActivityTypeMap["OTHER"] = .other
         nutritionList = [
@@ -1619,6 +1684,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     }
     
     func getWorkoutType(type: HKWorkoutActivityType) -> String {
+
+      if #available(iOS 17.0, *) {
+        if type == .underwaterDiving {
+            return "underwaterDiving"
+        }
+      }
+        
         switch type {
         case .americanFootball:
             return "americanFootball"
@@ -1732,6 +1804,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             return "waterSports"
         case .wrestling:
             return "wrestling"
+            
+        
         case .yoga:
             return "yoga"
         case .barre:
