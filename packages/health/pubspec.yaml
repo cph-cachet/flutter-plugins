@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   intl: '>=0.18.0 <0.20.0'
-  device_info_plus: '>=9.0.0 <11.0.0'
+  device_info_plus: '>=9.0.0 <12.0.0'
   json_annotation: ^4.8.0
   carp_serializable: ^2.0.0 # polymorphic json serialization
 
