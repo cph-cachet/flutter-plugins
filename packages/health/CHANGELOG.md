@@ -1,3 +1,7 @@
+## 11.1.2
+
+* Updated `device_info_plus` version dependency
+
 ## 11.1.1
 
 * Fix of [#1059](https://github.com/cph-cachet/flutter-plugins/issues/1059)
