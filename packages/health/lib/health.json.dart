@@ -10,6 +10,7 @@ void _registerFromJsonFunctions() {
   FromJsonFactory().registerAll([
     HealthValue(),
     NumericHealthValue(numericValue: 12),
+    WorkoutHealthValue(workoutActivityType: HealthWorkoutActivityType.RUNNING),
     AudiogramHealthValue(
       frequencies: [],
       leftEarSensitivities: [],
