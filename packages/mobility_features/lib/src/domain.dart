@@ -1,22 +1,6 @@
 part of '../mobility_features.dart';
 
 const int HOURS_IN_A_DAY = 24;
-const String _LATITUDE = 'latitude',
-    _LONGITUDE = 'longitude',
-    _DATE_TIME = 'datetime',
-    _ARRIVAL = 'arrival',
-    _DEPARTURE = 'departure',
-    _PLACE_ID = 'place_id',
-    _STOP_FROM = 'stop_from',
-    _STOP_TO = 'stop_to',
-    _DISTANCE = 'distance',
-    _GEO_LOCATION = 'geo_location';
-
-/// Interface for JSON serialization.
-abstract interface class Serializable {
-  Map<String, dynamic> toJson();
-  Serializable.fromJson(Map<String, dynamic> json);
-}
 
 /// Interface representing a geo location.
 abstract interface class GeoSpatial {
@@ -52,64 +36,40 @@ class Distance {
 
 /// A [GeoLocation] object contains a latitude and longitude
 /// and represents a 2D spatial coordinates
-class GeoLocation implements Serializable, GeoSpatial {
-  late double _latitude;
-  late double _longitude;
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
+class GeoLocation extends Serializable implements GeoSpatial {
+  double latitude, longitude;
 
-  GeoLocation(this._latitude, this._longitude);
-
-  factory GeoLocation.fromJson(Map<String, dynamic> x) {
-    num? lat = x[_LATITUDE] as double?;
-    num? lon = x[_LONGITUDE] as double?;
-    return GeoLocation(lat as double, lon as double);
-  }
-
-  double get latitude => _latitude;
-
-  double get longitude => _longitude;
+  GeoLocation(this.latitude, this.longitude);
 
   @override
   GeoLocation get geoLocation => this;
 
   @override
-  Map<String, dynamic> toJson() => {_LATITUDE: latitude, _LONGITUDE: longitude};
+  Function get fromJsonFunction => _$GeoLocationFromJson;
+  factory GeoLocation.fromJson(Map<String, dynamic> json) =>
+      FromJsonFactory().fromJson<GeoLocation>(json);
 
   @override
-  String toString() => '($_latitude, $_longitude)';
+  Map<String, dynamic> toJson() => _$GeoLocationToJson(this);
+
+  @override
+  String toString() => '($latitude, $longitude)';
 }
 
 /// A [LocationSample] holds a 2D [GeoLocation] spatial data point
 /// as well as a [DateTime] value s.t. it may be temporally ordered
-class LocationSample implements Serializable, GeoSpatial, Timestamped {
-  DateTime _dateTime;
-  GeoLocation _geoLocation;
-
-  LocationSample(this._geoLocation, this._dateTime);
-
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
+class LocationSample extends Serializable implements GeoSpatial, Timestamped {
   @override
-  DateTime get dateTime => _dateTime;
-
+  DateTime dateTime;
   @override
-  GeoLocation get geoLocation => _geoLocation;
+  GeoLocation geoLocation;
+
+  LocationSample(this.geoLocation, this.dateTime);
 
   double? get latitude => geoLocation.latitude;
-
   double? get longitude => geoLocation.longitude;
-
-  @override
-  Map<String, dynamic> toJson() => {
-        _GEO_LOCATION: geoLocation.toJson(),
-        _DATE_TIME: json.encode(dateTime.millisecondsSinceEpoch)
-      };
-
-  factory LocationSample.fromJson(Map<String, dynamic> json) {
-    /// Parse, i.e. perform type check
-    GeoLocation pos =
-        GeoLocation.fromJson(json[_GEO_LOCATION] as Map<String, dynamic>);
-    int millis = int.parse(json[_DATE_TIME] as String);
-    DateTime dt = DateTime.fromMillisecondsSinceEpoch(millis);
-    return LocationSample(pos, dt);
-  }
 
   LocationSample addNoise() {
     double lat = geoLocation.latitude * 1.000001;
@@ -118,7 +78,15 @@ class LocationSample implements Serializable, GeoSpatial, Timestamped {
   }
 
   @override
-  String toString() => '($latitude, $longitude) @ $_dateTime';
+  Function get fromJsonFunction => _$LocationSampleFromJson;
+  factory LocationSample.fromJson(Map<String, dynamic> json) =>
+      FromJsonFactory().fromJson<LocationSample>(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$LocationSampleToJson(this);
+
+  @override
+  String toString() => '($latitude, $longitude) @ $dateTime';
 }
 
 /// A [Stop] represents a cluster of [LocationSample] which were 'close' to each other
@@ -126,12 +94,14 @@ class LocationSample implements Serializable, GeoSpatial, Timestamped {
 /// A [Stop] has an assigned [placeId] which links it to a [Place].
 /// At initialization a stop will be assigned to the 'Noise' place (with id -1),
 /// and only after all places have been identified will a [Place] be assigned.
-class Stop implements Serializable, GeoSpatial, Timestamped {
-  GeoLocation _geoLocation;
-  int _placeId = -1;
-  DateTime _arrival, _departure;
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
+class Stop extends Serializable implements GeoSpatial, Timestamped {
+  @override
+  GeoLocation geoLocation;
+  int placeId = -1;
+  DateTime arrival, departure;
 
-  Stop(this._geoLocation, this._arrival, this._departure, [int _placeId = -1]);
+  Stop(this.geoLocation, this.arrival, this.departure, [int placeId = -1]);
 
   /// Construct stop from point cloud
   factory Stop.fromLocationSamples(List<LocationSample> locationSamples,
@@ -143,16 +113,7 @@ class Stop implements Serializable, GeoSpatial, Timestamped {
   }
 
   @override
-  DateTime get dateTime => _arrival;
-
-  @override
-  GeoLocation get geoLocation => _geoLocation;
-
-  DateTime get departure => _departure;
-
-  DateTime get arrival => _arrival;
-
-  int get placeId => _placeId;
+  DateTime get dateTime => arrival;
 
   List<double> get hourSlots {
     int startHour = arrival.hour;
@@ -189,62 +150,60 @@ class Stop implements Serializable, GeoSpatial, Timestamped {
           departure.millisecondsSinceEpoch - arrival.millisecondsSinceEpoch);
 
   @override
-  Map<String, dynamic> toJson() => {
-        _GEO_LOCATION: geoLocation.toJson(),
-        _PLACE_ID: placeId,
-        _ARRIVAL: arrival.millisecondsSinceEpoch,
-        _DEPARTURE: departure.millisecondsSinceEpoch
-      };
+  Function get fromJsonFunction => _$StopFromJson;
+  factory Stop.fromJson(Map<String, dynamic> json) =>
+      FromJsonFactory().fromJson<Stop>(json);
 
-  factory Stop.fromJson(Map<String, dynamic> json) => Stop(
-      GeoLocation.fromJson(json[_GEO_LOCATION] as Map<String, dynamic>),
-      DateTime.fromMillisecondsSinceEpoch(json[_ARRIVAL] as int),
-      DateTime.fromMillisecondsSinceEpoch(json[_DEPARTURE] as int),
-      json[_PLACE_ID] as int);
+  @override
+  Map<String, dynamic> toJson() => _$StopToJson(this);
 
   @override
   String toString() =>
-      'Stop at place $placeId, (${_geoLocation.toString()}) [$arrival - $departure] (Duration: $duration) ';
+      'Stop at place $placeId, (${geoLocation.toString()}) [$arrival - $departure] (Duration: $duration) ';
 }
 
 /// A [Place] is a cluster of [Stop]s found by the DBSCAN algorithm
 /// https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf
-class Place {
-  final int _id;
-  final List<Stop> _stops;
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
+class Place extends Serializable {
+  final int id;
+  final List<Stop> stops;
   GeoLocation? _geoLocation;
 
-  Place(this._id, this._stops);
+  Place(this.id, this.stops);
 
-  Duration get duration =>
-      _stops.map((s) => s.duration).reduce((a, b) => a + b);
+  Duration get duration => stops.map((s) => s.duration).reduce((a, b) => a + b);
 
-  Duration durationForDate(DateTime? d) => _stops
+  Duration durationForDate(DateTime? d) => stops
       .where((s) => s.arrival.midnight == d)
       .map((s) => s.duration)
       .fold(const Duration(), (a, b) => a + b);
 
-  int get id => _id;
+  GeoLocation? get geoLocation => _geoLocation ??= _computeCentroid(stops);
 
-  List<Stop> get stops => _stops;
-
-  GeoLocation? get geoLocation => _geoLocation ??= _computeCentroid(_stops);
+  @override
+  Function get fromJsonFunction => _$PlaceFromJson;
+  factory Place.fromJson(Map<String, dynamic> json) =>
+      FromJsonFactory().fromJson<Place>(json);
+  @override
+  Map<String, dynamic> toJson() => _$PlaceToJson(this);
 
   @override
   String toString() =>
-      'Place ID: $_id, at ${geoLocation.toString()} ($duration)';
+      'Place ID: $id, at ${geoLocation.toString()} ($duration)';
 }
 
 /// A [Move] is a transfer from one [Stop] to another.
 /// A set of features can be derived from this such as the haversine distance between
 /// the stops, the duration of the move, and thereby also the average travel speed.
-class Move implements Serializable, Timestamped {
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
+class Move extends Serializable implements Timestamped {
   Stop stopFrom, stopTo;
 
   /// The haversine distance through all the samples between the two stops
   double? distance;
 
-  Move(this.stopFrom, this.stopTo, this.distance);
+  Move(this.stopFrom, this.stopTo, [this.distance]);
 
   /// Create a Move with a path of samples between two stops
   factory Move.fromPath(Stop a, Stop b, List<LocationSample> path) {
@@ -279,31 +238,29 @@ class Move implements Serializable, Timestamped {
   DateTime get dateTime => stopFrom.arrival;
 
   @override
-  Map<String, dynamic> toJson() => {
-        _STOP_FROM: stopFrom.toJson(),
-        _STOP_TO: stopTo.toJson(),
-        _DISTANCE: distance
-      };
+  Function get fromJsonFunction => _$MoveFromJson;
+  factory Move.fromJson(Map<String, dynamic> json) =>
+      FromJsonFactory().fromJson<Move>(json);
 
-  factory Move.fromJson(Map<String, dynamic> json) => Move(
-      Stop.fromJson(json[_STOP_FROM] as Map<String, dynamic>),
-      Stop.fromJson(json[_STOP_TO] as Map<String, dynamic>),
-      json[_DISTANCE] as double);
+  @override
+  Map<String, dynamic> toJson() => _$MoveToJson(this);
 
   @override
   String toString() =>
       'Move (Place ${stopFrom.placeId} [${stopFrom.dateTime}] -> Place ${stopTo.placeId} [${stopTo.dateTime}]) ($duration) (${distance!.toInt()} meters)';
 }
 
-class _HourMatrix {
-  List<List<double>> _matrix;
+class HourMatrix {
+  List<List<double>> matrix;
   late int _numberOfPlaces;
 
-  _HourMatrix(this._matrix) {
-    _numberOfPlaces = _matrix.first.length;
+  int get numberOfPlaces => _numberOfPlaces;
+
+  HourMatrix(this.matrix) {
+    _numberOfPlaces = matrix.first.length;
   }
 
-  factory _HourMatrix.fromStops(List<Stop> stops, int numPlaces) {
+  factory HourMatrix.fromStops(List<Stop> stops, int numPlaces) {
     // Init 2d matrix with 24 rows and cols equal to number of places
     List<List<double>> matrix = List.generate(
         HOURS_IN_A_DAY, (_) => List<double>.filled(numPlaces, 0.0));
@@ -318,36 +275,34 @@ class _HourMatrix {
         }
       }
     }
-    return _HourMatrix(matrix);
+    return HourMatrix(matrix);
   }
 
   // ignore: unused_element
-  factory _HourMatrix.routineMatrix(List<_HourMatrix> matrices) {
+  factory HourMatrix.routineMatrix(List<HourMatrix> matrices) {
     int nDays = matrices.length;
     int nPlaces = matrices.first.matrix.first.length;
     List<List<double>> avg = zeroMatrix(HOURS_IN_A_DAY, nPlaces);
 
-    for (_HourMatrix m in matrices) {
+    for (HourMatrix m in matrices) {
       for (int i = 0; i < HOURS_IN_A_DAY; i++) {
         for (int j = 0; j < nPlaces; j++) {
           avg[i][j] += m.matrix[i][j] / nDays;
         }
       }
     }
-    return _HourMatrix(avg);
+    return HourMatrix(avg);
   }
-
-  List<List<double>> get matrix => _matrix;
 
   /// Features
   int get homePlaceId {
     int startHour = 0, endHour = 6;
 
-    List<double> hourSpentAtPlace = List.filled(_numberOfPlaces, 0.0);
+    List<double> hourSpentAtPlace = List.filled(numberOfPlaces, 0.0);
 
-    for (int placeId = 0; placeId < _numberOfPlaces; placeId++) {
+    for (int placeId = 0; placeId < numberOfPlaces; placeId++) {
       for (int hour = startHour; hour < endHour; hour++) {
-        hourSpentAtPlace[placeId] += _matrix[hour][placeId];
+        hourSpentAtPlace[placeId] += matrix[hour][placeId];
       }
     }
     double timeSpentAtNight = hourSpentAtPlace.fold(0.0, (a, b) => a + b);
@@ -360,7 +315,7 @@ class _HourMatrix {
   double get sum {
     double s = 0.0;
     for (int i = 0; i < HOURS_IN_A_DAY; i++) {
-      for (int j = 0; j < _numberOfPlaces; j++) {
+      for (int j = 0; j < numberOfPlaces; j++) {
         s += matrix[i][j];
       }
     }
@@ -368,10 +323,10 @@ class _HourMatrix {
   }
 
   /// Calculates the error between two matrices
-  double computeOverlap(_HourMatrix other) {
+  double computeOverlap(HourMatrix other) {
     /// Check that dimensions match
     assert(other.matrix.length == HOURS_IN_A_DAY &&
-        other.matrix.first.length == _matrix.first.length);
+        other.matrix.first.length == matrix.first.length);
 
     double maxOverlap = min(sum, other.sum);
 
@@ -381,7 +336,7 @@ class _HourMatrix {
     double overlap = 0.0;
     //
     for (int i = 0; i < HOURS_IN_A_DAY; i++) {
-      for (int j = 0; j < _numberOfPlaces; j++) {
+      for (int j = 0; j < numberOfPlaces; j++) {
         /// If overlap in time-place matrix,
         /// add the overlap to the total overlap.
         /// The overlap is equal to the minimum of the two quantities
@@ -400,14 +355,14 @@ class _HourMatrix {
     String s = '\n';
     s += 'Home place ID: $homePlaceId\n';
     s += 'Matrix\t\t';
-    for (int p = 0; p < _numberOfPlaces; p++) {
+    for (int p = 0; p < numberOfPlaces; p++) {
       s += 'Place $p\t\t';
     }
     s += '\n';
     for (int hour = 0; hour < HOURS_IN_A_DAY; hour++) {
       s += 'Hour ${hour.toString().padLeft(2, '0')}\t\t';
 
-      for (double e in _matrix[hour]) {
+      for (double e in matrix[hour]) {
         s += '${e.toStringAsFixed(3)}\t\t';
       }
       s += '\n';

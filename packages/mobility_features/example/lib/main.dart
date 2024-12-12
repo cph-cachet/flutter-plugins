@@ -10,12 +10,12 @@ part 'stops_page.dart';
 part 'moves_page.dart';
 part 'places_page.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 Widget entry(String key, String value, Icon icon) {
   return Container(
       padding: const EdgeInsets.all(2),
-      margin: EdgeInsets.all(3),
+      margin: const EdgeInsets.all(3),
       child: ListTile(
         leading: icon,
         title: Text(key),
@@ -26,7 +26,7 @@ Widget entry(String key, String value, Icon icon) {
 String formatDate(DateTime date) => '${date.year}/${date.month}/${date.day}';
 
 String interval(DateTime a, DateTime b) {
-  String pad(int x) => '${x.toString().padLeft(2, '0')}';
+  String pad(int x) => x.toString().padLeft(2, '0');
   return '${pad(a.hour)}:${pad(a.minute)}:${pad(a.second)} - ${pad(b.hour)}:${pad(b.minute)}:${pad(b.second)}';
 }
 
@@ -37,18 +37,20 @@ String formatDuration(Duration duration) {
   return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
 }
 
-final stopIcon = Icon(Icons.my_location);
-final moveIcon = Icon(Icons.directions_walk);
-final placeIcon = Icon(Icons.place);
-final featuresIcon = Icon(Icons.assessment);
-final homeStayIcon = Icon(Icons.home);
-final distanceTraveledIcon = Icon(Icons.card_travel);
-final entropyIcon = Icon(Icons.equalizer);
-final varianceIcon = Icon(Icons.swap_calls);
+const stopIcon = Icon(Icons.my_location);
+const moveIcon = Icon(Icons.directions_walk);
+const placeIcon = Icon(Icons.place);
+const featuresIcon = Icon(Icons.assessment);
+const homeStayIcon = Icon(Icons.home);
+const distanceTraveledIcon = Icon(Icons.card_travel);
+const entropyIcon = Icon(Icons.equalizer);
+const varianceIcon = Icon(Icons.swap_calls);
 
 enum AppState { NO_FEATURES, CALCULATING_FEATURES, FEATURES_READY }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -56,7 +58,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Mobility Features Example'),
+      home: const HomePage(title: 'Mobility Features Example'),
     );
   }
 }
@@ -64,15 +66,15 @@ class MyApp extends StatelessWidget {
 String dtoToString(LocationDto dto) =>
     '${dto.latitude}, ${dto.longitude} @ ${DateTime.fromMillisecondsSinceEpoch(dto.time ~/ 1)}';
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, required this.title});
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class HomePageState extends State<HomePage> {
   AppState _state = AppState.NO_FEATURES;
 
   int _currentIndex = 0;
@@ -90,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     // Set up Mobility Features
-    MobilityFeatures().stopDuration = Duration(seconds: 20);
+    MobilityFeatures().stopDuration = const Duration(seconds: 20);
     MobilityFeatures().placeRadius = 50.0;
     MobilityFeatures().stopRadius = 5.0;
 
@@ -103,11 +105,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   /// Set up streams:
-  /// * Location streaming to MobilityContext
-  /// * Subscribe to MobilityContext updates
+  ///  * Location streaming to MobilityContext
+  ///  * Subscribe to MobilityContext updates
   Future<void> streamInit() async {
     await requestNotificationPermission();
-    await requestManageExternalStoragePermission();
 
     // ask for location permissions, if not already granted
     if (!await isLocationAlwaysGranted()) {
@@ -116,10 +117,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     locationStream = LocationManager().locationStream;
-
-    // subscribe to location stream - in case this is needed in the app
-    //locationSubscription.cancel();
-    locationSubscription = locationStream.listen(onLocationUpdate);
 
     // start the location service (specific to carp_background_location)
     await LocationManager().start();
@@ -135,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // start listening to incoming MobilityContext objects
     mobilitySubscription =
-        await MobilityFeatures().contextStream.listen(onMobilityContext);
+        MobilityFeatures().contextStream.listen(onMobilityContext);
   }
 
   Future<bool> isLocationAlwaysGranted() async {
@@ -186,21 +183,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> requestManageExternalStoragePermission() async {
-    final result = await Permission.manageExternalStorage.request();
-
-    if (result == PermissionStatus.granted) {
-      print('MANAGE_EXTERNAL_STORAGE GRANTED');
-    } else {
-      print('MANAGE_EXTERNAL_STORAGE NOT GRANTED');
-    }
-  }
-
-  /// Called whenever location changes.
-  void onLocationUpdate(LocationDto dto) {
-    print(dtoToString(dto));
-  }
-
   /// Called whenever mobility context changes.
   void onMobilityContext(MobilityContext context) {
     print('Context received: ${context.toJson()}');
@@ -220,8 +202,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget get featuresOverview {
     return ListView(
       children: <Widget>[
-        entry("Stops", "${_mobilityContext.stops.length}", stopIcon),
-        entry("Moves", "${_mobilityContext.moves.length}", moveIcon),
+        entry("Stops", "${_mobilityContext.stops?.length}", stopIcon),
+        entry("Moves", "${_mobilityContext.moves?.length}", moveIcon),
         entry("Significant Places",
             "${_mobilityContext.numberOfSignificantPlaces}", placeIcon),
         entry(
@@ -249,8 +231,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Widget> get contentNoFeatures {
     return [
       Container(
-          margin: EdgeInsets.all(25),
-          child: Text(
+          margin: const EdgeInsets.all(25),
+          child: const Text(
             'Move around to start generating features',
             style: TextStyle(fontSize: 20),
           ))
@@ -260,15 +242,15 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Widget> get contentFeaturesReady {
     return [
       Container(
-          margin: EdgeInsets.all(25),
+          margin: const EdgeInsets.all(25),
           child: Column(children: [
-            Text(
+            const Text(
               'Statistics for today,',
               style: TextStyle(fontSize: 20),
             ),
             Text(
-              '${formatDate(_mobilityContext.date)}',
-              style: TextStyle(fontSize: 20, color: Colors.blue),
+              formatDate(_mobilityContext.date!),
+              style: const TextStyle(fontSize: 20, color: Colors.blue),
             ),
           ])),
       Expanded(child: featuresOverview),
@@ -277,10 +259,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget get content {
     List<Widget> children;
-    if (_state == AppState.FEATURES_READY)
+    if (_state == AppState.FEATURES_READY) {
       children = contentFeaturesReady;
-    else
+    } else {
       children = contentNoFeatures;
+    }
     return Column(children: children);
   }
 
@@ -294,7 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: onTabTapped,
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: featuresIcon, label: 'Features'),
           BottomNavigationBarItem(icon: stopIcon, label: 'Stops'),
           BottomNavigationBarItem(icon: placeIcon, label: 'Places'),
@@ -309,14 +292,16 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Place> places = [];
 
     if (_state == AppState.FEATURES_READY) {
-      for (var x in _mobilityContext.stops) print(x);
-      for (var x in _mobilityContext.moves) {
+      for (var x in _mobilityContext.stops!) {
+        print(x);
+      }
+      for (var x in _mobilityContext.moves!) {
         print(x);
         print('${x.stopFrom} --> ${x.stopTo}');
       }
-      stops = _mobilityContext.stops;
-      moves = _mobilityContext.moves;
-      places = _mobilityContext.places;
+      stops = _mobilityContext.stops ?? [];
+      moves = _mobilityContext.moves ?? [];
+      places = _mobilityContext.places ?? [];
     }
 
     List<Widget> pages = [

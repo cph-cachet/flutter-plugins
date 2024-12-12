@@ -3,9 +3,12 @@ part of '../mobility_features.dart';
 /// Main entry for configuring and listening for mobility features.
 /// Used as a singleton `MobilityFeatures()`.
 class MobilityFeatures {
+  static final MobilityFeatures _instance = MobilityFeatures._();
+
   double _stopRadius = 5, _placeRadius = 50;
   Duration _stopDuration = const Duration(seconds: 20);
 
+  final _streamController = StreamController<MobilityContext>.broadcast();
   StreamSubscription<LocationSample>? _subscription;
   MobilitySerializer<LocationSample>? _serializerSamples;
   late MobilitySerializer<Stop> _serializerStops;
@@ -13,7 +16,8 @@ class MobilityFeatures {
   List<Stop> _stops = [];
   List<Move> _moves = [];
   List<Place> _places = [];
-  List<LocationSample> _cluster = [], _buffer = [], _samples = [];
+  List<LocationSample> _cluster = [];
+  final List<LocationSample> _buffer = [], _samples = [];
   int _saveEvery = 10;
   bool debug = false;
 
@@ -23,23 +27,30 @@ class MobilityFeatures {
     }
   }
 
-  // Outgoing stream
-  final _streamController = StreamController<MobilityContext>.broadcast();
-
-  Stream<MobilityContext> get contextStream => _streamController.stream;
-
   // Private constructor
-  MobilityFeatures._();
-
-  // Private Singleton field
-  static final MobilityFeatures _instance = MobilityFeatures._();
+  MobilityFeatures._() {
+    FromJsonFactory().registerAll([
+      GeoLocation(0, 0),
+      LocationSample(GeoLocation(0, 0), DateTime.now()),
+      Stop(GeoLocation(0, 0), DateTime.now(), DateTime.now()),
+      Place(0, []),
+      Move(Stop(GeoLocation(0, 0), DateTime.now(), DateTime.now()),
+          Stop(GeoLocation(0, 0), DateTime.now(), DateTime.now()))
+    ]);
+  }
 
   /// Singleton instance of MobilityFeatures.
   factory MobilityFeatures() => _instance;
 
-  /// Listen to a Stream of [LocationSample].
-  /// The subscription will be stored as a [StreamSubscription]
-  /// which may be cancelled later.
+  /// A stream of generated mobility context objects.
+  Stream<MobilityContext> get contextStream => _streamController.stream;
+
+  /// Start listening to the [stream] of [LocationSample] updates.
+  /// This will start calculating [MobilityContext] instances, which will be
+  /// delivered on the [contextStream] stream.
+  ///
+  /// Use [stopListening] to stop listening to the location stream and hence stop
+  /// generating mobility context objects.
   Future<void> startListening(Stream<LocationSample> stream) async {
     await _handleInit();
 
@@ -79,8 +90,12 @@ class MobilityFeatures {
       _places = _findPlaces(_stops, placeRadius: _placeRadius);
 
       // Compute features
-      MobilityContext context =
-          MobilityContext._(_stops, _places, _moves, date);
+      MobilityContext context = MobilityContext.fromMobility(
+        date,
+        _stops,
+        _places,
+        _moves,
+      );
       _streamController.add(context);
     }
   }
@@ -131,22 +146,22 @@ class MobilityFeatures {
 
   void _clearEverything() {
     _print('cleared');
-    _serializerStops.flush();
-    _serializerMoves.flush();
-    _stops = [];
-    _moves = [];
-    _places = [];
-    _cluster = [];
-    _buffer = [];
+    _serializerStops.clear();
+    _serializerMoves.clear();
+    _stops.clear();
+    _moves.clear();
+    _places.clear();
+    _cluster.clear();
+    _buffer.clear();
   }
 
   /// Save a sample to the buffer and store samples on disk if buffer overflows
   void _addToBuffer(LocationSample sample) {
     _buffer.add(sample);
     if (_buffer.length >= _saveEvery) {
-      _serializerSamples!.save(_buffer);
+      _serializerSamples!.append(_buffer);
       _print('Stored buffer to disk');
-      _buffer = [];
+      _buffer.clear();
     }
   }
 
@@ -170,28 +185,32 @@ class MobilityFeatures {
       _places = _findPlaces(_stops);
 
       // Store to disk
-      _serializerStops.flush();
-      _serializerStops.save(_stops);
+      _serializerStops.clear();
+      _serializerStops.append(_stops);
 
       // Extract date
       DateTime date = _cluster.last.dateTime.midnight;
 
       if (stopPrev != null) {
         _moves = _findMoves(_stops, _samples);
-        _serializerMoves.flush();
-        _serializerMoves.save(_moves);
+        _serializerMoves.clear();
+        _serializerMoves.append(_moves);
       }
 
       // Compute features
-      MobilityContext context =
-          MobilityContext._(_stops, _places, _moves, date);
+      MobilityContext context = MobilityContext.fromMobility(
+        date,
+        _stops,
+        _places,
+        _moves,
+      );
       _streamController.add(context);
     }
 
     // Reset samples etc
-    _cluster = [];
-    _serializerSamples!.flush();
-    _buffer = [];
+    _cluster.clear();
+    _serializerSamples!.clear();
+    _buffer.clear();
   }
 
   /// Configure the stop-duration for the stop algorithm
@@ -215,7 +234,7 @@ class MobilityFeatures {
 
   Future<void> saveSamples(List<LocationSample> samples) async {
     final serializer = await _locationSampleSerializer;
-    serializer.save(samples);
+    serializer.append(samples);
   }
 
   Future<List<LocationSample>> loadSamples() async {
