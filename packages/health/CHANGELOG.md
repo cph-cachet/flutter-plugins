@@ -1,3 +1,7 @@
+## 11.2.0
+
+* Add lean mass data type [#1078](https://github.com/cph-cachet/flutter-plugins/issues/1078)
+
 ## 11.1.1
 
 * Fix of [#1059](https://github.com/cph-cachet/flutter-plugins/issues/1059)

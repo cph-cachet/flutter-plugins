@@ -48,6 +48,7 @@ const val BLOOD_OXYGEN = "BLOOD_OXYGEN"
 const val BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
 const val BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
 const val BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+const val LEAN_BODY_MASS = "LEAN_BODY_MASS"
 const val BODY_TEMPERATURE = "BODY_TEMPERATURE"
 const val BODY_WATER_MASS = "BODY_WATER_MASS"
 const val DISTANCE_DELTA = "DISTANCE_DELTA"
@@ -1083,6 +1084,29 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ),
                 )
 
+            is LeanBodyMassRecord ->
+                return listOf(
+                    mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
+                        "value" to
+                                record.mass
+                                    .inKilograms,
+                        "date_from" to
+                                record.time
+                                    .toEpochMilli(),
+                        "date_to" to
+                                record.time
+                                    .toEpochMilli(),
+                        "source_id" to "",
+                        "source_name" to
+                                metadata.dataOrigin
+                                    .packageName,
+                        "recording_method" to
+                                metadata.recordingMethod
+                    ),
+                )
+
             is StepsRecord ->
                 return listOf(
                     mapOf<String, Any>(
@@ -1588,6 +1612,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         percentage =
                         Percentage(
+                            value
+                        ),
+                        zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
+                    )
+
+                LEAN_BODY_MASS ->
+                    LeanBodyMassRecord(
+                        time =
+                        Instant.ofEpochMilli(
+                            startTime
+                        ),
+                        mass =
+                        Mass.kilograms(
                             value
                         ),
                         zoneOffset = null,
@@ -2398,6 +2438,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private val mapToType =
         hashMapOf(
             BODY_FAT_PERCENTAGE to BodyFatRecord::class,
+            LEAN_BODY_MASS to LeanBodyMassRecord::class,
             HEIGHT to HeightRecord::class,
             WEIGHT to WeightRecord::class,
             STEPS to StepsRecord::class,
@@ -2438,7 +2479,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // "BasalMetabolicRate" to BasalMetabolicRateRecord::class,
             // "BloodGlucose" to BloodGlucoseRecord::class,
             // "BloodPressure" to BloodPressureRecord::class,
-            // "BodyFat" to BodyFatRecord::class,
             // "BodyTemperature" to BodyTemperatureRecord::class,
             // "BoneMass" to BoneMassRecord::class,
             // "CervicalMucus" to CervicalMucusRecord::class,
@@ -2451,7 +2491,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // "HeartRate" to HeartRateRecord::class,
             // "Height" to HeightRecord::class,
             // "Hydration" to HydrationRecord::class,
-            // "LeanBodyMass" to LeanBodyMassRecord::class,
             // "MenstruationPeriod" to MenstruationPeriodRecord::class,
             // "Nutrition" to NutritionRecord::class,
             // "OvulationTest" to OvulationTestRecord::class,
