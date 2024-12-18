@@ -417,9 +417,10 @@ class _HealthAppState extends State<HealthApp> {
 
     if (stepsPermission) {
       try {
-        steps = await Health().getTotalStepsInInterval(midnight, now,
-            includeManualEntry:
-                !recordingMethodsToFilter.contains(RecordingMethod.manual));
+        steps = await Health().getTotalStepsInInterval(midnight, now, includeManualEntry: false);
+        // steps = await Health().getTotalStepsInInterval(midnight, now,
+        //     includeManualEntry:
+        //         !recordingMethodsToFilter.contains(RecordingMethod.manual));
       } catch (error) {
         debugPrint("Exception in getTotalStepsInInterval: $error");
       }
