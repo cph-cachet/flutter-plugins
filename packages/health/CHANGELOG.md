@@ -1,3 +1,8 @@
+## 12.0.0
+
+* Fix of [#1072](https://github.com/cph-cachet/flutter-plugins/issues/1072) and [#1074](https://github.com/cph-cachet/flutter-plugins/issues/1074)
+* Fix issue where iOS delete not deleting own records - PR [#1104](https://github.com/cph-cachet/flutter-plugins/pull/1104)
+
 ## 11.1.1
 
 * Fix of [#1059](https://github.com/cph-cachet/flutter-plugins/issues/1059)
