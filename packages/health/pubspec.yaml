@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl: '>=0.18.0 <0.20.0'
-  device_info_plus: '>=9.0.0 <11.0.0'
+  intl: ^0.20.1
+  device_info_plus: ^11.2.0
   json_annotation: ^4.8.0
   carp_serializable: ^2.0.0 # polymorphic json serialization
 
