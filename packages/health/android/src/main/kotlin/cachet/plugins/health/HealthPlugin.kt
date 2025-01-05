@@ -1516,7 +1516,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         "sugar" to record.sugar?.inGrams,
                         "water" to null,
                         "zinc" to record.zinc?.inGrams,
-                        "name" to record.name,
+                        "name" to (record.name ?: ""),
                         "meal_type" to
                                 (mapTypeToMealType[
                                     record.mealType]
