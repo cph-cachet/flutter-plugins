@@ -1,6 +1,11 @@
 ## 12.0.0
 
 * Add lean mass data type [#1078](https://github.com/cph-cachet/flutter-plugins/issues/1078) - PR [#1097](https://github.com/cph-cachet/flutter-plugins/pull/1097)
+  * The following AndroidManifest values are required to READ/WRITE `LEAN_BODY_MASS`:
+  ```XML
+  <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS"/>
+  <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS"/>
+  ```
 * Fix of [#1072](https://github.com/cph-cachet/flutter-plugins/issues/1072) and [#1074](https://github.com/cph-cachet/flutter-plugins/issues/1074)
 * Fix issue where iOS delete not deleting own records - PR [#1104](https://github.com/cph-cachet/flutter-plugins/pull/1104)
 * Fix of [#950](https://github.com/cph-cachet/flutter-plugins/issues/950) - PR [#1103](https://github.com/cph-cachet/flutter-plugins/pull/1103)
