@@ -10,6 +10,8 @@ import 'package:carp_serializable/carp_serializable.dart';
 void main() => runApp(HealthApp());
 
 class HealthApp extends StatefulWidget {
+  const HealthApp({super.key});
+
   @override
   _HealthAppState createState() => _HealthAppState();
 }
@@ -175,7 +177,9 @@ class _HealthAppState extends State<HealthApp> {
     // filter out duplicates
     _healthDataList = Health().removeDuplicates(_healthDataList);
 
-    _healthDataList.forEach((data) => debugPrint(toJsonString(data)));
+    for (var data in _healthDataList) {
+      debugPrint(toJsonString(data));
+    }
 
     // update the UI to display the results
     setState(() {
@@ -662,7 +666,7 @@ class _HealthAppState extends State<HealthApp> {
         if (p.value is AudiogramHealthValue) {
           return ListTile(
             title: Text("${p.typeString}: ${p.value}"),
-            trailing: Text('${p.unitString}'),
+            trailing: Text(p.unitString),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
@@ -671,7 +675,7 @@ class _HealthAppState extends State<HealthApp> {
             title: Text(
                 "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
             trailing: Text(
-                '${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
+                (p.value as WorkoutHealthValue).workoutActivityType.name),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
@@ -686,46 +690,46 @@ class _HealthAppState extends State<HealthApp> {
         }
         return ListTile(
           title: Text("${p.typeString}: ${p.value}"),
-          trailing: Text('${p.unitString}'),
+          trailing: Text(p.unitString),
           subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
         );
       });
 
-  Widget _contentNoData = const Text('No Data to show');
+  final Widget _contentNoData = const Text('No Data to show');
 
-  Widget _contentNotFetched =
+  final Widget _contentNotFetched =
       const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-    const Text("Press 'Auth' to get permissions to access health data."),
-    const Text("Press 'Fetch Dat' to get health data."),
-    const Text("Press 'Add Data' to add some random health data."),
-    const Text("Press 'Delete Data' to remove some random health data."),
+    Text("Press 'Auth' to get permissions to access health data."),
+    Text("Press 'Fetch Dat' to get health data."),
+    Text("Press 'Add Data' to add some random health data."),
+    Text("Press 'Delete Data' to remove some random health data."),
   ]);
 
-  Widget _authorized = const Text('Authorization granted!');
+  final Widget _authorized = const Text('Authorization granted!');
 
-  Widget _authorizationNotGranted = const Column(
+  final Widget _authorizationNotGranted = const Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      const Text('Authorization not given.'),
-      const Text(
+      Text('Authorization not given.'),
+      Text(
           'For Google Health Connect please check if you have added the right permissions and services to the manifest file.'),
-      const Text('For Apple Health check your permissions in Apple Health.'),
+      Text('For Apple Health check your permissions in Apple Health.'),
     ],
   );
 
   Widget _contentHealthConnectStatus = const Text(
       'No status, click getHealthConnectSdkStatus to get the status.');
 
-  Widget _dataAdded = const Text('Data points inserted successfully.');
+  final Widget _dataAdded = const Text('Data points inserted successfully.');
 
-  Widget _dataDeleted = const Text('Data points deleted successfully.');
+  final Widget _dataDeleted = const Text('Data points deleted successfully.');
 
   Widget get _stepsFetched => Text('Total number of steps: $_nofSteps.');
 
-  Widget _dataNotAdded =
+  final Widget _dataNotAdded =
       const Text('Failed to add data.\nDo you have permissions to add data?');
 
-  Widget _dataNotDeleted = const Text('Failed to delete data');
+  final Widget _dataNotDeleted = const Text('Failed to delete data');
 
   Widget get _content => switch (_state) {
         AppState.DATA_READY => _contentDataReady,
