@@ -44,6 +44,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.HEADACHE_MODERATE,
   HealthDataType.HEADACHE_SEVERE,
   HealthDataType.HEADACHE_UNSPECIFIED,
+  HealthDataType.LEAN_BODY_MASS,
 
   // note that a phone cannot write these ECG-based types - only read them
   // HealthDataType.ELECTROCARDIOGRAM,
@@ -76,6 +77,7 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.BODY_FAT_PERCENTAGE,
   HealthDataType.HEIGHT,
   HealthDataType.WEIGHT,
+  HealthDataType.LEAN_BODY_MASS,
   // HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
   HealthDataType.HEART_RATE,

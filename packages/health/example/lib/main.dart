@@ -178,7 +178,15 @@ class _HealthAppState extends State<HealthApp> {
     _healthDataList = Health().removeDuplicates(_healthDataList);
 
     for (var data in _healthDataList) {
-      debugPrint(toJsonString(data));
+      try {
+        // print the data points to the console
+        debugPrint(toJsonString(data));
+      } catch (error) {
+        // FIXME: Getting json failed since its instance of 'HealthDataPoint'
+        debugPrint("Exception in printDataPoint: $error");
+        // raise the error to stop the app from crashing
+        rethrow;
+      }
     }
 
     // update the UI to display the results
@@ -285,6 +293,12 @@ class _HealthAppState extends State<HealthApp> {
         type: HealthDataType.SLEEP_DEEP,
         startTime: earlier,
         endTime: now);
+    success &= await Health().writeHealthData(
+      value: 22, 
+      type: HealthDataType.LEAN_BODY_MASS, 
+      startTime: earlier,
+      endTime: now,
+      );
 
     // specialized write methods
     success &= await Health().writeBloodOxygen(
