@@ -355,6 +355,9 @@ The plugin supports the following [`HealthDataType`](https://pub.dev/documentati
 | ELECTROCARDIOGRAM            | VOLT                    | yes              |                           | Requires Apple Watch to write the data                                                                                             |
 | NUTRITION                    | NO_UNIT                 | yes              | yes                       |                                                                                                                                    |
 | INSULIN_DELIVERY             | INTERNATIONAL_UNIT      | yes              |                           |                                                                                                                                    |
+| MENSTRUATION_FLOW            | NO_UNIT                 | yes              | yes                       |                                                                                                                                    |
+| WATER_TEMPERATURE            | DEGREE_CELSIUS          | yes              |                           | Related to/Requires Apple Watch Ultra's Underwater Diving Workout                                                                  |
+| UNDERWATER_DEPTH             | METER                   | yes              |                           | Related to/Requires Apple Watch Ultra's Underwater Diving Workout                                                                  |
 
 ## Workout Types
 
@@ -443,6 +446,7 @@ The plugin supports the following [`HealthWorkoutActivityType`](https://pub.dev/
 | TENNIS                           | yes              | yes                       |                                                                                                 |
 | TRACK_AND_FIELD                  | yes              |                           |                                                                                                 |
 | TRADITIONAL_STRENGTH_TRAINING    | yes              | (yes)                     | on Android this will be stored as STRENGTH_TRAINING                                             |
+| UNDERWATER_DIVING                | yes              |                           |                                                                                                 |
 | VOLLEYBALL                       | yes              | yes                       |                                                                                                 |
 | WALKING                          | yes              | yes                       |                                                                                                 |
 | WATER_FITNESS                    | yes              |                           |                                                                                                 |
