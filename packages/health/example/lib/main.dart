@@ -376,6 +376,25 @@ class _HealthAppState extends State<HealthApp> {
       endTime: now,
     );
 
+    // Available on iOS 16.0+ only
+    if (Platform.isIOS) {
+      success &= await Health().writeHealthData(
+        value: 22,
+        type: HealthDataType.WATER_TEMPERATURE,
+        startTime: earlier,
+        endTime: now,
+        recordingMethod: RecordingMethod.manual
+    );
+
+    success &= await Health().writeHealthData(
+        value: 55,
+        type: HealthDataType.UNDERWATER_DEPTH,
+        startTime: earlier,
+        endTime: now,
+        recordingMethod: RecordingMethod.manual
+    );
+    }
+
     setState(() {
       _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
     });
