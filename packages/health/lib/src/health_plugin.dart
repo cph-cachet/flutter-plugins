@@ -1257,6 +1257,7 @@ class Health {
       HealthWorkoutActivityType.YOGA,
       HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
       HealthWorkoutActivityType.SWIMMING_POOL,
+      HealthWorkoutActivityType.UNDERWATER_DIVING,
     }.contains(type);
   }
 
