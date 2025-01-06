@@ -285,6 +285,12 @@ class _HealthAppState extends State<HealthApp> {
         type: HealthDataType.SLEEP_DEEP,
         startTime: earlier,
         endTime: now);
+    success &= await Health().writeHealthData(
+      value: 22, 
+      type: HealthDataType.LEAN_BODY_MASS, 
+      startTime: earlier,
+      endTime: now,
+      );
 
     // specialized write methods
     success &= await Health().writeBloodOxygen(
