@@ -178,15 +178,7 @@ class _HealthAppState extends State<HealthApp> {
     _healthDataList = Health().removeDuplicates(_healthDataList);
 
     for (var data in _healthDataList) {
-      try {
-        // print the data points to the console
-        debugPrint(toJsonString(data));
-      } catch (error) {
-        // FIXME: Getting json failed since its instance of 'HealthDataPoint'
-        debugPrint("Exception in printDataPoint: $error");
-        // raise the error to stop the app from crashing
-        rethrow;
-      }
+      debugPrint(toJsonString(data));
     }
 
     // update the UI to display the results
