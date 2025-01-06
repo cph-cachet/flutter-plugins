@@ -161,6 +161,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let GENDER = "GENDER"
     let BLOOD_TYPE = "BLOOD_TYPE"
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
+    let WATER_TEMPERATURE = "WATER_TEMPERATURE"
+    let UNDERWATER_DEPTH = "UNDERWATER_DEPTH"
     
     
     // Health Unit types
@@ -857,7 +859,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true)
                             ? RecordingMethod.manual.rawValue
                             : RecordingMethod.automatic.rawValue,
-                        "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil
+                        "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil,
+                        "dataUnitKey": unit?.unitString
                     ]
                 }
                 DispatchQueue.main.async {
@@ -1384,6 +1387,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["TAI_CHI"] = .taiChi
         workoutActivityTypeMap["WRESTLING"] = .wrestling
         workoutActivityTypeMap["OTHER"] = .other
+        if #available(iOS 17.0, *) {
+            workoutActivityTypeMap["UNDERWATER_DIVING"] = .underwaterDiving
+        }
+
         nutritionList = [
             DIETARY_ENERGY_CONSUMED, DIETARY_CARBS_CONSUMED, DIETARY_PROTEIN_CONSUMED,
             DIETARY_FATS_CONSUMED, DIETARY_CAFFEINE, DIETARY_FIBER, DIETARY_SUGAR,
@@ -1617,6 +1624,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         if #available(iOS 16.0, *) {
             dataTypesDict[ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
+
+            dataTypesDict[WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
+            dataTypesDict[UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
         } 
         
         // Concatenate heart events, headache and health data types (both may be empty)
@@ -1774,6 +1784,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             return "mixedCardio"
         case .handCycling:
             return "handCycling"
+        case .underwaterDiving:
+            return "underwaterDiving"
         default:
             return "other"
         }
