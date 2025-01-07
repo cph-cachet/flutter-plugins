@@ -342,7 +342,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
         
-        result(false)
+        result(true)
     }
     
     func hasPermission(type: HKObjectType, access: Int) -> Bool? {
