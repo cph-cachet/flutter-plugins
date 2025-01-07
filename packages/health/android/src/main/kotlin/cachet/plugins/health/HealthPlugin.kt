@@ -545,38 +545,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ),
                 )
             }
-            // Workout also needs distance and total energy burned too
-            if (typeKey == WORKOUT) {
-                if (access == 0) {
-                    permList.addAll(
-                        listOf(
-                            HealthPermission.getReadPermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getReadPermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                        ),
-                    )
-                } else {
-                    permList.addAll(
-                        listOf(
-                            HealthPermission.getReadPermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getReadPermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                            HealthPermission.getWritePermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getWritePermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                        ),
-                    )
-                }
-            }
         }
         scope.launch {
             result.success(
@@ -629,38 +597,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     ),
                 )
-            }
-            // Workout also needs distance and total energy burned too
-            if (typeKey == WORKOUT) {
-                if (access == 0) {
-                    permList.addAll(
-                        listOf(
-                            HealthPermission.getReadPermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getReadPermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                        ),
-                    )
-                } else {
-                    permList.addAll(
-                        listOf(
-                            HealthPermission.getReadPermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getReadPermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                            HealthPermission.getWritePermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getWritePermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                        ),
-                    )
-                }
             }
         }
         if (healthConnectRequestPermissionsLauncher == null) {

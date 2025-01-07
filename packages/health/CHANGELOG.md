@@ -1,5 +1,8 @@
 ## 12.0.0
 
+* **BREAKING** (Android) Remove automatic permission request of `DISTANCE_DELTA` and `TOTAL_CALORIES_BURNED` data types when requesting permission for `WORKOUT` health data type.
+  * For `WORKOUT`s that require above permissions, now those need to be requested manually.
+  * Fix [#984](https://github.com/cph-cachet/flutter-plugins/issues/984) - PR [#1055](https://github.com/cph-cachet/flutter-plugins/pull/1055)
 * Add `LEAN_BODY_MASS` data type [#1078](https://github.com/cph-cachet/flutter-plugins/issues/1078) - PR [#1097](https://github.com/cph-cachet/flutter-plugins/pull/1097)
   * The following AndroidManifest values are required to READ/WRITE `LEAN_BODY_MASS`:
   ```XML
