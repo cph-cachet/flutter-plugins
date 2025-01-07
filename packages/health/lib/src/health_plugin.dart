@@ -1104,7 +1104,7 @@ class Health {
         HealthDataType.SLEEP_IN_BED => 0,
         HealthDataType.SLEEP_ASLEEP => 1,
         HealthDataType.SLEEP_AWAKE => 2,
-        HealthDataType.SLEEP_ASLEEP => 3,
+        HealthDataType.SLEEP_LIGHT => 3,
         HealthDataType.SLEEP_DEEP => 4,
         HealthDataType.SLEEP_REM => 5,
         HealthDataType.HEADACHE_UNSPECIFIED => 0,
