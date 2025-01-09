@@ -1,19 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health/health.dart';
-import 'dart:convert';
 import 'package:carp_serializable/carp_serializable.dart';
 
-import 'mocks/device_info_mock.dart'; // Import the mock file
+import 'mocks/device_info_mock.dart'; 
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('HealthDataPoint fromJson Tests', () {
-    // Helper function to print the toJsonString,
-    // useful for debugging failed tests
-    String toJsonString(HealthDataPoint hdp) {
-      return jsonEncode(hdp.toJson());
-    }
 
     //Instantiate Health class with the Mock
     final health = Health(deviceInfo: MockDeviceInfoPlugin());
@@ -70,7 +64,6 @@ void main() {
           HealthDataUnit.METER);
 
       // debugPrint(toJsonString(hdp));
-      // don't print try to see if toJsonString works 
       expect(toJsonString(hdp), isA<String>());
 
 
@@ -103,6 +96,7 @@ void main() {
 
       expect(hdp.value, isA<NumericHealthValue>());
       expect((hdp.value as NumericHealthValue).numericValue, 123.45);
+
       // debugPrint(toJsonString(hdp));
       expect(toJsonString(hdp), isA<String>());
     });
@@ -141,6 +135,7 @@ void main() {
       expect(audiogramValue.frequencies, [1000.0, 2000.0, 3000.0]);
       expect(audiogramValue.leftEarSensitivities, [20.0, 25.0, 30.0]);
       expect(audiogramValue.rightEarSensitivities, [15.0, 20.0, 25.0]);
+      
       // debugPrint(toJsonString(hdp));
       expect(toJsonString(hdp), isA<String>());
     });
