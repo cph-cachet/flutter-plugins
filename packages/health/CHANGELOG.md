@@ -9,7 +9,6 @@
     -   Previously, the `Health` class directly instantiated the `DeviceInfoPlugin` internally, which was not ideal when trying to mock this functionality in unit tests, and could lead to problems with state management.
   * **Impact**:
     -   For most users, **no immediate code changes are required** but it is paramount to initialize the `Health` class as a global instance (i.e. do not call `Health()` every time but rather define an instance `final health = Health();`).
-
 * **BREAKING** (Android) Remove automatic permission request of `DISTANCE_DELTA` and `TOTAL_CALORIES_BURNED` data types when requesting permission for `WORKOUT` health data type.
   * For `WORKOUT`s that require above permissions, now those need to be requested manually.
   * Fix [#984](https://github.com/cph-cachet/flutter-plugins/issues/984) - PR [#1055](https://github.com/cph-cachet/flutter-plugins/pull/1055)
