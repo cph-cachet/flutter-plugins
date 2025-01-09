@@ -5,7 +5,7 @@
     -   The `Health` class is no longer a singleton.
     -   The `Health()` factory constructor is removed.
     -   The `Health` class now accepts an (optional) `DeviceInfoPlugin` dependency through its constructor, this change was introduced to provide easy mocking of the `DeviceInfo` class during unit tests.
-    -   This architectural change means that, for the application to work correctly, the `Health` class *MUST* be initialized correctly as a global instance, as explained in the **Initialization** section below.
+    -   This architectural change means that, for the application to work correctly, the `Health` class *MUST* be initialized correctly as a global instance.
     -   Previously, the `Health` class directly instantiated the `DeviceInfoPlugin` internally, which was not ideal when trying to mock this functionality in unit tests, and could lead to problems with state management.
   * **Impact**:
     -   For most users, **no immediate code changes are required** but it is paramount to initialize the `Health` class as a global instance (i.e. do not call `Health()` every time but rather define an instance `final health = Health();`).
