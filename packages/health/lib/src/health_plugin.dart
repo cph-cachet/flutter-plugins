@@ -34,19 +34,15 @@ part of '../health.dart';
 /// or getter methods. Otherwise, the plugin will throw an exception.
 class Health {
   static const MethodChannel _channel = MethodChannel('flutter_health');
-  static final _instance = Health._();
 
   String? _deviceId;
-  final _deviceInfo = DeviceInfoPlugin();
-  HealthConnectSdkStatus _healthConnectSdkStatus =
-      HealthConnectSdkStatus.sdkUnavailable;
+  final DeviceInfoPlugin _deviceInfo;
+   HealthConnectSdkStatus _healthConnectSdkStatus =
+       HealthConnectSdkStatus.sdkUnavailable;
 
-  Health._() {
-    _registerFromJsonFunctions();
-  }
-
-  /// The singleton [Health] instance.
-  factory Health() => _instance;
+   Health({DeviceInfoPlugin? deviceInfo}) : _deviceInfo = deviceInfo ?? DeviceInfoPlugin()  {
+     _registerFromJsonFunctions();
+   }
 
   /// The latest status on availability of Health Connect SDK on this phone.
   HealthConnectSdkStatus get healthConnectSdkStatus => _healthConnectSdkStatus;

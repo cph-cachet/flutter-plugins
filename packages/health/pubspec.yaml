@@ -26,6 +26,7 @@ dev_dependencies:
   #   dart run build_runner build --delete-conflicting-outputs
   build_runner: any
   json_serializable: any
+  mocktail: ^1.0.4
 
 flutter:
   plugin:
