@@ -377,13 +377,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else {
             throw PluginError(message: "Invalid Arguments!")
         }
-                print("Eze log :\(types).\(permissions)")
 
         var typesToRead = Set<HKObjectType>()
         var typesToWrite = Set<HKSampleType>()
         for (index, key) in types.enumerated() {
             if (key == NUTRITION) {
-
                 for nutritionType in nutritionList {
                     let nutritionData = dataTypeLookUp(key: nutritionType)
                     typesToWrite.insert(nutritionData)
@@ -391,7 +389,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             } else {
                 let dataType = dataTypeLookUp(key: key)
                 let access = permissions[index]
-                print("Eze log : we're not in nutrition \(dataTypeLookUp(key: key)).\(access)")
                 switch access {
                 case 0:
                     typesToRead.insert(dataType)
