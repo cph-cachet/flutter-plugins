@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 part 'src/heath_data_types.dart';
 part 'src/functions.dart';
 part 'src/health_data_point.dart';
+part 'src/uv_exposure_model.dart';
 part 'src/health_value_types.dart';
 part 'src/health_plugin.dart';
 part 'src/workout_summary.dart';
