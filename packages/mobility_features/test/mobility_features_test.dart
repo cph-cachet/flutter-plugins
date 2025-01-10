@@ -3,13 +3,13 @@ library mobility_test;
 import 'dart:async';
 import 'package:mobility_features/mobility_features.dart';
 import 'dart:io';
-import 'package:flutter_test/flutter_test.dart';
 import 'dart:convert';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:carp_serializable/carp_serializable.dart';
 
 part 'test_utils.dart';
 
 void main() async {
-  JsonEncoder jsonEncoder = const JsonEncoder.withIndent('\t');
   DateTime jan01 = DateTime(2020, 01, 01);
 
   // Poppelgade 7, home
@@ -221,8 +221,8 @@ void main() async {
       // Listen to the Context stream
       Stream<MobilityContext> contextStream = MobilityFeatures().contextStream;
       contextStream.listen(expectAsync1((c) {
-        printList(c.stops);
-        print(c.toJson());
+        printList(c.stops!);
+        print(toJsonString(c.toJson()));
       }, count: expectedContexts));
 
       // Stream all the samples one by one
@@ -235,7 +235,7 @@ void main() async {
     test('Stream LocationSamples with path between locations', () async {
       void onContext(MobilityContext mc) {
         print(mc.toJson());
-        printList(mc.stops);
+        printList(mc.stops!);
       }
 
       flushFiles();
@@ -378,7 +378,7 @@ void main() async {
       /// Listen to the Context stream
       Stream<MobilityContext> contextStream = MobilityFeatures().contextStream;
       contextStream.listen(
-          expectAsync1((c) => printList(c.stops), count: expectedContexts));
+          expectAsync1((c) => printList(c.stops!), count: expectedContexts));
 
       // Stream all the samples one by one
       for (LocationSample s in samples) {
@@ -410,22 +410,22 @@ void main() async {
 
       mobilityStream.listen(expectAsync1((event) {
         print('=' * 150);
-        print(
-            "Mobility Context Received: ${jsonEncoder.convert(event.toJson())}");
+        print("Mobility Context Received: ${toJsonString(event.toJson())}");
         print('-' * 50);
         print("STOPS");
-        printList(event.stops);
+        printList(event.stops!);
         print("ALL PLACES");
-        printList(event.places);
+        printList(event.places!);
         print("SIGNIFICANT PLACES");
-        printList(event.significantPlaces);
+        printList(event.significantPlaces!);
         print(
-            "TOTAL DURATION (STOPS): ${event.stops.map((p) => p.duration).reduce((a, b) => a + b)}");
+            "TOTAL DURATION (STOPS): ${event.stops?.map((p) => p.duration).reduce((a, b) => a + b)}");
       }, count: 283));
 
-      onLastDate.forEach((e) {
+      for (var e in onLastDate) {
         controller.add(e);
-      });
+      }
+
       controller.close();
     });
   });

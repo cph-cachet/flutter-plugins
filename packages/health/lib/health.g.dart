@@ -12,48 +12,40 @@ HealthDataPoint _$HealthDataPointFromJson(Map<String, dynamic> json) =>
       value: HealthValue.fromJson(json['value'] as Map<String, dynamic>),
       type: $enumDecode(_$HealthDataTypeEnumMap, json['type']),
       unit: $enumDecode(_$HealthDataUnitEnumMap, json['unit']),
-      dateFrom: DateTime.parse(json['date_from'] as String),
-      dateTo: DateTime.parse(json['date_to'] as String),
+      dateFrom: DateTime.parse(json['dateFrom'] as String),
+      dateTo: DateTime.parse(json['dateTo'] as String),
       sourcePlatform:
-          $enumDecode(_$HealthPlatformTypeEnumMap, json['source_platform']),
-      sourceDeviceId: json['source_device_id'] as String,
-      sourceId: json['source_id'] as String,
-      sourceName: json['source_name'] as String,
+          $enumDecode(_$HealthPlatformTypeEnumMap, json['sourcePlatform']),
+      sourceDeviceId: json['sourceDeviceId'] as String,
+      sourceId: json['sourceId'] as String,
+      sourceName: json['sourceName'] as String,
       recordingMethod: $enumDecodeNullable(
-              _$RecordingMethodEnumMap, json['recording_method']) ??
+              _$RecordingMethodEnumMap, json['recordingMethod']) ??
           RecordingMethod.unknown,
-      workoutSummary: json['workout_summary'] == null
+      workoutSummary: json['workoutSummary'] == null
           ? null
           : WorkoutSummary.fromJson(
-              json['workout_summary'] as Map<String, dynamic>),
+              json['workoutSummary'] as Map<String, dynamic>),
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
 
-Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) {
-  final val = <String, dynamic>{
-    'uuid': instance.uuid,
-    'value': instance.value,
-    'type': _$HealthDataTypeEnumMap[instance.type]!,
-    'unit': _$HealthDataUnitEnumMap[instance.unit]!,
-    'date_from': instance.dateFrom.toIso8601String(),
-    'date_to': instance.dateTo.toIso8601String(),
-    'source_platform': _$HealthPlatformTypeEnumMap[instance.sourcePlatform]!,
-    'source_device_id': instance.sourceDeviceId,
-    'source_id': instance.sourceId,
-    'source_name': instance.sourceName,
-    'recording_method': _$RecordingMethodEnumMap[instance.recordingMethod]!,
-  };
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('workout_summary', instance.workoutSummary);
-  writeNotNull('metadata', instance.metadata);
-  return val;
-}
+Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'value': instance.value.toJson(),
+      'type': _$HealthDataTypeEnumMap[instance.type]!,
+      'unit': _$HealthDataUnitEnumMap[instance.unit]!,
+      'dateFrom': instance.dateFrom.toIso8601String(),
+      'dateTo': instance.dateTo.toIso8601String(),
+      'sourcePlatform': _$HealthPlatformTypeEnumMap[instance.sourcePlatform]!,
+      'sourceDeviceId': instance.sourceDeviceId,
+      'sourceId': instance.sourceId,
+      'sourceName': instance.sourceName,
+      'recordingMethod': _$RecordingMethodEnumMap[instance.recordingMethod]!,
+      if (instance.workoutSummary?.toJson() case final value?)
+        'workoutSummary': value,
+      if (instance.metadata case final value?) 'metadata': value,
+    };
 
 const _$HealthDataTypeEnumMap = {
   HealthDataType.ACTIVE_ENERGY_BURNED: 'ACTIVE_ENERGY_BURNED',
@@ -65,6 +57,7 @@ const _$HealthDataTypeEnumMap = {
   HealthDataType.BLOOD_PRESSURE_DIASTOLIC: 'BLOOD_PRESSURE_DIASTOLIC',
   HealthDataType.BLOOD_PRESSURE_SYSTOLIC: 'BLOOD_PRESSURE_SYSTOLIC',
   HealthDataType.BODY_FAT_PERCENTAGE: 'BODY_FAT_PERCENTAGE',
+  HealthDataType.LEAN_BODY_MASS: 'LEAN_BODY_MASS',
   HealthDataType.BODY_MASS_INDEX: 'BODY_MASS_INDEX',
   HealthDataType.BODY_TEMPERATURE: 'BODY_TEMPERATURE',
   HealthDataType.BODY_WATER_MASS: 'BODY_WATER_MASS',
@@ -150,6 +143,8 @@ const _$HealthDataTypeEnumMap = {
   HealthDataType.BIRTH_DATE: 'BIRTH_DATE',
   HealthDataType.BLOOD_TYPE: 'BLOOD_TYPE',
   HealthDataType.MENSTRUATION_FLOW: 'MENSTRUATION_FLOW',
+  HealthDataType.WATER_TEMPERATURE: 'WATER_TEMPERATURE',
+  HealthDataType.UNDERWATER_DEPTH: 'UNDERWATER_DEPTH',
   HealthDataType.HIGH_HEART_RATE_EVENT: 'HIGH_HEART_RATE_EVENT',
   HealthDataType.LOW_HEART_RATE_EVENT: 'LOW_HEART_RATE_EVENT',
   HealthDataType.IRREGULAR_HEART_RATE_EVENT: 'IRREGULAR_HEART_RATE_EVENT',
@@ -225,106 +220,76 @@ const _$RecordingMethodEnumMap = {
 HealthValue _$HealthValueFromJson(Map<String, dynamic> json) =>
     HealthValue()..$type = json['__type'] as String?;
 
-Map<String, dynamic> _$HealthValueToJson(HealthValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  return val;
-}
+Map<String, dynamic> _$HealthValueToJson(HealthValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+    };
 
 NumericHealthValue _$NumericHealthValueFromJson(Map<String, dynamic> json) =>
     NumericHealthValue(
-      numericValue: json['numeric_value'] as num,
+      numericValue: json['numericValue'] as num,
     )..$type = json['__type'] as String?;
 
-Map<String, dynamic> _$NumericHealthValueToJson(NumericHealthValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  val['numeric_value'] = instance.numericValue;
-  return val;
-}
+Map<String, dynamic> _$NumericHealthValueToJson(NumericHealthValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+      'numericValue': instance.numericValue,
+    };
 
 AudiogramHealthValue _$AudiogramHealthValueFromJson(
         Map<String, dynamic> json) =>
     AudiogramHealthValue(
       frequencies:
           (json['frequencies'] as List<dynamic>).map((e) => e as num).toList(),
-      leftEarSensitivities: (json['left_ear_sensitivities'] as List<dynamic>)
+      leftEarSensitivities: (json['leftEarSensitivities'] as List<dynamic>)
           .map((e) => e as num)
           .toList(),
-      rightEarSensitivities: (json['right_ear_sensitivities'] as List<dynamic>)
+      rightEarSensitivities: (json['rightEarSensitivities'] as List<dynamic>)
           .map((e) => e as num)
           .toList(),
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$AudiogramHealthValueToJson(
-    AudiogramHealthValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  val['frequencies'] = instance.frequencies;
-  val['left_ear_sensitivities'] = instance.leftEarSensitivities;
-  val['right_ear_sensitivities'] = instance.rightEarSensitivities;
-  return val;
-}
+        AudiogramHealthValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+      'frequencies': instance.frequencies,
+      'leftEarSensitivities': instance.leftEarSensitivities,
+      'rightEarSensitivities': instance.rightEarSensitivities,
+    };
 
 WorkoutHealthValue _$WorkoutHealthValueFromJson(Map<String, dynamic> json) =>
     WorkoutHealthValue(
       workoutActivityType: $enumDecode(
-          _$HealthWorkoutActivityTypeEnumMap, json['workout_activity_type']),
-      totalEnergyBurned: (json['total_energy_burned'] as num?)?.toInt(),
+          _$HealthWorkoutActivityTypeEnumMap, json['workoutActivityType']),
+      totalEnergyBurned: (json['totalEnergyBurned'] as num?)?.toInt(),
       totalEnergyBurnedUnit: $enumDecodeNullable(
-          _$HealthDataUnitEnumMap, json['total_energy_burned_unit']),
-      totalDistance: (json['total_distance'] as num?)?.toInt(),
+          _$HealthDataUnitEnumMap, json['totalEnergyBurnedUnit']),
+      totalDistance: (json['totalDistance'] as num?)?.toInt(),
       totalDistanceUnit: $enumDecodeNullable(
-          _$HealthDataUnitEnumMap, json['total_distance_unit']),
-      totalSteps: (json['total_steps'] as num?)?.toInt(),
-      totalStepsUnit: $enumDecodeNullable(
-          _$HealthDataUnitEnumMap, json['total_steps_unit']),
+          _$HealthDataUnitEnumMap, json['totalDistanceUnit']),
+      totalSteps: (json['totalSteps'] as num?)?.toInt(),
+      totalStepsUnit:
+          $enumDecodeNullable(_$HealthDataUnitEnumMap, json['totalStepsUnit']),
     )..$type = json['__type'] as String?;
 
-Map<String, dynamic> _$WorkoutHealthValueToJson(WorkoutHealthValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  val['workout_activity_type'] =
-      _$HealthWorkoutActivityTypeEnumMap[instance.workoutActivityType]!;
-  writeNotNull('total_energy_burned', instance.totalEnergyBurned);
-  writeNotNull('total_energy_burned_unit',
-      _$HealthDataUnitEnumMap[instance.totalEnergyBurnedUnit]);
-  writeNotNull('total_distance', instance.totalDistance);
-  writeNotNull('total_distance_unit',
-      _$HealthDataUnitEnumMap[instance.totalDistanceUnit]);
-  writeNotNull('total_steps', instance.totalSteps);
-  writeNotNull(
-      'total_steps_unit', _$HealthDataUnitEnumMap[instance.totalStepsUnit]);
-  return val;
-}
+Map<String, dynamic> _$WorkoutHealthValueToJson(WorkoutHealthValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+      'workoutActivityType':
+          _$HealthWorkoutActivityTypeEnumMap[instance.workoutActivityType]!,
+      if (instance.totalEnergyBurned case final value?)
+        'totalEnergyBurned': value,
+      if (_$HealthDataUnitEnumMap[instance.totalEnergyBurnedUnit]
+          case final value?)
+        'totalEnergyBurnedUnit': value,
+      if (instance.totalDistance case final value?) 'totalDistance': value,
+      if (_$HealthDataUnitEnumMap[instance.totalDistanceUnit] case final value?)
+        'totalDistanceUnit': value,
+      if (instance.totalSteps case final value?) 'totalSteps': value,
+      if (_$HealthDataUnitEnumMap[instance.totalStepsUnit] case final value?)
+        'totalStepsUnit': value,
+    };
 
 const _$HealthWorkoutActivityTypeEnumMap = {
   HealthWorkoutActivityType.AMERICAN_FOOTBALL: 'AMERICAN_FOOTBALL',
@@ -408,6 +373,7 @@ const _$HealthWorkoutActivityTypeEnumMap = {
   HealthWorkoutActivityType.WHEELCHAIR_RUN_PACE: 'WHEELCHAIR_RUN_PACE',
   HealthWorkoutActivityType.WHEELCHAIR_WALK_PACE: 'WHEELCHAIR_WALK_PACE',
   HealthWorkoutActivityType.WRESTLING: 'WRESTLING',
+  HealthWorkoutActivityType.UNDERWATER_DIVING: 'UNDERWATER_DIVING',
   HealthWorkoutActivityType.BIKING_STATIONARY: 'BIKING_STATIONARY',
   HealthWorkoutActivityType.CALISTHENICS: 'CALISTHENICS',
   HealthWorkoutActivityType.DANCING: 'DANCING',
@@ -434,34 +400,29 @@ const _$HealthWorkoutActivityTypeEnumMap = {
 ElectrocardiogramHealthValue _$ElectrocardiogramHealthValueFromJson(
         Map<String, dynamic> json) =>
     ElectrocardiogramHealthValue(
-      voltageValues: (json['voltage_values'] as List<dynamic>)
+      voltageValues: (json['voltageValues'] as List<dynamic>)
           .map((e) =>
               ElectrocardiogramVoltageValue.fromJson(e as Map<String, dynamic>))
           .toList(),
-      averageHeartRate: json['average_heart_rate'] as num?,
-      samplingFrequency: (json['sampling_frequency'] as num?)?.toDouble(),
+      averageHeartRate: json['averageHeartRate'] as num?,
+      samplingFrequency: (json['samplingFrequency'] as num?)?.toDouble(),
       classification: $enumDecodeNullable(
           _$ElectrocardiogramClassificationEnumMap, json['classification']),
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$ElectrocardiogramHealthValueToJson(
-    ElectrocardiogramHealthValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  val['voltage_values'] = instance.voltageValues;
-  writeNotNull('average_heart_rate', instance.averageHeartRate);
-  writeNotNull('sampling_frequency', instance.samplingFrequency);
-  writeNotNull('classification',
-      _$ElectrocardiogramClassificationEnumMap[instance.classification]);
-  return val;
-}
+        ElectrocardiogramHealthValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+      'voltageValues': instance.voltageValues.map((e) => e.toJson()).toList(),
+      if (instance.averageHeartRate case final value?)
+        'averageHeartRate': value,
+      if (instance.samplingFrequency case final value?)
+        'samplingFrequency': value,
+      if (_$ElectrocardiogramClassificationEnumMap[instance.classification]
+          case final value?)
+        'classification': value,
+    };
 
 const _$ElectrocardiogramClassificationEnumMap = {
   ElectrocardiogramClassification.NOT_SET: 'NOT_SET',
@@ -481,24 +442,16 @@ ElectrocardiogramVoltageValue _$ElectrocardiogramVoltageValueFromJson(
         Map<String, dynamic> json) =>
     ElectrocardiogramVoltageValue(
       voltage: json['voltage'] as num,
-      timeSinceSampleStart: json['time_since_sample_start'] as num,
+      timeSinceSampleStart: json['timeSinceSampleStart'] as num,
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$ElectrocardiogramVoltageValueToJson(
-    ElectrocardiogramVoltageValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  val['voltage'] = instance.voltage;
-  val['time_since_sample_start'] = instance.timeSinceSampleStart;
-  return val;
-}
+        ElectrocardiogramVoltageValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+      'voltage': instance.voltage,
+      'timeSinceSampleStart': instance.timeSinceSampleStart,
+    };
 
 InsulinDeliveryHealthValue _$InsulinDeliveryHealthValueFromJson(
         Map<String, dynamic> json) =>
@@ -508,20 +461,12 @@ InsulinDeliveryHealthValue _$InsulinDeliveryHealthValueFromJson(
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$InsulinDeliveryHealthValueToJson(
-    InsulinDeliveryHealthValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  val['units'] = instance.units;
-  val['reason'] = _$InsulinDeliveryReasonEnumMap[instance.reason]!;
-  return val;
-}
+        InsulinDeliveryHealthValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+      'units': instance.units,
+      'reason': _$InsulinDeliveryReasonEnumMap[instance.reason]!,
+    };
 
 const _$InsulinDeliveryReasonEnumMap = {
   InsulinDeliveryReason.NOT_SET: 'NOT_SET',
@@ -533,36 +478,36 @@ NutritionHealthValue _$NutritionHealthValueFromJson(
         Map<String, dynamic> json) =>
     NutritionHealthValue(
       name: json['name'] as String?,
-      mealType: json['meal_type'] as String?,
+      mealType: json['mealType'] as String?,
       calories: (json['calories'] as num?)?.toDouble(),
       protein: (json['protein'] as num?)?.toDouble(),
       fat: (json['fat'] as num?)?.toDouble(),
       carbs: (json['carbs'] as num?)?.toDouble(),
       caffeine: (json['caffeine'] as num?)?.toDouble(),
-      vitaminA: (json['vitamin_a'] as num?)?.toDouble(),
-      b1Thiamine: (json['b1_thiamine'] as num?)?.toDouble(),
-      b2Riboflavin: (json['b2_riboflavin'] as num?)?.toDouble(),
-      b3Niacin: (json['b3_niacin'] as num?)?.toDouble(),
-      b5PantothenicAcid: (json['b5_pantothenic_acid'] as num?)?.toDouble(),
-      b6Pyridoxine: (json['b6_pyridoxine'] as num?)?.toDouble(),
-      b7Biotin: (json['b7_biotin'] as num?)?.toDouble(),
-      b9Folate: (json['b9_folate'] as num?)?.toDouble(),
-      b12Cobalamin: (json['b12_cobalamin'] as num?)?.toDouble(),
-      vitaminC: (json['vitamin_c'] as num?)?.toDouble(),
-      vitaminD: (json['vitamin_d'] as num?)?.toDouble(),
-      vitaminE: (json['vitamin_e'] as num?)?.toDouble(),
-      vitaminK: (json['vitamin_k'] as num?)?.toDouble(),
+      vitaminA: (json['vitaminA'] as num?)?.toDouble(),
+      b1Thiamine: (json['b1Thiamine'] as num?)?.toDouble(),
+      b2Riboflavin: (json['b2Riboflavin'] as num?)?.toDouble(),
+      b3Niacin: (json['b3Niacin'] as num?)?.toDouble(),
+      b5PantothenicAcid: (json['b5PantothenicAcid'] as num?)?.toDouble(),
+      b6Pyridoxine: (json['b6Pyridoxine'] as num?)?.toDouble(),
+      b7Biotin: (json['b7Biotin'] as num?)?.toDouble(),
+      b9Folate: (json['b9Folate'] as num?)?.toDouble(),
+      b12Cobalamin: (json['b12Cobalamin'] as num?)?.toDouble(),
+      vitaminC: (json['vitaminC'] as num?)?.toDouble(),
+      vitaminD: (json['vitaminD'] as num?)?.toDouble(),
+      vitaminE: (json['vitaminE'] as num?)?.toDouble(),
+      vitaminK: (json['vitaminK'] as num?)?.toDouble(),
       calcium: (json['calcium'] as num?)?.toDouble(),
       chloride: (json['chloride'] as num?)?.toDouble(),
       cholesterol: (json['cholesterol'] as num?)?.toDouble(),
       choline: (json['choline'] as num?)?.toDouble(),
       chromium: (json['chromium'] as num?)?.toDouble(),
       copper: (json['copper'] as num?)?.toDouble(),
-      fatUnsaturated: (json['fat_unsaturated'] as num?)?.toDouble(),
-      fatMonounsaturated: (json['fat_monounsaturated'] as num?)?.toDouble(),
-      fatPolyunsaturated: (json['fat_polyunsaturated'] as num?)?.toDouble(),
-      fatSaturated: (json['fat_saturated'] as num?)?.toDouble(),
-      fatTransMonoenoic: (json['fat_trans_monoenoic'] as num?)?.toDouble(),
+      fatUnsaturated: (json['fatUnsaturated'] as num?)?.toDouble(),
+      fatMonounsaturated: (json['fatMonounsaturated'] as num?)?.toDouble(),
+      fatPolyunsaturated: (json['fatPolyunsaturated'] as num?)?.toDouble(),
+      fatSaturated: (json['fatSaturated'] as num?)?.toDouble(),
+      fatTransMonoenoic: (json['fatTransMonoenoic'] as num?)?.toDouble(),
       fiber: (json['fiber'] as num?)?.toDouble(),
       iodine: (json['iodine'] as num?)?.toDouble(),
       iron: (json['iron'] as num?)?.toDouble(),
@@ -579,89 +524,78 @@ NutritionHealthValue _$NutritionHealthValueFromJson(
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$NutritionHealthValueToJson(
-    NutritionHealthValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  writeNotNull('name', instance.name);
-  writeNotNull('meal_type', instance.mealType);
-  writeNotNull('calories', instance.calories);
-  writeNotNull('protein', instance.protein);
-  writeNotNull('fat', instance.fat);
-  writeNotNull('carbs', instance.carbs);
-  writeNotNull('caffeine', instance.caffeine);
-  writeNotNull('vitamin_a', instance.vitaminA);
-  writeNotNull('b1_thiamine', instance.b1Thiamine);
-  writeNotNull('b2_riboflavin', instance.b2Riboflavin);
-  writeNotNull('b3_niacin', instance.b3Niacin);
-  writeNotNull('b5_pantothenic_acid', instance.b5PantothenicAcid);
-  writeNotNull('b6_pyridoxine', instance.b6Pyridoxine);
-  writeNotNull('b7_biotin', instance.b7Biotin);
-  writeNotNull('b9_folate', instance.b9Folate);
-  writeNotNull('b12_cobalamin', instance.b12Cobalamin);
-  writeNotNull('vitamin_c', instance.vitaminC);
-  writeNotNull('vitamin_d', instance.vitaminD);
-  writeNotNull('vitamin_e', instance.vitaminE);
-  writeNotNull('vitamin_k', instance.vitaminK);
-  writeNotNull('calcium', instance.calcium);
-  writeNotNull('chloride', instance.chloride);
-  writeNotNull('cholesterol', instance.cholesterol);
-  writeNotNull('choline', instance.choline);
-  writeNotNull('chromium', instance.chromium);
-  writeNotNull('copper', instance.copper);
-  writeNotNull('fat_unsaturated', instance.fatUnsaturated);
-  writeNotNull('fat_monounsaturated', instance.fatMonounsaturated);
-  writeNotNull('fat_polyunsaturated', instance.fatPolyunsaturated);
-  writeNotNull('fat_saturated', instance.fatSaturated);
-  writeNotNull('fat_trans_monoenoic', instance.fatTransMonoenoic);
-  writeNotNull('fiber', instance.fiber);
-  writeNotNull('iodine', instance.iodine);
-  writeNotNull('iron', instance.iron);
-  writeNotNull('magnesium', instance.magnesium);
-  writeNotNull('manganese', instance.manganese);
-  writeNotNull('molybdenum', instance.molybdenum);
-  writeNotNull('phosphorus', instance.phosphorus);
-  writeNotNull('potassium', instance.potassium);
-  writeNotNull('selenium', instance.selenium);
-  writeNotNull('sodium', instance.sodium);
-  writeNotNull('sugar', instance.sugar);
-  writeNotNull('water', instance.water);
-  writeNotNull('zinc', instance.zinc);
-  return val;
-}
+        NutritionHealthValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+      if (instance.name case final value?) 'name': value,
+      if (instance.mealType case final value?) 'mealType': value,
+      if (instance.calories case final value?) 'calories': value,
+      if (instance.protein case final value?) 'protein': value,
+      if (instance.fat case final value?) 'fat': value,
+      if (instance.carbs case final value?) 'carbs': value,
+      if (instance.caffeine case final value?) 'caffeine': value,
+      if (instance.vitaminA case final value?) 'vitaminA': value,
+      if (instance.b1Thiamine case final value?) 'b1Thiamine': value,
+      if (instance.b2Riboflavin case final value?) 'b2Riboflavin': value,
+      if (instance.b3Niacin case final value?) 'b3Niacin': value,
+      if (instance.b5PantothenicAcid case final value?)
+        'b5PantothenicAcid': value,
+      if (instance.b6Pyridoxine case final value?) 'b6Pyridoxine': value,
+      if (instance.b7Biotin case final value?) 'b7Biotin': value,
+      if (instance.b9Folate case final value?) 'b9Folate': value,
+      if (instance.b12Cobalamin case final value?) 'b12Cobalamin': value,
+      if (instance.vitaminC case final value?) 'vitaminC': value,
+      if (instance.vitaminD case final value?) 'vitaminD': value,
+      if (instance.vitaminE case final value?) 'vitaminE': value,
+      if (instance.vitaminK case final value?) 'vitaminK': value,
+      if (instance.calcium case final value?) 'calcium': value,
+      if (instance.chloride case final value?) 'chloride': value,
+      if (instance.cholesterol case final value?) 'cholesterol': value,
+      if (instance.choline case final value?) 'choline': value,
+      if (instance.chromium case final value?) 'chromium': value,
+      if (instance.copper case final value?) 'copper': value,
+      if (instance.fatUnsaturated case final value?) 'fatUnsaturated': value,
+      if (instance.fatMonounsaturated case final value?)
+        'fatMonounsaturated': value,
+      if (instance.fatPolyunsaturated case final value?)
+        'fatPolyunsaturated': value,
+      if (instance.fatSaturated case final value?) 'fatSaturated': value,
+      if (instance.fatTransMonoenoic case final value?)
+        'fatTransMonoenoic': value,
+      if (instance.fiber case final value?) 'fiber': value,
+      if (instance.iodine case final value?) 'iodine': value,
+      if (instance.iron case final value?) 'iron': value,
+      if (instance.magnesium case final value?) 'magnesium': value,
+      if (instance.manganese case final value?) 'manganese': value,
+      if (instance.molybdenum case final value?) 'molybdenum': value,
+      if (instance.phosphorus case final value?) 'phosphorus': value,
+      if (instance.potassium case final value?) 'potassium': value,
+      if (instance.selenium case final value?) 'selenium': value,
+      if (instance.sodium case final value?) 'sodium': value,
+      if (instance.sugar case final value?) 'sugar': value,
+      if (instance.water case final value?) 'water': value,
+      if (instance.zinc case final value?) 'zinc': value,
+    };
 
 MenstruationFlowHealthValue _$MenstruationFlowHealthValueFromJson(
         Map<String, dynamic> json) =>
     MenstruationFlowHealthValue(
       flow: $enumDecodeNullable(_$MenstrualFlowEnumMap, json['flow']),
-      dateTime: DateTime.parse(json['date_time'] as String),
-      isStartOfCycle: json['is_start_of_cycle'] as bool?,
-      wasUserEntered: json['was_user_entered'] as bool?,
+      dateTime: DateTime.parse(json['dateTime'] as String),
+      isStartOfCycle: json['isStartOfCycle'] as bool?,
+      wasUserEntered: json['wasUserEntered'] as bool?,
     )..$type = json['__type'] as String?;
 
 Map<String, dynamic> _$MenstruationFlowHealthValueToJson(
-    MenstruationFlowHealthValue instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('__type', instance.$type);
-  writeNotNull('flow', _$MenstrualFlowEnumMap[instance.flow]);
-  writeNotNull('is_start_of_cycle', instance.isStartOfCycle);
-  writeNotNull('was_user_entered', instance.wasUserEntered);
-  val['date_time'] = instance.dateTime.toIso8601String();
-  return val;
-}
+        MenstruationFlowHealthValue instance) =>
+    <String, dynamic>{
+      if (instance.$type case final value?) '__type': value,
+      if (_$MenstrualFlowEnumMap[instance.flow] case final value?)
+        'flow': value,
+      if (instance.isStartOfCycle case final value?) 'isStartOfCycle': value,
+      if (instance.wasUserEntered case final value?) 'wasUserEntered': value,
+      'dateTime': instance.dateTime.toIso8601String(),
+    };
 
 const _$MenstrualFlowEnumMap = {
   MenstrualFlow.unspecified: 'unspecified',
@@ -674,16 +608,16 @@ const _$MenstrualFlowEnumMap = {
 
 WorkoutSummary _$WorkoutSummaryFromJson(Map<String, dynamic> json) =>
     WorkoutSummary(
-      workoutType: json['workout_type'] as String,
-      totalDistance: json['total_distance'] as num,
-      totalEnergyBurned: json['total_energy_burned'] as num,
-      totalSteps: json['total_steps'] as num,
+      workoutType: json['workoutType'] as String,
+      totalDistance: json['totalDistance'] as num,
+      totalEnergyBurned: json['totalEnergyBurned'] as num,
+      totalSteps: json['totalSteps'] as num,
     );
 
 Map<String, dynamic> _$WorkoutSummaryToJson(WorkoutSummary instance) =>
     <String, dynamic>{
-      'workout_type': instance.workoutType,
-      'total_distance': instance.totalDistance,
-      'total_energy_burned': instance.totalEnergyBurned,
-      'total_steps': instance.totalSteps,
+      'workoutType': instance.workoutType,
+      'totalDistance': instance.totalDistance,
+      'totalEnergyBurned': instance.totalEnergyBurned,
+      'totalSteps': instance.totalSteps,
     };

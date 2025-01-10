@@ -6,7 +6,7 @@ part of '../health.dart';
 ///  * [totalDistance] - The total distance that was traveled during a workout.
 ///  * [totalEnergyBurned] - The amount of energy that was burned during a workout.
 ///  * [totalSteps] - The number of steps during a workout.
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class WorkoutSummary {
   /// Workout type.
   String workoutType;

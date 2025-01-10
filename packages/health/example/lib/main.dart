@@ -10,6 +10,8 @@ import 'package:carp_serializable/carp_serializable.dart';
 void main() => runApp(HealthApp());
 
 class HealthApp extends StatefulWidget {
+  const HealthApp({super.key});
+
   @override
   _HealthAppState createState() => _HealthAppState();
 }
@@ -80,17 +82,18 @@ class _HealthAppState extends State<HealthApp> {
               : HealthDataAccess.READ_WRITE)
       .toList();
 
+  @override
   void initState() {
-    // configure the health plugin before use.
+    // configure the health plugin before use and check the Health Connect status
     Health().configure();
+    Health().getHealthConnectSdkStatus();
 
     super.initState();
   }
 
   /// Install Google Health Connect on this phone.
-  Future<void> installHealthConnect() async {
-    await Health().installHealthConnect();
-  }
+  Future<void> installHealthConnect() async =>
+      await Health().installHealthConnect();
 
   /// Authorize, i.e. get permissions to access relevant health data.
   Future<void> authorize() async {
@@ -132,7 +135,8 @@ class _HealthAppState extends State<HealthApp> {
     final status = await Health().getHealthConnectSdkStatus();
 
     setState(() {
-      _contentHealthConnectStatus = Text('Health Connect Status: $status');
+      _contentHealthConnectStatus =
+          Text('Health Connect Status: ${status?.name.toUpperCase()}');
       _state = AppState.HEALTH_CONNECT_STATUS;
     });
   }
@@ -143,7 +147,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(Duration(hours: 24));
+    final yesterday = now.subtract(const Duration(hours: 24));
 
     // Clear old data points
     _healthDataList.clear();
@@ -173,7 +177,9 @@ class _HealthAppState extends State<HealthApp> {
     // filter out duplicates
     _healthDataList = Health().removeDuplicates(_healthDataList);
 
-    _healthDataList.forEach((data) => debugPrint(toJsonString(data)));
+    for (var data in _healthDataList) {
+      debugPrint(toJsonString(data));
+    }
 
     // update the UI to display the results
     setState(() {
@@ -186,7 +192,7 @@ class _HealthAppState extends State<HealthApp> {
   /// following data types.
   Future<void> addData() async {
     final now = DateTime.now();
-    final earlier = now.subtract(Duration(minutes: 20));
+    final earlier = now.subtract(const Duration(minutes: 20));
 
     // Add data for supported types
     // NOTE: These are only the ones supported on Androids new API Health Connect.
@@ -279,6 +285,12 @@ class _HealthAppState extends State<HealthApp> {
         type: HealthDataType.SLEEP_DEEP,
         startTime: earlier,
         endTime: now);
+    success &= await Health().writeHealthData(
+      value: 22, 
+      type: HealthDataType.LEAN_BODY_MASS, 
+      startTime: earlier,
+      endTime: now,
+      );
 
     // specialized write methods
     success &= await Health().writeBloodOxygen(
@@ -289,7 +301,7 @@ class _HealthAppState extends State<HealthApp> {
     success &= await Health().writeWorkoutData(
       activityType: HealthWorkoutActivityType.AMERICAN_FOOTBALL,
       title: "Random workout name that shows up in Health Connect",
-      start: now.subtract(Duration(minutes: 15)),
+      start: now.subtract(const Duration(minutes: 15)),
       end: now,
       totalDistance: 2430,
       totalEnergyBurned: 400,
@@ -370,6 +382,25 @@ class _HealthAppState extends State<HealthApp> {
       endTime: now,
     );
 
+    // Available on iOS 16.0+ only
+    if (Platform.isIOS) {
+      success &= await Health().writeHealthData(
+        value: 22,
+        type: HealthDataType.WATER_TEMPERATURE,
+        startTime: earlier,
+        endTime: now,
+        recordingMethod: RecordingMethod.manual
+    );
+
+    success &= await Health().writeHealthData(
+        value: 55,
+        type: HealthDataType.UNDERWATER_DEPTH,
+        startTime: earlier,
+        endTime: now,
+        recordingMethod: RecordingMethod.manual
+    );
+    }
+
     setState(() {
       _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
     });
@@ -378,7 +409,7 @@ class _HealthAppState extends State<HealthApp> {
   /// Delete some random health data.
   Future<void> deleteData() async {
     final now = DateTime.now();
-    final earlier = now.subtract(Duration(hours: 24));
+    final earlier = now.subtract(const Duration(hours: 24));
 
     bool success = true;
     for (HealthDataType type in types) {
@@ -459,78 +490,82 @@ class _HealthAppState extends State<HealthApp> {
         appBar: AppBar(
           title: const Text('Health Example'),
         ),
-        body: Container(
-          child: Column(
-            children: [
-              Wrap(
-                spacing: 10,
-                children: [
+        body: Column(
+          children: [
+            Wrap(
+              spacing: 10,
+              children: [
+                if (Platform.isAndroid)
                   TextButton(
-                      onPressed: authorize,
-                      child: Text("Authenticate",
-                          style: TextStyle(color: Colors.white)),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStatePropertyAll(Colors.blue))),
-                  if (Platform.isAndroid)
+                      onPressed: getHealthConnectSdkStatus,
+                      style: const ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(Colors.blue)),
+                      child: const Text("Check Health Connect Status",
+                          style: TextStyle(color: Colors.white))),
+                if (Platform.isAndroid &&
+                    Health().healthConnectSdkStatus !=
+                        HealthConnectSdkStatus.sdkAvailable)
+                  TextButton(
+                      onPressed: installHealthConnect,
+                      style: const ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(Colors.blue)),
+                      child: const Text("Install Health Connect",
+                          style: TextStyle(color: Colors.white))),
+                if (Platform.isIOS ||
+                    Platform.isAndroid &&
+                        Health().healthConnectSdkStatus ==
+                            HealthConnectSdkStatus.sdkAvailable)
+                  Wrap(spacing: 10, children: [
                     TextButton(
-                        onPressed: getHealthConnectSdkStatus,
-                        child: Text("Check Health Connect Status",
-                            style: TextStyle(color: Colors.white)),
-                        style: ButtonStyle(
+                        onPressed: authorize,
+                        style: const ButtonStyle(
                             backgroundColor:
-                                MaterialStatePropertyAll(Colors.blue))),
-                  TextButton(
-                      onPressed: fetchData,
-                      child: Text("Fetch Data",
-                          style: TextStyle(color: Colors.white)),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStatePropertyAll(Colors.blue))),
-                  TextButton(
-                      onPressed: addData,
-                      child: Text("Add Data",
-                          style: TextStyle(color: Colors.white)),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStatePropertyAll(Colors.blue))),
-                  TextButton(
-                      onPressed: deleteData,
-                      child: Text("Delete Data",
-                          style: TextStyle(color: Colors.white)),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStatePropertyAll(Colors.blue))),
-                  TextButton(
-                      onPressed: fetchStepData,
-                      child: Text("Fetch Step Data",
-                          style: TextStyle(color: Colors.white)),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStatePropertyAll(Colors.blue))),
-                  TextButton(
-                      onPressed: revokeAccess,
-                      child: Text("Revoke Access",
-                          style: TextStyle(color: Colors.white)),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStatePropertyAll(Colors.blue))),
-                  if (Platform.isAndroid)
+                                WidgetStatePropertyAll(Colors.blue)),
+                        child: const Text("Authenticate",
+                            style: TextStyle(color: Colors.white))),
                     TextButton(
-                        onPressed: installHealthConnect,
-                        child: Text("Install Health Connect",
-                            style: TextStyle(color: Colors.white)),
-                        style: ButtonStyle(
+                        onPressed: fetchData,
+                        style: const ButtonStyle(
                             backgroundColor:
-                                MaterialStatePropertyAll(Colors.blue))),
-                ],
-              ),
-              Divider(thickness: 3),
-              if (_state == AppState.DATA_READY) _dataFiltration,
-              if (_state == AppState.STEPS_READY) _stepsFiltration,
-              Expanded(child: Center(child: _content))
-            ],
-          ),
+                                WidgetStatePropertyAll(Colors.blue)),
+                        child: const Text("Fetch Data",
+                            style: TextStyle(color: Colors.white))),
+                    TextButton(
+                        onPressed: addData,
+                        style: const ButtonStyle(
+                            backgroundColor:
+                                WidgetStatePropertyAll(Colors.blue)),
+                        child: const Text("Add Data",
+                            style: TextStyle(color: Colors.white))),
+                    TextButton(
+                        onPressed: deleteData,
+                        style: const ButtonStyle(
+                            backgroundColor:
+                                WidgetStatePropertyAll(Colors.blue)),
+                        child: const Text("Delete Data",
+                            style: TextStyle(color: Colors.white))),
+                    TextButton(
+                        onPressed: fetchStepData,
+                        style: const ButtonStyle(
+                            backgroundColor:
+                                WidgetStatePropertyAll(Colors.blue)),
+                        child: const Text("Fetch Step Data",
+                            style: TextStyle(color: Colors.white))),
+                    TextButton(
+                        onPressed: revokeAccess,
+                        style: const ButtonStyle(
+                            backgroundColor:
+                                WidgetStatePropertyAll(Colors.blue)),
+                        child: const Text("Revoke Access",
+                            style: TextStyle(color: Colors.white))),
+                  ]),
+              ],
+            ),
+            const Divider(thickness: 3),
+            if (_state == AppState.DATA_READY) _dataFiltration,
+            if (_state == AppState.STEPS_READY) _stepsFiltration,
+            Expanded(child: Center(child: _content))
+          ],
         ),
       ),
     );
@@ -575,7 +610,7 @@ class _HealthAppState extends State<HealthApp> {
               // Add other entries here if needed
             ],
           ),
-          Divider(thickness: 3),
+          const Divider(thickness: 3),
         ],
       );
 
@@ -610,7 +645,7 @@ class _HealthAppState extends State<HealthApp> {
               // Add other entries here if needed
             ],
           ),
-          Divider(thickness: 3),
+          const Divider(thickness: 3),
         ],
       );
 
@@ -618,11 +653,11 @@ class _HealthAppState extends State<HealthApp> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(
+              padding: const EdgeInsets.all(20),
+              child: const CircularProgressIndicator(
                 strokeWidth: 10,
               )),
-          Text('Revoking permissions...')
+          const Text('Revoking permissions...')
         ],
       );
 
@@ -635,11 +670,11 @@ class _HealthAppState extends State<HealthApp> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(
+              padding: const EdgeInsets.all(20),
+              child: const CircularProgressIndicator(
                 strokeWidth: 10,
               )),
-          Text('Fetching data...')
+          const Text('Fetching data...')
         ],
       );
 
@@ -656,7 +691,7 @@ class _HealthAppState extends State<HealthApp> {
         if (p.value is AudiogramHealthValue) {
           return ListTile(
             title: Text("${p.typeString}: ${p.value}"),
-            trailing: Text('${p.unitString}'),
+            trailing: Text(p.unitString),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
@@ -665,7 +700,7 @@ class _HealthAppState extends State<HealthApp> {
             title: Text(
                 "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
             trailing: Text(
-                '${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
+                (p.value as WorkoutHealthValue).workoutActivityType.name),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
@@ -680,45 +715,46 @@ class _HealthAppState extends State<HealthApp> {
         }
         return ListTile(
           title: Text("${p.typeString}: ${p.value}"),
-          trailing: Text('${p.unitString}'),
+          trailing: Text(p.unitString),
           subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
         );
       });
 
-  Widget _contentNoData = const Text('No Data to show');
+  final Widget _contentNoData = const Text('No Data to show');
 
-  Widget _contentNotFetched = const Column(children: [
-    const Text("Press 'Auth' to get permissions to access health data."),
-    const Text("Press 'Fetch Dat' to get health data."),
-    const Text("Press 'Add Data' to add some random health data."),
-    const Text("Press 'Delete Data' to remove some random health data."),
-  ], mainAxisAlignment: MainAxisAlignment.center);
+  final Widget _contentNotFetched =
+      const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+    Text("Press 'Auth' to get permissions to access health data."),
+    Text("Press 'Fetch Dat' to get health data."),
+    Text("Press 'Add Data' to add some random health data."),
+    Text("Press 'Delete Data' to remove some random health data."),
+  ]);
 
-  Widget _authorized = const Text('Authorization granted!');
+  final Widget _authorized = const Text('Authorization granted!');
 
-  Widget _authorizationNotGranted = const Column(
-    children: [
-      const Text('Authorization not given.'),
-      const Text(
-          'For Google Health Connect please check if you have added the right permissions and services to the manifest file.'),
-      const Text('For Apple Health check your permissions in Apple Health.'),
-    ],
+  final Widget _authorizationNotGranted = const Column(
     mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Text('Authorization not given.'),
+      Text(
+          'For Google Health Connect please check if you have added the right permissions and services to the manifest file.'),
+      Text('For Apple Health check your permissions in Apple Health.'),
+    ],
   );
 
   Widget _contentHealthConnectStatus = const Text(
       'No status, click getHealthConnectSdkStatus to get the status.');
 
-  Widget _dataAdded = const Text('Data points inserted successfully.');
+  final Widget _dataAdded = const Text('Data points inserted successfully.');
 
-  Widget _dataDeleted = const Text('Data points deleted successfully.');
+  final Widget _dataDeleted = const Text('Data points deleted successfully.');
 
   Widget get _stepsFetched => Text('Total number of steps: $_nofSteps.');
 
-  Widget _dataNotAdded =
+  final Widget _dataNotAdded =
       const Text('Failed to add data.\nDo you have permissions to add data?');
 
-  Widget _dataNotDeleted = const Text('Failed to delete data');
+  final Widget _dataNotDeleted = const Text('Failed to delete data');
 
   Widget get _content => switch (_state) {
         AppState.DATA_READY => _contentDataReady,

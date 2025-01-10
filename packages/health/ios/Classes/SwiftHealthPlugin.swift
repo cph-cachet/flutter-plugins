@@ -35,6 +35,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
     let BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
     let BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+    let LEAN_BODY_MASS = "LEAN_BODY_MASS"
     let BODY_MASS_INDEX = "BODY_MASS_INDEX"
     let BODY_TEMPERATURE = "BODY_TEMPERATURE"
     // Nutrition
@@ -162,6 +163,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let BLOOD_TYPE = "BLOOD_TYPE"
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
     let UV_EXPOSURE = "UV_EXPOSURE"
+    let WATER_TEMPERATURE = "WATER_TEMPERATURE"
+    let UNDERWATER_DEPTH = "UNDERWATER_DEPTH"
     
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
@@ -349,7 +352,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
         
-        result(false)
+        result(true)
     }
     
     func hasPermission(type: HKObjectType, access: Int) -> Bool? {
@@ -824,12 +827,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         let dataType = dataTypeLookUp(key: dataTypeKey)
         
-        let predicate = HKQuery.predicateForSamples(
+        let samplePredicate = HKQuery.predicateForSamples(
             withStart: dateFrom, end: dateTo, options: .strictStartDate)
+        let ownerPredicate = HKQuery.predicateForObjects(from: HKSource.default())
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
         
         let deleteQuery = HKSampleQuery(
-            sampleType: dataType, predicate: predicate, limit: HKObjectQueryNoLimit,
+            sampleType: dataType,
+            predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [samplePredicate, ownerPredicate]),
+            limit: HKObjectQueryNoLimit,
             sortDescriptors: [sortDescriptor]
         ) { [self] x, samplesOrNil, error in
             
@@ -947,7 +953,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true)
                             ? RecordingMethod.manual.rawValue
                             : RecordingMethod.automatic.rawValue,
-                        "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil
+                        "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil,
+                        "dataUnitKey": unit?.unitString
                     ]
                 }
                 DispatchQueue.main.async {
@@ -1264,33 +1271,36 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
         }
         
-        let query = HKStatisticsQuery(
+        // TODO: [NOTE] Computational heavy
+        let query = HKStatisticsCollectionQuery(
             quantityType: sampleType,
             quantitySamplePredicate: predicate,
-            options: .cumulativeSum
-        ) { query, queryResult, error in
-            
-            guard let queryResult = queryResult else {
+            options: .cumulativeSum,
+            anchorDate: dateFrom,
+            intervalComponents: DateComponents(day: 1)
+        )
+        query.initialResultsHandler = { query, results, error in
+            guard let results = results else { 
                 let error = error! as NSError
                 print("Error getting total steps in interval \(error.localizedDescription)")
-                
+
                 DispatchQueue.main.async {
                     result(nil)
                 }
                 return
-            }
-            
-            var steps = 0.0
-            
-            if let quantity = queryResult.sumQuantity() {
-                let unit = HKUnit.count()
-                steps = quantity.doubleValue(for: unit)
-            }
-            
-            let totalSteps = Int(steps)
-            DispatchQueue.main.async {
-                result(totalSteps)
-            }
+             }
+
+             var totalSteps = 0.0
+             results.enumerateStatistics(from: dateFrom, to: dateTo) { statistics, stop in
+                if let quantity = statistics.sumQuantity() {
+                    let unit = HKUnit.count()
+                    totalSteps += quantity.doubleValue(for: unit)
+                }
+             }
+
+             DispatchQueue.main.async {
+                result(Int(totalSteps))
+             }
         }
         
         HKHealthStore().execute(query)
@@ -1472,6 +1482,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["TAI_CHI"] = .taiChi
         workoutActivityTypeMap["WRESTLING"] = .wrestling
         workoutActivityTypeMap["OTHER"] = .other
+        if #available(iOS 17.0, *) {
+            workoutActivityTypeMap["UNDERWATER_DIVING"] = .underwaterDiving
+        }
+
         nutritionList = [
             DIETARY_ENERGY_CONSUMED, DIETARY_CARBS_CONSUMED, DIETARY_PROTEIN_CONSUMED,
             DIETARY_FATS_CONSUMED, DIETARY_CAFFEINE, DIETARY_FIBER, DIETARY_SUGAR,
@@ -1503,6 +1517,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 forIdentifier: .bloodPressureSystolic)!
             dataTypesDict[BODY_FAT_PERCENTAGE] = HKSampleType.quantityType(
                 forIdentifier: .bodyFatPercentage)!
+            dataTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .leanBodyMass)!
             dataTypesDict[BODY_MASS_INDEX] = HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!
             dataTypesDict[BODY_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .bodyTemperature)!
             
@@ -1602,6 +1617,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataQuantityTypesDict[BLOOD_PRESSURE_DIASTOLIC] = HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!
             dataQuantityTypesDict[BLOOD_PRESSURE_SYSTOLIC] = HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!
             dataQuantityTypesDict[BODY_FAT_PERCENTAGE] = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
+            dataQuantityTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .leanBodyMass)!
             dataQuantityTypesDict[BODY_MASS_INDEX] = HKQuantityType.quantityType(forIdentifier: .bodyMassIndex)!
             dataQuantityTypesDict[BODY_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!
             dataQuantityTypesDict[UV_EXPOSURE] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
@@ -1707,6 +1723,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         if #available(iOS 16.0, *) {
             dataTypesDict[ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
+
+            dataTypesDict[WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
+            dataTypesDict[UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
         } 
         
         // Concatenate heart events, headache and health data types (both may be empty)
@@ -1864,6 +1883,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             return "mixedCardio"
         case .handCycling:
             return "handCycling"
+        case .underwaterDiving:
+            return "underwaterDiving"
         default:
             return "other"
         }
