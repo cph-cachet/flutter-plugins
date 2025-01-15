@@ -16,7 +16,7 @@ class HealthApp extends StatefulWidget {
   const HealthApp({super.key});
 
   @override
-  _HealthAppState createState() => _HealthAppState();
+  HealthAppState createState() => HealthAppState();
 }
 
 enum AppState {
@@ -37,7 +37,7 @@ enum AppState {
   PERMISSIONS_NOT_REVOKED,
 }
 
-class _HealthAppState extends State<HealthApp> {
+class HealthAppState extends State<HealthApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 0;
@@ -288,12 +288,12 @@ class _HealthAppState extends State<HealthApp> {
         type: HealthDataType.SLEEP_DEEP,
         startTime: earlier,
         endTime: now);
-        success &= await health.writeHealthData(
-      value: 22, 
-      type: HealthDataType.LEAN_BODY_MASS, 
+    success &= await health.writeHealthData(
+      value: 22,
+      type: HealthDataType.LEAN_BODY_MASS,
       startTime: earlier,
       endTime: now,
-      );
+    );
 
     // specialized write methods
     success &= await health.writeBloodOxygen(
@@ -386,22 +386,20 @@ class _HealthAppState extends State<HealthApp> {
     );
 
     // Available on iOS 16.0+ only
-     if (Platform.isIOS) {
+    if (Platform.isIOS) {
       success &= await health.writeHealthData(
-        value: 22,
-        type: HealthDataType.WATER_TEMPERATURE,
-        startTime: earlier,
-        endTime: now,
-        recordingMethod: RecordingMethod.manual
-    );
+          value: 22,
+          type: HealthDataType.WATER_TEMPERATURE,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
 
-    success &= await health.writeHealthData(
-        value: 55,
-        type: HealthDataType.UNDERWATER_DEPTH,
-        startTime: earlier,
-        endTime: now,
-        recordingMethod: RecordingMethod.manual
-    );
+      success &= await health.writeHealthData(
+          value: 55,
+          type: HealthDataType.UNDERWATER_DEPTH,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
     }
 
     setState(() {
@@ -702,8 +700,8 @@ class _HealthAppState extends State<HealthApp> {
           return ListTile(
             title: Text(
                 "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
-            trailing: Text(
-                (p.value as WorkoutHealthValue).workoutActivityType.name),
+            trailing:
+                Text((p.value as WorkoutHealthValue).workoutActivityType.name),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }

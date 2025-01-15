@@ -1,8 +1,12 @@
 part of '../health.dart';
 
-/// Main class for the Plugin. This class works as a singleton and should be
-/// accessed via `Health()` factory method. The plugin must be configured using
-/// the [configure] method before used.
+/// Main class for the Plugin.
+///
+/// Use this class to get an instance of the Health plugin, like this:
+///
+///         final health = Health();
+///
+/// The plugin must be configured using the [configure] method before used.
 ///
 /// Overall, the plugin supports:
 ///
@@ -37,12 +41,14 @@ class Health {
 
   String? _deviceId;
   final DeviceInfoPlugin _deviceInfo;
-   HealthConnectSdkStatus _healthConnectSdkStatus =
-       HealthConnectSdkStatus.sdkUnavailable;
+  HealthConnectSdkStatus _healthConnectSdkStatus =
+      HealthConnectSdkStatus.sdkUnavailable;
 
-   Health({DeviceInfoPlugin? deviceInfo}) : _deviceInfo = deviceInfo ?? DeviceInfoPlugin()  {
-     _registerFromJsonFunctions();
-   }
+  /// Get an instance of the health plugin.
+  Health({DeviceInfoPlugin? deviceInfo})
+      : _deviceInfo = deviceInfo ?? DeviceInfoPlugin() {
+    _registerFromJsonFunctions();
+  }
 
   /// The latest status on availability of Health Connect SDK on this phone.
   HealthConnectSdkStatus get healthConnectSdkStatus => _healthConnectSdkStatus;
