@@ -1,5 +1,13 @@
 ## 12.0.0
 
+* **BREAKING** This release introduces a significant architectural change to the `health` plugin by removing the `singleton` pattern.
+  *   **Dependency Injection for `DeviceInfoPlugin`**:
+    -   The `Health` class is no longer a singleton.
+    -   The `Health()` factory constructor is removed.
+    -   The `Health` class now accepts an (optional) `DeviceInfoPlugin` dependency through its constructor, this change was introduced to provide easy mocking of the `DeviceInfo` class during unit tests.
+    -   This architectural change means that, for the application to work correctly, the `Health` class *MUST* be initialized correctly as a global instance.
+  * **Impact**:
+    -   For most users, **no immediate code changes are required** but it is paramount to initialize the `Health` class as a global instance (i.e. do not call `Health()` every time but rather define an instance `final health = Health();`).
 * **BREAKING** (Android) Remove automatic permission request of `DISTANCE_DELTA` and `TOTAL_CALORIES_BURNED` data types when requesting permission for `WORKOUT` health data type.
   * For `WORKOUT`s that require above permissions, now those need to be requested manually.
   * Fix [#984](https://github.com/cph-cachet/flutter-plugins/issues/984) - PR [#1055](https://github.com/cph-cachet/flutter-plugins/pull/1055)
