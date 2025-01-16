@@ -1,3 +1,8 @@
+## 12.0.1
+
+* Update of API and README doc
+* Fix [#1118](https://github.com/cph-cachet/flutter-plugins/issues/1118)
+
 ## 12.0.0
 
 * **BREAKING** This release introduces a significant architectural change to the `health` plugin by removing the `singleton` pattern.
