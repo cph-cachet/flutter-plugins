@@ -146,12 +146,16 @@ android.useAndroidX=true
 
 See the example app for detailed examples of how to use the Health API.
 
-The Health plugin is used via the `Health()` singleton using the different methods for handling permissions and getting and adding data to Apple Health or Google Health Connect.
+A instance of the Health plugin is create using the `Health()` constructor and is subsequently configured calling the `configure` method. Once configured, the plugin can be used for handling permissions and getting and adding data to Apple Health or Google Health Connect.
 Below is a simplified flow of how to use the plugin.
 
 ```dart
+
+  // Global Health instance
+  final health = Health();
+
   // configure the health plugin before use.
-  Health().configure();
+  await health.configure();
 
 
   // define the types to get
@@ -161,12 +165,12 @@ Below is a simplified flow of how to use the plugin.
   ];
 
   // requesting access to the data types before reading them
-  bool requested = await Health().requestAuthorization(types);
+  bool requested = await health.requestAuthorization(types);
 
   var now = DateTime.now();
 
   // fetch health data from the last 24 hours
-  List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
+  List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(
      now.subtract(Duration(days: 1)), now, types);
 
   // request permissions to write steps and blood glucose
@@ -175,20 +179,20 @@ Below is a simplified flow of how to use the plugin.
       HealthDataAccess.READ_WRITE,
       HealthDataAccess.READ_WRITE
   ];
-  await Health().requestAuthorization(types, permissions: permissions);
+  await health.requestAuthorization(types, permissions: permissions);
 
   // write steps and blood glucose
-  bool success = await Health().writeHealthData(10, HealthDataType.STEPS, now, now);
-  success = await Health().writeHealthData(3.1, HealthDataType.BLOOD_GLUCOSE, now, now);
+  bool success = await health.writeHealthData(10, HealthDataType.STEPS, now, now);
+  success = await health.writeHealthData(3.1, HealthDataType.BLOOD_GLUCOSE, now, now);
 
   // you can also specify the recording method to store in the metadata (default is RecordingMethod.automatic)
   // on iOS only `RecordingMethod.automatic` and `RecordingMethod.manual` are supported
   // Android additionally supports `RecordingMethod.active` and `RecordingMethod.unknown`
-  success &= await Health().writeHealthData(10, HealthDataType.STEPS, now, now, recordingMethod: RecordingMethod.manual);
+  success &= await health.writeHealthData(10, HealthDataType.STEPS, now, now, recordingMethod: RecordingMethod.manual);
 
   // get the number of steps for today
   var midnight = DateTime(now.year, now.month, now.day);
-  int? steps = await Health().getTotalStepsInInterval(midnight, now);
+  int? steps = await health.getTotalStepsInInterval(midnight, now);
 ```
 
 ### Health Data
@@ -266,7 +270,7 @@ Google Health Connect and Apple HealthKit both provide ways to distinguish sampl
 As such, when fetching data you have the option to filter the fetched data by recording method as such:
 
 ```dart
-List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
+List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(
   types: types,
   startTime: yesterday,
   endTime: now,
@@ -294,7 +298,7 @@ If you have a list of data points, duplicates can be removed with:
 
 ```dart
 List<HealthDataPoint> points = ...;
-points = Health().removeDuplicates(points);
+points = health.removeDuplicates(points);
 ```
 
 ## Data Types
