@@ -6,6 +6,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -30,7 +31,7 @@ class PedometerPlugin : FlutterPlugin, MethodCallHandler {
             result.success(stepCountSensor != null)
         }
     }
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPluginBinding) {
         /// Create channels
         stepDetectionChannel = EventChannel(flutterPluginBinding.binaryMessenger, "step_detection")
         stepCountChannel = EventChannel(flutterPluginBinding.binaryMessenger, "step_count")
@@ -43,9 +44,9 @@ class PedometerPlugin : FlutterPlugin, MethodCallHandler {
         stepCountChannel.setStreamHandler(stepCountHandler)
 
         // setup method channel
-        val context = FlutterPlugin.FlutterPluginBinding.applicationContext
+        val context = flutterPluginBinding.applicationContext
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        methodChannel = MethodChannel(flutterPluginBinding), "com.example.pedometer")
+        methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.example.pedometer")
         methodChannel.setMethodCallHandler(this)
     }
 
