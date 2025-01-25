@@ -28,7 +28,7 @@ public class SwiftPedometerPlugin: NSObject, FlutterPlugin {
                     result(CMPedometer.isStepCountingAvailable())
 
           }
-          else if call.method = "isStepDetectionSupported" {
+          else if call.method == "isStepDetectionSupported" {
                     result(CMPedometer.isPedometerEventTrackingAvailable())
           }
         })
