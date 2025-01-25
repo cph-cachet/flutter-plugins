@@ -8,26 +8,26 @@ import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.MethodCall
 
 /** PedometerPlugin */
-class PedometerPlugin : FlutterPlugin {
+class PedometerPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var stepDetectionChannel: EventChannel
     private lateinit var stepCountChannel: EventChannel
-    override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.pedometer").setMethodCallHandler {
-                call, result ->
-            val context = flutterPluginBinding.applicationContext
-            val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-            if (call.method == "isStepDetectionSupported"){
-                val stepDetectionSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
-                result.success(stepDetectionSensor != null)
+    private lateinit var methodChannel : MethodChannel;
+    private lateinit var sensorManager : SensorManager;
 
-            }
-            else if (call.method == "isStepCountSupported"){
-                val stepCountSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-                result.success(stepCountSensor != null)
-            }
+    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        if (call.method == "isStepDetectionSupported"){
+            val stepDetectionSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+            result.success(stepDetectionSensor != null)
+
+        }
+        else if (call.method == "isStepCountSupported"){
+            val stepCountSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+            result.success(stepCountSensor != null)
         }
     }
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -41,11 +41,18 @@ class PedometerPlugin : FlutterPlugin {
         /// Set handlers
         stepDetectionChannel.setStreamHandler(stepDetectionHandler)
         stepCountChannel.setStreamHandler(stepCountHandler)
+
+        // setup method channel
+        val context = FlutterPlugin.FlutterPluginBinding.applicationContext
+        sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        methodChannel = MethodChannel(flutterPluginBinding), "com.example.pedometer")
+        methodChannel.setMethodCallHandler(this)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         stepDetectionChannel.setStreamHandler(null)
         stepCountChannel.setStreamHandler(null)
+        methodChannel.setMethodCallHandler(null)
     }
 
 }
