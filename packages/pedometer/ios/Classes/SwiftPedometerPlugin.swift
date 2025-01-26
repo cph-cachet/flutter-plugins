@@ -16,7 +16,7 @@ public class SwiftPedometerPlugin: NSObject, FlutterPlugin {
         stepCountChannel.setStreamHandler(stepCountHandler)
 
         let methodChannel = FlutterMethodChannel(name: "com.example.pedometer",
-                                                      binaryMessenger: controller.binaryMessenger)
+                                                      binaryMessenger: registrar.messenger())
         methodChannel.setMethodCallHandler({
           [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
           // This method is invoked on the UI thread.
