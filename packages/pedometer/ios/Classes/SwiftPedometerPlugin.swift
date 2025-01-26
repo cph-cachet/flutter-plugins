@@ -18,7 +18,7 @@ public class SwiftPedometerPlugin: NSObject, FlutterPlugin {
         let methodChannel = FlutterMethodChannel(name: "com.example.pedometer",
                                                       binaryMessenger: registrar.messenger())
         methodChannel.setMethodCallHandler({
-          [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
+          (call: FlutterMethodCall, result: FlutterResult) -> Void in
           // This method is invoked on the UI thread.
           guard call.method == "isStepDetectionSupported" || call.method == "isStepCountSupported" else {
             result(FlutterMethodNotImplemented)
@@ -32,17 +32,6 @@ public class SwiftPedometerPlugin: NSObject, FlutterPlugin {
                     result(CMPedometer.isPedometerEventTrackingAvailable())
           }
         })
-    }
-    private func receiveBatteryLevel(result: FlutterResult) {
-      let device = UIDevice.current
-      device.isBatteryMonitoringEnabled = true
-      if device.batteryState == UIDevice.BatteryState.unknown {
-        result(FlutterError(code: "UNAVAILABLE",
-                            message: "Battery level not available.",
-                            details: nil))
-      } else {
-        result(Int(device.batteryLevel * 100))
-      }
     }
 }
 
