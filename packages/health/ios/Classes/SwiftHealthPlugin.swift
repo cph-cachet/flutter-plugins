@@ -860,8 +860,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true)
                             ? RecordingMethod.manual.rawValue
                             : RecordingMethod.automatic.rawValue,
-                        "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil,
-                        "dataUnitKey": unit?.unitString
+                        "dataUnitKey": unit?.unitString,
+                        "metadata": sanitizeMetadata(sample.metadata)
                     ]
                 }
                 DispatchQueue.main.async {
@@ -904,14 +904,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     samplesCategory = samplesCategory.filter { $0.value == 4 }
                 }
                 let categories = samplesCategory.map { sample -> NSDictionary in
-                    var metadata: [String: Any] = [:]
-                    
-                    if let sampleMetadata = sample.metadata {
-                        for (key, value) in sampleMetadata {
-                            metadata[key] = value
-                        }
-                    }
-                    
                     return [
                         "uuid": "\(sample.uuid)",
                         "value": sample.value,
@@ -920,7 +912,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
                         "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true) ? RecordingMethod.manual.rawValue : RecordingMethod.automatic.rawValue,
-                        "metadata": metadata
+                        "metadata": sanitizeMetadata(sample.metadata)
                     ]
                 }
                 DispatchQueue.main.async {
@@ -1035,6 +1027,54 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         HKHealthStore().execute(query)
+    }
+    
+    private func sanitizeMetadata(_ metadata: [String: Any]?) -> [String: Any] {
+        guard let metadata = metadata else { return [:] }
+        
+        var sanitized = [String: Any]()
+        
+        for (key, value) in metadata {
+            switch value {
+            case let stringValue as String:
+                sanitized[key] = stringValue
+            case let numberValue as NSNumber:
+                sanitized[key] = numberValue
+            case let boolValue as Bool:
+                sanitized[key] = boolValue
+            case let arrayValue as [Any]:
+                sanitized[key] = sanitizeArray(arrayValue)
+            case let mapValue as [String: Any]:
+                sanitized[key] = sanitizeMetadata(mapValue)
+            default:
+                continue
+            }
+        }
+        
+        return sanitized
+    }
+
+    private func sanitizeArray(_ array: [Any]) -> [Any] {
+        var sanitizedArray: [Any] = []
+        
+        for value in array {
+            switch value {
+            case let stringValue as String:
+                sanitizedArray.append(stringValue)
+            case let numberValue as NSNumber:
+                sanitizedArray.append(numberValue)
+            case let boolValue as Bool:
+                sanitizedArray.append(boolValue)
+            case let arrayValue as [Any]:
+                sanitizedArray.append(sanitizeArray(arrayValue))
+            case let mapValue as [String: Any]:
+                sanitizedArray.append(sanitizeMetadata(mapValue))
+            default:
+                continue
+            }
+        }
+        
+        return sanitizedArray
     }
     
     @available(iOS 14.0, *)
