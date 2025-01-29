@@ -1,3 +1,7 @@
+## 12.0.2
+
+* iOS: Parse metadata to remove unsupported types - PR [#1120](https://github.com/cph-cachet/flutter-plugins/pull/1120)
+
 ## 12.0.1
 
 * Update of API and README doc
@@ -23,7 +27,6 @@
   <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS"/>
   <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS"/>
   ```
-
 * iOS: Add `WATER_TEMPERATURE` and `UNDERWATER_DEPTH` health values [#1096](https://github.com/cph-cachet/flutter-plugins/issues/1096)
 * iOS: Add support for `Underwater Diving` workout [#1096](https://github.com/cph-cachet/flutter-plugins/issues/1096)
 * Fix [#1072](https://github.com/cph-cachet/flutter-plugins/issues/1072) and [#1074](https://github.com/cph-cachet/flutter-plugins/issues/1074)
