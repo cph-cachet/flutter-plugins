@@ -55,7 +55,7 @@ dependencies {
     implementation(composeBom)
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha11")
     def fragment_version = "1.6.2"
     implementation "androidx.fragment:fragment-ktx:$fragment_version"
 

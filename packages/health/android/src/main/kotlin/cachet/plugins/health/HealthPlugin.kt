@@ -12,6 +12,7 @@ import androidx.annotation.NonNull
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.permission.HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_HISTORY
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_BREAKFAST
 import androidx.health.connect.client.records.MealType.MEAL_TYPE_DINNER
@@ -147,6 +148,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         when (call.method) {
             "installHealthConnect" -> installHealthConnect(call, result)
             "getHealthConnectSdkStatus" -> getHealthConnectSdkStatus(call, result)
+            "isHealthDataHistoryAuthorized" -> isHealthDataHistoryAuthorized(call, result)
+            "requestHealthDataHistoryAuthorization" -> requestHealthDataHistoryAuthorization(call, result)
             "hasPermissions" -> hasPermissions(call, result)
             "requestAuthorization" -> requestAuthorization(call, result)
             "revokePermissions" -> revokePermissions(call, result)
@@ -510,6 +513,41 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             )
             return@filter !recordingMethodsToFilter.contains(record.metadata.recordingMethod)
         }
+    }
+
+    /**
+     * Checks if PERMISSION_READ_HEALTH_DATA_HISTORY has been granted
+     */
+    private fun isHealthDataHistoryAuthorized(call: MethodCall, result: Result) {
+        scope.launch {
+            result.success(
+                healthConnectClient
+                    .permissionController
+                    .getGrantedPermissions()
+                    .containsAll(listOf(PERMISSION_READ_HEALTH_DATA_HISTORY)),
+            )
+        }
+    }
+
+    /**
+     * Requests authorization for PERMISSION_READ_HEALTH_DATA_HISTORY
+     */
+    private fun requestHealthDataHistoryAuthorization(call: MethodCall, result: Result) {
+        if (context == null) {
+            result.success(false)
+            return
+        }
+
+        if (healthConnectRequestPermissionsLauncher == null) {
+            result.success(false)
+            Log.i("FLUTTER_HEALTH", "Permission launcher not found")
+            return
+        }
+
+        // Store the result to be called in [onHealthConnectPermissionCallback]
+        mResult = result
+        isReplySubmitted = false
+        healthConnectRequestPermissionsLauncher!!.launch(setOf(PERMISSION_READ_HEALTH_DATA_HISTORY))
     }
 
     private fun hasPermissions(call: MethodCall, result: Result) {
