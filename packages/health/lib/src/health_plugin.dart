@@ -235,7 +235,8 @@ class Health {
           await _channel.invokeMethod<bool>('isHealthDataHistoryAuthorized');
       return status ?? false;
     } catch (e) {
-      debugPrint('$runtimeType - Exception in getHealthConnectSdkStatus(): $e');
+      debugPrint(
+          '$runtimeType - Exception in isHealthDataHistoryAuthorized(): $e');
       return false;
     }
   }
