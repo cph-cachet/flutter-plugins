@@ -9,7 +9,9 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.NonNull
+import androidx.health.connect.client.feature.ExperimentalFeatureAvailabilityApi
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.permission.HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_HISTORY
@@ -148,6 +150,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         when (call.method) {
             "installHealthConnect" -> installHealthConnect(call, result)
             "getHealthConnectSdkStatus" -> getHealthConnectSdkStatus(call, result)
+            "isHealthDataHistoryAvailable" -> isHealthDataHistoryAvailable(call, result)
             "isHealthDataHistoryAuthorized" -> isHealthDataHistoryAuthorized(call, result)
             "requestHealthDataHistoryAuthorization" -> requestHealthDataHistoryAuthorization(call, result)
             "hasPermissions" -> hasPermissions(call, result)
@@ -512,6 +515,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 "Filtering record with recording method ${record.metadata.recordingMethod}, filtering by $recordingMethodsToFilter. Result: ${recordingMethodsToFilter.contains(record.metadata.recordingMethod)}"
             )
             return@filter !recordingMethodsToFilter.contains(record.metadata.recordingMethod)
+        }
+    }
+
+    /**
+     * Checks if the health data history feature is available on this device
+     */
+    @OptIn(ExperimentalFeatureAvailabilityApi::class)
+    private fun isHealthDataHistoryAvailable(call: MethodCall, result: Result) {
+        scope.launch {
+            result.success(
+                healthConnectClient
+                    .features
+                    .getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY) ==
+                    HealthConnectFeatures.FEATURE_STATUS_AVAILABLE)
         }
     }
 
