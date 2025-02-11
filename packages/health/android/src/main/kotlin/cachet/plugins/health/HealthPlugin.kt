@@ -48,6 +48,7 @@ const val BLOOD_OXYGEN = "BLOOD_OXYGEN"
 const val BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
 const val BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
 const val BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+const val LEAN_BODY_MASS = "LEAN_BODY_MASS"
 const val BODY_TEMPERATURE = "BODY_TEMPERATURE"
 const val BODY_WATER_MASS = "BODY_WATER_MASS"
 const val DISTANCE_DELTA = "DISTANCE_DELTA"
@@ -94,6 +95,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         null
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var scope: CoroutineScope
+    private var isReplySubmitted = false
 
 
     override fun onAttachedToEngine(
@@ -219,15 +221,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     private fun onHealthConnectPermissionCallback(permissionGranted: Set<String>) {
-        if (permissionGranted.isEmpty()) {
-            mResult?.success(false)
-            Log.i("FLUTTER_HEALTH", "Health Connect permissions were not granted! Make sure to declare the required permissions in the AndroidManifest.xml file.")
-        } else {
-            mResult?.success(true)
-            Log.i("FLUTTER_HEALTH", "${permissionGranted.size} Health Connect permissions were granted!")
-            
-            // log the permissions granted for debugging
-            Log.i("FLUTTER_HEALTH", "Permissions granted: $permissionGranted") 
+        if (!isReplySubmitted) {
+            if (permissionGranted.isEmpty()) {
+                mResult?.success(false)
+                Log.i("FLUTTER_HEALTH", "Health Connect permissions were not granted! Make sure to declare the required permissions in the AndroidManifest.xml file.")
+            } else {
+                mResult?.success(true)
+                Log.i("FLUTTER_HEALTH", "${permissionGranted.size} Health Connect permissions were granted!")
+                
+                // log the permissions granted for debugging
+                Log.i("FLUTTER_HEALTH", "Permissions granted: $permissionGranted") 
+            }
+            isReplySubmitted = true
         }
     }
 
@@ -540,38 +545,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ),
                 )
             }
-            // Workout also needs distance and total energy burned too
-            if (typeKey == WORKOUT) {
-                if (access == 0) {
-                    permList.addAll(
-                        listOf(
-                            HealthPermission.getReadPermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getReadPermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                        ),
-                    )
-                } else {
-                    permList.addAll(
-                        listOf(
-                            HealthPermission.getReadPermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getReadPermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                            HealthPermission.getWritePermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getWritePermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                        ),
-                    )
-                }
-            }
         }
         scope.launch {
             result.success(
@@ -625,38 +598,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ),
                 )
             }
-            // Workout also needs distance and total energy burned too
-            if (typeKey == WORKOUT) {
-                if (access == 0) {
-                    permList.addAll(
-                        listOf(
-                            HealthPermission.getReadPermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getReadPermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                        ),
-                    )
-                } else {
-                    permList.addAll(
-                        listOf(
-                            HealthPermission.getReadPermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getReadPermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                            HealthPermission.getWritePermission(
-                                DistanceRecord::class
-                            ),
-                            HealthPermission.getWritePermission(
-                                TotalCaloriesBurnedRecord::class
-                            ),
-                        ),
-                    )
-                }
-            }
         }
         if (healthConnectRequestPermissionsLauncher == null) {
             result.success(false)
@@ -666,6 +607,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         // Store the result to be called in [onHealthConnectPermissionCallback]
         mResult = result
+        isReplySubmitted = false
         healthConnectRequestPermissionsLauncher!!.launch(permList.toSet())
     }
 
@@ -1087,6 +1029,29 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                     .packageName,
                         "recording_method" to
                                         metadata.recordingMethod
+                    ),
+                )
+
+            is LeanBodyMassRecord ->
+                return listOf(
+                    mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
+                        "value" to
+                                record.mass
+                                    .inKilograms,
+                        "date_from" to
+                                record.time
+                                    .toEpochMilli(),
+                        "date_to" to
+                                record.time
+                                    .toEpochMilli(),
+                        "source_id" to "",
+                        "source_name" to
+                                metadata.dataOrigin
+                                    .packageName,
+                        "recording_method" to
+                                metadata.recordingMethod
                     ),
                 )
 
@@ -1523,7 +1488,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         "sugar" to record.sugar?.inGrams,
                         "water" to null,
                         "zinc" to record.zinc?.inGrams,
-                        "name" to record.name!!,
+                        "name" to (record.name ?: ""),
                         "meal_type" to
                                 (mapTypeToMealType[
                                     record.mealType]
@@ -1595,6 +1560,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                         percentage =
                         Percentage(
+                            value
+                        ),
+                        zoneOffset = null,
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
+                    )
+
+                LEAN_BODY_MASS ->
+                    LeanBodyMassRecord(
+                        time =
+                        Instant.ofEpochMilli(
+                            startTime
+                        ),
+                        mass =
+                        Mass.kilograms(
                             value
                         ),
                         zoneOffset = null,
@@ -2405,6 +2386,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private val mapToType =
         hashMapOf(
             BODY_FAT_PERCENTAGE to BodyFatRecord::class,
+            LEAN_BODY_MASS to LeanBodyMassRecord::class,
             HEIGHT to HeightRecord::class,
             WEIGHT to WeightRecord::class,
             STEPS to StepsRecord::class,
@@ -2445,7 +2427,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // "BasalMetabolicRate" to BasalMetabolicRateRecord::class,
             // "BloodGlucose" to BloodGlucoseRecord::class,
             // "BloodPressure" to BloodPressureRecord::class,
-            // "BodyFat" to BodyFatRecord::class,
             // "BodyTemperature" to BodyTemperatureRecord::class,
             // "BoneMass" to BoneMassRecord::class,
             // "CervicalMucus" to CervicalMucusRecord::class,
@@ -2458,7 +2439,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // "HeartRate" to HeartRateRecord::class,
             // "Height" to HeightRecord::class,
             // "Hydration" to HydrationRecord::class,
-            // "LeanBodyMass" to LeanBodyMassRecord::class,
             // "MenstruationPeriod" to MenstruationPeriodRecord::class,
             // "Nutrition" to NutritionRecord::class,
             // "OvulationTest" to OvulationTestRecord::class,

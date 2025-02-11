@@ -2,36 +2,30 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:light/light.dart';
 
-void main() => runApp(new MyApp());
+void main() => runApp(LightApp());
 
-class MyApp extends StatefulWidget {
+class LightApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  LightAppState createState() => LightAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class LightAppState extends State<LightApp> {
   String _luxString = 'Unknown';
-  Light? _light;
-  StreamSubscription? _subscription;
+  StreamSubscription<int>? _lightEvents;
 
-  void onData(int luxValue) async {
-    print("Lux value: $luxValue");
-    setState(() {
-      _luxString = "$luxValue";
-    });
+  void startListening() {
+    try {
+      _lightEvents =
+          Light().lightSensorStream.listen((luxValue) => setState(() {
+                _luxString = "$luxValue";
+              }));
+    } catch (exception) {
+      print(exception);
+    }
   }
 
   void stopListening() {
-    _subscription?.cancel();
-  }
-
-  void startListening() {
-    _light = Light();
-    try {
-      _subscription = _light?.lightSensorStream.listen(onData);
-    } on LightException catch (exception) {
-      print(exception);
-    }
+    _lightEvents?.cancel();
   }
 
   @override
@@ -42,15 +36,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: const Text('Light Example App'),
-        ),
-        body: new Center(
-          child: new Text('Lux value: $_luxString\n'),
-        ),
-      ),
-    );
+    return MaterialApp(
+        home: Scaffold(
+      appBar: AppBar(title: const Text('Light Example App')),
+      body: Center(child: Text('Lux value: $_luxString\n')),
+    ));
   }
 }

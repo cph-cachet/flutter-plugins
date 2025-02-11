@@ -1,8 +1,12 @@
 part of '../health.dart';
 
-/// Main class for the Plugin. This class works as a singleton and should be
-/// accessed via `Health()` factory method. The plugin must be configured using
-/// the [configure] method before used.
+/// Main class for the Plugin.
+///
+/// Use this class to get an instance of the Health plugin, like this:
+///
+///         final health = Health();
+///
+/// The plugin must be configured using the [configure] method before used.
 ///
 /// Overall, the plugin supports:
 ///
@@ -34,19 +38,17 @@ part of '../health.dart';
 /// or getter methods. Otherwise, the plugin will throw an exception.
 class Health {
   static const MethodChannel _channel = MethodChannel('flutter_health');
-  static final _instance = Health._();
 
   String? _deviceId;
-  final _deviceInfo = DeviceInfoPlugin();
+  final DeviceInfoPlugin _deviceInfo;
   HealthConnectSdkStatus _healthConnectSdkStatus =
       HealthConnectSdkStatus.sdkUnavailable;
 
-  Health._() {
+  /// Get an instance of the health plugin.
+  Health({DeviceInfoPlugin? deviceInfo})
+      : _deviceInfo = deviceInfo ?? DeviceInfoPlugin() {
     _registerFromJsonFunctions();
   }
-
-  /// The singleton [Health] instance.
-  factory Health() => _instance;
 
   /// The latest status on availability of Health Connect SDK on this phone.
   HealthConnectSdkStatus get healthConnectSdkStatus => _healthConnectSdkStatus;
@@ -1104,7 +1106,7 @@ class Health {
         HealthDataType.SLEEP_IN_BED => 0,
         HealthDataType.SLEEP_ASLEEP => 1,
         HealthDataType.SLEEP_AWAKE => 2,
-        HealthDataType.SLEEP_ASLEEP => 3,
+        HealthDataType.SLEEP_LIGHT => 3,
         HealthDataType.SLEEP_DEEP => 4,
         HealthDataType.SLEEP_REM => 5,
         HealthDataType.HEADACHE_UNSPECIFIED => 0,
@@ -1257,6 +1259,7 @@ class Health {
       HealthWorkoutActivityType.YOGA,
       HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
       HealthWorkoutActivityType.SWIMMING_POOL,
+      HealthWorkoutActivityType.UNDERWATER_DIVING,
     }.contains(type);
   }
 

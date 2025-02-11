@@ -7,11 +7,16 @@ import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:carp_serializable/carp_serializable.dart';
 
+// Global Health instance
+final health = Health();
+
 void main() => runApp(HealthApp());
 
 class HealthApp extends StatefulWidget {
+  const HealthApp({super.key});
+
   @override
-  _HealthAppState createState() => _HealthAppState();
+  HealthAppState createState() => HealthAppState();
 }
 
 enum AppState {
@@ -32,7 +37,7 @@ enum AppState {
   PERMISSIONS_NOT_REVOKED,
 }
 
-class _HealthAppState extends State<HealthApp> {
+class HealthAppState extends State<HealthApp> {
   List<HealthDataPoint> _healthDataList = [];
   AppState _state = AppState.DATA_NOT_FETCHED;
   int _nofSteps = 0;
@@ -83,15 +88,15 @@ class _HealthAppState extends State<HealthApp> {
   @override
   void initState() {
     // configure the health plugin before use and check the Health Connect status
-    Health().configure();
-    Health().getHealthConnectSdkStatus();
+    health.configure();
+    health.getHealthConnectSdkStatus();
 
     super.initState();
   }
 
   /// Install Google Health Connect on this phone.
   Future<void> installHealthConnect() async =>
-      await Health().installHealthConnect();
+      await health.installHealthConnect();
 
   /// Authorize, i.e. get permissions to access relevant health data.
   Future<void> authorize() async {
@@ -105,7 +110,7 @@ class _HealthAppState extends State<HealthApp> {
 
     // Check if we have health permissions
     bool? hasPermissions =
-        await Health().hasPermissions(types, permissions: permissions);
+        await health.hasPermissions(types, permissions: permissions);
 
     // hasPermissions = false because the hasPermission cannot disclose if WRITE access exists.
     // Hence, we have to request with WRITE as well.
@@ -115,8 +120,8 @@ class _HealthAppState extends State<HealthApp> {
     if (!hasPermissions) {
       // requesting access to the data types before reading them
       try {
-        authorized = await Health()
-            .requestAuthorization(types, permissions: permissions);
+        authorized =
+            await health.requestAuthorization(types, permissions: permissions);
       } catch (error) {
         debugPrint("Exception in authorize: $error");
       }
@@ -130,7 +135,7 @@ class _HealthAppState extends State<HealthApp> {
   Future<void> getHealthConnectSdkStatus() async {
     assert(Platform.isAndroid, "This is only available on Android");
 
-    final status = await Health().getHealthConnectSdkStatus();
+    final status = await health.getHealthConnectSdkStatus();
 
     setState(() {
       _contentHealthConnectStatus =
@@ -152,7 +157,7 @@ class _HealthAppState extends State<HealthApp> {
 
     try {
       // fetch health data
-      List<HealthDataPoint> healthData = await Health().getHealthDataFromTypes(
+      List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(
         types: types,
         startTime: yesterday,
         endTime: now,
@@ -173,9 +178,11 @@ class _HealthAppState extends State<HealthApp> {
     }
 
     // filter out duplicates
-    _healthDataList = Health().removeDuplicates(_healthDataList);
+    _healthDataList = health.removeDuplicates(_healthDataList);
 
-    _healthDataList.forEach((data) => debugPrint(toJsonString(data)));
+    for (var data in _healthDataList) {
+      debugPrint(toJsonString(data));
+    }
 
     // update the UI to display the results
     setState(() {
@@ -197,98 +204,104 @@ class _HealthAppState extends State<HealthApp> {
     bool success = true;
 
     // misc. health data examples using the writeHealthData() method
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 1.925,
         type: HealthDataType.HEIGHT,
         startTime: earlier,
         endTime: now,
         recordingMethod: RecordingMethod.manual);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 90,
         type: HealthDataType.WEIGHT,
         startTime: now,
         recordingMethod: RecordingMethod.manual);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 90,
         type: HealthDataType.HEART_RATE,
         startTime: earlier,
         endTime: now,
         recordingMethod: RecordingMethod.manual);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 90,
         type: HealthDataType.STEPS,
         startTime: earlier,
         endTime: now,
         recordingMethod: RecordingMethod.manual);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
       value: 200,
       type: HealthDataType.ACTIVE_ENERGY_BURNED,
       startTime: earlier,
       endTime: now,
     );
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 70,
         type: HealthDataType.HEART_RATE,
         startTime: earlier,
         endTime: now);
     if (Platform.isIOS) {
-      success &= await Health().writeHealthData(
+      success &= await health.writeHealthData(
           value: 30,
           type: HealthDataType.HEART_RATE_VARIABILITY_SDNN,
           startTime: earlier,
           endTime: now);
     } else {
-      success &= await Health().writeHealthData(
+      success &= await health.writeHealthData(
           value: 30,
           type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
           startTime: earlier,
           endTime: now);
     }
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 37,
         type: HealthDataType.BODY_TEMPERATURE,
         startTime: earlier,
         endTime: now);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 105,
         type: HealthDataType.BLOOD_GLUCOSE,
         startTime: earlier,
         endTime: now);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 1.8,
         type: HealthDataType.WATER,
         startTime: earlier,
         endTime: now);
 
     // different types of sleep
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 0.0,
         type: HealthDataType.SLEEP_REM,
         startTime: earlier,
         endTime: now);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 0.0,
         type: HealthDataType.SLEEP_ASLEEP,
         startTime: earlier,
         endTime: now);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 0.0,
         type: HealthDataType.SLEEP_AWAKE,
         startTime: earlier,
         endTime: now);
-    success &= await Health().writeHealthData(
+    success &= await health.writeHealthData(
         value: 0.0,
         type: HealthDataType.SLEEP_DEEP,
         startTime: earlier,
         endTime: now);
+    success &= await health.writeHealthData(
+      value: 22,
+      type: HealthDataType.LEAN_BODY_MASS,
+      startTime: earlier,
+      endTime: now,
+    );
 
     // specialized write methods
-    success &= await Health().writeBloodOxygen(
+    success &= await health.writeBloodOxygen(
       saturation: 98,
       startTime: earlier,
       endTime: now,
     );
-    success &= await Health().writeWorkoutData(
+    success &= await health.writeWorkoutData(
       activityType: HealthWorkoutActivityType.AMERICAN_FOOTBALL,
       title: "Random workout name that shows up in Health Connect",
       start: now.subtract(const Duration(minutes: 15)),
@@ -296,12 +309,12 @@ class _HealthAppState extends State<HealthApp> {
       totalDistance: 2430,
       totalEnergyBurned: 400,
     );
-    success &= await Health().writeBloodPressure(
+    success &= await health.writeBloodPressure(
       systolic: 90,
       diastolic: 80,
       startTime: now,
     );
-    success &= await Health().writeMeal(
+    success &= await health.writeMeal(
         mealType: MealType.SNACK,
         startTime: earlier,
         endTime: now,
@@ -353,7 +366,7 @@ class _HealthAppState extends State<HealthApp> {
     // const frequencies = [125.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0];
     // const leftEarSensitivities = [49.0, 54.0, 89.0, 52.0, 77.0, 35.0];
     // const rightEarSensitivities = [76.0, 66.0, 90.0, 22.0, 85.0, 44.5];
-    // success &= await Health().writeAudiogram(
+    // success &= await health.writeAudiogram(
     //   frequencies,
     //   leftEarSensitivities,
     //   rightEarSensitivities,
@@ -365,12 +378,29 @@ class _HealthAppState extends State<HealthApp> {
     //   },
     // );
 
-    success &= await Health().writeMenstruationFlow(
+    success &= await health.writeMenstruationFlow(
       flow: MenstrualFlow.medium,
       isStartOfCycle: true,
       startTime: earlier,
       endTime: now,
     );
+
+    // Available on iOS 16.0+ only
+    if (Platform.isIOS) {
+      success &= await health.writeHealthData(
+          value: 22,
+          type: HealthDataType.WATER_TEMPERATURE,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
+
+      success &= await health.writeHealthData(
+          value: 55,
+          type: HealthDataType.UNDERWATER_DEPTH,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
+    }
 
     setState(() {
       _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
@@ -384,7 +414,7 @@ class _HealthAppState extends State<HealthApp> {
 
     bool success = true;
     for (HealthDataType type in types) {
-      success &= await Health().delete(
+      success &= await health.delete(
         type: type,
         startTime: earlier,
         endTime: now,
@@ -405,15 +435,15 @@ class _HealthAppState extends State<HealthApp> {
     final midnight = DateTime(now.year, now.month, now.day);
 
     bool stepsPermission =
-        await Health().hasPermissions([HealthDataType.STEPS]) ?? false;
+        await health.hasPermissions([HealthDataType.STEPS]) ?? false;
     if (!stepsPermission) {
       stepsPermission =
-          await Health().requestAuthorization([HealthDataType.STEPS]);
+          await health.requestAuthorization([HealthDataType.STEPS]);
     }
 
     if (stepsPermission) {
       try {
-        steps = await Health().getTotalStepsInInterval(midnight, now,
+        steps = await health.getTotalStepsInInterval(midnight, now,
             includeManualEntry:
                 !recordingMethodsToFilter.contains(RecordingMethod.manual));
       } catch (error) {
@@ -439,7 +469,7 @@ class _HealthAppState extends State<HealthApp> {
     bool success = false;
 
     try {
-      await Health().revokePermissions();
+      await health.revokePermissions();
       success = true;
     } catch (error) {
       debugPrint("Exception in revokeAccess: $error");
@@ -474,7 +504,7 @@ class _HealthAppState extends State<HealthApp> {
                       child: const Text("Check Health Connect Status",
                           style: TextStyle(color: Colors.white))),
                 if (Platform.isAndroid &&
-                    Health().healthConnectSdkStatus !=
+                    health.healthConnectSdkStatus !=
                         HealthConnectSdkStatus.sdkAvailable)
                   TextButton(
                       onPressed: installHealthConnect,
@@ -484,7 +514,7 @@ class _HealthAppState extends State<HealthApp> {
                           style: TextStyle(color: Colors.white))),
                 if (Platform.isIOS ||
                     Platform.isAndroid &&
-                        Health().healthConnectSdkStatus ==
+                        health.healthConnectSdkStatus ==
                             HealthConnectSdkStatus.sdkAvailable)
                   Wrap(spacing: 10, children: [
                     TextButton(
@@ -662,7 +692,7 @@ class _HealthAppState extends State<HealthApp> {
         if (p.value is AudiogramHealthValue) {
           return ListTile(
             title: Text("${p.typeString}: ${p.value}"),
-            trailing: Text('${p.unitString}'),
+            trailing: Text(p.unitString),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
@@ -670,8 +700,8 @@ class _HealthAppState extends State<HealthApp> {
           return ListTile(
             title: Text(
                 "${p.typeString}: ${(p.value as WorkoutHealthValue).totalEnergyBurned} ${(p.value as WorkoutHealthValue).totalEnergyBurnedUnit?.name}"),
-            trailing: Text(
-                '${(p.value as WorkoutHealthValue).workoutActivityType.name}'),
+            trailing:
+                Text((p.value as WorkoutHealthValue).workoutActivityType.name),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
           );
         }
@@ -686,46 +716,46 @@ class _HealthAppState extends State<HealthApp> {
         }
         return ListTile(
           title: Text("${p.typeString}: ${p.value}"),
-          trailing: Text('${p.unitString}'),
+          trailing: Text(p.unitString),
           subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
         );
       });
 
-  Widget _contentNoData = const Text('No Data to show');
+  final Widget _contentNoData = const Text('No Data to show');
 
-  Widget _contentNotFetched =
+  final Widget _contentNotFetched =
       const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-    const Text("Press 'Auth' to get permissions to access health data."),
-    const Text("Press 'Fetch Dat' to get health data."),
-    const Text("Press 'Add Data' to add some random health data."),
-    const Text("Press 'Delete Data' to remove some random health data."),
+    Text("Press 'Auth' to get permissions to access health data."),
+    Text("Press 'Fetch Dat' to get health data."),
+    Text("Press 'Add Data' to add some random health data."),
+    Text("Press 'Delete Data' to remove some random health data."),
   ]);
 
-  Widget _authorized = const Text('Authorization granted!');
+  final Widget _authorized = const Text('Authorization granted!');
 
-  Widget _authorizationNotGranted = const Column(
+  final Widget _authorizationNotGranted = const Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      const Text('Authorization not given.'),
-      const Text(
+      Text('Authorization not given.'),
+      Text(
           'For Google Health Connect please check if you have added the right permissions and services to the manifest file.'),
-      const Text('For Apple Health check your permissions in Apple Health.'),
+      Text('For Apple Health check your permissions in Apple Health.'),
     ],
   );
 
   Widget _contentHealthConnectStatus = const Text(
       'No status, click getHealthConnectSdkStatus to get the status.');
 
-  Widget _dataAdded = const Text('Data points inserted successfully.');
+  final Widget _dataAdded = const Text('Data points inserted successfully.');
 
-  Widget _dataDeleted = const Text('Data points deleted successfully.');
+  final Widget _dataDeleted = const Text('Data points deleted successfully.');
 
   Widget get _stepsFetched => Text('Total number of steps: $_nofSteps.');
 
-  Widget _dataNotAdded =
+  final Widget _dataNotAdded =
       const Text('Failed to add data.\nDo you have permissions to add data?');
 
-  Widget _dataNotDeleted = const Text('Failed to delete data');
+  final Widget _dataNotDeleted = const Text('Failed to delete data');
 
   Widget get _content => switch (_state) {
         AppState.DATA_READY => _contentDataReady,

@@ -1,3 +1,45 @@
+## 12.0.1
+
+* Update of API and README doc
+* Fix [#1118](https://github.com/cph-cachet/flutter-plugins/issues/1118)
+
+## 12.0.0
+
+* **BREAKING** This release introduces a significant architectural change to the `health` plugin by removing the `singleton` pattern.
+  * **Dependency Injection for `DeviceInfoPlugin`**:
+  * The `Health` class is no longer a singleton.
+  * The `Health()` factory constructor is removed.
+  * The `Health` class now accepts an (optional) `DeviceInfoPlugin` dependency through its constructor, this change was introduced to provide easy mocking of the `DeviceInfo` class during unit tests.
+  * This architectural change means that, for the application to work correctly, the `Health` class *MUST* be initialized correctly as a global instance.
+  * **Impact**:
+    * For most users, **no immediate code changes are required** but it is paramount to initialize the `Health` class as a global instance (i.e. do not call `Health()` every time but rather define an instance `final health = Health();`).
+* **BREAKING** (Android) Remove automatic permission request of `DISTANCE_DELTA` and `TOTAL_CALORIES_BURNED` data types when requesting permission for `WORKOUT` health data type.
+  * For `WORKOUT`s that require above permissions, now those need to be requested manually.
+  * Fix [#984](https://github.com/cph-cachet/flutter-plugins/issues/984) - PR [#1055](https://github.com/cph-cachet/flutter-plugins/pull/1055)
+* Add `LEAN_BODY_MASS` data type [#1078](https://github.com/cph-cachet/flutter-plugins/issues/1078) - PR [#1097](https://github.com/cph-cachet/flutter-plugins/pull/1097)
+  * The following AndroidManifest values are required to READ/WRITE `LEAN_BODY_MASS`:
+
+  ```XML
+  <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS"/>
+  <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS"/>
+  ```
+
+* iOS: Add `WATER_TEMPERATURE` and `UNDERWATER_DEPTH` health values [#1096](https://github.com/cph-cachet/flutter-plugins/issues/1096)
+* iOS: Add support for `Underwater Diving` workout [#1096](https://github.com/cph-cachet/flutter-plugins/issues/1096)
+* Fix [#1072](https://github.com/cph-cachet/flutter-plugins/issues/1072) and [#1074](https://github.com/cph-cachet/flutter-plugins/issues/1074)
+* Fix issue where iOS delete not deleting own records - PR [#1104](https://github.com/cph-cachet/flutter-plugins/pull/1104)
+* Fix [#950](https://github.com/cph-cachet/flutter-plugins/issues/950) - PR [#1103](https://github.com/cph-cachet/flutter-plugins/pull/1103)
+* Fix [#1047](https://github.com/cph-cachet/flutter-plugins/issues/1047) and [#939](https://github.com/cph-cachet/flutter-plugins/issues/939) - PR [#1091](https://github.com/cph-cachet/flutter-plugins/pull/1091)
+* Fix issue where `SLEEP_LIGHT` type was not aligned correctly - PR [#1086](https://github.com/cph-cachet/flutter-plugins/pull/1086)
+* Fix [#1051](https://github.com/cph-cachet/flutter-plugins/issues/1051) - PR [#1052](https://github.com/cph-cachet/flutter-plugins/pull/1052)
+* Updated `intl` to ^0.20.1 [#1092](https://github.com/cph-cachet/flutter-plugins/issues/1092)
+* Updated `device_info_plus` to ^11.2.0
+* Example app: Updated `permission_handler` to ^11.3.1
+
+## 11.1.1
+
+* Fix of [#1059](https://github.com/cph-cachet/flutter-plugins/issues/1059)
+
 ## 11.1.0
 
 * Fix of [#1043](https://github.com/cph-cachet/flutter-plugins/issues/1043)
