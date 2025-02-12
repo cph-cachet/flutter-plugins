@@ -27,7 +27,7 @@ apply plugin: "kotlin-android"
 android {
     namespace "dk.cachet.esense_flutter"
 
-    compileSdk = 35
+    compileSdk = 31
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
