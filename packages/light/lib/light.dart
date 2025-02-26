@@ -3,36 +3,32 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
 
-/// Custom Exception for the plugin,
-/// thrown whenever the plugin is used on platforms other than Android
-class LightException implements Exception {
-  String cause;
-  LightException(this.cause);
-  @override
-  String toString() => "$runtimeType - $cause";
-}
-
 class Light {
-  static Light? _singleton;
-  static const EventChannel _eventChannel =
-      const EventChannel("light.eventChannel");
+  static Light? _instance;
+  static const EventChannel _eventChannel = EventChannel("light.eventChannel");
 
   /// Constructs a singleton instance of [Light].
   ///
   /// [Light] is designed to work as a singleton.
-  factory Light() => _singleton ??= Light._();
+  factory Light() => _instance ??= Light._();
 
   Light._();
 
   Stream<int>? _lightSensorStream;
 
   /// The stream of light events.
-  /// Throws a [LightException] if device isn't on Android.
+  ///
+  /// Return an empty Stream if this device isn't Android or if the accessing
+  /// the light sensor fails.
   Stream<int> get lightSensorStream {
-    if (!Platform.isAndroid)
-      throw LightException('Light sensor API only available on Android.');
-
-    return _lightSensorStream ??=
-        _eventChannel.receiveBroadcastStream().map((lux) => lux);
+    try {
+      return (Platform.isAndroid)
+          ? _lightSensorStream ??= _eventChannel
+              .receiveBroadcastStream()
+              .map((lux) => int.tryParse(lux.toString()) ?? -1)
+          : Stream<int>.empty();
+    } catch (_) {
+      return Stream<int>.empty();
+    }
   }
 }
