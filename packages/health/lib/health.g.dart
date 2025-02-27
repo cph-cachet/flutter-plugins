@@ -137,6 +137,7 @@ const _$HealthDataTypeEnumMap = {
   HealthDataType.HEADACHE_SEVERE: 'HEADACHE_SEVERE',
   HealthDataType.HEADACHE_UNSPECIFIED: 'HEADACHE_UNSPECIFIED',
   HealthDataType.NUTRITION: 'NUTRITION',
+  HealthDataType.UV_INDEX: 'UV_INDEX',
   HealthDataType.GENDER: 'GENDER',
   HealthDataType.BIRTH_DATE: 'BIRTH_DATE',
   HealthDataType.BLOOD_TYPE: 'BLOOD_TYPE',

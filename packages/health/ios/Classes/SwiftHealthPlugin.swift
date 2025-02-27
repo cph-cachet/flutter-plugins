@@ -164,6 +164,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
     let WATER_TEMPERATURE = "WATER_TEMPERATURE"
     let UNDERWATER_DEPTH = "UNDERWATER_DEPTH"
+    let UV_INDEX = "UV_INDEX"
     
     
     // Health Unit types
@@ -1670,6 +1671,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
             dataTypesDict[WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
             dataTypesDict[UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
+
+            dataTypesDict[UV_INDEX] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
+            dataQuantityTypesDict[UV_INDEX] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
+
         } 
         
         // Concatenate heart events, headache and health data types (both may be empty)
