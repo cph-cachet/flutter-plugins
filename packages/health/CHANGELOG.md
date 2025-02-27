@@ -1,6 +1,7 @@
 ## 12.0.2
 
 * iOS: Parse metadata to remove unsupported types - PR [#1120](https://github.com/cph-cachet/flutter-plugins/pull/1120)
+* iOS: Add UV Index Types
 * Update example apps
 
 ## 12.0.1
