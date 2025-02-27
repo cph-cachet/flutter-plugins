@@ -614,14 +614,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     /** Get all datapoints of the DataType within the given time range */
     private fun getData(call: MethodCall, result: Result) {
         val dataType = call.argument<String>("dataTypeKey")!!
+        val dataUnit = call.argument<String>("dataUnitKey")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val healthConnectData = mutableListOf<Map<String, Any?>>()
         val recordingMethodsToFilter = call.argument<List<Int>>("recordingMethodsToFilter")!!
-
         Log.i(
             "FLUTTER_HEALTH",
-            "Getting data for $dataType between $startTime and $endTime, filtering by $recordingMethodsToFilter"
+            "Getting data for $dataType with unit $dataUnit between $startTime and $endTime, filtering by $recordingMethodsToFilter"
         )
 
         scope.launch {
@@ -832,7 +832,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         )
                         for (rec in filteredRecords) {
                             healthConnectData.addAll(
-                                convertRecord(rec, dataType)
+                                convertRecord(rec, dataType, dataUnit)
                             )
                         }
                     }
@@ -948,54 +948,60 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     // TODO: Find alternative to SOURCE_ID or make it nullable?
-    private fun convertRecord(record: Any, dataType: String): List<Map<String, Any?>> {
+    private fun convertRecord(record: Any, dataType: String, dataUnit: String? = null): List<Map<String, Any?>> {
         val metadata = (record as Record).metadata
         when (record) {
             is WeightRecord ->
                 return listOf(
-                    mapOf<String, Any>(
-                        "uuid" to
-                                metadata.id,
-                        "value" to
-                                record.weight
-                                    .inKilograms,
-                        "date_from" to
-                                record.time
-                                    .toEpochMilli(),
-                        "date_to" to
-                                record.time
-                                    .toEpochMilli(),
-                        "source_id" to "",
-                        "source_name" to
-                                metadata.dataOrigin
-                                    .packageName,
-                        "recording_method" to
-                                        metadata.recordingMethod
-                    ),
+                mapOf<String, Any>(
+                    "uuid" to
+                            metadata.id,
+                    "value" to
+                            when (dataUnit) {
+                                "POUND" -> record.weight.inPounds
+                                else -> record.weight.inKilograms
+                            },
+                    "date_from" to
+                            record.time
+                                .toEpochMilli(),
+                    "date_to" to
+                            record.time
+                                .toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to
+                            metadata.dataOrigin
+                                .packageName,
+                    "recording_method" to
+                            metadata.recordingMethod
+                ),
                 )
+
 
             is HeightRecord ->
                 return listOf(
-                    mapOf<String, Any>(
-                        "uuid" to
-                                metadata.id,
-                        "value" to
-                                record.height
-                                    .inMeters,
-                        "date_from" to
-                                record.time
-                                    .toEpochMilli(),
-                        "date_to" to
-                                record.time
-                                    .toEpochMilli(),
-                        "source_id" to "",
-                        "source_name" to
-                                metadata.dataOrigin
-                                    .packageName,
-                        "recording_method" to
-                                        metadata.recordingMethod
-                    ),
-                )
+                mapOf<String, Any>(
+                    "uuid" to
+                            metadata.id,
+                    "value" to
+                            when (dataUnit) {
+                                "CENTIMETER" -> (record.height.inMeters * 100)
+                                "INCH" -> record.height.inInches
+                                else -> record.height.inMeters
+                            },
+                    "date_from" to
+                            record.time
+                                .toEpochMilli(),
+                    "date_to" to
+                            record.time
+                                .toEpochMilli(),
+                    "source_id" to "",
+                    "source_name" to
+                            metadata.dataOrigin
+                                .packageName,
+                    "recording_method" to
+                            metadata.recordingMethod
+                ),
+            )
 
             is BodyFatRecord ->
                 return listOf(
@@ -1133,8 +1139,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         "uuid" to
                                 metadata.id,
                         "value" to
-                                record.temperature
-                                    .inCelsius,
+                                when (dataUnit) {
+                                   "DEGREE_FAHRENHEIT" -> record.temperature.inFahrenheit
+                                    "KELVIN" -> record.temperature.inCelsius + 273.15
+                                    else -> record.temperature.inCelsius
+                                },
                         "date_from" to
                                 record.time
                                     .toEpochMilli(),
@@ -1231,8 +1240,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         "uuid" to
                                 metadata.id,
                         "value" to
-                                record.level
-                                    .inMilligramsPerDeciliter,
+                                when (dataUnit) {
+                                    "MILLIMOLES_PER_LITER" -> record.level.inMillimolesPerLiter
+                                    else -> record.level.inMilligramsPerDeciliter
+                                },
                         "date_from" to
                                 record.time
                                     .toEpochMilli(),
