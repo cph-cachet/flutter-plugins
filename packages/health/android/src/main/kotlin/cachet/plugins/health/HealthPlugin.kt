@@ -310,12 +310,333 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
+    /** Save a Nutrition measurement with calories, carbs, protein, fat, name and mealType */
+    private fun writeMeal(call: MethodCall, result: Result) {
+        val startTime = Instant.ofEpochMilli(call.argument<Long>("start_time")!!)
+        val endTime = Instant.ofEpochMilli(call.argument<Long>("end_time")!!)
+        val clientRecordId = call.argument<String>("clientRecordId")
+        val clientRecordVersion = call.argument<Long>("clientRecordVersion")
+        val calories = call.argument<Double>("calories")
+        val protein = call.argument<Double>("protein") as Double?
+        val carbs = call.argument<Double>("carbs") as Double?
+        val fat = call.argument<Double>("fat") as Double?
+        val caffeine = call.argument<Double>("caffeine") as Double?
+        val vitaminA = call.argument<Double>("vitamin_a") as Double?
+        val b1Thiamine = call.argument<Double>("b1_thiamine") as Double?
+        val b2Riboflavin = call.argument<Double>("b2_riboflavin") as Double?
+        val b3Niacin = call.argument<Double>("b3_niacin") as Double?
+        val b5PantothenicAcid = call.argument<Double>("b5_pantothenic_acid") as Double?
+        val b6Pyridoxine = call.argument<Double>("b6_pyridoxine") as Double?
+        val b7Biotin = call.argument<Double>("b7_biotin") as Double?
+        val b9Folate = call.argument<Double>("b9_folate") as Double?
+        val b12Cobalamin = call.argument<Double>("b12_cobalamin") as Double?
+        val vitaminC = call.argument<Double>("vitamin_c") as Double?
+        val vitaminD = call.argument<Double>("vitamin_d") as Double?
+        val vitaminE = call.argument<Double>("vitamin_e") as Double?
+        val vitaminK = call.argument<Double>("vitamin_k") as Double?
+        val calcium = call.argument<Double>("calcium") as Double?
+        val chloride = call.argument<Double>("chloride") as Double?
+        val cholesterol = call.argument<Double>("cholesterol") as Double?
+        // Choline is not yet supported by Health Connect
+        // val choline = call.argument<Double>("choline") as Double?
+        val chromium = call.argument<Double>("chromium") as Double?
+        val copper = call.argument<Double>("copper") as Double?
+        val fatUnsaturated = call.argument<Double>("fat_unsaturated") as Double?
+        val fatMonounsaturated = call.argument<Double>("fat_monounsaturated") as Double?
+        val fatPolyunsaturated = call.argument<Double>("fat_polyunsaturated") as Double?
+        val fatSaturated = call.argument<Double>("fat_saturated") as Double?
+        val fatTransMonoenoic = call.argument<Double>("fat_trans_monoenoic") as Double?
+        val fiber = call.argument<Double>("fiber") as Double?
+        val iodine = call.argument<Double>("iodine") as Double?
+        val iron = call.argument<Double>("iron") as Double?
+        val magnesium = call.argument<Double>("magnesium") as Double?
+        val manganese = call.argument<Double>("manganese") as Double?
+        val molybdenum = call.argument<Double>("molybdenum") as Double?
+        val phosphorus = call.argument<Double>("phosphorus") as Double?
+        val potassium = call.argument<Double>("potassium") as Double?
+        val selenium = call.argument<Double>("selenium") as Double?
+        val sodium = call.argument<Double>("sodium") as Double?
+        val sugar = call.argument<Double>("sugar") as Double?
+        // Water is not support on a food in Health Connect
+        // val water = call.argument<Double>("water") as Double?
+        val zinc = call.argument<Double>("zinc") as Double?
+
+        val name = call.argument<String>("name")
+        val mealType = call.argument<String>("meal_type")!!
+
+        scope.launch {
+            try {
+                val list = mutableListOf<Record>()
+                list.add(
+                    NutritionRecord(
+                        metadata = Metadata(clientRecordId = clientRecordId,
+                            clientRecordVersion = clientRecordVersion),
+                        name = name,
+                        energy = calories?.kilocalories,
+                        totalCarbohydrate = carbs?.grams,
+                        protein = protein?.grams,
+                        totalFat = fat?.grams,
+                        caffeine = caffeine?.grams,
+                        vitaminA = vitaminA?.grams,
+                        thiamin = b1Thiamine?.grams,
+                        riboflavin = b2Riboflavin?.grams,
+                        niacin = b3Niacin?.grams,
+                        pantothenicAcid = b5PantothenicAcid?.grams,
+                        vitaminB6 = b6Pyridoxine?.grams,
+                        biotin = b7Biotin?.grams,
+                        folate = b9Folate?.grams,
+                        vitaminB12 = b12Cobalamin?.grams,
+                        vitaminC = vitaminC?.grams,
+                        vitaminD = vitaminD?.grams,
+                        vitaminE = vitaminE?.grams,
+                        vitaminK = vitaminK?.grams,
+                        calcium = calcium?.grams,
+                        chloride = chloride?.grams,
+                        cholesterol = cholesterol?.grams,
+                        chromium = chromium?.grams,
+                        copper = copper?.grams,
+                        unsaturatedFat = fatUnsaturated?.grams,
+                        monounsaturatedFat = fatMonounsaturated?.grams,
+                        polyunsaturatedFat = fatPolyunsaturated?.grams,
+                        saturatedFat = fatSaturated?.grams,
+                        transFat = fatTransMonoenoic?.grams,
+                        dietaryFiber = fiber?.grams,
+                        iodine = iodine?.grams,
+                        iron = iron?.grams,
+                        magnesium = magnesium?.grams,
+                        manganese = manganese?.grams,
+                        molybdenum = molybdenum?.grams,
+                        phosphorus = phosphorus?.grams,
+                        potassium = potassium?.grams,
+                        selenium = selenium?.grams,
+                        sodium = sodium?.grams,
+                        sugar = sugar?.grams,
+                        zinc = zinc?.grams,
+                        startTime = startTime,
+                        startZoneOffset = null,
+                        endTime = endTime,
+                        endZoneOffset = null,
+                        mealType =
+                        mapMealTypeToType[
+                            mealType]
+                            ?: MEAL_TYPE_UNKNOWN,
+                    ),
+                )
+                healthConnectClient.insertRecords(
+                    list,
+                )
+                result.success(true)
+                Log.i(
+                    "FLUTTER_HEALTH::SUCCESS",
+                    "[Health Connect] Meal was successfully added!"
+                )
+            } catch (e: Exception) {
+                Log.w(
+                    "FLUTTER_HEALTH::ERROR",
+                    "[Health Connect] There was an error adding the meal",
+                )
+                Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
+                Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
+                result.success(false)
+            }
+        }
+    }
+
     /**
-     * Initiates Health Connect permission request flow.
-     * Prepares permission list and launches system permission dialog.
-     * 
-     * @param call Method call containing permission types and access levels
-     * @param result Flutter result callback for permission request outcome
+     * Save menstrual flow data
+     */
+    private fun writeMenstruationFlow(call: MethodCall, result: Result) {
+        writeData(call, result)
+    }
+
+    /**
+     * Save the blood oxygen saturation
+     */
+    private fun writeBloodOxygen(call: MethodCall, result: Result) {
+        writeData(call, result)
+    }
+
+    private fun getIntervalData(call: MethodCall, result: Result) {
+        getAggregateData(call, result)
+    }
+
+    /**
+     * Revokes access to Health Connect using `revokeAllPermissions`.
+     *
+     * Note: When using `revokePermissions` with Health Connect, the app must be completely killed
+     * for it to take effect.
+     */
+    private fun revokePermissions(call: MethodCall, result: Result) {
+        scope.launch {
+            Log.i("Health", "Disabling Health Connect")
+            healthConnectClient.permissionController.revokeAllPermissions()
+        }
+        result.success(true)
+    }
+
+    private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
+        val start = call.argument<Long>("startTime")!!
+        val end = call.argument<Long>("endTime")!!
+        val recordingMethodsToFilter = call.argument<List<Int>>("recordingMethodsToFilter")!!
+
+        if (recordingMethodsToFilter.isEmpty()) {
+            getAggregatedStepCount(start, end, result)
+        } else {
+            getStepCountFiltered(start, end, recordingMethodsToFilter, result)
+        }
+    }
+
+    private fun getAggregatedStepCount(start: Long, end: Long, result: Result) {
+        val startInstant = Instant.ofEpochMilli(start)
+        val endInstant = Instant.ofEpochMilli(end)
+        scope.launch {
+            try {
+                val response =
+                    healthConnectClient.aggregate(
+                        AggregateRequest(
+                            metrics =
+                            setOf(
+                                StepsRecord.COUNT_TOTAL,
+                            ),
+                            timeRangeFilter =
+                            TimeRangeFilter.between(
+                                startInstant,
+                                endInstant
+                            ),
+                        ),
+                    )
+                // The result may be null if no data is available in the
+                // time range.
+                val stepsInInterval =
+                    response[StepsRecord.COUNT_TOTAL] ?: 0L
+
+                Log.i(
+                    "FLUTTER_HEALTH::SUCCESS",
+                    "returning $stepsInInterval steps"
+                )
+                result.success(stepsInInterval)
+            } catch (e: Exception) {
+                Log.e(
+                    "FLUTTER_HEALTH::ERROR",
+                    "Unable to return steps due to the following exception:"
+                )
+                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                result.success(null)
+            }
+        }
+    }
+
+    /** get the step records manually and filter out manual entries **/
+    private fun getStepCountFiltered(start: Long, end: Long, recordingMethodsToFilter: List<Int>, result: Result) {
+        scope.launch {
+            try {
+                val request =
+                    ReadRecordsRequest(
+                        recordType = StepsRecord::class,
+                        timeRangeFilter =
+                        TimeRangeFilter.between(
+                            Instant.ofEpochMilli(start),
+                            Instant.ofEpochMilli(end)
+                        ),
+                    )
+                val response = healthConnectClient.readRecords(request)
+                val filteredRecords = filterRecordsByRecordingMethods(
+                     recordingMethodsToFilter,
+                    response.records
+                )
+                val totalSteps = filteredRecords.sumOf { (it as StepsRecord).count.toInt() }
+                Log.i(
+                     "FLUTTER_HEALTH::SUCCESS",
+                     "returning $totalSteps steps (excluding manual entries)"
+                )
+                result.success(totalSteps)
+            } catch (e: Exception) {
+                Log.e(
+                    "FLUTTER_HEALTH::ERROR",
+                    "Unable to return steps due to the following exception:"
+                )
+                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                result.success(null)
+            }
+        }
+    }
+
+    private fun getHealthConnectSdkStatus(call: MethodCall, result: Result) {
+        checkAvailability()
+        if (healthConnectAvailable) {
+            healthConnectClient =
+                HealthConnectClient.getOrCreate(
+                    context!!
+                )
+        }
+        result.success(healthConnectStatus)
+    }
+    
+    /** Filter records by recording methods */
+    private fun filterRecordsByRecordingMethods(
+        recordingMethodsToFilter: List<Int>,
+        records: List<Record>
+    ): List<Record> {
+        if (recordingMethodsToFilter.isEmpty()) {
+            return records
+        }
+
+        return records.filter { record ->
+            Log.i(
+                "FLUTTER_HEALTH",
+                "Filtering record with recording method ${record.metadata.recordingMethod}, filtering by $recordingMethodsToFilter. Result: ${recordingMethodsToFilter.contains(record.metadata.recordingMethod)}"
+            )
+            return@filter !recordingMethodsToFilter.contains(record.metadata.recordingMethod)
+        }
+    }
+
+    private fun hasPermissions(call: MethodCall, result: Result) {
+        val args = call.arguments as HashMap<*, *>
+        val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()!!
+        val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()!!
+
+        val permList = mutableListOf<String>()
+        for ((i, typeKey) in types.withIndex()) {
+            if (!mapToType.containsKey(typeKey)) {
+                Log.w(
+                    "FLUTTER_HEALTH::ERROR",
+                    "Datatype $typeKey not found in HC"
+                )
+                result.success(false)
+                return
+            }
+            val access = permissions[i]
+            val dataType = mapToType[typeKey]!!
+            if (access == 0) {
+                permList.add(
+                    HealthPermission.getReadPermission(dataType),
+                )
+            } else {
+                permList.addAll(
+                    listOf(
+                        HealthPermission.getReadPermission(
+                            dataType
+                        ),
+                        HealthPermission.getWritePermission(
+                            dataType
+                        ),
+                    ),
+                )
+            }
+        }
+        scope.launch {
+            result.success(
+                healthConnectClient
+                    .permissionController
+                    .getGrantedPermissions()
+                    .containsAll(permList),
+            )
+        }
+    }
+
+    /**
+     * Requests authorization for the HealthDataTypes with the the READ or READ_WRITE permission
+     * type.
      */
     private fun requestAuthorization(call: MethodCall, result: Result) {
         if (context == null) {
