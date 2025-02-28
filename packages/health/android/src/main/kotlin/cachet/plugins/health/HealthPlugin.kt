@@ -240,6 +240,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private fun writeMeal(call: MethodCall, result: Result) {
         val startTime = Instant.ofEpochMilli(call.argument<Long>("start_time")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("end_time")!!)
+        val clientRecordId = call.argument<String>("clientRecordId")!!
+        val clientRecordVersion = call.argument<Long>("clientRecordVersion")!!
         val calories = call.argument<Double>("calories")
         val protein = call.argument<Double>("protein") as Double?
         val carbs = call.argument<Double>("carbs") as Double?
@@ -293,6 +295,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 val list = mutableListOf<Record>()
                 list.add(
                     NutritionRecord(
+                        metadata = Metadata(clientRecordId = clientRecordId,
+                            clientRecordVersion = clientRecordVersion),
                         name = name,
                         energy = calories?.kilocalories,
                         totalCarbohydrate = carbs?.grams,
