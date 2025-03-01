@@ -2,7 +2,7 @@
 
 * iOS: Parse metadata to remove unsupported types - PR [#1120](https://github.com/cph-cachet/flutter-plugins/pull/1120)
 * iOS: Add UV Index Types
-* Android: Add request access to historic data [#1126](https://github.com/cph-cachet/flutter-plugins/issues/1126) - PR [#1120](https://github.com/cph-cachet/flutter-plugins/pull/1120)
+* Android: Add request access to historic data [#1126](https://github.com/cph-cachet/flutter-plugins/issues/1126) - PR [#1127](https://github.com/cph-cachet/flutter-plugins/pull/1127)
 * Android:
   * Update `androidx.compose:compose-bom` to `2025.02.00`
   * Update `androidx.health.connect:connect-client` to `1.1.0-alpha11`
