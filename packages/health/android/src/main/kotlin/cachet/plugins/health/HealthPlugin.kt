@@ -571,6 +571,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val permissions = (args["permissions"] as? ArrayList<*>)?.filterIsInstance<Int>()!!
 
         val permList = mutableListOf<String>()
+        permList.add("READ_HEALTH_DATA_HISTORY")
         for ((i, typeKey) in types.withIndex()) {
             if (!mapToType.containsKey(typeKey)) {
                 Log.w(
