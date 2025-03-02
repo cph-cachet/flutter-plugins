@@ -108,6 +108,7 @@ enum HealthDataType {
 
   // Health Connect
   TOTAL_CALORIES_BURNED
+  SPEED,
 }
 
 /// Access types for Health Data.
@@ -250,6 +251,7 @@ const List<HealthDataType> dataTypeKeysAndroid = [
   HealthDataType.NUTRITION,
   HealthDataType.TOTAL_CALORIES_BURNED,
   HealthDataType.MENSTRUATION_FLOW,
+  HealthDataType.SPEED,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
@@ -365,6 +367,7 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
 
   // Health Connect
   HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,
+  HealthDataType.SPEED: HealthDataUnit.METERS_PER_SECOND
 };
 
 // const PlatformTypeJsonValue = {
@@ -444,6 +447,9 @@ enum HealthDataUnit {
   // Scalar units
   COUNT,
   PERCENT,
+
+  // Speed units
+  METERS_PER_SECOND,
 
   // Other units
   BEATS_PER_MINUTE,

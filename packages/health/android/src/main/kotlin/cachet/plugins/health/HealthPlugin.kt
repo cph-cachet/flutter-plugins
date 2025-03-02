@@ -79,6 +79,7 @@ const val SLEEP_REM = "SLEEP_REM"
 const val SLEEP_SESSION = "SLEEP_SESSION"
 const val SLEEP_UNKNOWN = "SLEEP_UNKNOWN"
 const val SNACK = "SNACK"
+const val SPEED = "SPEED"
 const val WORKOUT = "WORKOUT"
 
 const val TOTAL_CALORIES_BURNED = "TOTAL_CALORIES_BURNED"
@@ -1512,6 +1513,24 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                         metadata.recordingMethod
                     )
                 )
+
+            is SpeedRecord ->
+                return record.samples.map {
+                    mapOf<String, Any>(
+                        "uuid" to
+                                metadata.id,
+                        "value" to it.speed.inMetersPerSecond,
+                        "date_from" to
+                                it.time.toEpochMilli(),
+                        "date_to" to it.time.toEpochMilli(),
+                        "source_id" to "",
+                        "source_name" to
+                                metadata.dataOrigin
+                                    .packageName,
+                        "recording_method" to
+                                metadata.recordingMethod
+                    )
+                }
             // is ExerciseSessionRecord -> return listOf(mapOf<String, Any>("value" to ,
             //                                             "date_from" to ,
             //                                             "date_to" to ,
@@ -2099,6 +2118,30 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     )
 
+                SPEED ->
+                    SpeedRecord(
+                        startTime =
+                        Instant.ofEpochMilli(
+                            startTime
+                        ),
+                        samples = listOf(
+                            SpeedRecord.Sample(
+                                Instant.ofEpochMilli(
+                                    startTime
+                                ),
+                                Velocity.metersPerSecond(value)
+                            ),
+                        ),
+                        startZoneOffset = null,
+                        endZoneOffset = null,
+                        endTime = Instant.ofEpochMilli(
+                            endTime
+                        ),
+                        metadata = Metadata(
+                            recordingMethod = recordingMethod,
+                        ),
+                    )
+
                 RESPIRATORY_RATE ->
                     RespiratoryRateRecord(
                         time =
@@ -2439,6 +2482,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // "SleepSession" to SleepSessionRecord::class,
             // "SleepStage" to SleepStageRecord::class,
             // "Speed" to SpeedRecord::class,
+            SPEED to SpeedRecord::class,
             // "StepsCadence" to StepsCadenceRecord::class,
             // "Steps" to StepsRecord::class,
             // "TotalCaloriesBurned" to
