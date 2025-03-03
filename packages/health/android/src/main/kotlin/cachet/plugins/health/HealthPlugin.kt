@@ -85,7 +85,7 @@ const val WORKOUT = "WORKOUT"
 const val TOTAL_CALORIES_BURNED = "TOTAL_CALORIES_BURNED"
 const val BONE_MASS = "BONE_MASS"
 const val CERVICAL_MUCUS = "CERVICAL_MUCUS"
-//const val CYCLING_PEDALING_CADENCE = "CYCLING_PEDALING_CADENCE"
+const val CYCLING_PEDALING_CADENCE = "CYCLING_PEDALING_CADENCE"
 const val ELEVATION_GAINED = "ELEVATION_GAINED"
 const val INTERMENSTRUAL_BLEEDING = "INTERMENSTRUAL_BLEEDING"
 const val MENSTRUATION_PERIOD = "MENSTRUATION_PERIOD"
@@ -1613,19 +1613,18 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     )
                 )
 
-//            is
-//            CyclingPedalingCadenceRecord ->
-//                return record.samples.map {
-//                    mapOf<String, Any>(
-//                        "uuid" to metadata.id,
-//                        "value" to it.revolutionsPerMinute,
-//                        "date_from" to it.time.toEpochMilli(),
-//                        "date_to" to it.time.toEpochMilli(),
-//                        "source_id" to "",
-//                        "source_name" to metadata.dataOrigin.packageName,
-//                        "recording_method" to metadata.recordingMethod
-//                    )
-//                }
+            is CyclingPedalingCadenceRecord ->
+                return record.samples.map {
+                    mapOf<String, Any>(
+                        "uuid" to metadata.id,
+                        "value" to it.revolutionsPerMinute,
+                        "date_from" to it.time.toEpochMilli(),
+                        "date_to" to it.time.toEpochMilli(),
+                        "source_id" to "",
+                        "source_name" to metadata.dataOrigin.packageName,
+                        "recording_method" to metadata.recordingMethod
+                    )
+                }
 
             is ElevationGainedRecord ->
                 return listOf(
@@ -2696,8 +2695,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             BASAL_BODY_TEMPERATURE to BasalBodyTemperatureRecord::class,
             BONE_MASS to BoneMassRecord::class,
             CERVICAL_MUCUS to CervicalMucusRecord::class,
-//            CYCLING_PEDALING_CADENCE to
-//                    CyclingPedalingCadenceRecord::class,
+            CYCLING_PEDALING_CADENCE to
+                    CyclingPedalingCadenceRecord::class,
             ELEVATION_GAINED to ElevationGainedRecord::class,
             INTERMENSTRUAL_BLEEDING to IntermenstrualBleedingRecord::class,
             MENSTRUATION_PERIOD to MenstruationPeriodRecord::class,

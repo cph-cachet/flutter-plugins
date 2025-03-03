@@ -81,7 +81,7 @@ enum HealthDataType {
   SLEEP_LIGHT,
   SLEEP_OUT_OF_BED,
   SLEEP_REM,
-  SLEEP_SESSION,
+  SLEEP_SESSION('SLEEP'),
   SLEEP_UNKNOWN,
   EXERCISE_TIME,
   WORKOUT,
@@ -95,7 +95,7 @@ enum HealthDataType {
   GENDER,
   BIRTH_DATE,
   BLOOD_TYPE,
-  MENSTRUATION_FLOW,
+  MENSTRUATION_FLOW('MENSTRUATION'),
   WATER_TEMPERATURE,
   UNDERWATER_DEPTH,
 
@@ -115,15 +115,21 @@ enum HealthDataType {
   POWER,
   BONE_MASS,
   CERVICAL_MUCUS,
-  // CYCLING_PEDALING_CADENCE,
+  CYCLING_PEDALING_CADENCE('EXERCISE'),
   ELEVATION_GAINED,
   INTERMENSTRUAL_BLEEDING,
-  MENSTRUATION_PERIOD,
+  MENSTRUATION_PERIOD('MENSTRUATION_PERIOD'),
   OVULATION_TEST,
   SEXUAL_ACTIVITY,
-  STEPS_CADENCE,
+  STEPS_CADENCE('STEPS'),
   VO2_MAX,
-  WHEELCHAIR_PUSHES,
+  WHEELCHAIR_PUSHES;
+
+  final String? _permissionOverride;
+
+  const HealthDataType([this._permissionOverride]);
+
+  String get permission => _permissionOverride ?? name;
 }
 
 /// Access types for Health Data.
@@ -271,7 +277,7 @@ const List<HealthDataType> dataTypeKeysAndroid = [
   HealthDataType.POWER,
   HealthDataType.BONE_MASS,
   HealthDataType.CERVICAL_MUCUS,
-  // HealthDataType.CYCLING_PEDALING_CADENCE,
+  HealthDataType.CYCLING_PEDALING_CADENCE,
   HealthDataType.ELEVATION_GAINED,
   HealthDataType.INTERMENSTRUAL_BLEEDING,
   HealthDataType.MENSTRUATION_PERIOD,
@@ -401,10 +407,10 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.SPEED: HealthDataUnit.METERS_PER_SECOND,
   HealthDataType.POWER: HealthDataUnit.KILOCALORIE,
   HealthDataType.BONE_MASS: HealthDataUnit.KILOGRAM,
-  // todo handle: in native android we have 2 values, appearance and sensation 
+  // todo handle: in native android we have 2 values, appearance and sensation
   HealthDataType.CERVICAL_MUCUS: HealthDataUnit.UNKNOWN_UNIT,
-  // HealthDataType.CYCLING_PEDALING_CADENCE: HealthDataUnit
-  //     .REVOLUTIONS_PER_MINUTE,
+  HealthDataType.CYCLING_PEDALING_CADENCE: HealthDataUnit
+      .REVOLUTIONS_PER_MINUTE,
   HealthDataType.ELEVATION_GAINED: HealthDataUnit.METER,
   HealthDataType.INTERMENSTRUAL_BLEEDING: HealthDataUnit.NO_UNIT,
   HealthDataType.MENSTRUATION_PERIOD: HealthDataUnit.NO_UNIT,
@@ -500,7 +506,7 @@ enum HealthDataUnit {
   // Other units
   BEATS_PER_MINUTE,
   RESPIRATIONS_PER_MINUTE,
-  // REVOLUTIONS_PER_MINUTE,
+  REVOLUTIONS_PER_MINUTE,
   MILLIGRAM_PER_DECILITER,
   OVULATION_TEST_RESULT,
   PROTETCION_USED,
@@ -650,9 +656,8 @@ enum InsulinDeliveryReason {
 
 /// Extension to assign numbers to [ElectrocardiogramClassification]s
 extension ElectrocardiogramClassificationValue
-on ElectrocardiogramClassification {
-  int get value =>
-      switch (this) {
+    on ElectrocardiogramClassification {
+  int get value => switch (this) {
         ElectrocardiogramClassification.NOT_SET => 0,
         ElectrocardiogramClassification.SINUS_RHYTHM => 1,
         ElectrocardiogramClassification.ATRIAL_FIBRILLATION => 2,
