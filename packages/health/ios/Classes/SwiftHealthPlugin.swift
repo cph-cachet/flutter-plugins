@@ -140,6 +140,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let DISTANCE_WALKING_RUNNING = "DISTANCE_WALKING_RUNNING"
     let DISTANCE_SWIMMING = "DISTANCE_SWIMMING"
     let DISTANCE_CYCLING = "DISTANCE_CYCLING"
+    let DISTANCE_WHEELCHAIR = "DISTANCE_WHEELCHAIR"
+    let DISTANCE_DOWNHILL_SNOW_SPORTS = "DISTANCE_DOWNHILL_SNOW_SPORTS"
     let FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
     let MINDFULNESS = "MINDFULNESS"
     let SLEEP_ASLEEP = "SLEEP_ASLEEP"
@@ -158,14 +160,69 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let HEADACHE_SEVERE = "HEADACHE_SEVERE"
     let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
     let NUTRITION = "NUTRITION"
-    let BIRTH_DATE = "BIRTH_DATE"
+    let ACTIVITY_MOVE_MODE = "ACTIVITY_MOVE_MODE"
     let GENDER = "GENDER"
     let BLOOD_TYPE = "BLOOD_TYPE"
+    let BIRTH_DATE = "BIRTH_DATE"
+    let FITZPATRICK_SKIN_TYPE = "FITZPATRICK_SKIN_TYPE"
+    let WHEELCHAIR_USE = "WHEELCHAIR_USE"
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
+    let INTERMENSTRUAL_BLEEDING = "INTERMENSTRUAL_BLEEDING"
+    let INFREQUENT_MENSTRUAL_CYCLES = "INFREQUENT_MENSTRUAL_CYCLES"
+    let IRREGULAR_MENSTRUAL_CYCLES = "IRREGULAR_MENSTRUAL_CYCLES"
+    let PERSISTENT_INTERMENSTRUAL_BLEEDING = "PERSISTENT_INTERMENSTRUAL_BLEEDING"
+    let PROLONGED_MENSTRUAL_PERIODS = "PROLONGED_MENSTRUAL_PERIODS"
+    let BASAL_BODY_TEMPERATURE = "BASAL_BODY_TEMPERATURE"
+    let CERVICAL_MUCUS_QUALITY = "CERVICAL_MUCUS_QUALITY"
+    let OVULATION_TEST_RESULT = "OVULATION_TEST_RESULT"
+    let PROGESTERONE_TEST_RESULT = "PROGESTERONE_TEST_RESULT"
+    let SEXUAL_ACTIVITY = "SEXUAL_ACTIVITY"
+    let CONTRACEPTIVE = "CONTRACEPTIVE"
+    let PREGNANCY = "PREGNANCY"
+    let PREGNANCY_TEST_RESULTS = "PREGNANCY_TEST_RESULTS"
+    let LACTATION = "LACTATION"
+
     let WATER_TEMPERATURE = "WATER_TEMPERATURE"
     let UNDERWATER_DEPTH = "UNDERWATER_DEPTH"
-    
-    
+    let RUNNING_SPEED = "RUNNING_SPEED"
+    let RUNNING_STRIDE_LENGTH = "RUNNING_STRIDE_LENGTH"
+    let RUNNING_POWER = "RUNNING_POWER"
+    let RUNNING_GROUND_CONTACT = "RUNNING_GROUND_CONTACT"
+    let RUNNING_VERTICAL_OSCILLATION = "RUNNING_VERTICAL_OSCILLATION"
+    let PUSH_COUNT = "PUSH_COUNT"
+    let SWIMMING_STROKE_COUNT = "SWIMMING_STROKE_COUNT"
+    let NIKE_FUEL = "NIKE_FUEL"
+    let APPLE_EXERCISE_TIME = "APPLE_EXERCISE_TIME"
+    let APPLE_MOVE_TIME = "APPLE_MOVE_TIME"
+    let APPLE_STAND_HOUR = "APPLE_STAND_HOUR"
+    let APPLE_STAND_TIME = "APPLE_STAND_TIME"
+    let VO2_MAX = "VO2_MAX"
+    let LOW_CARDIO_FITNESS_EVENT = "LOW_CARDIO_FITNESS_EVENT"
+    let ENVIRONMENTAL_AUDIO_EXPOSURE = "ENVIRONMENTAL_AUDIO_EXPOSURE"
+    let HEADPHONE_AUDIO_EXPOSURE = "HEADPHONE_AUDIO_EXPOSURE"
+    let ENVIRONMENTAL_AUDIO_EXPOSURE_EVENT = "ENVIRONMENTAL_AUDIO_EXPOSURE_EVENT"
+    let HEADPHONE_AUDIO_EXPOSURE_EVENT = "HEADPHONE_AUDIO_EXPOSURE_EVENT"
+    let HEART_RATE_RECOVERY_ONE_MINUTE = "HEART_RATE_RECOVERY_ONE_MINUTE"
+    let BLOOD_ALCOHOL_CONTENT = "BLOOD_ALCOHOL_CONTENT"
+    let NUMBER_OF_ALCOHOLIC_BEVERAGES = "NUMBER_OF_ALCOHOLIC_BEVERAGES"
+    let APPLE_WALKING_STEADINESS = "APPLE_WALKING_STEADINESS"
+    let APPLE_WALKING_STEADINESS_EVENT = "APPLE_WALKING_STEADINESS_EVENT"
+    let SIX_MINUTE_WALK_TEST_DISTANCE = "SIX_MINUTE_WALK_TEST_DISTANCE"
+    let WALKING_SPEED = "WALKING_SPEED"
+    let WALKING_STEP_LENGTH = "WALKING_STEP_LENGTH"
+    let WALKING_ASYMMETRY_PERCENTAGE = "WALKING_ASYMMETRY_PERCENTAGE"
+    let WALKING_DOUBLE_SUPPORT_PERCENTAGE = "WALKING_DOUBLE_SUPPORT_PERCENTAGE"
+    let STAIR_ASCENT_SPEED = "STAIR_ASCENT_SPEED"
+    let STAIR_DESCENT_SPEED = "STAIR_DESCENT_SPEED"
+    let FORCED_VITAL_CAPACITY = "FORCED_VITAL_CAPACITY"
+    let INHALER_USAGE = "INHALER_USAGE"
+    let NUMBER_OF_TIMES_FALLEN = "NUMBER_OF_TIMES_FALLEN"
+    let PEAK_EXPIRATORY_FLOW_RATE = "PEAK_EXPIRATORY_FLOW_RATE"
+    let APPLE_SLEEPING_WRIST_TEMPERATURE = "APPLE_SLEEPING_WRIST_TEMPERATURE"
+    let TOOTHBRUSHING_EVENT = "TOOTHBRUSHING_EVENT"
+    let HANDWASHING_EVENT = "HANDWASHING_EVENT"
+    let UV_EXPOSURE = "UV_EXPOSURE"
+
     // Health Unit types
     // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
     // MOLE_UNIT_WITH_PREFIX_MOLAR_MASS, // requires molar mass & prefix input - not supported yet
@@ -215,9 +272,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let BEATS_PER_MINUTE = "BEATS_PER_MINUTE"
     let RESPIRATIONS_PER_MINUTE = "RESPIRATIONS_PER_MINUTE"
     let MILLIGRAM_PER_DECILITER = "MILLIGRAM_PER_DECILITER"
+    let METERS_PER_SECOND = "METERS_PER_SECOND"
+    let VO2_MILLILITERS_PER_MINUTE_KILOGRAM = "VO2_MILLILITERS_PER_MINUTE_KILOGRAM"
     let UNKNOWN_UNIT = "UNKNOWN_UNIT"
     let NO_UNIT = "NO_UNIT"
-    
+
     struct PluginError: Error {
         let message: String
     }
@@ -1306,6 +1365,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[BEATS_PER_MINUTE] = HKUnit.init(from: "count/min")
         unitDict[RESPIRATIONS_PER_MINUTE] = HKUnit.init(from: "count/min")
         unitDict[MILLIGRAM_PER_DECILITER] = HKUnit.init(from: "mg/dL")
+        unitDict[METERS_PER_SECOND] = HKUnit.meter().unitDivided(by: HKUnit.second())
+        unitDict[VO2_MILLILITERS_PER_MINUTE_KILOGRAM] = HKUnit.init(from: "ml/kg*min")
         unitDict[UNKNOWN_UNIT] = HKUnit.init(from: "")
         unitDict[NO_UNIT] = HKUnit.init(from: "")
         
@@ -1404,6 +1465,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             DIETARY_SODIUM, DIETARY_ZINC, DIETARY_WATER, DIETARY_CHROMIUM, DIETARY_COPPER,
             DIETARY_IODINE, DIETARY_MANGANESE, DIETARY_MOLYBDENUM, DIETARY_SELENIUM,
         ]
+
         // Set up iOS 13 specific types (ordinary health data types)
         if #available(iOS 13.0, *) {
             dataTypesDict[ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(
@@ -1416,7 +1478,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[RESPIRATORY_RATE] = HKSampleType.quantityType(forIdentifier: .respiratoryRate)!
             dataTypesDict[PERIPHERAL_PERFUSION_INDEX] = HKSampleType.quantityType(
                 forIdentifier: .peripheralPerfusionIndex)!
-            
+
             dataTypesDict[BLOOD_PRESSURE_DIASTOLIC] = HKSampleType.quantityType(
                 forIdentifier: .bloodPressureDiastolic)!
             dataTypesDict[BLOOD_PRESSURE_SYSTOLIC] = HKSampleType.quantityType(
@@ -1489,6 +1551,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 forIdentifier: .distanceWalkingRunning)!
             dataTypesDict[DISTANCE_SWIMMING] = HKSampleType.quantityType(forIdentifier: .distanceSwimming)!
             dataTypesDict[DISTANCE_CYCLING] = HKSampleType.quantityType(forIdentifier: .distanceCycling)!
+            dataTypesDict[DISTANCE_WHEELCHAIR] = HKSampleType.quantityType(forIdentifier: .distanceWheelchair)!
+            dataTypesDict[DISTANCE_DOWNHILL_SNOW_SPORTS] = HKSampleType.quantityType(forIdentifier: .distanceDownhillSnowSports)!
             dataTypesDict[FLIGHTS_CLIMBED] = HKSampleType.quantityType(forIdentifier: .flightsClimbed)!
             dataTypesDict[MINDFULNESS] = HKSampleType.categoryType(forIdentifier: .mindfulSession)!
             dataTypesDict[SLEEP_AWAKE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
@@ -1498,18 +1562,40 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataTypesDict[SLEEP_REM] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[SLEEP_ASLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
             dataTypesDict[MENSTRUATION_FLOW] = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
-            
-            
             dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
             dataTypesDict[WORKOUT] = HKSampleType.workoutType()
-            dataTypesDict[NUTRITION] = HKSampleType.correlationType(
-                forIdentifier: .food)!
-            
+            dataTypesDict[NUTRITION] = HKSampleType.correlationType(forIdentifier: .food)!
+            dataTypesDict[INTERMENSTRUAL_BLEEDING] = HKSampleType.categoryType(forIdentifier: .intermenstrualBleeding)!
+            dataTypesDict[CERVICAL_MUCUS_QUALITY] = HKSampleType.categoryType(forIdentifier: .cervicalMucusQuality)!
+            dataTypesDict[OVULATION_TEST_RESULT] = HKSampleType.categoryType(forIdentifier: .ovulationTestResult)!
+            dataTypesDict[SEXUAL_ACTIVITY] = HKSampleType.categoryType(forIdentifier: .sexualActivity)!
+            dataTypesDict[BASAL_BODY_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .basalBodyTemperature)!
+            dataTypesDict[PUSH_COUNT] = HKSampleType.quantityType(forIdentifier: .pushCount)!
+            dataTypesDict[SWIMMING_STROKE_COUNT] = HKSampleType.quantityType(forIdentifier: .swimmingStrokeCount)!
+            dataTypesDict[NIKE_FUEL] = HKSampleType.quantityType(forIdentifier: .nikeFuel)!
+            dataTypesDict[APPLE_EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
+            dataTypesDict[APPLE_STAND_HOUR] = HKSampleType.categoryType(forIdentifier: .appleStandHour)!
+            dataTypesDict[APPLE_STAND_TIME] = HKSampleType.quantityType(forIdentifier: .appleStandTime)!
+            dataTypesDict[VO2_MAX] = HKSampleType.quantityType(forIdentifier: .vo2Max)!
+            dataTypesDict[ENVIRONMENTAL_AUDIO_EXPOSURE] = HKSampleType.quantityType(forIdentifier: .environmentalAudioExposure)!
+            dataTypesDict[HEADPHONE_AUDIO_EXPOSURE] = HKSampleType.quantityType(forIdentifier: .headphoneAudioExposure)!
+            dataTypesDict[BLOOD_ALCOHOL_CONTENT] = HKSampleType.quantityType(forIdentifier: .bloodAlcoholContent)!
+            dataTypesDict[FORCED_VITAL_CAPACITY] = HKSampleType.quantityType(forIdentifier: .forcedVitalCapacity)!
+            dataTypesDict[INHALER_USAGE] = HKSampleType.quantityType(forIdentifier: .inhalerUsage)!
+            dataTypesDict[NUMBER_OF_TIMES_FALLEN] = HKSampleType.quantityType(forIdentifier: .numberOfTimesFallen)!
+            dataTypesDict[PEAK_EXPIRATORY_FLOW_RATE] = HKSampleType.quantityType(forIdentifier: .peakExpiratoryFlowRate)!
+            dataTypesDict[UV_EXPOSURE] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
+            dataTypesDict[TOOTHBRUSHING_EVENT] = HKSampleType.categoryType(forIdentifier: .toothbrushingEvent)!
+
             healthDataTypes = Array(dataTypesDict.values)
             
-            characteristicsTypesDict[BIRTH_DATE] = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
+            characteristicsTypesDict[ACTIVITY_MOVE_MODE] = HKObjectType.characteristicType(forIdentifier: .activityMoveMode)!
             characteristicsTypesDict[GENDER] = HKObjectType.characteristicType(forIdentifier: .biologicalSex)!
             characteristicsTypesDict[BLOOD_TYPE] = HKObjectType.characteristicType(forIdentifier: .bloodType)!
+            characteristicsTypesDict[BIRTH_DATE] = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
+            characteristicsTypesDict[FITZPATRICK_SKIN_TYPE] = HKObjectType.characteristicType(forIdentifier: .fitzpatrickSkinType)!
+            characteristicsTypesDict[WHEELCHAIR_USE] = HKObjectType.characteristicType(forIdentifier: .wheelchairUse)!
+
             characteristicsDataTypes = Array(characteristicsTypesDict.values)
         }
         
@@ -1615,7 +1701,17 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         if #available(iOS 14.0, *) {
             dataTypesDict[ELECTROCARDIOGRAM] = HKSampleType.electrocardiogramType()
-            
+            dataTypesDict[ENVIRONMENTAL_AUDIO_EXPOSURE_EVENT] = HKSampleType.categoryType(forIdentifier: .environmentalAudioExposureEvent)!
+            dataTypesDict[HEADPHONE_AUDIO_EXPOSURE_EVENT] = HKSampleType.categoryType(forIdentifier: .headphoneAudioExposureEvent)!
+            dataTypesDict[SIX_MINUTE_WALK_TEST_DISTANCE] = HKSampleType.quantityType(forIdentifier: .sixMinuteWalkTestDistance)!
+            dataTypesDict[WALKING_SPEED] = HKSampleType.quantityType(forIdentifier: .walkingSpeed)!
+            dataTypesDict[WALKING_STEP_LENGTH] = HKSampleType.quantityType(forIdentifier: .walkingStepLength)!
+            dataTypesDict[WALKING_ASYMMETRY_PERCENTAGE] = HKSampleType.quantityType(forIdentifier: .walkingAsymmetryPercentage)!
+            dataTypesDict[WALKING_DOUBLE_SUPPORT_PERCENTAGE] = HKSampleType.quantityType(forIdentifier: .walkingDoubleSupportPercentage)!
+            dataTypesDict[STAIR_ASCENT_SPEED] = HKSampleType.quantityType(forIdentifier: .stairAscentSpeed)!
+            dataTypesDict[STAIR_DESCENT_SPEED] = HKSampleType.quantityType(forIdentifier: .stairDescentSpeed)!
+            dataTypesDict[HANDWASHING_EVENT] = HKSampleType.categoryType(forIdentifier: .handwashingEvent)!
+
             unitDict[VOLT] = HKUnit.volt()
             unitDict[INCHES_OF_MERCURY] = HKUnit.inchesOfMercury()
             
@@ -1625,12 +1721,41 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             workoutActivityTypeMap["COOLDOWN"] = HKWorkoutActivityType.cooldown
         }
 
+        if #available(iOS 14.3, *) {
+            dataTypesDict[CONTRACEPTIVE] = HKSampleType.categoryType(forIdentifier: .contraceptive)!
+            dataTypesDict[PREGNANCY] = HKSampleType.categoryType(forIdentifier: .pregnancy)!
+            dataTypesDict[LACTATION] = HKSampleType.categoryType(forIdentifier: .lactation)!
+            dataTypesDict[LOW_CARDIO_FITNESS_EVENT] = HKSampleType.categoryType(forIdentifier: .lowCardioFitnessEvent)!
+        }
+
+        if #available(iOS 14.5, *) {
+           dataTypesDict[APPLE_MOVE_TIME] = HKSampleType.quantityType(forIdentifier: .appleMoveTime)!
+        }
+
+        if #available(iOS 15.0, *) {
+            dataTypesDict[PROGESTERONE_TEST_RESULT] = HKSampleType.categoryType(forIdentifier: .progesteroneTestResult)!
+            dataTypesDict[PREGNANCY_TEST_RESULTS] = HKSampleType.categoryType(forIdentifier: .pregnancyTestResult)!
+            dataTypesDict[NUMBER_OF_ALCOHOLIC_BEVERAGES] = HKSampleType.quantityType(forIdentifier: .numberOfAlcoholicBeverages)!
+            dataTypesDict[APPLE_WALKING_STEADINESS] = HKSampleType.quantityType(forIdentifier: .appleWalkingSteadiness)!
+            dataTypesDict[APPLE_WALKING_STEADINESS_EVENT] = HKSampleType.categoryType(forIdentifier: .appleWalkingSteadinessEvent)!
+        }
+
         if #available(iOS 16.0, *) {
             dataTypesDict[ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
-
             dataTypesDict[WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
             dataTypesDict[UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
-        } 
+            dataTypesDict[RUNNING_SPEED] = HKQuantityType.quantityType(forIdentifier: .runningSpeed)!
+            dataTypesDict[INFREQUENT_MENSTRUAL_CYCLES] = HKSampleType.categoryType(forIdentifier: .infrequentMenstrualCycles)!
+            dataTypesDict[IRREGULAR_MENSTRUAL_CYCLES] = HKSampleType.categoryType(forIdentifier: .irregularMenstrualCycles)!
+            dataTypesDict[PERSISTENT_INTERMENSTRUAL_BLEEDING] = HKSampleType.categoryType(forIdentifier: .persistentIntermenstrualBleeding)!
+            dataTypesDict[PROLONGED_MENSTRUAL_PERIODS] = HKSampleType.categoryType(forIdentifier: .prolongedMenstrualPeriods)!
+            dataTypesDict[RUNNING_STRIDE_LENGTH] = HKSampleType.quantityType(forIdentifier: .runningStrideLength)!
+            dataTypesDict[RUNNING_POWER] = HKSampleType.quantityType(forIdentifier: .runningPower)!
+            dataTypesDict[RUNNING_GROUND_CONTACT] = HKSampleType.quantityType(forIdentifier: .runningGroundContactTime)!
+            dataTypesDict[RUNNING_VERTICAL_OSCILLATION  ] = HKSampleType.quantityType(forIdentifier: .runningVerticalOscillation)!
+            dataTypesDict[HEART_RATE_RECOVERY_ONE_MINUTE] = HKSampleType.quantityType(forIdentifier: .heartRateRecoveryOneMinute)!
+            dataTypesDict[APPLE_SLEEPING_WRIST_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .appleSleepingWristTemperature)!
+        }
         
         // Concatenate heart events, headache and health data types (both may be empty)
         allDataTypes = Set(heartRateEventTypes + healthDataTypes)
