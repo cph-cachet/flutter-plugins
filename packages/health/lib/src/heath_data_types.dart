@@ -107,8 +107,23 @@ enum HealthDataType {
   ELECTROCARDIOGRAM,
 
   // Health Connect
-  TOTAL_CALORIES_BURNED
+  TOTAL_CALORIES_BURNED,
+
+  // Remepy additions for Android
+  BASAL_BODY_TEMPERATURE,
   SPEED,
+  POWER,
+  BONE_MASS,
+  CERVICAL_MUCUS,
+  // CYCLING_PEDALING_CADENCE,
+  ELEVATION_GAINED,
+  INTERMENSTRUAL_BLEEDING,
+  MENSTRUATION_PERIOD,
+  OVULATION_TEST,
+  SEXUAL_ACTIVITY,
+  STEPS_CADENCE,
+  VO2_MAX,
+  WHEELCHAIR_PUSHES,
 }
 
 /// Access types for Health Data.
@@ -252,6 +267,19 @@ const List<HealthDataType> dataTypeKeysAndroid = [
   HealthDataType.TOTAL_CALORIES_BURNED,
   HealthDataType.MENSTRUATION_FLOW,
   HealthDataType.SPEED,
+  HealthDataType.BASAL_BODY_TEMPERATURE,
+  HealthDataType.POWER,
+  HealthDataType.BONE_MASS,
+  HealthDataType.CERVICAL_MUCUS,
+  // HealthDataType.CYCLING_PEDALING_CADENCE,
+  HealthDataType.ELEVATION_GAINED,
+  HealthDataType.INTERMENSTRUAL_BLEEDING,
+  HealthDataType.MENSTRUATION_PERIOD,
+  HealthDataType.OVULATION_TEST,
+  HealthDataType.SEXUAL_ACTIVITY,
+  HealthDataType.STEPS_CADENCE,
+  HealthDataType.VO2_MAX,
+  HealthDataType.WHEELCHAIR_PUSHES,
 ];
 
 /// Maps a [HealthDataType] to a [HealthDataUnit].
@@ -367,7 +395,24 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
 
   // Health Connect
   HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,
-  HealthDataType.SPEED: HealthDataUnit.METERS_PER_SECOND
+
+  // Remepy additions for Android
+  HealthDataType.BASAL_BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
+  HealthDataType.SPEED: HealthDataUnit.METERS_PER_SECOND,
+  HealthDataType.POWER: HealthDataUnit.KILOCALORIE,
+  HealthDataType.BONE_MASS: HealthDataUnit.KILOGRAM,
+  // todo handle: in native android we have 2 values, appearance and sensation 
+  HealthDataType.CERVICAL_MUCUS: HealthDataUnit.UNKNOWN_UNIT,
+  // HealthDataType.CYCLING_PEDALING_CADENCE: HealthDataUnit
+  //     .REVOLUTIONS_PER_MINUTE,
+  HealthDataType.ELEVATION_GAINED: HealthDataUnit.METER,
+  HealthDataType.INTERMENSTRUAL_BLEEDING: HealthDataUnit.NO_UNIT,
+  HealthDataType.MENSTRUATION_PERIOD: HealthDataUnit.NO_UNIT,
+  HealthDataType.OVULATION_TEST: HealthDataUnit.OVULATION_TEST_RESULT,
+  HealthDataType.SEXUAL_ACTIVITY: HealthDataUnit.PROTETCION_USED,
+  HealthDataType.STEPS_CADENCE: HealthDataUnit.RATE,
+  HealthDataType.VO2_MAX: HealthDataUnit.VO2_MILLILITERS_PER_MINUTE_KILOGRAM,
+  HealthDataType.WHEELCHAIR_PUSHES: HealthDataUnit.COUNT,
 };
 
 // const PlatformTypeJsonValue = {
@@ -402,6 +447,7 @@ enum HealthDataUnit {
   CUP_IMPERIAL,
   PINT_US,
   PINT_IMPERIAL,
+  VO2_MILLILITERS_PER_MINUTE_KILOGRAM,
 
   // Pressure units
   PASCAL,
@@ -454,7 +500,11 @@ enum HealthDataUnit {
   // Other units
   BEATS_PER_MINUTE,
   RESPIRATIONS_PER_MINUTE,
+  // REVOLUTIONS_PER_MINUTE,
   MILLIGRAM_PER_DECILITER,
+  OVULATION_TEST_RESULT,
+  PROTETCION_USED,
+  RATE,
   UNKNOWN_UNIT,
   NO_UNIT,
 }
@@ -600,8 +650,9 @@ enum InsulinDeliveryReason {
 
 /// Extension to assign numbers to [ElectrocardiogramClassification]s
 extension ElectrocardiogramClassificationValue
-    on ElectrocardiogramClassification {
-  int get value => switch (this) {
+on ElectrocardiogramClassification {
+  int get value =>
+      switch (this) {
         ElectrocardiogramClassification.NOT_SET => 0,
         ElectrocardiogramClassification.SINUS_RHYTHM => 1,
         ElectrocardiogramClassification.ATRIAL_FIBRILLATION => 2,

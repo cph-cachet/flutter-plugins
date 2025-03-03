@@ -54,9 +54,10 @@ class Health {
   HealthConnectSdkStatus get healthConnectSdkStatus => _healthConnectSdkStatus;
 
   /// The type of platform of this device.
-  HealthPlatformType get platformType => Platform.isIOS
-      ? HealthPlatformType.appleHealth
-      : HealthPlatformType.googleHealthConnect;
+  HealthPlatformType get platformType =>
+      Platform.isIOS
+          ? HealthPlatformType.appleHealth
+          : HealthPlatformType.googleHealthConnect;
 
   /// The id of this device.
   ///
@@ -72,9 +73,10 @@ class Health {
   }
 
   /// Check if a given data type is available on the platform
-  bool isDataTypeAvailable(HealthDataType dataType) => Platform.isAndroid
-      ? dataTypeKeysAndroid.contains(dataType)
-      : dataTypeKeysIOS.contains(dataType);
+  bool isDataTypeAvailable(HealthDataType dataType) =>
+      Platform.isAndroid
+          ? dataTypeKeysAndroid.contains(dataType)
+          : dataTypeKeysIOS.contains(dataType);
 
   /// Determines if the health data [types] have been granted with the specified
   /// access rights [permissions].
@@ -100,8 +102,7 @@ class Health {
   ///   with a READ or READ_WRITE access.
   ///
   ///  * On Android, this function returns true or false, depending on whether the specified access right has been granted.
-  Future<bool?> hasPermissions(
-    List<HealthDataType> types, {
+  Future<bool?> hasPermissions(List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
@@ -113,7 +114,7 @@ class Health {
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
         ? List<int>.filled(types.length, HealthDataAccess.READ.index,
-            growable: true)
+        growable: true)
         : permissions.map((permission) => permission.index).toList();
 
     /// On Android, if BMI is requested, then also ask for weight and height
@@ -153,7 +154,7 @@ class Health {
 
     try {
       final status =
-          await _channel.invokeMethod<int>('getHealthConnectSdkStatus');
+      await _channel.invokeMethod<int>('getHealthConnectSdkStatus');
       _healthConnectSdkStatus = status != null
           ? HealthConnectSdkStatus.fromNativeValue(status)
           : HealthConnectSdkStatus.sdkUnavailable;
@@ -168,9 +169,10 @@ class Health {
   /// Is Google Health Connect available on this phone?
   ///
   /// Android only. Returns always true on iOS.
-  Future<bool> isHealthConnectAvailable() async => !Platform.isAndroid
-      ? true
-      : (await getHealthConnectSdkStatus() ==
+  Future<bool> isHealthConnectAvailable() async =>
+      !Platform.isAndroid
+          ? true
+          : (await getHealthConnectSdkStatus() ==
           HealthConnectSdkStatus.sdkAvailable);
 
   /// Prompt the user to install the Google Health Connect app via the
@@ -196,7 +198,7 @@ class Health {
     if (!(await isHealthConnectAvailable())) {
       throw UnsupportedError(
           "Google Health Connect is not available on this Android device. "
-          "You may prompt the user to install it using the 'installHealthConnect' method");
+              "You may prompt the user to install it using the 'installHealthConnect' method");
     }
   }
 
@@ -220,8 +222,7 @@ class Health {
   ///    a data type due to privacy concern, this method will return **true if
   ///    the window asking for permission was showed to the user without errors**
   ///    if it is called on iOS with a READ or READ_WRITE access.
-  Future<bool> requestAuthorization(
-    List<HealthDataType> types, {
+  Future<bool> requestAuthorization(List<HealthDataType> types, {
     List<HealthDataAccess>? permissions,
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
@@ -235,11 +236,11 @@ class Health {
         final type = types[i];
         final permission = permissions[i];
         if ((type == HealthDataType.ELECTROCARDIOGRAM ||
-                type == HealthDataType.HIGH_HEART_RATE_EVENT ||
-                type == HealthDataType.LOW_HEART_RATE_EVENT ||
-                type == HealthDataType.IRREGULAR_HEART_RATE_EVENT ||
-                type == HealthDataType.WALKING_HEART_RATE ||
-                type == HealthDataType.ATRIAL_FIBRILLATION_BURDEN) &&
+            type == HealthDataType.HIGH_HEART_RATE_EVENT ||
+            type == HealthDataType.LOW_HEART_RATE_EVENT ||
+            type == HealthDataType.IRREGULAR_HEART_RATE_EVENT ||
+            type == HealthDataType.WALKING_HEART_RATE ||
+            type == HealthDataType.ATRIAL_FIBRILLATION_BURDEN) &&
             permission != HealthDataAccess.READ) {
           throw ArgumentError(
               'Requesting WRITE permission on ELECTROCARDIOGRAM / HIGH_HEART_RATE_EVENT / LOW_HEART_RATE_EVENT / IRREGULAR_HEART_RATE_EVENT / WALKING_HEART_RATE / ATRIAL_FIBRILLATION_BURDEN is not allowed.');
@@ -250,7 +251,7 @@ class Health {
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
         ? List<int>.filled(types.length, HealthDataAccess.READ.index,
-            growable: true)
+        growable: true)
         : permissions.map((permission) => permission.index).toList();
 
     // on Android, if BMI is requested, then also ask for weight and height
@@ -281,11 +282,9 @@ class Health {
   }
 
   /// Calculate the BMI using the last observed height and weight values.
-  Future<List<HealthDataPoint>> _computeAndroidBMI(
-    DateTime startTime,
-    DateTime endTime,
-    List<RecordingMethod> recordingMethodsToFilter,
-  ) async {
+  Future<List<HealthDataPoint>> _computeAndroidBMI(DateTime startTime,
+      DateTime endTime,
+      List<RecordingMethod> recordingMethodsToFilter,) async {
     List<HealthDataPoint> heights = await _prepareQuery(
         startTime, endTime, HealthDataType.HEIGHT, recordingMethodsToFilter);
 
@@ -297,7 +296,7 @@ class Health {
         startTime, endTime, HealthDataType.WEIGHT, recordingMethodsToFilter);
 
     double h =
-        (heights.last.value as NumericHealthValue).numericValue.toDouble();
+    (heights.last.value as NumericHealthValue).numericValue.toDouble();
 
     const dataType = HealthDataType.BODY_MASS_INDEX;
     final unit = dataTypeToUnit[dataType]!;
@@ -373,11 +372,11 @@ class Health {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
     if ({
-          HealthDataType.HIGH_HEART_RATE_EVENT,
-          HealthDataType.LOW_HEART_RATE_EVENT,
-          HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-          HealthDataType.ELECTROCARDIOGRAM,
-        }.contains(type) &&
+      HealthDataType.HIGH_HEART_RATE_EVENT,
+      HealthDataType.LOW_HEART_RATE_EVENT,
+      HealthDataType.IRREGULAR_HEART_RATE_EVENT,
+      HealthDataType.ELECTROCARDIOGRAM,
+    }.contains(type) &&
         Platform.isIOS) {
       throw ArgumentError(
           "$type - iOS does not support writing this data type in HealthKit");
@@ -729,7 +728,7 @@ class Health {
     }
 
     var value =
-        Platform.isAndroid ? MenstrualFlow.toHealthConnect(flow) : flow.index;
+    Platform.isAndroid ? MenstrualFlow.toHealthConnect(flow) : flow.index;
 
     if (value == -1) {
       throw ArgumentError(
@@ -813,12 +812,10 @@ class Health {
   ///    It must be equal to or earlier than [endTime].
   ///  * [endTime] - the end time when the meal was consumed.
   ///    It must be equal to or later than [startTime].
-  Future<bool> writeInsulinDelivery(
-    double units,
-    InsulinDeliveryReason reason,
-    DateTime startTime,
-    DateTime endTime,
-  ) async {
+  Future<bool> writeInsulinDelivery(double units,
+      InsulinDeliveryReason reason,
+      DateTime startTime,
+      DateTime endTime,) async {
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
@@ -874,10 +871,10 @@ class Health {
   /// If not specified, all data points will be included.Vkk
   Future<List<HealthDataPoint>> getHealthIntervalDataFromTypes(
       {required DateTime startDate,
-      required DateTime endDate,
-      required List<HealthDataType> types,
-      required int interval,
-      List<RecordingMethod> recordingMethodsToFilter = const []}) async {
+        required DateTime endDate,
+        required List<HealthDataType> types,
+        required int interval,
+        List<RecordingMethod> recordingMethodsToFilter = const []}) async {
     await _checkIfHealthConnectAvailableOnAndroid();
     List<HealthDataPoint> dataPoints = [];
 
@@ -909,12 +906,10 @@ class Health {
   }
 
   /// Prepares an interval query, i.e. checks if the types are available, etc.
-  Future<List<HealthDataPoint>> _prepareQuery(
-    DateTime startTime,
-    DateTime endTime,
-    HealthDataType dataType,
-    List<RecordingMethod> recordingMethodsToFilter,
-  ) async {
+  Future<List<HealthDataPoint>> _prepareQuery(DateTime startTime,
+      DateTime endTime,
+      HealthDataType dataType,
+      List<RecordingMethod> recordingMethodsToFilter,) async {
     // Ask for device ID only once
     _deviceId ??= Platform.isAndroid
         ? (await _deviceInfo.androidInfo).id
@@ -935,8 +930,7 @@ class Health {
   }
 
   /// Prepares an interval query, i.e. checks if the types are available, etc.
-  Future<List<HealthDataPoint>> _prepareIntervalQuery(
-      DateTime startDate,
+  Future<List<HealthDataPoint>> _prepareIntervalQuery(DateTime startDate,
       DateTime endDate,
       HealthDataType dataType,
       int interval,
@@ -957,8 +951,7 @@ class Health {
   }
 
   /// Prepares an aggregate query, i.e. checks if the types are available, etc.
-  Future<List<HealthDataPoint>> _prepareAggregateQuery(
-      DateTime startDate,
+  Future<List<HealthDataPoint>> _prepareAggregateQuery(DateTime startDate,
       DateTime endDate,
       List<HealthDataType> dataTypes,
       int activitySegmentDuration,
@@ -980,8 +973,7 @@ class Health {
   }
 
   /// Fetches data points from Android/iOS native code.
-  Future<List<HealthDataPoint>> _dataQuery(
-      DateTime startTime,
+  Future<List<HealthDataPoint>> _dataQuery(DateTime startTime,
       DateTime endTime,
       HealthDataType dataType,
       List<RecordingMethod> recordingMethodsToFilter) async {
@@ -991,7 +983,7 @@ class Health {
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
       'recordingMethodsToFilter':
-          recordingMethodsToFilter.map((e) => e.toInt()).toList(),
+      recordingMethodsToFilter.map((e) => e.toInt()).toList(),
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
 
@@ -1013,8 +1005,7 @@ class Health {
   }
 
   /// function for fetching statistic health data
-  Future<List<HealthDataPoint>> _dataIntervalQuery(
-      DateTime startDate,
+  Future<List<HealthDataPoint>> _dataIntervalQuery(DateTime startDate,
       DateTime endDate,
       HealthDataType dataType,
       int interval,
@@ -1026,11 +1017,11 @@ class Health {
       'endTime': endDate.millisecondsSinceEpoch,
       'interval': interval,
       'recordingMethodsToFilter':
-          recordingMethodsToFilter.map((e) => e.toInt()).toList(),
+      recordingMethodsToFilter.map((e) => e.toInt()).toList(),
     };
 
     final fetchedDataPoints =
-        await _channel.invokeMethod('getIntervalData', args);
+    await _channel.invokeMethod('getIntervalData', args);
     if (fetchedDataPoints != null) {
       final msg = <String, dynamic>{
         "dataType": dataType,
@@ -1042,8 +1033,7 @@ class Health {
   }
 
   /// function for fetching statistic health data
-  Future<List<HealthDataPoint>> _dataAggregateQuery(
-      DateTime startDate,
+  Future<List<HealthDataPoint>> _dataAggregateQuery(DateTime startDate,
       DateTime endDate,
       List<HealthDataType> dataTypes,
       int activitySegmentDuration,
@@ -1057,7 +1047,7 @@ class Health {
     };
 
     final fetchedDataPoints =
-        await _channel.invokeMethod('getAggregateData', args);
+    await _channel.invokeMethod('getAggregateData', args);
 
     if (fetchedDataPoints != null) {
       final msg = <String, dynamic>{
@@ -1075,7 +1065,7 @@ class Health {
 
     return dataPoints
         .map<HealthDataPoint>((dataPoint) =>
-            HealthDataPoint.fromHealthDataPoint(dataType, dataPoint))
+        HealthDataPoint.fromHealthDataPoint(dataType, dataPoint))
         .toList();
   }
 
@@ -1102,7 +1092,8 @@ class Health {
   }
 
   /// Assigns numbers to specific [HealthDataType]s.
-  int _alignValue(HealthDataType type) => switch (type) {
+  int _alignValue(HealthDataType type) =>
+      switch (type) {
         HealthDataType.SLEEP_IN_BED => 0,
         HealthDataType.SLEEP_ASLEEP => 1,
         HealthDataType.SLEEP_AWAKE => 2,
@@ -1114,7 +1105,8 @@ class Health {
         HealthDataType.HEADACHE_MILD => 2,
         HealthDataType.HEADACHE_MODERATE => 3,
         HealthDataType.HEADACHE_SEVERE => 4,
-        _ => throw HealthException(type,
+        _ =>
+        throw HealthException(type,
             "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues"),
       };
 
