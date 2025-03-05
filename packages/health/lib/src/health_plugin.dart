@@ -350,6 +350,8 @@ class Health {
     HealthDataUnit? unit,
     required HealthDataType type,
     required DateTime startTime,
+    String? clientRecordId,
+    int? clientRecordVersion,
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
@@ -408,6 +410,8 @@ class Health {
       'dataUnitKey': unit.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
+      'clientRecordId' : clientRecordId,
+      'clientRecordVersion' : clientRecordVersion,
       'recordingMethod': recordingMethod.toInt(),
     };
     bool? success = await _channel.invokeMethod('writeData', args);
@@ -441,6 +445,32 @@ class Health {
       'endTime': endTime.millisecondsSinceEpoch
     };
     bool? success = await _channel.invokeMethod('delete', args);
+    return success ?? false;
+  }
+
+  /// Deletes all records of the given [type] for a given period of time.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  ///  * [type] - the value's HealthDataType.
+  ///  * [startTime] - the start time when this [value] is measured.
+  ///    Must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when this [value] is measured.
+  ///    Must be equal to or later than [startTime].
+  Future<bool> deleteByIds({
+    required HealthDataType type,
+    List<String> idList = const [],
+    List<String> clientRecordIdsList = const [],
+  }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
+
+    Map<String, dynamic> args = {
+      'dataTypeKey': type.name,
+      'idList': idList,
+      'clientRecordIdsList': clientRecordIdsList
+    };
+    bool? success = await _channel.invokeMethod('deleteByIds', args);
     return success ?? false;
   }
 
@@ -596,8 +626,8 @@ class Health {
     required MealType mealType,
     required DateTime startTime,
     required DateTime endTime,
-    required String clientRecordId,
-    required clientRecordVersion,
+    String? clientRecordId,
+    int? clientRecordVersion,
     double? caloriesConsumed,
     double? carbohydrates,
     double? protein,
