@@ -576,35 +576,29 @@ class Health {
     return success ?? false;
   }
 
-  /// Deletes a specific health record by its UUID.
+  /// Deletes all records of the given [type] for a given period of time.
   ///
   /// Returns true if successful, false otherwise.
   ///
   /// Parameters:
-  ///  * [uuid] - The UUID of the health record to delete.
-  ///  * [type] - The health data type of the record. Required on iOS.
-  ///
-  /// On Android, only the UUID is required. On iOS, both UUID and type are required.
-  Future<bool> deleteByUUID({
-    required String uuid,
-    HealthDataType? type,
+  ///  * [type] - the value's HealthDataType.
+  ///  * [startTime] - the start time when this [value] is measured.
+  ///    Must be equal to or earlier than [endTime].
+  ///  * [endTime] - the end time when this [value] is measured.
+  ///    Must be equal to or later than [startTime].
+  Future<bool> deleteByIds({
+    required HealthDataType type,
+    List<String> idList = const [],
+    List<String> clientRecordIdsList = const [],
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
 
-    if (uuid.isEmpty || uuid == "") {
-      throw ArgumentError("UUID must not be empty.");
-    }
-
-    if (Platform.isIOS && type == null) {
-      throw ArgumentError("On iOS, both UUID and type are required to delete a record.");
-    }
-
     Map<String, dynamic> args = {
-      'uuid': uuid,
-      'dataTypeKey': type?.name,
+      'dataTypeKey': type.name,
+      'idList': idList,
+      'clientRecordIdsList': clientRecordIdsList
     };
-
-    bool? success = await _channel.invokeMethod('deleteByUUID', args);
+    bool? success = await _channel.invokeMethod('deleteByIds', args);
     return success ?? false;
   }
 
@@ -764,8 +758,8 @@ class Health {
     required MealType mealType,
     required DateTime startTime,
     required DateTime endTime,
-    required String clientRecordId,
-    required clientRecordVersion,
+    String? clientRecordId,
+    int? clientRecordVersion,
     double? caloriesConsumed,
     double? carbohydrates,
     double? protein,
