@@ -122,6 +122,10 @@ class HealthAppState extends State<HealthApp> {
       try {
         authorized =
             await health.requestAuthorization(types, permissions: permissions);
+        
+        // request access to read historic data
+        await health.requestHealthDataHistoryAuthorization();
+
       } catch (error) {
         debugPrint("Exception in authorize: $error");
       }
@@ -289,10 +293,10 @@ class HealthAppState extends State<HealthApp> {
         startTime: earlier,
         endTime: now);
     success &= await health.writeHealthData(
-      value: 22,
-      type: HealthDataType.LEAN_BODY_MASS,
-      startTime: earlier,
-      endTime: now);
+        value: 22,
+        type: HealthDataType.LEAN_BODY_MASS,
+        startTime: earlier,
+        endTime: now);
 
     // specialized write methods
     success &= await health.writeBloodOxygen(
@@ -400,11 +404,11 @@ class HealthAppState extends State<HealthApp> {
           endTime: now,
           recordingMethod: RecordingMethod.manual);
       success &= await health.writeHealthData(
-        value: 4.3,
-        type: HealthDataType.UV_INDEX,
-        startTime: earlier,
-        endTime: now,
-        recordingMethod: RecordingMethod.manual);
+          value: 4.3,
+          type: HealthDataType.UV_INDEX,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
     }
 
     setState(() {
