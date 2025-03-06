@@ -1,4 +1,4 @@
-group = "k.cachet.esense_flutter"
+group = "dk.cachet.esense_flutter"
 version = "1.0-SNAPSHOT"
 
 buildscript {

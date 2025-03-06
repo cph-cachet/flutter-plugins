@@ -1,3 +1,8 @@
+## 1.2.0
+
+* removed depricated use of package 
+* upgraded permission handler package 
+
 ## 1.1.1
 
 * upgrade to Android APK
