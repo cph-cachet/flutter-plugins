@@ -1,11 +1,13 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:async';
 import 'dart:io';
 
+import 'package:carp_serializable/carp_serializable.dart';
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:carp_serializable/carp_serializable.dart';
 
 // Global Health instance
 final health = Health();
@@ -292,7 +294,8 @@ class HealthAppState extends State<HealthApp> {
       value: 22,
       type: HealthDataType.LEAN_BODY_MASS,
       startTime: earlier,
-      endTime: now);
+      endTime: now,
+    );
 
     // specialized write methods
     success &= await health.writeBloodOxygen(
@@ -400,11 +403,11 @@ class HealthAppState extends State<HealthApp> {
           endTime: now,
           recordingMethod: RecordingMethod.manual);
       success &= await health.writeHealthData(
-        value: 4.3,
-        type: HealthDataType.UV_INDEX,
-        startTime: earlier,
-        endTime: now,
-        recordingMethod: RecordingMethod.manual);
+          value: 4.3,
+          type: HealthDataType.UV_INDEX,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
     }
 
     setState(() {
