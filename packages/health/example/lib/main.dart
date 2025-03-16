@@ -430,6 +430,28 @@ class HealthAppState extends State<HealthApp> {
       );
     }
 
+    // To delete a record by UUID - call the `health.deleteByUUID` method:
+    /**
+      List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(
+        types: [HealthDataType.STEPS],
+        startTime: startDate,
+        endTime: endDate,
+      );
+      
+      if (healthData.isNotEmpty) {
+        print("DELETING: ${healthData.first.toJson()}");
+        // Get the UUID of the first health data point
+        String uuid = healthData.first.uuid;
+        
+        // Delete the specific record using its UUID
+        success &= await health.deleteByUUID(
+          type: HealthDataType.STEPS,
+          uuid: uuid,
+        );
+        
+      }
+     */
+
     setState(() {
       _state = success ? AppState.DATA_DELETED : AppState.DATA_NOT_DELETED;
     });
