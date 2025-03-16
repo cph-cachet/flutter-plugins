@@ -440,10 +440,8 @@ class HealthAppState extends State<HealthApp> {
       
       if (healthData.isNotEmpty) {
         print("DELETING: ${healthData.first.toJson()}");
-        // Get the UUID of the first health data point
         String uuid = healthData.first.uuid;
         
-        // Delete the specific record using its UUID
         success &= await health.deleteByUUID(
           type: HealthDataType.STEPS,
           uuid: uuid,
