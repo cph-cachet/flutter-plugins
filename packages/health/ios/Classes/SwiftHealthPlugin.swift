@@ -301,6 +301,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if call.method.elementsEqual("delete") {
             try! delete(call: call, result: result)
         }
+
+        /// Handle deleteByUUID data
+        else if call.method.elementsEqual("deleteByUUID") {
+            try! deleteByUUID(call: call, result: result)
+        }
     }
     
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -765,6 +770,45 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         HKHealthStore().execute(deleteQuery)
+    }
+
+    func deleteByUUID(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+              let uuidarg = arguments["uuid"] as? String,
+              let dataTypeKey = arguments["dataTypeKey"] as? String else {
+            throw PluginError(message: "Invalid Arguments - UUID or DataTypeKey invalid")
+        }
+        let dataTypeToRemove = dataTypeLookUp(key: dataTypeKey)
+        guard let uuid = UUID(uuidString: uuidarg) else {
+            result(false)
+            return
+        }
+        let predicate = HKQuery.predicateForObjects(with: [uuid])
+
+        let query = HKSampleQuery(
+            sampleType: dataTypeToRemove,
+            predicate: predicate,
+            limit: 1,
+            sortDescriptors: nil
+        ) { query, samplesOrNil, error in
+            guard let samples = samplesOrNil, !samples.isEmpty else {
+                DispatchQueue.main.async {
+                    result(false)
+                }
+                return
+            }
+            
+            self.healthStore.delete(samples) { success, error in
+                if let error = error {
+                    print("Error deleting sample with UUID \(uuid): \(error.localizedDescription)")
+                }
+                DispatchQueue.main.async {
+                    result(success)
+                }
+            }
+        }
+    
+        healthStore.execute(query)
     }
     
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {

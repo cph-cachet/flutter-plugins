@@ -508,6 +508,38 @@ class Health {
     return success ?? false;
   }
 
+  /// Deletes a specific health record by its UUID.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  ///  * [uuid] - The UUID of the health record to delete.
+  ///  * [type] - The health data type of the record. Required on iOS.
+  ///
+  /// On Android, only the UUID is required. On iOS, both UUID and type are required.
+  Future<bool> deleteByUUID({
+    required String uuid,
+    HealthDataType? type,
+  }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
+
+    if (uuid.isEmpty || uuid == "") {
+      throw ArgumentError("UUID must not be empty.");
+    }
+
+    if (Platform.isIOS && type == null) {
+      throw ArgumentError("On iOS, both UUID and type are required to delete a record.");
+    }
+
+    Map<String, dynamic> args = {
+      'uuid': uuid,
+      'dataTypeKey': type?.name,
+    };
+
+    bool? success = await _channel.invokeMethod('deleteByUUID', args);
+    return success ?? false;
+  }
+
   /// Saves a blood pressure record.
   ///
   /// Returns true if successful, false otherwise.

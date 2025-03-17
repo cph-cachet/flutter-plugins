@@ -167,6 +167,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "writeBloodOxygen" -> writeBloodOxygen(call, result)
             "writeMenstruationFlow" -> writeMenstruationFlow(call, result)
             "writeMeal" -> writeMeal(call, result)
+            "deleteByUUID" -> deleteByUUID(call, result)
             else -> result.notImplemented()
         }
     }
@@ -2394,6 +2395,43 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             }
         }
     }
+
+    /** Delete a specific record by UUID and type */
+    private fun deleteByUUID(call: MethodCall, result: Result) {
+        val arguments = call.arguments as? HashMap<*, *>
+        val dataTypeKey = (arguments?.get("dataTypeKey") as? String)!!
+        val uuid = (arguments?.get("uuid") as? String)!!
+        
+        if (!mapToType.containsKey(dataTypeKey)) {
+            Log.w("FLUTTER_HEALTH::ERROR", "Datatype $dataTypeKey not found in HC")
+            result.success(false)
+            return
+        }
+        
+        val classType = mapToType[dataTypeKey]!!
+        
+        scope.launch {
+            try {
+                healthConnectClient.deleteRecords(
+                    recordType = classType,
+                    recordIdsList = listOf(uuid),
+                    clientRecordIdsList = emptyList()
+                )
+                result.success(true)
+                Log.i(
+                    "FLUTTER_HEALTH::SUCCESS",
+                    "[Health Connect] Record with UUID $uuid was successfully deleted!"
+                )
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Error deleting record with UUID: $uuid")
+                Log.e("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
+                Log.e("FLUTTER_HEALTH::ERROR", e.stackTraceToString())
+                result.success(false)
+            }
+        }
+    }
+    
+    
 
     private val mapSleepStageToType =
         hashMapOf(
