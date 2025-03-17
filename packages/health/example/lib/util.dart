@@ -62,6 +62,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.MENSTRUATION_FLOW,
   HealthDataType.WATER_TEMPERATURE,
   HealthDataType.UNDERWATER_DEPTH,
+  HealthDataType.UV_INDEX,
 ];
 
 /// List of data types available on Android.

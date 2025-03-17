@@ -125,3 +125,4 @@ packages/app_usage/example/.flutter-plugins-dependencies
 packages/app_usage/example/.flutter-plugins-dependencies
 
 .sdkmanrc
+**/.cxx/
