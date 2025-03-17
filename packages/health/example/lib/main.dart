@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:carp_serializable/carp_serializable.dart';
+import 'package:example_new/util.dart';
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
-import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:carp_serializable/carp_serializable.dart';
 
 // Global Health instance
 final health = Health();
 
-void main() => runApp(HealthApp());
+void main() => runApp(const HealthApp());
 
 class HealthApp extends StatefulWidget {
   const HealthApp({super.key});
