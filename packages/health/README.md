@@ -311,6 +311,27 @@ List<HealthDataPoint> points = ...;
 points = health.removeDuplicates(points);
 ```
 
+### Fetch single health data by UUID
+
+In order to retrieve a single record, it is required to provide `String uuid` and `HealthDataType type`.
+
+**Android** doesn't expose an API to read single raw data by UUID. Instead, It is filtered by `HealthDataType type` and 5 minutes time range from `DateTime startTime` by default, then match and return a single record by UUID natively
+
+**iOS** has an ability to get a single record by providing UUID and `type`, so both `startTime` and `endTime` are optional.
+
+Please see example below:
+```dart
+HealthDataPoint? healthPoint = await health.getHealthDataByUUID(
+  uuid: 'd7decd36-a26b-45a0-aa02-91484f8a17ca',
+  type: HealthDataType.STEPS,
+  startTime: activity.startTime,
+);
+```
+```
+I/FLUTTER_HEALTH( 9161): Success: {uuid=d7decd36-a26b-45a0-aa02-91484f8a17ca, value=12, date_from=1742259061009, date_to=1742259092888, source_id=, source_name=com.google.android.apps.fitness, recording_method=0}
+```
+> Assuming that the `uuid`, `type` and `startTime` are coming from your database.
+
 ## Data Types
 
 The plugin supports the following [`HealthDataType`](https://pub.dev/documentation/health/latest/health/HealthDataType.html).
