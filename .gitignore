@@ -9,6 +9,9 @@
 .buildlog/
 .history
 .svn/
+.build/
+.swiftpm/
+build/
 
 # IntelliJ related
 *.iml
@@ -86,6 +89,7 @@ unlinked_spec.ds
 **/ios/**/.symlinks/
 **/ios/**/profile
 **/ios/**/xcuserdata
+**/ioa/**/.build
 **/ios/.generated/
 **/ios/Flutter/.last_build_id
 **/ios/Flutter/App.framework
@@ -121,3 +125,4 @@ packages/app_usage/example/.flutter-plugins-dependencies
 packages/app_usage/example/.flutter-plugins-dependencies
 
 .sdkmanrc
+**/.cxx/

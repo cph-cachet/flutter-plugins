@@ -74,6 +74,16 @@ An example of asking for permission to read and write heart rate data is shown b
 <uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
 ```
 
+By default, Health Connect restricts read data to 30 days from when permission has been granted.
+
+You can check and request access to historical data using the `isHealthDataHistoryAuthorized` and `requestHealthDataHistoryAuthorization` methods, respectively.
+
+The above methods require the following permission to be declared:
+
+```xml
+<uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
+```
+
 Accessing fitness data (e.g. Steps) requires permission to access the "Activity Recognition" API. To set it add the following line to your `AndroidManifest.xml` file.
 
 ```xml
@@ -362,6 +372,7 @@ The plugin supports the following [`HealthDataType`](https://pub.dev/documentati
 | MENSTRUATION_FLOW            | NO_UNIT                 | yes              | yes                       |                                                                                                                                    |
 | WATER_TEMPERATURE            | DEGREE_CELSIUS          | yes              |                           | Related to/Requires Apple Watch Ultra's Underwater Diving Workout                                                                  |
 | UNDERWATER_DEPTH             | METER                   | yes              |                           | Related to/Requires Apple Watch Ultra's Underwater Diving Workout                                                                  |
+| UV_INDEX                     | COUNT                   | yes              |                           |                                                                                                                                    |
 | LEAN_BODY_MASS               | KILOGRAMS               | yes              | yes                       |                                                                                                                                    |
 
 ## Workout Types

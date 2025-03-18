@@ -164,6 +164,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
     let WATER_TEMPERATURE = "WATER_TEMPERATURE"
     let UNDERWATER_DEPTH = "UNDERWATER_DEPTH"
+    let UV_INDEX = "UV_INDEX"
     
     
     // Health Unit types
@@ -299,6 +300,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         /// Handle delete data
         else if call.method.elementsEqual("delete") {
             try! delete(call: call, result: result)
+        }
+
+        /// Handle deleteByUUID data
+        else if call.method.elementsEqual("deleteByUUID") {
+            try! deleteByUUID(call: call, result: result)
         }
     }
     
@@ -765,6 +771,45 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         HKHealthStore().execute(deleteQuery)
     }
+
+    func deleteByUUID(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+              let uuidarg = arguments["uuid"] as? String,
+              let dataTypeKey = arguments["dataTypeKey"] as? String else {
+            throw PluginError(message: "Invalid Arguments - UUID or DataTypeKey invalid")
+        }
+        let dataTypeToRemove = dataTypeLookUp(key: dataTypeKey)
+        guard let uuid = UUID(uuidString: uuidarg) else {
+            result(false)
+            return
+        }
+        let predicate = HKQuery.predicateForObjects(with: [uuid])
+
+        let query = HKSampleQuery(
+            sampleType: dataTypeToRemove,
+            predicate: predicate,
+            limit: 1,
+            sortDescriptors: nil
+        ) { query, samplesOrNil, error in
+            guard let samples = samplesOrNil, !samples.isEmpty else {
+                DispatchQueue.main.async {
+                    result(false)
+                }
+                return
+            }
+            
+            self.healthStore.delete(samples) { success, error in
+                if let error = error {
+                    print("Error deleting sample with UUID \(uuid): \(error.localizedDescription)")
+                }
+                DispatchQueue.main.async {
+                    result(success)
+                }
+            }
+        }
+    
+        healthStore.execute(query)
+    }
     
     func getData(call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? NSDictionary
@@ -860,8 +905,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true)
                             ? RecordingMethod.manual.rawValue
                             : RecordingMethod.automatic.rawValue,
-                        "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil,
-                        "dataUnitKey": unit?.unitString
+                        "dataUnitKey": unit?.unitString,
+                        "metadata": sanitizeMetadata(sample.metadata)
                     ]
                 }
                 DispatchQueue.main.async {
@@ -904,14 +949,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     samplesCategory = samplesCategory.filter { $0.value == 4 }
                 }
                 let categories = samplesCategory.map { sample -> NSDictionary in
-                    var metadata: [String: Any] = [:]
-                    
-                    if let sampleMetadata = sample.metadata {
-                        for (key, value) in sampleMetadata {
-                            metadata[key] = value
-                        }
-                    }
-                    
                     return [
                         "uuid": "\(sample.uuid)",
                         "value": sample.value,
@@ -920,7 +957,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": sample.sourceRevision.source.name,
                         "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true) ? RecordingMethod.manual.rawValue : RecordingMethod.automatic.rawValue,
-                        "metadata": metadata
+                        "metadata": sanitizeMetadata(sample.metadata)
                     ]
                 }
                 DispatchQueue.main.async {
@@ -1035,6 +1072,54 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         HKHealthStore().execute(query)
+    }
+    
+    private func sanitizeMetadata(_ metadata: [String: Any]?) -> [String: Any] {
+        guard let metadata = metadata else { return [:] }
+        
+        var sanitized = [String: Any]()
+        
+        for (key, value) in metadata {
+            switch value {
+            case let stringValue as String:
+                sanitized[key] = stringValue
+            case let numberValue as NSNumber:
+                sanitized[key] = numberValue
+            case let boolValue as Bool:
+                sanitized[key] = boolValue
+            case let arrayValue as [Any]:
+                sanitized[key] = sanitizeArray(arrayValue)
+            case let mapValue as [String: Any]:
+                sanitized[key] = sanitizeMetadata(mapValue)
+            default:
+                continue
+            }
+        }
+        
+        return sanitized
+    }
+
+    private func sanitizeArray(_ array: [Any]) -> [Any] {
+        var sanitizedArray: [Any] = []
+        
+        for value in array {
+            switch value {
+            case let stringValue as String:
+                sanitizedArray.append(stringValue)
+            case let numberValue as NSNumber:
+                sanitizedArray.append(numberValue)
+            case let boolValue as Bool:
+                sanitizedArray.append(boolValue)
+            case let arrayValue as [Any]:
+                sanitizedArray.append(sanitizeArray(arrayValue))
+            case let mapValue as [String: Any]:
+                sanitizedArray.append(sanitizeMetadata(mapValue))
+            default:
+                continue
+            }
+        }
+        
+        return sanitizedArray
     }
     
     @available(iOS 14.0, *)
@@ -1630,6 +1715,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
             dataTypesDict[WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
             dataTypesDict[UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
+
+            dataTypesDict[UV_INDEX] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
+            dataQuantityTypesDict[UV_INDEX] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
+
         } 
         
         // Concatenate heart events, headache and health data types (both may be empty)

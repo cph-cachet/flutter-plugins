@@ -122,6 +122,10 @@ class HealthAppState extends State<HealthApp> {
       try {
         authorized =
             await health.requestAuthorization(types, permissions: permissions);
+        
+        // request access to read historic data
+        await health.requestHealthDataHistoryAuthorization();
+
       } catch (error) {
         debugPrint("Exception in authorize: $error");
       }
@@ -289,11 +293,10 @@ class HealthAppState extends State<HealthApp> {
         startTime: earlier,
         endTime: now);
     success &= await health.writeHealthData(
-      value: 22,
-      type: HealthDataType.LEAN_BODY_MASS,
-      startTime: earlier,
-      endTime: now,
-    );
+        value: 22,
+        type: HealthDataType.LEAN_BODY_MASS,
+        startTime: earlier,
+        endTime: now);
 
     // specialized write methods
     success &= await health.writeBloodOxygen(
@@ -400,6 +403,12 @@ class HealthAppState extends State<HealthApp> {
           startTime: earlier,
           endTime: now,
           recordingMethod: RecordingMethod.manual);
+      success &= await health.writeHealthData(
+          value: 4.3,
+          type: HealthDataType.UV_INDEX,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
     }
 
     setState(() {
@@ -420,6 +429,26 @@ class HealthAppState extends State<HealthApp> {
         endTime: now,
       );
     }
+
+    // To delete a record by UUID - call the `health.deleteByUUID` method:
+    /**
+      List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(
+        types: [HealthDataType.STEPS],
+        startTime: startDate,
+        endTime: endDate,
+      );
+      
+      if (healthData.isNotEmpty) {
+        print("DELETING: ${healthData.first.toJson()}");
+        String uuid = healthData.first.uuid;
+        
+        success &= await health.deleteByUUID(
+          type: HealthDataType.STEPS,
+          uuid: uuid,
+        );
+        
+      }
+     */
 
     setState(() {
       _state = success ? AppState.DATA_DELETED : AppState.DATA_NOT_DELETED;
