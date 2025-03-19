@@ -25,6 +25,7 @@ import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.response.InsertRecordsResponse
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.*
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -2505,14 +2506,24 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     )
                 }
-                healthConnectClient.insertRecords(
-                    list,
-                )
-                result.success(true)
+
+                // Insert records into Health Connect
+                val insertResponse: InsertRecordsResponse = healthConnectClient.insertRecords(list)
+                // Log.i("FLUTTER_HEALTH::DEBUG", "Inserted records: $insertResponse")
+
+                // Extract UUID from the first inserted record
+                val insertedUUID = insertResponse.recordIdsList.firstOrNull() ?: ""
+
+                if (insertedUUID.isEmpty()) {
+                    Log.e("FLUTTER_HEALTH::ERROR", "UUID is empty! No records were inserted.")
+                }
+
                 Log.i(
                     "FLUTTER_HEALTH::SUCCESS",
-                    "[Health Connect] Workout was successfully added!"
+                    "[Health Connect] Workout $insertedUUID was successfully added!"
                 )
+
+                result.success(insertedUUID)
             } catch (e: Exception) {
                 Log.w(
                     "FLUTTER_HEALTH::ERROR",
@@ -2520,7 +2531,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
-                result.success(false)
+                result.success("")
             }
         }
     }

@@ -1304,7 +1304,7 @@ class Health {
   ///  - [title] The title of the workout.
   ///    *ONLY FOR HEALTH CONNECT* Default value is the [activityType], e.g. "STRENGTH_TRAINING".
   ///  - [recordingMethod] The recording method of the data point, automatic by default (on iOS this can only be automatic or manual).
-  Future<bool> writeWorkoutData({
+  Future<HealthDataPoint?> writeWorkoutData({
     required HealthWorkoutActivityType activityType,
     required DateTime start,
     required DateTime end,
@@ -1341,7 +1341,16 @@ class Health {
       'title': title,
       'recordingMethod': recordingMethod.toInt(),
     };
-    return await _channel.invokeMethod('writeWorkoutData', args) == true;
+
+    String uuid = '${await _channel.invokeMethod('writeWorkoutData', args)}';
+
+    final healthPoint = await getHealthDataByUUID(
+      uuid: uuid,
+      type: HealthDataType.WORKOUT,
+      startTime: start,
+    );
+
+    return healthPoint;
   }
 
   /// Check if the given [HealthWorkoutActivityType] is supported on the iOS platform
