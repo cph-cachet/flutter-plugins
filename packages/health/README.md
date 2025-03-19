@@ -19,6 +19,10 @@ The plugin supports:
 
 Note that for Android, the target phone **needs** to have the [Health Connect](https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata&hl=en) app installed (which is currently in beta) and have access to the internet.
 
+### ⚠️ Breaking Changes:
+
+Starting on `12.1.0`, `writeHealthData` and `writeWorkoutData` will return `HealthDataPoint` instead of `bool`. Returns `null` if writing health data failed.
+
 See the tables below for supported health and workout data types.
 
 ## Setup
@@ -192,13 +196,15 @@ Below is a simplified flow of how to use the plugin.
   await health.requestAuthorization(types, permissions: permissions);
 
   // write steps and blood glucose
-  bool success = await health.writeHealthData(10, HealthDataType.STEPS, now, now);
-  success = await health.writeHealthData(3.1, HealthDataType.BLOOD_GLUCOSE, now, now);
+  HealthDataPoint? healthPoint = await health.writeHealthData(10, HealthDataType.STEPS, now, now);
+  healthPoint = await health.writeHealthData(3.1, HealthDataType.BLOOD_GLUCOSE, now, now);
 
   // you can also specify the recording method to store in the metadata (default is RecordingMethod.automatic)
   // on iOS only `RecordingMethod.automatic` and `RecordingMethod.manual` are supported
   // Android additionally supports `RecordingMethod.active` and `RecordingMethod.unknown`
-  success &= await health.writeHealthData(10, HealthDataType.STEPS, now, now, recordingMethod: RecordingMethod.manual);
+  healthPoint = await health.writeHealthData(10, HealthDataType.STEPS, now, now, recordingMethod: RecordingMethod.manual);
+
+  bool success = healthPoint != null;
 
   // get the number of steps for today
   var midnight = DateTime(now.year, now.month, now.day);
