@@ -642,7 +642,9 @@ class Health {
         'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,
         'recordingMethod': recordingMethod.toInt(),
       };
-      success = await _channel.invokeMethod('writeBloodOxygen', args);
+      // Check if UUID is not empty
+      success =
+          '${await _channel.invokeMethod('writeBloodOxygen', args)}'.isNotEmpty;
     }
     return success ?? false;
   }
@@ -852,7 +854,10 @@ class Health {
       'dataTypeKey': HealthDataType.MENSTRUATION_FLOW.name,
       'recordingMethod': recordingMethod.toInt(),
     };
-    return await _channel.invokeMethod('writeMenstruationFlow', args) == true;
+
+    // Check if UUID is not empty
+    return '${await _channel.invokeMethod('writeMenstruationFlow', args)}'
+        .isNotEmpty;
   }
 
   /// Saves audiogram into Apple Health. Not supported on Android.
