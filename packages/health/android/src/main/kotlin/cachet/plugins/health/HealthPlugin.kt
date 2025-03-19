@@ -2428,8 +2428,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             }
         scope.launch {
             try {
-                healthConnectClient.insertRecords(listOf(record))
-                result.success(true)
+                // Insert records into Health Connect
+                val insertResponse: InsertRecordsResponse = healthConnectClient.insertRecords(listOf(record))
+                // Log.i("FLUTTER_HEALTH::DEBUG", "Inserted records: $insertResponse")
+
+                // Extract UUID from the first inserted record
+                val insertedUUID = insertResponse.recordIdsList.firstOrNull() ?: ""
+
+                if (insertedUUID.isEmpty()) {
+                    Log.e("FLUTTER_HEALTH::ERROR", "UUID is empty! No records were inserted.")
+                }
+
+                Log.i(
+                    "FLUTTER_HEALTH::SUCCESS",
+                    "[Health Connect] Workout $insertedUUID was successfully added!"
+                )
+
+                result.success(insertedUUID)
             } catch (e: Exception) {
                 result.success(false)
             }

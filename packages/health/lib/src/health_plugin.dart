@@ -409,7 +409,7 @@ class Health {
   ///
   /// Values for Sleep and Headache are ignored and will be automatically assigned
   /// the default value.
-  Future<bool> writeHealthData({
+  Future<HealthDataPoint?> writeHealthData({
     required double value,
     HealthDataUnit? unit,
     required HealthDataType type,
@@ -474,8 +474,16 @@ class Health {
       'endTime': endTime.millisecondsSinceEpoch,
       'recordingMethod': recordingMethod.toInt(),
     };
-    bool? success = await _channel.invokeMethod('writeData', args);
-    return success ?? false;
+
+    String uuid = '${await _channel.invokeMethod('writeData', args)}';
+
+    final healthPoint = await getHealthDataByUUID(
+      uuid: uuid,
+      type: type,
+      startTime: startTime,
+    );
+
+    return healthPoint;
   }
 
   /// Deletes all records of the given [type] for a given period of time.
@@ -528,7 +536,8 @@ class Health {
     }
 
     if (Platform.isIOS && type == null) {
-      throw ArgumentError("On iOS, both UUID and type are required to delete a record.");
+      throw ArgumentError(
+          "On iOS, both UUID and type are required to delete a record.");
     }
 
     Map<String, dynamic> args = {
@@ -616,12 +625,15 @@ class Health {
     bool? success;
 
     if (Platform.isIOS) {
-      success = await writeHealthData(
-          value: saturation,
-          type: HealthDataType.BLOOD_OXYGEN,
-          startTime: startTime,
-          endTime: endTime,
-          recordingMethod: recordingMethod);
+      final healthPoint = await writeHealthData(
+        value: saturation,
+        type: HealthDataType.BLOOD_OXYGEN,
+        startTime: startTime,
+        endTime: endTime,
+        recordingMethod: recordingMethod,
+      );
+
+      success = healthPoint != null;
     } else if (Platform.isAndroid) {
       Map<String, dynamic> args = {
         'value': saturation,

@@ -470,7 +470,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 DispatchQueue.main.async {
                     if success {
                         // Return the UUID of the saved object
-                        if let savedSample = sample as? HKSample {
+                        if let savedSample = sample as? HKObject {
                             print("Saved: \(savedSample.uuid.uuidString)")
                             result(savedSample.uuid.uuidString) // Return UUID as String
                         } else {
