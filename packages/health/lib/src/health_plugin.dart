@@ -480,7 +480,6 @@ class Health {
     final healthPoint = await getHealthDataByUUID(
       uuid: uuid,
       type: type,
-      startTime: startTime,
     );
 
     return healthPoint;
@@ -982,24 +981,21 @@ class Health {
     return removeDuplicates(dataPoints);
   }
 
-  /// Fetch a health data points based on UUID and type.
+  /// Fetch a `HealthDataPoint` by `uuid` and `type`. Returns `null` if no matching record.
   ///
-  /// - `uuid`: UUID of your saved health data point (e.g. A91A2F10-3D7B-486A-B140-5ADCD3C9C6D0)
-  /// - `type`: Data type of your saved health data point (e.g. HealthDataType.WORKOUT)
-  /// - `startTime`: Start time of health data point. default is `DateTime.now()`
-  /// - `endTime`: End time of health data point. default is 5 minutes from `startTime`
+  /// Parameters:
+  ///  * [uuid] - UUID of your saved health data point (e.g. A91A2F10-3D7B-486A-B140-5ADCD3C9C6D0)
+  ///  * [type] - Data type of your saved health data point (e.g. HealthDataType.WORKOUT)
   ///
-  /// Assuming all above data are coming from your database.
-  ///
-  /// **Android** has no API to read a single raw data by UUID.
-  /// Instead, it is filtered by `type` and 5 minutes time range from `startTime` by default,
-  /// then match and return a single data by UUID natively
+  /// Assuming above data are coming from your database.
   Future<HealthDataPoint?> getHealthDataByUUID({
     required String uuid,
     required HealthDataType type,
-    DateTime? startTime,
-    DateTime? endTime,
   }) async {
+    if (uuid.isEmpty) {
+      throw HealthException(type, 'UUID is empty!');
+    }
+
     await _checkIfHealthConnectAvailableOnAndroid();
 
     // Ask for device ID only once
@@ -1015,8 +1011,6 @@ class Health {
     final result = await _dataQueryByUUID(
       uuid,
       type,
-      startTime ?? DateTime.now(),
-      endTime,
     );
 
     return result;
@@ -1165,24 +1159,15 @@ class Health {
     }
   }
 
-  /// Fetches single data point by UUID from Android/iOS native code.
-  ///
-  /// `startTime` and `endTime` will be used for Android-only
+  /// Fetches single data point by `uuid` and `type` from Android/iOS native code.
   Future<HealthDataPoint?> _dataQueryByUUID(
     String uuid,
     HealthDataType dataType,
-    DateTime startTime,
-    DateTime? endTime,
   ) async {
-    // Add 5 minutes from startTime to limit time range for performance purpose
-    final recordEndTime = endTime ?? startTime.add(Duration(minutes: 5));
-
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
       'dataUnitKey': dataTypeToUnit[dataType]!.name,
       'uuid': uuid,
-      'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': recordEndTime.millisecondsSinceEpoch,
     };
     final fetchedDataPoint = await _channel.invokeMethod('getDataByUUID', args);
 
@@ -1364,7 +1349,6 @@ class Health {
     final healthPoint = await getHealthDataByUUID(
       uuid: uuid,
       type: HealthDataType.WORKOUT,
-      startTime: start,
     );
 
     return healthPoint;

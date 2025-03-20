@@ -1155,9 +1155,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             throw PluginError(message: "Invalid Arguments - UUID or DataTypeKey invalid")
         }
         
-
-        let startTime = arguments["startTime"] as? NSNumber ?? 0
-        let endTime = arguments["endTime"] as? NSNumber ?? 0
         let dataUnitKey = arguments["dataUnitKey"] as? String
         let recordingMethodsToFilter = (arguments["recordingMethodsToFilter"] as? [Int]) ?? []
         let includeManualEntry = !recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)

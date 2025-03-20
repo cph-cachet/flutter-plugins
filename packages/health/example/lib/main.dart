@@ -197,26 +197,23 @@ class HealthAppState extends State<HealthApp> {
     });
   }
 
-  /// Fetch single data point by UUID.
+  /// Fetch single data point by UUID and type.
   Future<void> fetchDataByUUID({
     required String uuid,
-    required HealthDataType type,
-    DateTime? startTime,
+    HealthDataType? type,
   }) async {
     try {
       // fetch health data
       HealthDataPoint? healthPoint = await health.getHealthDataByUUID(
         uuid: uuid,
         type: type,
-        startTime: startTime,
       );
 
       if (healthPoint != null) {
         // save all the new data points (only the first 100)
         debugPrint('Fetching health data with ${healthPoint.toString()}');
+        openDetailBottomSheet(healthPoint);
       }
-
-      openDetailBottomSheet(healthPoint);
     } catch (error) {
       debugPrint("Exception in getHealthDataByUUID: $error");
     }
@@ -792,7 +789,6 @@ class HealthAppState extends State<HealthApp> {
               fetchDataByUUID(
                 uuid: p.uuid,
                 type: p.type,
-                startTime: p.dateFrom,
               );
             },
           );
@@ -808,7 +804,6 @@ class HealthAppState extends State<HealthApp> {
               fetchDataByUUID(
                 uuid: p.uuid,
                 type: p.type,
-                startTime: p.dateFrom,
               );
             },
           );
@@ -824,7 +819,6 @@ class HealthAppState extends State<HealthApp> {
               fetchDataByUUID(
                 uuid: p.uuid,
                 type: p.type,
-                startTime: p.dateFrom,
               );
             },
           );
@@ -837,9 +831,9 @@ class HealthAppState extends State<HealthApp> {
             fetchDataByUUID(
               uuid: p.uuid,
               type: p.type,
-              startTime: p.dateFrom,
             );
           },
+          onLongPress: () => openDetailBottomSheet(p),
         );
       });
 

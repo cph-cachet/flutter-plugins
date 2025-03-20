@@ -909,8 +909,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
     private fun getDataByUUID(call: MethodCall, result: Result) {
         val arguments = call.arguments as? HashMap<*, *>
-        val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
-        val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val dataType = (arguments?.get("dataTypeKey") as? String)!!
         val uuid = (arguments?.get("uuid") as? String)!!
         var healthPoint = mapOf<String, Any?>()
@@ -925,31 +923,14 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
 
         scope.launch {
             try {
-                // Set up the initial request to read health records with specified
-                // parameters
-                var request =
-                    ReadRecordsRequest(
-                        recordType = classType,
-                        // Define the maximum amount of data
-                        // that HealthConnect can return
-                        // in a single request
-                        timeRangeFilter =
-                        TimeRangeFilter.between(
-                            startTime,
-                            endTime
-                        ),
-                    )
 
-                Log.i(
-                    "FLUTTER_HEALTH",
-                    "Getting $uuid between $startTime and $endTime"
-                )
+                Log.i("FLUTTER_HEALTH", "Getting $uuid with $classType")
 
                 // Execute the request
-                val response = healthConnectClient.readRecords(request)
+                val response = healthConnectClient.readRecord(classType, uuid)
 
                 // Find the record with the matching UUID
-                val matchingRecord = response.records.firstOrNull { it.metadata.id == uuid }
+                val matchingRecord = response.record
 
                 if (matchingRecord != null) {
                     // Workout needs distance and total calories burned too
