@@ -200,7 +200,7 @@ class HealthAppState extends State<HealthApp> {
   /// Fetch single data point by UUID and type.
   Future<void> fetchDataByUUID({
     required String uuid,
-    HealthDataType? type,
+    required HealthDataType type,
   }) async {
     try {
       // fetch health data
