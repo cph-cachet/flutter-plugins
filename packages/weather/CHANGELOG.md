@@ -1,3 +1,11 @@
+## 3.2.0
+
+- upgrading gradle version
+- upgrading agp version
+- upgrading kotlin version
+- changing gradle file structure
+
+
 ## 3.1.1
 
 - Fixed formatting issue

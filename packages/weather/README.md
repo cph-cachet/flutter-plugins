@@ -122,7 +122,6 @@ Next, add the following dependencies to your `android/build.gradle` file:
 ```
 dependencies {
   classpath 'com.android.tools.build:gradle:3.3.0'
-  classpath 'com.google.gms:google-services:4.2.0'
 } 
 ```
 
