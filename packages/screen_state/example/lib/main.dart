@@ -38,6 +38,7 @@ class ScreenStateAppState extends State<ScreenStateApp> {
     try {
       _subscription = _screen.screenStateStream.listen(onData);
       setState(() => started = true);
+      print('Listening to screen events');
     } catch (exception) {
       print(exception);
     }
@@ -45,6 +46,7 @@ class ScreenStateAppState extends State<ScreenStateApp> {
 
   void onData(ScreenStateEvent event) {
     setState(() {
+      print('Screen event: $event');
       _log.add(ScreenStateEventEntry(event));
     });
   }
@@ -53,6 +55,7 @@ class ScreenStateAppState extends State<ScreenStateApp> {
   void stopListening() {
     _subscription?.cancel();
     setState(() => started = false);
+    print('Stopped listening to screen events');
   }
 
   @override
