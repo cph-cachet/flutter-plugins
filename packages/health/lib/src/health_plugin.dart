@@ -492,6 +492,8 @@ class Health {
     required int systolic,
     required int diastolic,
     required DateTime startTime,
+    String? clientRecordId,
+    int? clientRecordVersion,
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
@@ -512,6 +514,8 @@ class Health {
       'diastolic': diastolic,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
+      'clientRecordId' : clientRecordId,
+      'clientRecordVersion' : clientRecordVersion,
       'recordingMethod': recordingMethod.toInt(),
     };
     return await _channel.invokeMethod('writeBloodPressure', args) == true;

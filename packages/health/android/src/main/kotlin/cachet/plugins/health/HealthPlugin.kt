@@ -1575,13 +1575,33 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
+    private fun getTempUnit(unitKey: String?, value: Double) : Temperature {
+        return when (unitKey){
+            null -> Temperature.celsius(value)
+            "DEGREE_CELSIUS" -> Temperature.celsius(value)
+            "DEGREE_FAHRENHEIT" -> Temperature.fahrenheit(value)
+            "KELVIN" -> Temperature.celsius(value - 273.15)
+            else -> Temperature.celsius(value)
+        }
+    }
+
     private fun getLengthUnit(unitKey: String?, value: Double) : Length {
         return when (unitKey){
             null -> Length.meters(value)
+            "CENTIMETER" -> Length.meters(value/100)
             "METER" -> Length.meters(value)
             "INCH" -> Length.inches(value)
             "FOOT" -> Length.feet(value)
             else -> Length.meters(value) // don't worry about yards or miles
+        }
+    }
+
+    private fun getBloodGlucoseUnit(unitKey: String?, value: Double) : BloodGlucose {
+        return when (unitKey){
+            null -> BloodGlucose.millimolesPerLiter(value)
+            "MILLIMOLES_PER_LITER" -> BloodGlucose.millimolesPerLiter(value)
+            "MILLIGRAM_PER_DECILITER" -> BloodGlucose.milligramsPerDeciliter(value)
+            else -> BloodGlucose.millimolesPerLiter(value)
         }
     }
 
@@ -1657,10 +1677,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         Instant.ofEpochMilli(
                             startTime
                         ),
-                        height =
-                        Length.meters(
-                            value
-                        ),
+                        height = getLengthUnit(unit, value),
                         zoneOffset = null,
                         metadata = metaData,
                     )
@@ -1671,10 +1688,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         Instant.ofEpochMilli(
                             startTime
                         ),
-                        weight =
-                        Mass.kilograms(
-                            value
-                        ),
+                        weight = getMassUnit(unit, value),
                         zoneOffset = null,
                         metadata = metaData,
                     )
@@ -1746,10 +1760,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         Instant.ofEpochMilli(
                             startTime
                         ),
-                        temperature =
-                        Temperature.celsius(
-                            value
-                        ),
+                        temperature = getTempUnit(unit, value),
                         zoneOffset = null,
                         metadata = metaData,
                     )
@@ -1788,10 +1799,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         Instant.ofEpochMilli(
                             startTime
                         ),
-                        level =
-                        BloodGlucose.milligramsPerDeciliter(
-                            value
-                        ),
+                        level = getBloodGlucoseUnit(unit, value),
                         zoneOffset = null,
                         metadata = metaData,
                     )
@@ -2304,9 +2312,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val diastolic = call.argument<Double>("diastolic")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val recordingMethod = call.argument<Int>("recordingMethod")!!
+        val clientRecordId = call.argument<String>("clientRecordId")!!
+        val clientRecordVersion = call.argument<Long>("clientRecordVersion")!!
 
         scope.launch {
             try {
+                val metaData: Metadata
+                if ((clientRecordId != null) && (clientRecordVersion != null)){
+                    metaData = Metadata(
+                        clientRecordId = clientRecordId,
+                        clientRecordVersion = clientRecordVersion,
+                        recordingMethod = recordingMethod
+                    )
+                } else {
+                    metaData = Metadata(recordingMethod = recordingMethod)
+                }
                 healthConnectClient.insertRecords(
                     listOf(
                         BloodPressureRecord(
@@ -2320,9 +2340,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                                 diastolic
                             ),
                             zoneOffset = null,
-                            metadata = Metadata(
-                                recordingMethod = recordingMethod,
-                            ),
+                            metadata = metaData
                         ),
                     ),
                 )
