@@ -1,3 +1,8 @@
+## 4.1.1
+
+- Upgrading ios version
+- Renaming example app id
+
 ## 4.1.0
 
 - major gradle upgrade
