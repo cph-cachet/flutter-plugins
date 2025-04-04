@@ -25,6 +25,7 @@ import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.response.InsertRecordsResponse
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.*
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -157,6 +158,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "requestAuthorization" -> requestAuthorization(call, result)
             "revokePermissions" -> revokePermissions(call, result)
             "getData" -> getData(call, result)
+            "getDataByUUID" -> getDataByUUID(call, result)
             "getIntervalData" -> getIntervalData(call, result)
             "writeData" -> writeData(call, result)
             "delete" -> deleteData(call, result)
@@ -900,6 +902,189 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     "Unable to return $dataType due to the following exception:"
                 )
                 Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                result.success(null)
+            }
+        }
+    }
+
+    private fun getDataByUUID(call: MethodCall, result: Result) {
+        val arguments = call.arguments as? HashMap<*, *>
+        val dataType = (arguments?.get("dataTypeKey") as? String)!!
+        val uuid = (arguments?.get("uuid") as? String)!!
+        var healthPoint = mapOf<String, Any?>()
+
+        if (!mapToType.containsKey(dataType)) {
+            Log.w("FLUTTER_HEALTH::ERROR", "Datatype $dataType not found in HC")
+            result.success(null)
+            return
+        }
+
+        val classType = mapToType[dataType]!!
+
+        scope.launch {
+            try {
+
+                Log.i("FLUTTER_HEALTH", "Getting $uuid with $classType")
+
+                // Execute the request
+                val response = healthConnectClient.readRecord(classType, uuid)
+
+                // Find the record with the matching UUID
+                val matchingRecord = response.record
+
+                if (matchingRecord != null) {
+                    // Workout needs distance and total calories burned too
+                    if (dataType == WORKOUT) {
+                        val record = matchingRecord as ExerciseSessionRecord
+                        val distanceRequest =
+                            healthConnectClient.readRecords(
+                                ReadRecordsRequest(
+                                    recordType =
+                                    DistanceRecord::class,
+                                    timeRangeFilter =
+                                    TimeRangeFilter.between(
+                                        record.startTime,
+                                        record.endTime,
+                                    ),
+                                ),
+                            )
+                        var totalDistance = 0.0
+                        for (distanceRec in distanceRequest.records) {
+                            totalDistance +=
+                                distanceRec.distance
+                                    .inMeters
+                        }
+
+                        val energyBurnedRequest =
+                            healthConnectClient.readRecords(
+                                ReadRecordsRequest(
+                                    recordType =
+                                    TotalCaloriesBurnedRecord::class,
+                                    timeRangeFilter =
+                                    TimeRangeFilter.between(
+                                        record.startTime,
+                                        record.endTime,
+                                    ),
+                                ),
+                            )
+                        var totalEnergyBurned = 0.0
+                        for (energyBurnedRec in
+                        energyBurnedRequest.records) {
+                            totalEnergyBurned +=
+                                energyBurnedRec.energy
+                                    .inKilocalories
+                        }
+
+                        val stepRequest =
+                            healthConnectClient.readRecords(
+                                ReadRecordsRequest(
+                                    recordType =
+                                    StepsRecord::class,
+                                    timeRangeFilter =
+                                    TimeRangeFilter.between(
+                                        record.startTime,
+                                        record.endTime
+                                    ),
+                                ),
+                            )
+                        var totalSteps = 0.0
+                        for (stepRec in stepRequest.records) {
+                            totalSteps += stepRec.count
+                        }
+
+                        // val metadata = (rec as Record).metadata
+                        // Add final datapoint
+                        healthPoint = mapOf<String, Any?>(
+                            "uuid" to record.metadata.id,
+                            "workoutActivityType" to
+                                    (workoutTypeMap
+                                        .filterValues {
+                                            it ==
+                                                    record.exerciseType
+                                        }
+                                        .keys
+                                        .firstOrNull()
+                                        ?: "OTHER"),
+                            "totalDistance" to
+                                    if (totalDistance ==
+                                        0.0
+                                    )
+                                        null
+                                    else
+                                        totalDistance,
+                            "totalDistanceUnit" to
+                                    "METER",
+                            "totalEnergyBurned" to
+                                    if (totalEnergyBurned ==
+                                        0.0
+                                    )
+                                        null
+                                    else
+                                        totalEnergyBurned,
+                            "totalEnergyBurnedUnit" to
+                                    "KILOCALORIE",
+                            "totalSteps" to
+                                    if (totalSteps ==
+                                        0.0
+                                    )
+                                        null
+                                    else
+                                        totalSteps,
+                            "totalStepsUnit" to
+                                    "COUNT",
+                            "unit" to "MINUTES",
+                            "date_from" to
+                                    matchingRecord.startTime
+                                        .toEpochMilli(),
+                            "date_to" to
+                                    matchingRecord.endTime.toEpochMilli(),
+                            "source_id" to "",
+                            "source_name" to
+                                    record.metadata
+                                        .dataOrigin
+                                        .packageName,
+                        )
+                        // Filter sleep stages for requested stage
+                    } else if (classType == SleepSessionRecord::class) {
+                        if (matchingRecord is SleepSessionRecord) {
+                            if (dataType == SLEEP_SESSION) {
+                                healthPoint = convertRecord(
+                                    matchingRecord,
+                                    dataType
+                                )[0]
+                            } else {
+                                for (recStage in matchingRecord.stages) {
+                                    if (dataType ==
+                                        mapSleepStageToType[
+                                            recStage.stage]
+                                    ) {
+                                        healthPoint = convertRecordStage(
+                                            recStage,
+                                            dataType,
+                                            matchingRecord.metadata
+                                        )[0]
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        healthPoint = convertRecord(matchingRecord, dataType)[0]
+                    }
+
+                    Log.i(
+                        "FLUTTER_HEALTH",
+                        "Success: $healthPoint"
+                    )
+
+                    Handler(context!!.mainLooper).run { result.success(healthPoint) }
+                } else {
+                    Log.e("FLUTTER_HEALTH::ERROR", "Record not found for UUID: $uuid")
+                    result.success(null)
+                }
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Error fetching record with UUID: $uuid")
+                Log.e("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
+                Log.e("FLUTTER_HEALTH::ERROR", e.stackTraceToString())
                 result.success(null)
             }
         }
@@ -2224,8 +2409,23 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             }
         scope.launch {
             try {
-                healthConnectClient.insertRecords(listOf(record))
-                result.success(true)
+                // Insert records into Health Connect
+                val insertResponse: InsertRecordsResponse = healthConnectClient.insertRecords(listOf(record))
+                // Log.i("FLUTTER_HEALTH::DEBUG", "Inserted records: $insertResponse")
+
+                // Extract UUID from the first inserted record
+                val insertedUUID = insertResponse.recordIdsList.firstOrNull() ?: ""
+
+                if (insertedUUID.isEmpty()) {
+                    Log.e("FLUTTER_HEALTH::ERROR", "UUID is empty! No records were inserted.")
+                }
+
+                Log.i(
+                    "FLUTTER_HEALTH::SUCCESS",
+                    "[Health Connect] Workout $insertedUUID was successfully added!"
+                )
+
+                result.success(insertedUUID)
             } catch (e: Exception) {
                 result.success(false)
             }
@@ -2302,14 +2502,24 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                         ),
                     )
                 }
-                healthConnectClient.insertRecords(
-                    list,
-                )
-                result.success(true)
+
+                // Insert records into Health Connect
+                val insertResponse: InsertRecordsResponse = healthConnectClient.insertRecords(list)
+                // Log.i("FLUTTER_HEALTH::DEBUG", "Inserted records: $insertResponse")
+
+                // Extract UUID from the first inserted record
+                val insertedUUID = insertResponse.recordIdsList.firstOrNull() ?: ""
+
+                if (insertedUUID.isEmpty()) {
+                    Log.e("FLUTTER_HEALTH::ERROR", "UUID is empty! No records were inserted.")
+                }
+
                 Log.i(
                     "FLUTTER_HEALTH::SUCCESS",
-                    "[Health Connect] Workout was successfully added!"
+                    "[Health Connect] Workout $insertedUUID was successfully added!"
                 )
+
+                result.success(insertedUUID)
             } catch (e: Exception) {
                 Log.w(
                     "FLUTTER_HEALTH::ERROR",
@@ -2317,7 +2527,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
-                result.success(false)
+                result.success("")
             }
         }
     }
