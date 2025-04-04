@@ -1,3 +1,8 @@
+## 3.2.1
+
+- Fixing ios build 
+- Updating readme
+
 ## 3.2.0
 
 - upgrading gradle version
@@ -26,7 +31,7 @@
 ## 2.0.0
 
 - Updated dart and flutter to null safety versions
-- package dependency updates
+- package dependency updatesx
 
 ## 1.4.0
 
