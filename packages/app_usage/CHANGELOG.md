@@ -1,13 +1,10 @@
-## 4.0.2
-
-* Removing depricated function calls
-
 ## 4.0.1
 
 * Upgrading gradle version
 * Upgrading agp version
 * Upgrading kotlin version
 * Removing tracked files from git
+* Removing depricated function calls
 
 ## 4.0.0
 
