@@ -1,3 +1,7 @@
+## 13.0.0
+
+* Refactored Swift native implementation
+
 ## 12.1.0
 
 * Add delete record by UUID method. See function `deleteByUUID(required String uuid, HealthDataType? type)`
