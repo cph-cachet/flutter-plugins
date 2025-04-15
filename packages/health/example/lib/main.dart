@@ -10,7 +10,11 @@ import 'package:carp_serializable/carp_serializable.dart';
 // Global Health instance
 final health = Health();
 
-void main() => runApp(HealthApp());
+void main() => runApp(
+      const MaterialApp(
+        home: HealthApp(),
+      ),
+    );
 
 class HealthApp extends StatefulWidget {
   const HealthApp({super.key});
@@ -122,10 +126,9 @@ class HealthAppState extends State<HealthApp> {
       try {
         authorized =
             await health.requestAuthorization(types, permissions: permissions);
-        
+
         // request access to read historic data
         await health.requestHealthDataHistoryAuthorization();
-
       } catch (error) {
         debugPrint("Exception in authorize: $error");
       }
@@ -194,6 +197,28 @@ class HealthAppState extends State<HealthApp> {
     });
   }
 
+  /// Fetch single data point by UUID and type.
+  Future<void> fetchDataByUUID({
+    required String uuid,
+    required HealthDataType type,
+  }) async {
+    try {
+      // fetch health data
+      HealthDataPoint? healthPoint = await health.getHealthDataByUUID(
+        uuid: uuid,
+        type: type,
+      );
+
+      if (healthPoint != null) {
+        // save all the new data points (only the first 100)
+        debugPrint('Fetching health data with ${healthPoint.toString()}');
+        openDetailBottomSheet(healthPoint);
+      }
+    } catch (error) {
+      debugPrint("Exception in getHealthDataByUUID: $error");
+    }
+  }
+
   /// Add some random health data.
   /// Note that you should ensure that you have permissions to add the
   /// following data types.
@@ -209,94 +234,110 @@ class HealthAppState extends State<HealthApp> {
 
     // misc. health data examples using the writeHealthData() method
     success &= await health.writeHealthData(
-        value: 1.925,
-        type: HealthDataType.HEIGHT,
-        startTime: earlier,
-        endTime: now,
-        recordingMethod: RecordingMethod.manual);
+            value: 1.925,
+            type: HealthDataType.HEIGHT,
+            startTime: earlier,
+            endTime: now,
+            recordingMethod: RecordingMethod.manual) !=
+        null;
     success &= await health.writeHealthData(
-        value: 90,
-        type: HealthDataType.WEIGHT,
-        startTime: now,
-        recordingMethod: RecordingMethod.manual);
+            value: 90,
+            type: HealthDataType.WEIGHT,
+            startTime: now,
+            recordingMethod: RecordingMethod.manual) !=
+        null;
     success &= await health.writeHealthData(
-        value: 90,
-        type: HealthDataType.HEART_RATE,
-        startTime: earlier,
-        endTime: now,
-        recordingMethod: RecordingMethod.manual);
+            value: 90,
+            type: HealthDataType.HEART_RATE,
+            startTime: earlier,
+            endTime: now,
+            recordingMethod: RecordingMethod.manual) !=
+        null;
     success &= await health.writeHealthData(
-        value: 90,
-        type: HealthDataType.STEPS,
-        startTime: earlier,
-        endTime: now,
-        recordingMethod: RecordingMethod.manual);
+            value: 90,
+            type: HealthDataType.STEPS,
+            startTime: earlier,
+            endTime: now,
+            recordingMethod: RecordingMethod.manual) !=
+        null;
     success &= await health.writeHealthData(
-      value: 200,
-      type: HealthDataType.ACTIVE_ENERGY_BURNED,
-      startTime: earlier,
-      endTime: now,
-    );
+          value: 200,
+          type: HealthDataType.ACTIVE_ENERGY_BURNED,
+          startTime: earlier,
+          endTime: now,
+        ) !=
+        null;
     success &= await health.writeHealthData(
-        value: 70,
-        type: HealthDataType.HEART_RATE,
-        startTime: earlier,
-        endTime: now);
+            value: 70,
+            type: HealthDataType.HEART_RATE,
+            startTime: earlier,
+            endTime: now) !=
+        null;
     if (Platform.isIOS) {
       success &= await health.writeHealthData(
-          value: 30,
-          type: HealthDataType.HEART_RATE_VARIABILITY_SDNN,
-          startTime: earlier,
-          endTime: now);
+              value: 30,
+              type: HealthDataType.HEART_RATE_VARIABILITY_SDNN,
+              startTime: earlier,
+              endTime: now) !=
+          null;
     } else {
       success &= await health.writeHealthData(
-          value: 30,
-          type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
-          startTime: earlier,
-          endTime: now);
+              value: 30,
+              type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
+              startTime: earlier,
+              endTime: now) !=
+          null;
     }
     success &= await health.writeHealthData(
-        value: 37,
-        type: HealthDataType.BODY_TEMPERATURE,
-        startTime: earlier,
-        endTime: now);
+            value: 37,
+            type: HealthDataType.BODY_TEMPERATURE,
+            startTime: earlier,
+            endTime: now) !=
+        null;
     success &= await health.writeHealthData(
-        value: 105,
-        type: HealthDataType.BLOOD_GLUCOSE,
-        startTime: earlier,
-        endTime: now);
+            value: 105,
+            type: HealthDataType.BLOOD_GLUCOSE,
+            startTime: earlier,
+            endTime: now) !=
+        null;
     success &= await health.writeHealthData(
-        value: 1.8,
-        type: HealthDataType.WATER,
-        startTime: earlier,
-        endTime: now);
+            value: 1.8,
+            type: HealthDataType.WATER,
+            startTime: earlier,
+            endTime: now) !=
+        null;
 
     // different types of sleep
     success &= await health.writeHealthData(
-        value: 0.0,
-        type: HealthDataType.SLEEP_REM,
-        startTime: earlier,
-        endTime: now);
+            value: 0.0,
+            type: HealthDataType.SLEEP_REM,
+            startTime: earlier,
+            endTime: now) !=
+        null;
     success &= await health.writeHealthData(
-        value: 0.0,
-        type: HealthDataType.SLEEP_ASLEEP,
-        startTime: earlier,
-        endTime: now);
+            value: 0.0,
+            type: HealthDataType.SLEEP_ASLEEP,
+            startTime: earlier,
+            endTime: now) !=
+        null;
     success &= await health.writeHealthData(
-        value: 0.0,
-        type: HealthDataType.SLEEP_AWAKE,
-        startTime: earlier,
-        endTime: now);
+            value: 0.0,
+            type: HealthDataType.SLEEP_AWAKE,
+            startTime: earlier,
+            endTime: now) !=
+        null;
     success &= await health.writeHealthData(
-        value: 0.0,
-        type: HealthDataType.SLEEP_DEEP,
-        startTime: earlier,
-        endTime: now);
+            value: 0.0,
+            type: HealthDataType.SLEEP_DEEP,
+            startTime: earlier,
+            endTime: now) !=
+        null;
     success &= await health.writeHealthData(
-        value: 22,
-        type: HealthDataType.LEAN_BODY_MASS,
-        startTime: earlier,
-        endTime: now);
+            value: 22,
+            type: HealthDataType.LEAN_BODY_MASS,
+            startTime: earlier,
+            endTime: now) !=
+        null;
 
     // specialized write methods
     success &= await health.writeBloodOxygen(
@@ -305,13 +346,14 @@ class HealthAppState extends State<HealthApp> {
       endTime: now,
     );
     success &= await health.writeWorkoutData(
-      activityType: HealthWorkoutActivityType.AMERICAN_FOOTBALL,
-      title: "Random workout name that shows up in Health Connect",
-      start: now.subtract(const Duration(minutes: 15)),
-      end: now,
-      totalDistance: 2430,
-      totalEnergyBurned: 400,
-    );
+          activityType: HealthWorkoutActivityType.AMERICAN_FOOTBALL,
+          title: "Random workout name that shows up in Health Connect",
+          start: now.subtract(const Duration(minutes: 15)),
+          end: now,
+          totalDistance: 2430,
+          totalEnergyBurned: 400,
+        ) !=
+        null;
     success &= await health.writeBloodPressure(
       systolic: 90,
       diastolic: 80,
@@ -391,24 +433,27 @@ class HealthAppState extends State<HealthApp> {
     // Available on iOS 16.0+ only
     if (Platform.isIOS) {
       success &= await health.writeHealthData(
-          value: 22,
-          type: HealthDataType.WATER_TEMPERATURE,
-          startTime: earlier,
-          endTime: now,
-          recordingMethod: RecordingMethod.manual);
+              value: 22,
+              type: HealthDataType.WATER_TEMPERATURE,
+              startTime: earlier,
+              endTime: now,
+              recordingMethod: RecordingMethod.manual) !=
+          null;
 
       success &= await health.writeHealthData(
-          value: 55,
-          type: HealthDataType.UNDERWATER_DEPTH,
-          startTime: earlier,
-          endTime: now,
-          recordingMethod: RecordingMethod.manual);
+              value: 55,
+              type: HealthDataType.UNDERWATER_DEPTH,
+              startTime: earlier,
+              endTime: now,
+              recordingMethod: RecordingMethod.manual) !=
+          null;
       success &= await health.writeHealthData(
-          value: 4.3,
-          type: HealthDataType.UV_INDEX,
-          startTime: earlier,
-          endTime: now,
-          recordingMethod: RecordingMethod.manual);
+              value: 4.3,
+              type: HealthDataType.UV_INDEX,
+              startTime: earlier,
+              endTime: now,
+              recordingMethod: RecordingMethod.manual) !=
+          null;
     }
 
     setState(() {
@@ -509,6 +554,22 @@ class HealthAppState extends State<HealthApp> {
           ? AppState.PERMISSIONS_REVOKED
           : AppState.PERMISSIONS_NOT_REVOKED;
     });
+  }
+
+  /// Display bottom sheet dialog of selected HealthDataPoint
+  void openDetailBottomSheet(HealthDataPoint? healthPoint) {
+    if (!context.mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) => _detailedBottomSheet(
+        healthPoint: healthPoint,
+      ),
+    );
   }
 
   // UI building below
@@ -702,7 +763,8 @@ class HealthAppState extends State<HealthApp> {
           Container(
               padding: const EdgeInsets.all(20),
               child: const CircularProgressIndicator(
-                strokeWidth: 10,
+                strokeWidth: 5,
+                strokeCap: StrokeCap.round,
               )),
           const Text('Fetching data...')
         ],
@@ -723,6 +785,12 @@ class HealthAppState extends State<HealthApp> {
             title: Text("${p.typeString}: ${p.value}"),
             trailing: Text(p.unitString),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
+            onTap: () {
+              fetchDataByUUID(
+                uuid: p.uuid,
+                type: p.type,
+              );
+            },
           );
         }
         if (p.value is WorkoutHealthValue) {
@@ -732,6 +800,12 @@ class HealthAppState extends State<HealthApp> {
             trailing:
                 Text((p.value as WorkoutHealthValue).workoutActivityType.name),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
+            onTap: () {
+              fetchDataByUUID(
+                uuid: p.uuid,
+                type: p.type,
+              );
+            },
           );
         }
         if (p.value is NutritionHealthValue) {
@@ -741,12 +815,25 @@ class HealthAppState extends State<HealthApp> {
             trailing:
                 Text('${(p.value as NutritionHealthValue).calories} kcal'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
+            onTap: () {
+              fetchDataByUUID(
+                uuid: p.uuid,
+                type: p.type,
+              );
+            },
           );
         }
         return ListTile(
           title: Text("${p.typeString}: ${p.value}"),
           trailing: Text(p.unitString),
           subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
+          onTap: () {
+            fetchDataByUUID(
+              uuid: p.uuid,
+              type: p.type,
+            );
+          },
+          onLongPress: () => openDetailBottomSheet(p),
         );
       });
 
@@ -803,4 +890,49 @@ class HealthAppState extends State<HealthApp> {
         AppState.PERMISSIONS_REVOKED => _permissionsRevoked,
         AppState.PERMISSIONS_NOT_REVOKED => _permissionsNotRevoked,
       };
+
+  Widget _detailedBottomSheet({HealthDataPoint? healthPoint}) {
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.5,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      builder: (BuildContext listContext, scrollController) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Text(
+                "Health Data Details",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              healthPoint == null
+                  ? const Text('UUID Not Found!')
+                  : Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: healthPoint.toJson().entries.length,
+                        itemBuilder: (context, index) {
+                          String key =
+                              healthPoint.toJson().keys.elementAt(index);
+                          var value = healthPoint.toJson()[key];
+
+                          return ListTile(
+                            title: Text(
+                              key.replaceAll('_', ' ').toUpperCase(),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(value.toString()),
+                          );
+                        },
+                      ),
+                    ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
