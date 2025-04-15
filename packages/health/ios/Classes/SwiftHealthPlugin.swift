@@ -1062,6 +1062,19 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     DispatchQueue.main.async {
                         result(dictionaries)
                     }
+                } else if let error = error as NSError? {
+                    let isProtectedDataUnavailable = error.localizedDescription.contains("Protected health data not available")
+
+                    let errorDetails: [String: Any] = [
+                        "code": error.code,
+                        "domain": error.domain,
+                        "description": error.localizedDescription,
+                        "protectedDataUnavailable": isProtectedDataUnavailable
+                    ]
+
+                    DispatchQueue.main.async {
+                        result(FlutterError(code: "FlutterHealth", message: error.localizedDescription, details: errorDetails))
+                    }
                 } else {
                     DispatchQueue.main.async {
                         print("Error getting ECG - only available on iOS 14.0 and above!")
