@@ -140,6 +140,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let DISTANCE_WALKING_RUNNING = "DISTANCE_WALKING_RUNNING"
     let DISTANCE_SWIMMING = "DISTANCE_SWIMMING"
     let DISTANCE_CYCLING = "DISTANCE_CYCLING"
+    let WALKING_SPEED = "WALKING_SPEED"
     let FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
     let MINDFULNESS = "MINDFULNESS"
     let SLEEP_ASLEEP = "SLEEP_ASLEEP"
@@ -216,6 +217,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let BEATS_PER_MINUTE = "BEATS_PER_MINUTE"
     let RESPIRATIONS_PER_MINUTE = "RESPIRATIONS_PER_MINUTE"
     let MILLIGRAM_PER_DECILITER = "MILLIGRAM_PER_DECILITER"
+    let METER_PER_SECOND = "METER_PER_SECOND"
     let UNKNOWN_UNIT = "UNKNOWN_UNIT"
     let NO_UNIT = "NO_UNIT"
     
@@ -1391,6 +1393,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[BEATS_PER_MINUTE] = HKUnit.init(from: "count/min")
         unitDict[RESPIRATIONS_PER_MINUTE] = HKUnit.init(from: "count/min")
         unitDict[MILLIGRAM_PER_DECILITER] = HKUnit.init(from: "mg/dL")
+        unitDict[METER_PER_SECOND] = HKUnit.init(from: "m/s")
         unitDict[UNKNOWN_UNIT] = HKUnit.init(from: "")
         unitDict[NO_UNIT] = HKUnit.init(from: "")
         
@@ -1700,6 +1703,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         if #available(iOS 14.0, *) {
             dataTypesDict[ELECTROCARDIOGRAM] = HKSampleType.electrocardiogramType()
+            dataTypesDict[WALKING_SPEED] = HKSampleType.quantityType(forIdentifier: .walkingSpeed)
             
             unitDict[VOLT] = HKUnit.volt()
             unitDict[INCHES_OF_MERCURY] = HKUnit.inchesOfMercury()
