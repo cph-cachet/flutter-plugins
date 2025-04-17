@@ -20,35 +20,205 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     var characteristicsTypesDict: [String: HKCharacteristicType] = [:]
     var nutritionList: [String] = []
     
-    // Service classes
-    private lazy var healthDataReader: HealthDataReader = {
-        return HealthDataReader(
-            healthStore: healthStore,
-            dataTypesDict: dataTypesDict,
-            dataQuantityTypesDict: dataQuantityTypesDict,
-            unitDict: unitDict,
-            workoutActivityTypeMap: workoutActivityTypeMap,
-            characteristicsTypesDict: characteristicsTypesDict
-        )
-    }()
+    // Health Data Type Keys
+    let ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
+    let ATRIAL_FIBRILLATION_BURDEN = "ATRIAL_FIBRILLATION_BURDEN"
+    let AUDIOGRAM = "AUDIOGRAM"
+    let BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
+    let BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
+    let BLOOD_OXYGEN = "BLOOD_OXYGEN"
+    let BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
+    let BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
+    let BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+    let LEAN_BODY_MASS = "LEAN_BODY_MASS"
+    let BODY_MASS_INDEX = "BODY_MASS_INDEX"
+    let BODY_TEMPERATURE = "BODY_TEMPERATURE"
+    // Nutrition
+    let DIETARY_CARBS_CONSUMED = "DIETARY_CARBS_CONSUMED"
+    let DIETARY_ENERGY_CONSUMED = "DIETARY_ENERGY_CONSUMED"
+    let DIETARY_FATS_CONSUMED = "DIETARY_FATS_CONSUMED"
+    let DIETARY_PROTEIN_CONSUMED = "DIETARY_PROTEIN_CONSUMED"
+    let DIETARY_CAFFEINE = "DIETARY_CAFFEINE"
+    let DIETARY_FIBER = "DIETARY_FIBER"
+    let DIETARY_SUGAR = "DIETARY_SUGAR"
+    let DIETARY_FAT_MONOUNSATURATED = "DIETARY_FAT_MONOUNSATURATED"
+    let DIETARY_FAT_POLYUNSATURATED = "DIETARY_FAT_POLYUNSATURATED"
+    let DIETARY_FAT_SATURATED = "DIETARY_FAT_SATURATED"
+    let DIETARY_CHOLESTEROL = "DIETARY_CHOLESTEROL"
+    let DIETARY_VITAMIN_A = "DIETARY_VITAMIN_A"
+    let DIETARY_THIAMIN = "DIETARY_THIAMIN"
+    let DIETARY_RIBOFLAVIN = "DIETARY_RIBOFLAVIN"
+    let DIETARY_NIACIN = "DIETARY_NIACIN"
+    let DIETARY_PANTOTHENIC_ACID = "DIETARY_PANTOTHENIC_ACID"
+    let DIETARY_VITAMIN_B6 = "DIETARY_VITAMIN_B6"
+    let DIETARY_BIOTIN = "DIETARY_BIOTIN"
+    let DIETARY_VITAMIN_B12 = "DIETARY_VITAMIN_B12"
+    let DIETARY_VITAMIN_C = "DIETARY_VITAMIN_C"
+    let DIETARY_VITAMIN_D = "DIETARY_VITAMIN_D"
+    let DIETARY_VITAMIN_E = "DIETARY_VITAMIN_E"
+    let DIETARY_VITAMIN_K = "DIETARY_VITAMIN_K"
+    let DIETARY_FOLATE = "DIETARY_FOLATE"
+    let DIETARY_CALCIUM = "DIETARY_CALCIUM"
+    let DIETARY_CHLORIDE = "DIETARY_CHLORIDE"
+    let DIETARY_IRON = "DIETARY_IRON"
+    let DIETARY_MAGNESIUM = "DIETARY_MAGNESIUM"
+    let DIETARY_PHOSPHORUS = "DIETARY_PHOSPHORUS"
+    let DIETARY_POTASSIUM = "DIETARY_POTASSIUM"
+    let DIETARY_SODIUM = "DIETARY_SODIUM"
+    let DIETARY_ZINC = "DIETARY_ZINC"
+    let DIETARY_WATER = "WATER"
+    let DIETARY_CHROMIUM = "DIETARY_CHROMIUM"
+    let DIETARY_COPPER = "DIETARY_COPPER"
+    let DIETARY_IODINE = "DIETARY_IODINE"
+    let DIETARY_MANGANESE = "DIETARY_MANGANESE"
+    let DIETARY_MOLYBDENUM = "DIETARY_MOLYBDENUM"
+    let DIETARY_SELENIUM = "DIETARY_SELENIUM"
+    let NUTRITION_KEYS: [String: HKQuantityTypeIdentifier] = [
+        "calories": .dietaryEnergyConsumed,
+        "protein": .dietaryProtein,
+        "carbs": .dietaryCarbohydrates,
+        "fat": .dietaryFatTotal,
+        "caffeine": .dietaryCaffeine,
+        "vitamin_a": .dietaryVitaminA,
+        "b1_thiamine": .dietaryThiamin,
+        "b2_riboflavin": .dietaryRiboflavin,
+        "b3_niacin" : .dietaryNiacin,
+        "b5_pantothenic_acid" : .dietaryPantothenicAcid,
+        "b6_pyridoxine" : .dietaryVitaminB6,
+        "b7_biotin" : .dietaryBiotin,
+        "b9_folate" : .dietaryFolate,
+        "b12_cobalamin": .dietaryVitaminB12,
+        "vitamin_c": .dietaryVitaminC,
+        "vitamin_d": .dietaryVitaminD,
+        "vitamin_e": .dietaryVitaminE,
+        "vitamin_k": .dietaryVitaminK,
+        "calcium": .dietaryCalcium,
+        "chloride": .dietaryChloride,
+        "cholesterol": .dietaryCholesterol,
+        "chromium": .dietaryChromium,
+        "copper": .dietaryCopper,
+        "fat_unsaturated": .dietaryFatMonounsaturated,
+        "fat_monounsaturated": .dietaryFatMonounsaturated,
+        "fat_polyunsaturated": .dietaryFatPolyunsaturated,
+        "fat_saturated": .dietaryFatSaturated,
+        // "fat_trans_monoenoic": .dietaryFatTransMonoenoic,
+        "fiber": .dietaryFiber,
+        "iodine": .dietaryIodine,
+        "iron": .dietaryIron,
+        "magnesium": .dietaryMagnesium,
+        "manganese": .dietaryManganese,
+        "molybdenum": .dietaryMolybdenum,
+        "phosphorus": .dietaryPhosphorus,
+        "potassium": .dietaryPotassium,
+        "selenium": .dietarySelenium,
+        "sodium": .dietarySodium,
+        "sugar": .dietarySugar,
+        "water": .dietaryWater,
+        "zinc": .dietaryZinc,
+    ]
+    let ELECTRODERMAL_ACTIVITY = "ELECTRODERMAL_ACTIVITY"
+    let FORCED_EXPIRATORY_VOLUME = "FORCED_EXPIRATORY_VOLUME"
+    let HEART_RATE = "HEART_RATE"
+    let HEART_RATE_VARIABILITY_SDNN = "HEART_RATE_VARIABILITY_SDNN"
+    let HEIGHT = "HEIGHT"
+    let INSULIN_DELIVERY = "INSULIN_DELIVERY"
+    let HIGH_HEART_RATE_EVENT = "HIGH_HEART_RATE_EVENT"
+    let IRREGULAR_HEART_RATE_EVENT = "IRREGULAR_HEART_RATE_EVENT"
+    let LOW_HEART_RATE_EVENT = "LOW_HEART_RATE_EVENT"
+    let RESTING_HEART_RATE = "RESTING_HEART_RATE"
+    let RESPIRATORY_RATE = "RESPIRATORY_RATE"
+    let PERIPHERAL_PERFUSION_INDEX = "PERIPHERAL_PERFUSION_INDEX"
+    let STEPS = "STEPS"
+    let WAIST_CIRCUMFERENCE = "WAIST_CIRCUMFERENCE"
+    let WALKING_HEART_RATE = "WALKING_HEART_RATE"
+    let WEIGHT = "WEIGHT"
+    let DISTANCE_WALKING_RUNNING = "DISTANCE_WALKING_RUNNING"
+    let DISTANCE_SWIMMING = "DISTANCE_SWIMMING"
+    let DISTANCE_CYCLING = "DISTANCE_CYCLING"
+    let WALKING_SPEED = "WALKING_SPEED"
+    let FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
+    let MINDFULNESS = "MINDFULNESS"
+    let SLEEP_ASLEEP = "SLEEP_ASLEEP"
+    let SLEEP_AWAKE = "SLEEP_AWAKE"
+    let SLEEP_DEEP = "SLEEP_DEEP"
+    let SLEEP_IN_BED = "SLEEP_IN_BED"
+    let SLEEP_LIGHT = "SLEEP_LIGHT"
+    let SLEEP_REM = "SLEEP_REM"
     
-    private lazy var healthDataWriter: HealthDataWriter = {
-        return HealthDataWriter(
-            healthStore: healthStore,
-            dataTypesDict: dataTypesDict,
-            unitDict: unitDict,
-            workoutActivityTypeMap: workoutActivityTypeMap
-        )
-    }()
+    let EXERCISE_TIME = "EXERCISE_TIME"
+    let WORKOUT = "WORKOUT"
+    let HEADACHE_UNSPECIFIED = "HEADACHE_UNSPECIFIED"
+    let HEADACHE_NOT_PRESENT = "HEADACHE_NOT_PRESENT"
+    let HEADACHE_MILD = "HEADACHE_MILD"
+    let HEADACHE_MODERATE = "HEADACHE_MODERATE"
+    let HEADACHE_SEVERE = "HEADACHE_SEVERE"
+    let ELECTROCARDIOGRAM = "ELECTROCARDIOGRAM"
+    let NUTRITION = "NUTRITION"
+    let BIRTH_DATE = "BIRTH_DATE"
+    let GENDER = "GENDER"
+    let BLOOD_TYPE = "BLOOD_TYPE"
+    let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
+    let WATER_TEMPERATURE = "WATER_TEMPERATURE"
+    let UNDERWATER_DEPTH = "UNDERWATER_DEPTH"
+    let UV_INDEX = "UV_INDEX"
     
-    private lazy var healthDataOperations: HealthDataOperations = {
-        return HealthDataOperations(
-            healthStore: healthStore,
-            dataTypesDict: dataTypesDict,
-            characteristicsTypesDict: characteristicsTypesDict,
-            nutritionList: nutritionList
-        )
-    }()
+    
+    // Health Unit types
+    // MOLE_UNIT_WITH_MOLAR_MASS, // requires molar mass input - not supported yet
+    // MOLE_UNIT_WITH_PREFIX_MOLAR_MASS, // requires molar mass & prefix input - not supported yet
+    let GRAM = "GRAM"
+    let KILOGRAM = "KILOGRAM"
+    let OUNCE = "OUNCE"
+    let POUND = "POUND"
+    let STONE = "STONE"
+    let METER = "METER"
+    let INCH = "INCH"
+    let FOOT = "FOOT"
+    let YARD = "YARD"
+    let MILE = "MILE"
+    let LITER = "LITER"
+    let MILLILITER = "MILLILITER"
+    let FLUID_OUNCE_US = "FLUID_OUNCE_US"
+    let FLUID_OUNCE_IMPERIAL = "FLUID_OUNCE_IMPERIAL"
+    let CUP_US = "CUP_US"
+    let CUP_IMPERIAL = "CUP_IMPERIAL"
+    let PINT_US = "PINT_US"
+    let PINT_IMPERIAL = "PINT_IMPERIAL"
+    let PASCAL = "PASCAL"
+    let MILLIMETER_OF_MERCURY = "MILLIMETER_OF_MERCURY"
+    let INCHES_OF_MERCURY = "INCHES_OF_MERCURY"
+    let CENTIMETER_OF_WATER = "CENTIMETER_OF_WATER"
+    let ATMOSPHERE = "ATMOSPHERE"
+    let DECIBEL_A_WEIGHTED_SOUND_PRESSURE_LEVEL = "DECIBEL_A_WEIGHTED_SOUND_PRESSURE_LEVEL"
+    let SECOND = "SECOND"
+    let MILLISECOND = "MILLISECOND"
+    let MINUTE = "MINUTE"
+    let HOUR = "HOUR"
+    let DAY = "DAY"
+    let JOULE = "JOULE"
+    let KILOCALORIE = "KILOCALORIE"
+    let LARGE_CALORIE = "LARGE_CALORIE"
+    let SMALL_CALORIE = "SMALL_CALORIE"
+    let DEGREE_CELSIUS = "DEGREE_CELSIUS"
+    let DEGREE_FAHRENHEIT = "DEGREE_FAHRENHEIT"
+    let KELVIN = "KELVIN"
+    let DECIBEL_HEARING_LEVEL = "DECIBEL_HEARING_LEVEL"
+    let HERTZ = "HERTZ"
+    let SIEMEN = "SIEMEN"
+    let VOLT = "VOLT"
+    let INTERNATIONAL_UNIT = "INTERNATIONAL_UNIT"
+    let COUNT = "COUNT"
+    let PERCENT = "PERCENT"
+    let BEATS_PER_MINUTE = "BEATS_PER_MINUTE"
+    let RESPIRATIONS_PER_MINUTE = "RESPIRATIONS_PER_MINUTE"
+    let MILLIGRAM_PER_DECILITER = "MILLIGRAM_PER_DECILITER"
+    let METER_PER_SECOND = "METER_PER_SECOND"
+    let UNKNOWN_UNIT = "UNKNOWN_UNIT"
+    let NO_UNIT = "NO_UNIT"
+    
+    struct PluginError: Error {
+        let message: String
+    }
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
@@ -513,31 +683,279 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     
     /// Initialize iOS 14 specific data types
     @available(iOS 14.0, *)
-    private func initializeIOS14Types() {
-        dataTypesDict[HealthConstants.ELECTROCARDIOGRAM] = HKSampleType.electrocardiogramType()
-        
-        unitDict[HealthConstants.VOLT] = HKUnit.volt()
-        unitDict[HealthConstants.INCHES_OF_MERCURY] = HKUnit.inchesOfMercury()
-        
-        workoutActivityTypeMap["CARDIO_DANCE"] = HKWorkoutActivityType.cardioDance
-        workoutActivityTypeMap["SOCIAL_DANCE"] = HKWorkoutActivityType.socialDance
-        workoutActivityTypeMap["PICKLEBALL"] = HKWorkoutActivityType.pickleball
-        workoutActivityTypeMap["COOLDOWN"] = HKWorkoutActivityType.cooldown
+    private func fetchEcgMeasurements(_ sample: HKElectrocardiogram) -> NSDictionary {
+        let semaphore = DispatchSemaphore(value: 0)
+        var voltageValues = [NSDictionary]()
+        let voltageQuery = HKElectrocardiogramQuery(sample) { query, result in
+            switch result {
+            case let .measurement(measurement):
+                if let voltageQuantity = measurement.quantity(for: .appleWatchSimilarToLeadI) {
+                    let voltage = voltageQuantity.doubleValue(for: HKUnit.volt())
+                    let timeSinceSampleStart = measurement.timeSinceSampleStart
+                    voltageValues.append(["voltage": voltage, "timeSinceSampleStart": timeSinceSampleStart])
+                }
+            case .done:
+                semaphore.signal()
+            case let .error(error):
+                print(error)
+            }
+        }
+        HKHealthStore().execute(voltageQuery)
+        semaphore.wait()
+        return [
+            "uuid": "\(sample.uuid)",
+            "voltageValues": voltageValues,
+            "averageHeartRate": sample.averageHeartRate?.doubleValue(
+                for: HKUnit.count().unitDivided(by: HKUnit.minute())),
+            "samplingFrequency": sample.samplingFrequency?.doubleValue(for: HKUnit.hertz()),
+            "classification": sample.classification.rawValue,
+            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+            "source_id": sample.sourceRevision.source.bundleIdentifier,
+            "source_name": sample.sourceRevision.source.name,
+        ]
     }
     
-    /// Initialize iOS 16 specific data types
-    @available(iOS 16.0, *)
-    private func initializeIOS16Types() {
-        dataTypesDict[HealthConstants.ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
-        dataTypesDict[HealthConstants.WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
-        dataTypesDict[HealthConstants.UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
-        dataTypesDict[HealthConstants.UV_INDEX] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
+    func getIntervalData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? NSDictionary
+        let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
+        let dataUnitKey = (arguments?["dataUnitKey"] as? String)
+        let startDate = (arguments?["startTime"] as? NSNumber) ?? 0
+        let endDate = (arguments?["endTime"] as? NSNumber) ?? 0
+        let intervalInSecond = (arguments?["interval"] as? Int) ?? 1
+        let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
+        let includeManualEntry = !recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
         
-        dataQuantityTypesDict[HealthConstants.UV_INDEX] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
+        // Set interval in seconds.
+        var interval = DateComponents()
+        interval.second = intervalInSecond
+        
+        // Convert dates from milliseconds to Date()
+        let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
+        
+        let quantityType: HKQuantityType! = dataQuantityTypesDict[dataTypeKey]
+        var predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: [])
+        if (!includeManualEntry) {
+            let manualPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+            predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
+        }
+        
+        let query = HKStatisticsCollectionQuery(quantityType: quantityType, quantitySamplePredicate: predicate, options: [.cumulativeSum, .separateBySource], anchorDate: dateFrom, intervalComponents: interval)
+        
+        query.initialResultsHandler = {
+            [weak self] _, statisticCollectionOrNil, error in
+            guard let self = self else {
+                // Handle the case where self became nil.
+                print("Self is nil")
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+            }
+            
+            // Error detected.
+            if let error = error {
+                print("Query error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+            }
+            
+            guard let collection = statisticCollectionOrNil as? HKStatisticsCollection else {
+                print("Unexpected result from query")
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+            }
+            
+            var dictionaries = [[String: Any]]()
+            collection.enumerateStatistics(from: dateFrom, to: dateTo) {
+                [weak self] statisticData, _ in
+                guard let self = self else {
+                    // Handle the case where self became nil.
+                    print("Self is nil during enumeration")
+                    return
+                }
+                
+                do {
+                    if let quantity = statisticData.sumQuantity(),
+                       let dataUnitKey = dataUnitKey,
+                       let unit = self.unitDict[dataUnitKey] {
+                        let dict = [
+                            "value": quantity.doubleValue(for: unit),
+                            "date_from": Int(statisticData.startDate.timeIntervalSince1970 * 1000),
+                            "date_to": Int(statisticData.endDate.timeIntervalSince1970 * 1000),
+                            "source_id": statisticData.sources?.first?.bundleIdentifier ?? "",
+                            "source_name": statisticData.sources?.first?.name ?? ""
+                        ]
+                        dictionaries.append(dict)
+                    }
+                } catch {
+                    print("Error during collection.enumeration: \(error)")
+                }
+            }
+            DispatchQueue.main.async {
+                result(dictionaries)
+            }
+        }
+        HKHealthStore().execute(query)
     }
     
-    /// Initialize workout activity types
-    private func initializeWorkoutTypes() {
+    func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? NSDictionary
+        let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
+        let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
+        let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
+        let includeManualEntry = !recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
+        
+        // Convert dates from milliseconds to Date()
+        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
+        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
+        
+        let sampleType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+        var predicate = HKQuery.predicateForSamples(
+            withStart: dateFrom, end: dateTo, options: .strictStartDate)
+        if (!includeManualEntry) {
+            let manualPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+            predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
+        }
+        
+        // TODO: [NOTE] Computational heavy
+        let query = HKStatisticsCollectionQuery(
+            quantityType: sampleType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum,
+            anchorDate: dateFrom,
+            intervalComponents: DateComponents(day: 1)
+        )
+        query.initialResultsHandler = { query, results, error in
+            guard let results = results else { 
+                let error = error! as NSError
+                print("Error getting total steps in interval \(error.localizedDescription)")
+
+                DispatchQueue.main.async {
+                    result(nil)
+                }
+                return
+             }
+
+             var totalSteps = 0.0
+             results.enumerateStatistics(from: dateFrom, to: dateTo) { statistics, stop in
+                if let quantity = statistics.sumQuantity() {
+                    let unit = HKUnit.count()
+                    totalSteps += quantity.doubleValue(for: unit)
+                }
+             }
+
+             DispatchQueue.main.async {
+                result(Int(totalSteps))
+             }
+        }
+        
+        HKHealthStore().execute(query)
+    }
+    
+    func unitLookUp(key: String) -> HKUnit {
+        guard let unit = unitDict[key] else {
+            return HKUnit.count()
+        }
+        return unit
+    }
+    
+    func dataTypeLookUp(key: String) -> HKSampleType {
+        guard let dataType_ = dataTypesDict[key] else {
+            return HKSampleType.quantityType(forIdentifier: .bodyMass)!
+        }
+        return dataType_
+    }
+    
+    func getGender() -> HKBiologicalSex? {
+        var bioSex:HKBiologicalSex?
+        do {
+            bioSex = try healthStore.biologicalSex().biologicalSex
+        } catch {
+            bioSex = nil
+            print("Error retrieving biologicalSex: \(error)")
+        }
+        return bioSex
+    }
+    
+    func getBirthDate() -> Date? {
+        var dob:Date?
+        do {
+            dob = try healthStore.dateOfBirthComponents().date
+        } catch {
+            dob = nil
+            print("Error retrieving date of birth: \(error)")
+        }
+        return dob
+    }
+    
+    func getBloodType() -> HKBloodType? {
+        var bloodType:HKBloodType?
+        do {
+            bloodType = try healthStore.bloodType().bloodType
+        } catch {
+            bloodType = nil
+            print("Error retrieving blood type: \(error)")
+        }
+        return bloodType
+    }
+    
+    func initializeTypes() {
+        // Initialize units
+        unitDict[GRAM] = HKUnit.gram()
+        unitDict[KILOGRAM] = HKUnit.gramUnit(with: .kilo)
+        unitDict[OUNCE] = HKUnit.ounce()
+        unitDict[POUND] = HKUnit.pound()
+        unitDict[STONE] = HKUnit.stone()
+        unitDict[METER] = HKUnit.meter()
+        unitDict[INCH] = HKUnit.inch()
+        unitDict[FOOT] = HKUnit.foot()
+        unitDict[YARD] = HKUnit.yard()
+        unitDict[MILE] = HKUnit.mile()
+        unitDict[LITER] = HKUnit.liter()
+        unitDict[MILLILITER] = HKUnit.literUnit(with: .milli)
+        unitDict[FLUID_OUNCE_US] = HKUnit.fluidOunceUS()
+        unitDict[FLUID_OUNCE_IMPERIAL] = HKUnit.fluidOunceImperial()
+        unitDict[CUP_US] = HKUnit.cupUS()
+        unitDict[CUP_IMPERIAL] = HKUnit.cupImperial()
+        unitDict[PINT_US] = HKUnit.pintUS()
+        unitDict[PINT_IMPERIAL] = HKUnit.pintImperial()
+        unitDict[PASCAL] = HKUnit.pascal()
+        unitDict[MILLIMETER_OF_MERCURY] = HKUnit.millimeterOfMercury()
+        unitDict[CENTIMETER_OF_WATER] = HKUnit.centimeterOfWater()
+        unitDict[ATMOSPHERE] = HKUnit.atmosphere()
+        unitDict[DECIBEL_A_WEIGHTED_SOUND_PRESSURE_LEVEL] = HKUnit.decibelAWeightedSoundPressureLevel()
+        unitDict[SECOND] = HKUnit.second()
+        unitDict[MILLISECOND] = HKUnit.secondUnit(with: .milli)
+        unitDict[MINUTE] = HKUnit.minute()
+        unitDict[HOUR] = HKUnit.hour()
+        unitDict[DAY] = HKUnit.day()
+        unitDict[JOULE] = HKUnit.joule()
+        unitDict[KILOCALORIE] = HKUnit.kilocalorie()
+        unitDict[LARGE_CALORIE] = HKUnit.largeCalorie()
+        unitDict[SMALL_CALORIE] = HKUnit.smallCalorie()
+        unitDict[DEGREE_CELSIUS] = HKUnit.degreeCelsius()
+        unitDict[DEGREE_FAHRENHEIT] = HKUnit.degreeFahrenheit()
+        unitDict[KELVIN] = HKUnit.kelvin()
+        unitDict[DECIBEL_HEARING_LEVEL] = HKUnit.decibelHearingLevel()
+        unitDict[HERTZ] = HKUnit.hertz()
+        unitDict[SIEMEN] = HKUnit.siemen()
+        unitDict[INTERNATIONAL_UNIT] = HKUnit.internationalUnit()
+        unitDict[COUNT] = HKUnit.count()
+        unitDict[PERCENT] = HKUnit.percent()
+        unitDict[BEATS_PER_MINUTE] = HKUnit.init(from: "count/min")
+        unitDict[RESPIRATIONS_PER_MINUTE] = HKUnit.init(from: "count/min")
+        unitDict[MILLIGRAM_PER_DECILITER] = HKUnit.init(from: "mg/dL")
+        unitDict[METER_PER_SECOND] = HKUnit.init(from: "m/s")
+        unitDict[UNKNOWN_UNIT] = HKUnit.init(from: "")
+        unitDict[NO_UNIT] = HKUnit.init(from: "")
+        
+        // Initialize workout types
         workoutActivityTypeMap["ARCHERY"] = .archery
         workoutActivityTypeMap["BOWLING"] = .bowling
         workoutActivityTypeMap["FENCING"] = .fencing
@@ -619,5 +1037,411 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         if #available(iOS 17.0, *) {
             workoutActivityTypeMap["UNDERWATER_DIVING"] = .underwaterDiving
         }
+
+        nutritionList = [
+            DIETARY_ENERGY_CONSUMED, DIETARY_CARBS_CONSUMED, DIETARY_PROTEIN_CONSUMED,
+            DIETARY_FATS_CONSUMED, DIETARY_CAFFEINE, DIETARY_FIBER, DIETARY_SUGAR,
+            DIETARY_FAT_MONOUNSATURATED, DIETARY_FAT_POLYUNSATURATED, DIETARY_FAT_SATURATED,
+            DIETARY_CHOLESTEROL, DIETARY_VITAMIN_A, DIETARY_THIAMIN, DIETARY_RIBOFLAVIN,
+            DIETARY_NIACIN, DIETARY_PANTOTHENIC_ACID, DIETARY_VITAMIN_B6, DIETARY_BIOTIN,
+            DIETARY_VITAMIN_B12, DIETARY_VITAMIN_C, DIETARY_VITAMIN_D, DIETARY_VITAMIN_E,
+            DIETARY_VITAMIN_K, DIETARY_FOLATE, DIETARY_CALCIUM, DIETARY_CHLORIDE,
+            DIETARY_IRON, DIETARY_MAGNESIUM, DIETARY_PHOSPHORUS, DIETARY_POTASSIUM,
+            DIETARY_SODIUM, DIETARY_ZINC, DIETARY_WATER, DIETARY_CHROMIUM, DIETARY_COPPER,
+            DIETARY_IODINE, DIETARY_MANGANESE, DIETARY_MOLYBDENUM, DIETARY_SELENIUM,
+        ]
+        // Set up iOS 13 specific types (ordinary health data types)
+        if #available(iOS 13.0, *) {
+            dataTypesDict[ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(
+                forIdentifier: .activeEnergyBurned)!
+            dataTypesDict[AUDIOGRAM] = HKSampleType.audiogramSampleType()
+            dataTypesDict[BASAL_ENERGY_BURNED] = HKSampleType.quantityType(
+                forIdentifier: .basalEnergyBurned)!
+            dataTypesDict[BLOOD_GLUCOSE] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
+            dataTypesDict[BLOOD_OXYGEN] = HKSampleType.quantityType(forIdentifier: .oxygenSaturation)!
+            dataTypesDict[RESPIRATORY_RATE] = HKSampleType.quantityType(forIdentifier: .respiratoryRate)!
+            dataTypesDict[PERIPHERAL_PERFUSION_INDEX] = HKSampleType.quantityType(
+                forIdentifier: .peripheralPerfusionIndex)!
+            
+            dataTypesDict[BLOOD_PRESSURE_DIASTOLIC] = HKSampleType.quantityType(
+                forIdentifier: .bloodPressureDiastolic)!
+            dataTypesDict[BLOOD_PRESSURE_SYSTOLIC] = HKSampleType.quantityType(
+                forIdentifier: .bloodPressureSystolic)!
+            dataTypesDict[BODY_FAT_PERCENTAGE] = HKSampleType.quantityType(
+                forIdentifier: .bodyFatPercentage)!
+            dataTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .leanBodyMass)!
+            dataTypesDict[BODY_MASS_INDEX] = HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!
+            dataTypesDict[BODY_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .bodyTemperature)!
+            
+            // Nutrition
+            dataTypesDict[DIETARY_CARBS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!
+            dataTypesDict[DIETARY_CAFFEINE] = HKSampleType.quantityType(forIdentifier: .dietaryCaffeine)!
+            dataTypesDict[DIETARY_ENERGY_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryEnergyConsumed)!
+            dataTypesDict[DIETARY_FATS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryFatTotal)!
+            dataTypesDict[DIETARY_PROTEIN_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryProtein)!
+            dataTypesDict[DIETARY_FIBER] = HKSampleType.quantityType(forIdentifier: .dietaryFiber)!
+            dataTypesDict[DIETARY_SUGAR] = HKSampleType.quantityType(forIdentifier: .dietarySugar)!
+            dataTypesDict[DIETARY_FAT_MONOUNSATURATED] = HKSampleType.quantityType(forIdentifier: .dietaryFatMonounsaturated)!
+            dataTypesDict[DIETARY_FAT_POLYUNSATURATED] = HKSampleType.quantityType(forIdentifier: .dietaryFatPolyunsaturated)!
+            dataTypesDict[DIETARY_FAT_SATURATED] = HKSampleType.quantityType(forIdentifier: .dietaryFatSaturated)!
+            dataTypesDict[DIETARY_CHOLESTEROL] = HKSampleType.quantityType(forIdentifier: .dietaryCholesterol)!
+            dataTypesDict[DIETARY_VITAMIN_A] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminA)!
+            dataTypesDict[DIETARY_THIAMIN] = HKSampleType.quantityType(forIdentifier: .dietaryThiamin)!
+            dataTypesDict[DIETARY_RIBOFLAVIN] = HKSampleType.quantityType(forIdentifier: .dietaryRiboflavin)!
+            dataTypesDict[DIETARY_NIACIN] = HKSampleType.quantityType(forIdentifier: .dietaryNiacin)!
+            dataTypesDict[DIETARY_PANTOTHENIC_ACID] = HKSampleType.quantityType(forIdentifier: .dietaryPantothenicAcid)!
+            dataTypesDict[DIETARY_VITAMIN_B6] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminB6)!
+            dataTypesDict[DIETARY_BIOTIN] = HKSampleType.quantityType(forIdentifier: .dietaryBiotin)!
+            dataTypesDict[DIETARY_VITAMIN_B12] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminB12)!
+            dataTypesDict[DIETARY_VITAMIN_C] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminC)!
+            dataTypesDict[DIETARY_VITAMIN_D] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminD)!
+            dataTypesDict[DIETARY_VITAMIN_E] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminE)!
+            dataTypesDict[DIETARY_VITAMIN_K] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminK)!
+            dataTypesDict[DIETARY_FOLATE] = HKSampleType.quantityType(forIdentifier: .dietaryFolate)!
+            dataTypesDict[DIETARY_CALCIUM] = HKSampleType.quantityType(forIdentifier: .dietaryCalcium)!
+            dataTypesDict[DIETARY_CHLORIDE] = HKSampleType.quantityType(forIdentifier: .dietaryChloride)!
+            dataTypesDict[DIETARY_IRON] = HKSampleType.quantityType(forIdentifier: .dietaryIron)!
+            dataTypesDict[DIETARY_MAGNESIUM] = HKSampleType.quantityType(forIdentifier: .dietaryMagnesium)!
+            dataTypesDict[DIETARY_PHOSPHORUS] = HKSampleType.quantityType(forIdentifier: .dietaryPhosphorus)!
+            dataTypesDict[DIETARY_POTASSIUM] = HKSampleType.quantityType(forIdentifier: .dietaryPotassium)!
+            dataTypesDict[DIETARY_SODIUM] = HKSampleType.quantityType(forIdentifier: .dietarySodium)!
+            dataTypesDict[DIETARY_ZINC] = HKSampleType.quantityType(forIdentifier: .dietaryZinc)!
+            dataTypesDict[DIETARY_WATER] = HKSampleType.quantityType(forIdentifier: .dietaryWater)!
+            dataTypesDict[DIETARY_CHROMIUM] = HKSampleType.quantityType(forIdentifier: .dietaryChromium)!
+            dataTypesDict[DIETARY_COPPER] = HKSampleType.quantityType(forIdentifier: .dietaryCopper)!
+            dataTypesDict[DIETARY_IODINE] = HKSampleType.quantityType(forIdentifier: .dietaryIodine)!
+            dataTypesDict[DIETARY_MANGANESE] = HKSampleType.quantityType(forIdentifier: .dietaryManganese)!
+            dataTypesDict[DIETARY_MOLYBDENUM] = HKSampleType.quantityType(forIdentifier: .dietaryMolybdenum)!
+            dataTypesDict[DIETARY_SELENIUM] = HKSampleType.quantityType(forIdentifier: .dietarySelenium)!
+            
+            dataTypesDict[ELECTRODERMAL_ACTIVITY] = HKSampleType.quantityType(
+                forIdentifier: .electrodermalActivity)!
+            dataTypesDict[FORCED_EXPIRATORY_VOLUME] = HKSampleType.quantityType(
+                forIdentifier: .forcedExpiratoryVolume1)!
+            dataTypesDict[HEART_RATE] = HKSampleType.quantityType(forIdentifier: .heartRate)!
+            dataTypesDict[HEART_RATE_VARIABILITY_SDNN] = HKSampleType.quantityType(
+                forIdentifier: .heartRateVariabilitySDNN)!
+            dataTypesDict[HEIGHT] = HKSampleType.quantityType(forIdentifier: .height)!
+            dataTypesDict[INSULIN_DELIVERY] = HKSampleType.quantityType(forIdentifier: .insulinDelivery)!
+            dataTypesDict[RESTING_HEART_RATE] = HKSampleType.quantityType(
+                forIdentifier: .restingHeartRate)!
+            dataTypesDict[STEPS] = HKSampleType.quantityType(forIdentifier: .stepCount)!
+            dataTypesDict[WAIST_CIRCUMFERENCE] = HKSampleType.quantityType(
+                forIdentifier: .waistCircumference)!
+            dataTypesDict[WALKING_HEART_RATE] = HKSampleType.quantityType(
+                forIdentifier: .walkingHeartRateAverage)!
+            dataTypesDict[WEIGHT] = HKSampleType.quantityType(forIdentifier: .bodyMass)!
+            dataTypesDict[DISTANCE_WALKING_RUNNING] = HKSampleType.quantityType(
+                forIdentifier: .distanceWalkingRunning)!
+            dataTypesDict[DISTANCE_SWIMMING] = HKSampleType.quantityType(forIdentifier: .distanceSwimming)!
+            dataTypesDict[DISTANCE_CYCLING] = HKSampleType.quantityType(forIdentifier: .distanceCycling)!
+            dataTypesDict[FLIGHTS_CLIMBED] = HKSampleType.quantityType(forIdentifier: .flightsClimbed)!
+            dataTypesDict[MINDFULNESS] = HKSampleType.categoryType(forIdentifier: .mindfulSession)!
+            dataTypesDict[SLEEP_AWAKE] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_DEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_IN_BED] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_LIGHT] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_REM] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[SLEEP_ASLEEP] = HKSampleType.categoryType(forIdentifier: .sleepAnalysis)!
+            dataTypesDict[MENSTRUATION_FLOW] = HKSampleType.categoryType(forIdentifier: .menstrualFlow)!
+            
+            
+            dataTypesDict[EXERCISE_TIME] = HKSampleType.quantityType(forIdentifier: .appleExerciseTime)!
+            dataTypesDict[WORKOUT] = HKSampleType.workoutType()
+            dataTypesDict[NUTRITION] = HKSampleType.correlationType(
+                forIdentifier: .food)!
+            
+            healthDataTypes = Array(dataTypesDict.values)
+            
+            characteristicsTypesDict[BIRTH_DATE] = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
+            characteristicsTypesDict[GENDER] = HKObjectType.characteristicType(forIdentifier: .biologicalSex)!
+            characteristicsTypesDict[BLOOD_TYPE] = HKObjectType.characteristicType(forIdentifier: .bloodType)!
+            characteristicsDataTypes = Array(characteristicsTypesDict.values)
+        }
+        
+        // Set up iOS 11 specific types (ordinary health data quantity types)
+        if #available(iOS 11.0, *) {
+            dataQuantityTypesDict[ACTIVE_ENERGY_BURNED] = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
+            dataQuantityTypesDict[BASAL_ENERGY_BURNED] = HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned)!
+            dataQuantityTypesDict[BLOOD_GLUCOSE] = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
+            dataQuantityTypesDict[BLOOD_OXYGEN] = HKQuantityType.quantityType(forIdentifier: .oxygenSaturation)!
+            dataQuantityTypesDict[BLOOD_PRESSURE_DIASTOLIC] = HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!
+            dataQuantityTypesDict[BLOOD_PRESSURE_SYSTOLIC] = HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!
+            dataQuantityTypesDict[BODY_FAT_PERCENTAGE] = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
+            dataQuantityTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .leanBodyMass)!
+            dataQuantityTypesDict[BODY_MASS_INDEX] = HKQuantityType.quantityType(forIdentifier: .bodyMassIndex)!
+            dataQuantityTypesDict[BODY_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!
+            
+            // Nutrition
+            dataQuantityTypesDict[DIETARY_CARBS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryCarbohydrates)!
+            dataQuantityTypesDict[DIETARY_CAFFEINE] = HKSampleType.quantityType(forIdentifier: .dietaryCaffeine)!
+            dataQuantityTypesDict[DIETARY_ENERGY_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryEnergyConsumed)!
+            dataQuantityTypesDict[DIETARY_FATS_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryFatTotal)!
+            dataQuantityTypesDict[DIETARY_PROTEIN_CONSUMED] = HKSampleType.quantityType(forIdentifier: .dietaryProtein)!
+            dataQuantityTypesDict[DIETARY_FIBER] = HKSampleType.quantityType(forIdentifier: .dietaryFiber)!
+            dataQuantityTypesDict[DIETARY_SUGAR] = HKSampleType.quantityType(forIdentifier: .dietarySugar)!
+            dataQuantityTypesDict[DIETARY_FAT_MONOUNSATURATED] = HKSampleType.quantityType(forIdentifier: .dietaryFatMonounsaturated)!
+            dataQuantityTypesDict[DIETARY_FAT_POLYUNSATURATED] = HKSampleType.quantityType(forIdentifier: .dietaryFatPolyunsaturated)!
+            dataQuantityTypesDict[DIETARY_FAT_SATURATED] = HKSampleType.quantityType(forIdentifier: .dietaryFatSaturated)!
+            dataQuantityTypesDict[DIETARY_CHOLESTEROL] = HKSampleType.quantityType(forIdentifier: .dietaryCholesterol)!
+            dataQuantityTypesDict[DIETARY_VITAMIN_A] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminA)!
+            dataQuantityTypesDict[DIETARY_THIAMIN] = HKSampleType.quantityType(forIdentifier: .dietaryThiamin)!
+            dataQuantityTypesDict[DIETARY_RIBOFLAVIN] = HKSampleType.quantityType(forIdentifier: .dietaryRiboflavin)!
+            dataQuantityTypesDict[DIETARY_NIACIN] = HKSampleType.quantityType(forIdentifier: .dietaryNiacin)!
+            dataQuantityTypesDict[DIETARY_PANTOTHENIC_ACID] = HKSampleType.quantityType(forIdentifier: .dietaryPantothenicAcid)!
+            dataQuantityTypesDict[DIETARY_VITAMIN_B6] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminB6)!
+            dataQuantityTypesDict[DIETARY_BIOTIN] = HKSampleType.quantityType(forIdentifier: .dietaryBiotin)!
+            dataQuantityTypesDict[DIETARY_VITAMIN_B12] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminB12)!
+            dataQuantityTypesDict[DIETARY_VITAMIN_C] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminC)!
+            dataQuantityTypesDict[DIETARY_VITAMIN_D] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminD)!
+            dataQuantityTypesDict[DIETARY_VITAMIN_E] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminE)!
+            dataQuantityTypesDict[DIETARY_VITAMIN_K] = HKSampleType.quantityType(forIdentifier: .dietaryVitaminK)!
+            dataQuantityTypesDict[DIETARY_FOLATE] = HKSampleType.quantityType(forIdentifier: .dietaryFolate)!
+            dataQuantityTypesDict[DIETARY_CALCIUM] = HKSampleType.quantityType(forIdentifier: .dietaryCalcium)!
+            dataQuantityTypesDict[DIETARY_CHLORIDE] = HKSampleType.quantityType(forIdentifier: .dietaryChloride)!
+            dataQuantityTypesDict[DIETARY_IRON] = HKSampleType.quantityType(forIdentifier: .dietaryIron)!
+            dataQuantityTypesDict[DIETARY_MAGNESIUM] = HKSampleType.quantityType(forIdentifier: .dietaryMagnesium)!
+            dataQuantityTypesDict[DIETARY_PHOSPHORUS] = HKSampleType.quantityType(forIdentifier: .dietaryPhosphorus)!
+            dataQuantityTypesDict[DIETARY_POTASSIUM] = HKSampleType.quantityType(forIdentifier: .dietaryPotassium)!
+            dataQuantityTypesDict[DIETARY_SODIUM] = HKSampleType.quantityType(forIdentifier: .dietarySodium)!
+            dataQuantityTypesDict[DIETARY_ZINC] = HKSampleType.quantityType(forIdentifier: .dietaryZinc)!
+            dataQuantityTypesDict[DIETARY_WATER] = HKSampleType.quantityType(forIdentifier: .dietaryWater)!
+            dataQuantityTypesDict[DIETARY_CHROMIUM] = HKSampleType.quantityType(forIdentifier: .dietaryChromium)!
+            dataQuantityTypesDict[DIETARY_COPPER] = HKSampleType.quantityType(forIdentifier: .dietaryCopper)!
+            dataQuantityTypesDict[DIETARY_IODINE] = HKSampleType.quantityType(forIdentifier: .dietaryIodine)!
+            dataQuantityTypesDict[DIETARY_MANGANESE] = HKSampleType.quantityType(forIdentifier: .dietaryManganese)!
+            dataQuantityTypesDict[DIETARY_MOLYBDENUM] = HKSampleType.quantityType(forIdentifier: .dietaryMolybdenum)!
+            dataQuantityTypesDict[DIETARY_SELENIUM] = HKSampleType.quantityType(forIdentifier: .dietarySelenium)!
+            
+            dataQuantityTypesDict[ELECTRODERMAL_ACTIVITY] = HKQuantityType.quantityType(forIdentifier: .electrodermalActivity)!
+            dataQuantityTypesDict[FORCED_EXPIRATORY_VOLUME] = HKQuantityType.quantityType(forIdentifier: .forcedExpiratoryVolume1)!
+            dataQuantityTypesDict[HEART_RATE] = HKQuantityType.quantityType(forIdentifier: .heartRate)!
+            dataQuantityTypesDict[HEART_RATE_VARIABILITY_SDNN] = HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!
+            dataQuantityTypesDict[HEIGHT] = HKQuantityType.quantityType(forIdentifier: .height)!
+            dataQuantityTypesDict[RESTING_HEART_RATE] = HKQuantityType.quantityType(forIdentifier: .restingHeartRate)!
+            dataQuantityTypesDict[STEPS] = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+            dataQuantityTypesDict[WAIST_CIRCUMFERENCE] = HKQuantityType.quantityType(forIdentifier: .waistCircumference)!
+            dataQuantityTypesDict[WALKING_HEART_RATE] = HKQuantityType.quantityType(forIdentifier: .walkingHeartRateAverage)!
+            dataQuantityTypesDict[WEIGHT] = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+            dataQuantityTypesDict[DISTANCE_WALKING_RUNNING] = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
+            dataQuantityTypesDict[DISTANCE_SWIMMING] = HKQuantityType.quantityType(forIdentifier: .distanceSwimming)!
+            dataQuantityTypesDict[DISTANCE_CYCLING] = HKQuantityType.quantityType(forIdentifier: .distanceCycling)!
+            dataQuantityTypesDict[FLIGHTS_CLIMBED] = HKQuantityType.quantityType(forIdentifier: .flightsClimbed)!
+            
+            healthDataQuantityTypes = Array(dataQuantityTypesDict.values)
+        }
+        
+        // Set up heart rate data types specific to the apple watch, requires iOS 12
+        if #available(iOS 12.2, *) {
+            dataTypesDict[HIGH_HEART_RATE_EVENT] = HKSampleType.categoryType(
+                forIdentifier: .highHeartRateEvent)!
+            dataTypesDict[LOW_HEART_RATE_EVENT] = HKSampleType.categoryType(
+                forIdentifier: .lowHeartRateEvent)!
+            dataTypesDict[IRREGULAR_HEART_RATE_EVENT] = HKSampleType.categoryType(
+                forIdentifier: .irregularHeartRhythmEvent)!
+            
+            heartRateEventTypes = Set([
+                HKSampleType.categoryType(forIdentifier: .highHeartRateEvent)!,
+                HKSampleType.categoryType(forIdentifier: .lowHeartRateEvent)!,
+                HKSampleType.categoryType(forIdentifier: .irregularHeartRhythmEvent)!,
+            ])
+        }
+        
+        if #available(iOS 13.6, *) {
+            dataTypesDict[HEADACHE_UNSPECIFIED] = HKSampleType.categoryType(forIdentifier: .headache)!
+            dataTypesDict[HEADACHE_NOT_PRESENT] = HKSampleType.categoryType(forIdentifier: .headache)!
+            dataTypesDict[HEADACHE_MILD] = HKSampleType.categoryType(forIdentifier: .headache)!
+            dataTypesDict[HEADACHE_MODERATE] = HKSampleType.categoryType(forIdentifier: .headache)!
+            dataTypesDict[HEADACHE_SEVERE] = HKSampleType.categoryType(forIdentifier: .headache)!
+            
+            headacheType = Set([
+                HKSampleType.categoryType(forIdentifier: .headache)!
+            ])
+        }
+        
+        if #available(iOS 14.0, *) {
+            dataTypesDict[ELECTROCARDIOGRAM] = HKSampleType.electrocardiogramType()
+            dataTypesDict[WALKING_SPEED] = HKSampleType.quantityType(forIdentifier: .walkingSpeed)
+            
+            unitDict[VOLT] = HKUnit.volt()
+            unitDict[INCHES_OF_MERCURY] = HKUnit.inchesOfMercury()
+            
+            workoutActivityTypeMap["CARDIO_DANCE"] = HKWorkoutActivityType.cardioDance
+            workoutActivityTypeMap["SOCIAL_DANCE"] = HKWorkoutActivityType.socialDance
+            workoutActivityTypeMap["PICKLEBALL"] = HKWorkoutActivityType.pickleball
+            workoutActivityTypeMap["COOLDOWN"] = HKWorkoutActivityType.cooldown
+        }
+
+        if #available(iOS 16.0, *) {
+            dataTypesDict[ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
+
+            dataTypesDict[WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
+            dataTypesDict[UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
+
+            dataTypesDict[UV_INDEX] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
+            dataQuantityTypesDict[UV_INDEX] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
+
+        } 
+        
+        // Concatenate heart events, headache and health data types (both may be empty)
+        allDataTypes = Set(heartRateEventTypes + healthDataTypes)
+        allDataTypes = allDataTypes.union(headacheType)
     }
+    
+    func getWorkoutType(type: HKWorkoutActivityType) -> String {
+        switch type {
+        case .americanFootball:
+            return "americanFootball"
+        case .archery:
+            return "archery"
+        case .australianFootball:
+            return "australianFootball"
+        case .badminton:
+            return "badminton"
+        case .baseball:
+            return "baseball"
+        case .basketball:
+            return "basketball"
+        case .bowling:
+            return "bowling"
+        case .boxing:
+            return "boxing"
+        case .climbing:
+            return "climbing"
+        case .cricket:
+            return "cricket"
+        case .crossTraining:
+            return "crossTraining"
+        case .curling:
+            return "curling"
+        case .cycling:
+            return "cycling"
+        case .dance:
+            return "dance"
+        case .danceInspiredTraining:
+            return "danceInspiredTraining"
+        case .elliptical:
+            return "elliptical"
+        case .equestrianSports:
+            return "equestrianSports"
+        case .fencing:
+            return "fencing"
+        case .fishing:
+            return "fishing"
+        case .functionalStrengthTraining:
+            return "functionalStrengthTraining"
+        case .golf:
+            return "golf"
+        case .gymnastics:
+            return "gymnastics"
+        case .handball:
+            return "handball"
+        case .hiking:
+            return "hiking"
+        case .hockey:
+            return "hockey"
+        case .hunting:
+            return "hunting"
+        case .lacrosse:
+            return "lacrosse"
+        case .martialArts:
+            return "martialArts"
+        case .mindAndBody:
+            return "mindAndBody"
+        case .mixedMetabolicCardioTraining:
+            return "mixedMetabolicCardioTraining"
+        case .paddleSports:
+            return "paddleSports"
+        case .play:
+            return "play"
+        case .preparationAndRecovery:
+            return "preparationAndRecovery"
+        case .racquetball:
+            return "racquetball"
+        case .rowing:
+            return "rowing"
+        case .rugby:
+            return "rugby"
+        case .running:
+            return "running"
+        case .sailing:
+            return "sailing"
+        case .skatingSports:
+            return "skatingSports"
+        case .snowSports:
+            return "snowSports"
+        case .soccer:
+            return "soccer"
+        case .softball:
+            return "softball"
+        case .squash:
+            return "squash"
+        case .stairClimbing:
+            return "stairClimbing"
+        case .surfingSports:
+            return "surfingSports"
+        case .swimming:
+            return "swimming"
+        case .tableTennis:
+            return "tableTennis"
+        case .tennis:
+            return "tennis"
+        case .trackAndField:
+            return "trackAndField"
+        case .traditionalStrengthTraining:
+            return "traditionalStrengthTraining"
+        case .volleyball:
+            return "volleyball"
+        case .walking:
+            return "walking"
+        case .waterFitness:
+            return "waterFitness"
+        case .waterPolo:
+            return "waterPolo"
+        case .waterSports:
+            return "waterSports"
+        case .wrestling:
+            return "wrestling"
+        case .yoga:
+            return "yoga"
+        case .barre:
+            return "barre"
+        case .coreTraining:
+            return "coreTraining"
+        case .crossCountrySkiing:
+            return "crossCountrySkiing"
+        case .downhillSkiing:
+            return "downhillSkiing"
+        case .flexibility:
+            return "flexibility"
+        case .highIntensityIntervalTraining:
+            return "highIntensityIntervalTraining"
+        case .jumpRope:
+            return "jumpRope"
+        case .kickboxing:
+            return "kickboxing"
+        case .pilates:
+            return "pilates"
+        case .snowboarding:
+            return "snowboarding"
+        case .stairs:
+            return "stairs"
+        case .stepTraining:
+            return "stepTraining"
+        case .wheelchairWalkPace:
+            return "wheelchairWalkPace"
+        case .wheelchairRunPace:
+            return "wheelchairRunPace"
+        case .taiChi:
+            return "taiChi"
+        case .mixedCardio:
+            return "mixedCardio"
+        case .handCycling:
+            return "handCycling"
+        case .underwaterDiving:
+            return "underwaterDiving"
+        default:
+            return "other"
+        }
+   }
 }
