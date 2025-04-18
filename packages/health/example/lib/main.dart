@@ -126,6 +126,9 @@ class HealthAppState extends State<HealthApp> {
         // request access to read historic data
         await health.requestHealthDataHistoryAuthorization();
 
+        // request access in background
+        await health.requestHealthDataInBackgroundAuthorization();
+
       } catch (error) {
         debugPrint("Exception in authorize: $error");
       }
