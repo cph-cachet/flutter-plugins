@@ -57,6 +57,9 @@
     <!-- For reading historical data - more than 30 days ago since permission given -->
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
 
+    <!-- For reading data in background -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"/>
+
     <application
         android:label="health_example"
         android:name="${applicationName}"
