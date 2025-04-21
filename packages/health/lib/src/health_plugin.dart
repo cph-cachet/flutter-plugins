@@ -477,12 +477,20 @@ class Health {
 
     String uuid = '${await _channel.invokeMethod('writeData', args)}';
 
-    final healthPoint = await getHealthDataByUUID(
-      uuid: uuid,
-      type: type,
-    );
+    if (uuid.isEmpty) {
+      return null;
+    }
 
-    return healthPoint;
+    try {
+      final healthPoint = await getHealthDataByUUID(
+        uuid: uuid,
+        type: type,
+      );
+
+      return healthPoint;
+    } catch (e) {
+      return null;
+    }
   }
 
   /// Deletes all records of the given [type] for a given period of time.
@@ -1346,12 +1354,22 @@ class Health {
 
     String uuid = '${await _channel.invokeMethod('writeWorkoutData', args)}';
 
-    final healthPoint = await getHealthDataByUUID(
-      uuid: uuid,
-      type: HealthDataType.WORKOUT,
-    );
+    debugPrint('created uuid: $uuid');
 
-    return healthPoint;
+    if (uuid.isEmpty) {
+      return null;
+    }
+
+    try {
+      final healthPoint = await getHealthDataByUUID(
+        uuid: uuid,
+        type: HealthDataType.WORKOUT,
+      );
+
+      return healthPoint;
+    } catch (e) {
+      return null;
+    }
   }
 
   /// Check if the given [HealthWorkoutActivityType] is supported on the iOS platform
