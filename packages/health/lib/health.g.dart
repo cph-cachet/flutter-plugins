@@ -27,6 +27,7 @@ HealthDataPoint _$HealthDataPointFromJson(Map<String, dynamic> json) =>
           : WorkoutSummary.fromJson(
               json['workoutSummary'] as Map<String, dynamic>),
       metadata: json['metadata'] as Map<String, dynamic>?,
+      deviceModel: json['deviceModel'] as String?,
     );
 
 Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) =>
@@ -45,6 +46,7 @@ Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) =>
       if (instance.workoutSummary?.toJson() case final value?)
         'workoutSummary': value,
       if (instance.metadata case final value?) 'metadata': value,
+      if (instance.deviceModel case final value?) 'deviceModel': value,
     };
 
 const _$HealthDataTypeEnumMap = {

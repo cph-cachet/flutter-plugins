@@ -1,3 +1,7 @@
+## 12.2.0
+
+* iOS: Add `deviceModel` in returned Health data to identify the device that generated the data of the receiver. (in iOS `source_name` represents the revision of the source responsible for saving the receiver.)
+
 ## 12.1.0
 
 * Add delete record by UUID method. See function `deleteByUUID(required String uuid, HealthDataType? type)`
