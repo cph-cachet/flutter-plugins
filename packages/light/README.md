@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/light.svg)](https://pub.dartlang.org/packages/light)
 
-A Flutter plugin for collecting data from the [ambient light sensor on Android](https://developer.android.com/guide/topics/sensors/sensors_environment#java).
+A Flutter plugin for collecting ambient light data from the [Android Environment Sensors](https://developer.android.com/develop/sensors-and-location/sensors/sensors_environment).
 
 ## Install
 
@@ -12,27 +12,23 @@ For help on adding as a dependency, view the [documentation](https://flutter.io/
 
 ## Usage
 
-Instantiate an instance of the `Light()` plugin and listen on the `lightSensorStream` stream.
+Use the singleton `Light()` to listen on the `lightSensorStream` stream.
 
 ```dart
-  Light? _light;
-  StreamSubscription? _subscription;
-
-  void onData(int luxValue) async {
-    print("Lux value: $luxValue");
-  }
-
+  StreamSubscription<int>? _lightEvents;
 
   void startListening() {
-    _light = Light();
     try {
-      _subscription = _light?.lightSensorStream.listen(onData);
-    } on LightException catch (exception) {
+      _lightEvents =
+          Light().lightSensorStream.listen((luxValue) => setState(() {
+                // Do something with the lux value
+              }));
+    } catch (exception) {
       print(exception);
     }
   }
 
   void stopListening() {
-    _subscription?.cancel();
+    _lightEvents?.cancel();
   }
 ```

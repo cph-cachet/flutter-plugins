@@ -11,6 +11,7 @@ enum HealthDataType {
   BLOOD_PRESSURE_DIASTOLIC,
   BLOOD_PRESSURE_SYSTOLIC,
   BODY_FAT_PERCENTAGE,
+  LEAN_BODY_MASS,
   BODY_MASS_INDEX,
   BODY_TEMPERATURE,
   BODY_WATER_MASS,
@@ -91,11 +92,14 @@ enum HealthDataType {
   HEADACHE_SEVERE,
   HEADACHE_UNSPECIFIED,
   NUTRITION,
+  UV_INDEX,
   // HealthKit Characteristics
   GENDER,
   BIRTH_DATE,
   BLOOD_TYPE,
   MENSTRUATION_FLOW,
+  WATER_TEMPERATURE,
+  UNDERWATER_DEPTH,
 
   // Heart Rate events (specific to Apple Watch)
   HIGH_HEART_RATE_EVENT,
@@ -126,6 +130,7 @@ const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
   HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
   HealthDataType.BODY_FAT_PERCENTAGE,
+  HealthDataType.LEAN_BODY_MASS,
   HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
   HealthDataType.DIETARY_CARBS_CONSUMED,
@@ -207,6 +212,10 @@ const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.BIRTH_DATE,
   HealthDataType.BLOOD_TYPE,
   HealthDataType.MENSTRUATION_FLOW,
+  HealthDataType.WATER_TEMPERATURE,
+  HealthDataType.UNDERWATER_DEPTH,
+  HealthDataType.UV_INDEX,
+  HealthDataType.TOTAL_CALORIES_BURNED,
   HealthDataType.SKIN_TEMPERATURE
 ];
 
@@ -218,6 +227,7 @@ const List<HealthDataType> dataTypeKeysAndroid = [
   HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
   HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
   HealthDataType.BODY_FAT_PERCENTAGE,
+  HealthDataType.LEAN_BODY_MASS,
   HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
   HealthDataType.BODY_WATER_MASS,
@@ -258,6 +268,7 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.BLOOD_PRESSURE_DIASTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
   HealthDataType.BLOOD_PRESSURE_SYSTOLIC: HealthDataUnit.MILLIMETER_OF_MERCURY,
   HealthDataType.BODY_FAT_PERCENTAGE: HealthDataUnit.PERCENT,
+  HealthDataType.LEAN_BODY_MASS: HealthDataUnit.KILOGRAM,
   HealthDataType.BODY_MASS_INDEX: HealthDataUnit.NO_UNIT,
   HealthDataType.BODY_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
   HealthDataType.BODY_WATER_MASS: HealthDataUnit.KILOGRAM,
@@ -354,6 +365,9 @@ const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
 
   HealthDataType.NUTRITION: HealthDataUnit.NO_UNIT,
   HealthDataType.MENSTRUATION_FLOW: HealthDataUnit.NO_UNIT,
+  HealthDataType.WATER_TEMPERATURE: HealthDataUnit.DEGREE_CELSIUS,
+  HealthDataType.UNDERWATER_DEPTH: HealthDataUnit.METER,
+  HealthDataType.UV_INDEX: HealthDataUnit.COUNT,
 
   // Health Connect
   HealthDataType.TOTAL_CALORIES_BURNED: HealthDataUnit.KILOCALORIE,
@@ -531,6 +545,7 @@ enum HealthWorkoutActivityType {
   WHEELCHAIR_RUN_PACE,
   WHEELCHAIR_WALK_PACE,
   WRESTLING,
+  UNDERWATER_DIVING,
 
   // Android only
   BIKING_STATIONARY,

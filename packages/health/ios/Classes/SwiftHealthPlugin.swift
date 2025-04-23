@@ -35,6 +35,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
     let BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
     let BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
+    let LEAN_BODY_MASS = "LEAN_BODY_MASS"
     let BODY_MASS_INDEX = "BODY_MASS_INDEX"
     let BODY_TEMPERATURE = "BODY_TEMPERATURE"
     // Nutrition
@@ -161,6 +162,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     let GENDER = "GENDER"
     let BLOOD_TYPE = "BLOOD_TYPE"
     let MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
+    let WATER_TEMPERATURE = "WATER_TEMPERATURE"
+    let UNDERWATER_DEPTH = "UNDERWATER_DEPTH"
+    let UV_INDEX = "UV_INDEX"
     let SKIN_TEMPERATURE = "SKIN_TEMPERATURE"
     
     // Health Unit types
@@ -297,6 +301,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         else if call.method.elementsEqual("delete") {
             try! delete(call: call, result: result)
         }
+
+        /// Handle deleteByUUID data
+        else if call.method.elementsEqual("deleteByUUID") {
+            try! deleteByUUID(call: call, result: result)
+        }
     }
     
     func checkIfHealthDataAvailable(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -339,7 +348,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             }
         }
         
-        result(false)
+        result(true)
     }
     
     func hasPermission(type: HKObjectType, access: Int) -> Bool? {
@@ -731,12 +740,15 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         
         let dataType = dataTypeLookUp(key: dataTypeKey)
         
-        let predicate = HKQuery.predicateForSamples(
+        let samplePredicate = HKQuery.predicateForSamples(
             withStart: dateFrom, end: dateTo, options: .strictStartDate)
+        let ownerPredicate = HKQuery.predicateForObjects(from: HKSource.default())
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
         
         let deleteQuery = HKSampleQuery(
-            sampleType: dataType, predicate: predicate, limit: HKObjectQueryNoLimit,
+            sampleType: dataType,
+            predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [samplePredicate, ownerPredicate]),
+            limit: HKObjectQueryNoLimit,
             sortDescriptors: [sortDescriptor]
         ) { [self] x, samplesOrNil, error in
             
@@ -758,6 +770,45 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         HKHealthStore().execute(deleteQuery)
+    }
+
+    func deleteByUUID(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard let arguments = call.arguments as? NSDictionary,
+              let uuidarg = arguments["uuid"] as? String,
+              let dataTypeKey = arguments["dataTypeKey"] as? String else {
+            throw PluginError(message: "Invalid Arguments - UUID or DataTypeKey invalid")
+        }
+        let dataTypeToRemove = dataTypeLookUp(key: dataTypeKey)
+        guard let uuid = UUID(uuidString: uuidarg) else {
+            result(false)
+            return
+        }
+        let predicate = HKQuery.predicateForObjects(with: [uuid])
+
+        let query = HKSampleQuery(
+            sampleType: dataTypeToRemove,
+            predicate: predicate,
+            limit: 1,
+            sortDescriptors: nil
+        ) { query, samplesOrNil, error in
+            guard let samples = samplesOrNil, !samples.isEmpty else {
+                DispatchQueue.main.async {
+                    result(false)
+                }
+                return
+            }
+            
+            self.healthStore.delete(samples) { success, error in
+                if let error = error {
+                    print("Error deleting sample with UUID \(uuid): \(error.localizedDescription)")
+                }
+                DispatchQueue.main.async {
+                    result(success)
+                }
+            }
+        }
+    
+        healthStore.execute(query)
     }
 
     func getProductType(sample: HKSample) -> String {
@@ -859,7 +910,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true)
                             ? RecordingMethod.manual.rawValue
                             : RecordingMethod.automatic.rawValue,
-                        "metadata": dataTypeKey == INSULIN_DELIVERY ? sample.metadata : nil
+                        "dataUnitKey": unit?.unitString,
+                        "metadata": sanitizeMetadata(sample.metadata)
                     ]
                 }
                 DispatchQueue.main.async {
@@ -902,14 +954,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                     samplesCategory = samplesCategory.filter { $0.value == 4 }
                 }
                 let categories = samplesCategory.map { sample -> NSDictionary in
-                    var metadata: [String: Any] = [:]
-                    
-                    if let sampleMetadata = sample.metadata {
-                        for (key, value) in sampleMetadata {
-                            metadata[key] = value
-                        }
-                    }
-                    
                     return [
                         "uuid": "\(sample.uuid)",
                         "value": sample.value,
@@ -918,7 +962,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                         "source_id": sample.sourceRevision.source.bundleIdentifier,
                         "source_name": "\(sample.sourceRevision.source.name)-\(getProductType(sample: sample))",
                         "recording_method": (sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true) ? RecordingMethod.manual.rawValue : RecordingMethod.automatic.rawValue,
-                        "metadata": metadata
+                        "metadata": sanitizeMetadata(sample.metadata)
                     ]
                 }
                 DispatchQueue.main.async {
@@ -1033,6 +1077,54 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         }
         
         HKHealthStore().execute(query)
+    }
+    
+    private func sanitizeMetadata(_ metadata: [String: Any]?) -> [String: Any] {
+        guard let metadata = metadata else { return [:] }
+        
+        var sanitized = [String: Any]()
+        
+        for (key, value) in metadata {
+            switch value {
+            case let stringValue as String:
+                sanitized[key] = stringValue
+            case let numberValue as NSNumber:
+                sanitized[key] = numberValue
+            case let boolValue as Bool:
+                sanitized[key] = boolValue
+            case let arrayValue as [Any]:
+                sanitized[key] = sanitizeArray(arrayValue)
+            case let mapValue as [String: Any]:
+                sanitized[key] = sanitizeMetadata(mapValue)
+            default:
+                continue
+            }
+        }
+        
+        return sanitized
+    }
+
+    private func sanitizeArray(_ array: [Any]) -> [Any] {
+        var sanitizedArray: [Any] = []
+        
+        for value in array {
+            switch value {
+            case let stringValue as String:
+                sanitizedArray.append(stringValue)
+            case let numberValue as NSNumber:
+                sanitizedArray.append(numberValue)
+            case let boolValue as Bool:
+                sanitizedArray.append(boolValue)
+            case let arrayValue as [Any]:
+                sanitizedArray.append(sanitizeArray(arrayValue))
+            case let mapValue as [String: Any]:
+                sanitizedArray.append(sanitizeMetadata(mapValue))
+            default:
+                continue
+            }
+        }
+        
+        return sanitizedArray
     }
     
     @available(iOS 14.0, *)
@@ -1176,33 +1268,36 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
         }
         
-        let query = HKStatisticsQuery(
+        // TODO: [NOTE] Computational heavy
+        let query = HKStatisticsCollectionQuery(
             quantityType: sampleType,
             quantitySamplePredicate: predicate,
-            options: .cumulativeSum
-        ) { query, queryResult, error in
-            
-            guard let queryResult = queryResult else {
+            options: .cumulativeSum,
+            anchorDate: dateFrom,
+            intervalComponents: DateComponents(day: 1)
+        )
+        query.initialResultsHandler = { query, results, error in
+            guard let results = results else { 
                 let error = error! as NSError
                 print("Error getting total steps in interval \(error.localizedDescription)")
-                
+
                 DispatchQueue.main.async {
                     result(nil)
                 }
                 return
-            }
-            
-            var steps = 0.0
-            
-            if let quantity = queryResult.sumQuantity() {
-                let unit = HKUnit.count()
-                steps = quantity.doubleValue(for: unit)
-            }
-            
-            let totalSteps = Int(steps)
-            DispatchQueue.main.async {
-                result(totalSteps)
-            }
+             }
+
+             var totalSteps = 0.0
+             results.enumerateStatistics(from: dateFrom, to: dateTo) { statistics, stop in
+                if let quantity = statistics.sumQuantity() {
+                    let unit = HKUnit.count()
+                    totalSteps += quantity.doubleValue(for: unit)
+                }
+             }
+
+             DispatchQueue.main.async {
+                result(Int(totalSteps))
+             }
         }
         
         HKHealthStore().execute(query)
@@ -1383,6 +1478,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["TAI_CHI"] = .taiChi
         workoutActivityTypeMap["WRESTLING"] = .wrestling
         workoutActivityTypeMap["OTHER"] = .other
+        if #available(iOS 17.0, *) {
+            workoutActivityTypeMap["UNDERWATER_DIVING"] = .underwaterDiving
+        }
+
         nutritionList = [
             DIETARY_ENERGY_CONSUMED, DIETARY_CARBS_CONSUMED, DIETARY_PROTEIN_CONSUMED,
             DIETARY_FATS_CONSUMED, DIETARY_CAFFEINE, DIETARY_FIBER, DIETARY_SUGAR,
@@ -1414,6 +1513,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
                 forIdentifier: .bloodPressureSystolic)!
             dataTypesDict[BODY_FAT_PERCENTAGE] = HKSampleType.quantityType(
                 forIdentifier: .bodyFatPercentage)!
+            dataTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .leanBodyMass)!
             dataTypesDict[BODY_MASS_INDEX] = HKSampleType.quantityType(forIdentifier: .bodyMassIndex)!
             dataTypesDict[BODY_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .bodyTemperature)!
             
@@ -1512,6 +1612,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             dataQuantityTypesDict[BLOOD_PRESSURE_DIASTOLIC] = HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!
             dataQuantityTypesDict[BLOOD_PRESSURE_SYSTOLIC] = HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!
             dataQuantityTypesDict[BODY_FAT_PERCENTAGE] = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
+            dataQuantityTypesDict[LEAN_BODY_MASS] = HKSampleType.quantityType(forIdentifier: .leanBodyMass)!
             dataQuantityTypesDict[BODY_MASS_INDEX] = HKQuantityType.quantityType(forIdentifier: .bodyMassIndex)!
             dataQuantityTypesDict[BODY_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!
             
@@ -1616,6 +1717,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
 
         if #available(iOS 16.0, *) {
             dataTypesDict[ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
+
+            dataTypesDict[WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
+            dataTypesDict[UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
+
+            dataTypesDict[UV_INDEX] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
+            dataQuantityTypesDict[UV_INDEX] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
+
             dataTypesDict[SKIN_TEMPERATURE] = HKSampleType.quantityType(forIdentifier: .appleSleepingWristTemperature)!
         } 
         
@@ -1774,6 +1882,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             return "mixedCardio"
         case .handCycling:
             return "handCycling"
+        case .underwaterDiving:
+            return "underwaterDiving"
         default:
             return "other"
         }

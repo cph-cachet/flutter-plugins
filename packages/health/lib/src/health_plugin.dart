@@ -1,8 +1,12 @@
 part of '../health.dart';
 
-/// Main class for the Plugin. This class works as a singleton and should be
-/// accessed via `Health()` factory method. The plugin must be configured using
-/// the [configure] method before used.
+/// Main class for the Plugin.
+///
+/// Use this class to get an instance of the Health plugin, like this:
+///
+///         final health = Health();
+///
+/// The plugin must be configured using the [configure] method before used.
 ///
 /// Overall, the plugin supports:
 ///
@@ -34,19 +38,17 @@ part of '../health.dart';
 /// or getter methods. Otherwise, the plugin will throw an exception.
 class Health {
   static const MethodChannel _channel = MethodChannel('flutter_health');
-  static final _instance = Health._();
 
   String? _deviceId;
-  final _deviceInfo = DeviceInfoPlugin();
+  final DeviceInfoPlugin _deviceInfo;
   HealthConnectSdkStatus _healthConnectSdkStatus =
       HealthConnectSdkStatus.sdkUnavailable;
 
-  Health._() {
+  /// Get an instance of the health plugin.
+  Health({DeviceInfoPlugin? deviceInfo})
+      : _deviceInfo = deviceInfo ?? DeviceInfoPlugin() {
     _registerFromJsonFunctions();
   }
-
-  /// The singleton [Health] instance.
-  factory Health() => _instance;
 
   /// The latest status on availability of Health Connect SDK on this phone.
   HealthConnectSdkStatus get healthConnectSdkStatus => _healthConnectSdkStatus;
@@ -195,6 +197,70 @@ class Health {
       throw UnsupportedError(
           "Google Health Connect is not available on this Android device. "
           "You may prompt the user to install it using the 'installHealthConnect' method");
+    }
+  }
+
+  /// Checks if the Health Data History feature is available.
+  ///
+  /// See this for more info: https://developer.android.com/reference/androidx/health/connect/client/permission/HealthPermission#PERMISSION_READ_HEALTH_DATA_HISTORY()
+  ///
+  ///
+  /// Android only. Returns false on iOS or if an error occurs.
+  Future<bool> isHealthDataHistoryAvailable() async {
+    if (Platform.isIOS) return false;
+
+    try {
+      final status =
+          await _channel.invokeMethod<bool>('isHealthDataHistoryAvailable');
+      return status ?? false;
+    } catch (e) {
+      debugPrint(
+          '$runtimeType - Exception in isHealthDataHistoryAvailable(): $e');
+      return false;
+    }
+  }
+
+  /// Checks the current status of the Health Data History permission.
+  /// Make sure to check [isHealthConnectAvailable] before calling this method.
+  ///
+  /// See this for more info: https://developer.android.com/reference/androidx/health/connect/client/permission/HealthPermission#PERMISSION_READ_HEALTH_DATA_HISTORY()
+  ///
+  ///
+  /// Android only. Returns true on iOS or false if an error occurs.
+  Future<bool> isHealthDataHistoryAuthorized() async {
+    if (Platform.isIOS) return true;
+
+    try {
+      final status =
+          await _channel.invokeMethod<bool>('isHealthDataHistoryAuthorized');
+      return status ?? false;
+    } catch (e) {
+      debugPrint(
+          '$runtimeType - Exception in isHealthDataHistoryAuthorized(): $e');
+      return false;
+    }
+  }
+
+  /// Requests the Health Data History permission.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// See this for more info: https://developer.android.com/reference/androidx/health/connect/client/permission/HealthPermission#PERMISSION_READ_HEALTH_DATA_HISTORY()
+  ///
+  ///
+  /// Android only. Returns true on iOS or false if an error occurs.
+  Future<bool> requestHealthDataHistoryAuthorization() async {
+    if (Platform.isIOS) return true;
+
+    await _checkIfHealthConnectAvailableOnAndroid();
+    try {
+      final bool? isAuthorized =
+          await _channel.invokeMethod('requestHealthDataHistoryAuthorization');
+      return isAuthorized ?? false;
+    } catch (e) {
+      debugPrint(
+          '$runtimeType - Exception in requestHealthDataHistoryAuthorization(): $e');
+      return false;
     }
   }
 
@@ -439,6 +505,38 @@ class Health {
       'endTime': endTime.millisecondsSinceEpoch
     };
     bool? success = await _channel.invokeMethod('delete', args);
+    return success ?? false;
+  }
+
+  /// Deletes a specific health record by its UUID.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  ///  * [uuid] - The UUID of the health record to delete.
+  ///  * [type] - The health data type of the record. Required on iOS.
+  ///
+  /// On Android, only the UUID is required. On iOS, both UUID and type are required.
+  Future<bool> deleteByUUID({
+    required String uuid,
+    HealthDataType? type,
+  }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
+
+    if (uuid.isEmpty || uuid == "") {
+      throw ArgumentError("UUID must not be empty.");
+    }
+
+    if (Platform.isIOS && type == null) {
+      throw ArgumentError("On iOS, both UUID and type are required to delete a record.");
+    }
+
+    Map<String, dynamic> args = {
+      'uuid': uuid,
+      'dataTypeKey': type?.name,
+    };
+
+    bool? success = await _channel.invokeMethod('deleteByUUID', args);
     return success ?? false;
   }
 
@@ -1104,7 +1202,7 @@ class Health {
         HealthDataType.SLEEP_IN_BED => 0,
         HealthDataType.SLEEP_ASLEEP => 1,
         HealthDataType.SLEEP_AWAKE => 2,
-        HealthDataType.SLEEP_ASLEEP => 3,
+        HealthDataType.SLEEP_LIGHT => 3,
         HealthDataType.SLEEP_DEEP => 4,
         HealthDataType.SLEEP_REM => 5,
         HealthDataType.HEADACHE_UNSPECIFIED => 0,
@@ -1257,6 +1355,7 @@ class Health {
       HealthWorkoutActivityType.YOGA,
       HealthWorkoutActivityType.SWIMMING_OPEN_WATER,
       HealthWorkoutActivityType.SWIMMING_POOL,
+      HealthWorkoutActivityType.UNDERWATER_DIVING,
     }.contains(type);
   }
 

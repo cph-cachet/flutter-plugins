@@ -608,8 +608,6 @@ class NutritionHealthValue extends HealthValue {
   @override
   Map<String, dynamic> toJson() => _$NutritionHealthValueToJson(this);
 
-  static double? _toDoubleOrNull(num? value) => value?.toDouble();
-
   /// Create a [NutritionHealthValue] based on a health data point from native data format.
   factory NutritionHealthValue.fromHealthDataPoint(dynamic dataPoint) {
     dataPoint = dataPoint as Map<Object?, Object?>;

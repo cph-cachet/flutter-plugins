@@ -10,6 +10,7 @@ void _registerFromJsonFunctions() {
   FromJsonFactory().registerAll([
     HealthValue(),
     NumericHealthValue(numericValue: 12),
+    WorkoutHealthValue(workoutActivityType: HealthWorkoutActivityType.RUNNING),
     AudiogramHealthValue(
       frequencies: [],
       leftEarSensitivities: [],
@@ -18,6 +19,11 @@ void _registerFromJsonFunctions() {
     ElectrocardiogramHealthValue(voltageValues: []),
     ElectrocardiogramVoltageValue(voltage: 12, timeSinceSampleStart: 0),
     NutritionHealthValue(),
+    MenstruationFlowHealthValue(flow: null, dateTime: DateTime.now()),
+    InsulinDeliveryHealthValue(
+      units: 0.0,
+      reason: InsulinDeliveryReason.NOT_SET,
+    ),
   ]);
 
   _fromJsonFunctionsRegistered = true;
