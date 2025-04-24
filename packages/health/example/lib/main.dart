@@ -197,6 +197,27 @@ class HealthAppState extends State<HealthApp> {
     });
   }
 
+  Future<void> writeNutritionDataTest() async {
+    final now = DateTime.now();
+    final earlier = now.subtract(const Duration(minutes: 20));
+
+    // Add nutrition data
+    bool success = await health.writeMeal(
+      mealType: MealType.DINNER,
+      startTime: earlier,
+      endTime: now,
+      caloriesConsumed: 1000,
+      carbohydrates: 50,
+      protein: 25,
+      fatTotal: 50,
+      name: "Banana",
+    );
+
+    setState(() {
+      _state = success ? AppState.DATA_ADDED : AppState.DATA_NOT_ADDED;
+    });
+  }
+
   /// Add some random health data.
   /// Note that you should ensure that you have permissions to add the
   /// following data types.
@@ -740,7 +761,7 @@ class HealthAppState extends State<HealthApp> {
         if (p.value is NutritionHealthValue) {
           return ListTile(
             title: Text(
-                "${p.typeString} ${(p.value as NutritionHealthValue).mealType}: ${(p.value as NutritionHealthValue).name}"),
+                "${p.typeString} ${(p.value as NutritionHealthValue).meal_type}: ${(p.value as NutritionHealthValue).name}"),
             trailing:
                 Text('${(p.value as NutritionHealthValue).calories} kcal'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
