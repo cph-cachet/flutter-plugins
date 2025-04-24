@@ -479,7 +479,7 @@ NutritionHealthValue _$NutritionHealthValueFromJson(
         Map<String, dynamic> json) =>
     NutritionHealthValue(
       name: json['name'] as String?,
-      mealType: json['mealType'] as String?,
+      meal_type: json['meal_type'] as String?,
       calories: (json['calories'] as num?)?.toDouble(),
       protein: (json['protein'] as num?)?.toDouble(),
       fat: (json['fat'] as num?)?.toDouble(),
@@ -529,7 +529,7 @@ Map<String, dynamic> _$NutritionHealthValueToJson(
     <String, dynamic>{
       if (instance.$type case final value?) '__type': value,
       if (instance.name case final value?) 'name': value,
-      if (instance.mealType case final value?) 'mealType': value,
+      if (instance.meal_type case final value?) 'meal_type': value,
       if (instance.calories case final value?) 'calories': value,
       if (instance.protein case final value?) 'protein': value,
       if (instance.fat case final value?) 'fat': value,
