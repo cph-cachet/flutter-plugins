@@ -311,6 +311,17 @@ List<HealthDataPoint> points = ...;
 points = health.removeDuplicates(points);
 ```
 
+### Android: Reading Health Data in Background
+Currently health connect allows apps to read health data in the background. In order to achieve this add the following permission to your `AndroidManifest.XML`:
+```XML
+<!-- For reading data in background -->
+<uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"/>
+```
+Furthermore, the plugin now exposes three new functions to help you check and request access to read data in the background:
+1. `isHealthDataInBackgroundAvailable()`: Checks if the Health Data in Background feature is available
+2. `isHealthDataInBackgroundAuthorized()`: Checks the current status of the Health Data in Background permission
+3. `requestHealthDataInBackgroundAuthorization()`: Requests the Health Data in Background permission.
+
 ## Data Types
 
 The plugin supports the following [`HealthDataType`](https://pub.dev/documentation/health/latest/health/HealthDataType.html).
