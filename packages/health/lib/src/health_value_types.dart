@@ -426,7 +426,7 @@ class NutritionHealthValue extends HealthValue {
   String? name;
 
   /// The type of meal.
-  String? mealType;
+  String? meal_type;
 
   /// The amount of calories in kcal.
   double? calories;
@@ -556,7 +556,7 @@ class NutritionHealthValue extends HealthValue {
 
   NutritionHealthValue({
     this.name,
-    this.mealType,
+    this.meal_type,
     this.calories,
     this.protein,
     this.fat,
@@ -625,7 +625,7 @@ class NutritionHealthValue extends HealthValue {
     name: ${name.toString()},
     carbs: ${carbs.toString()},
     caffeine: ${caffeine.toString()},
-    mealType: $mealType,
+    mealType: $meal_type,
     vitaminA: ${vitaminA.toString()},
     b1Thiamine: ${b1Thiamine.toString()},
     b2Riboflavin: ${b2Riboflavin.toString()},
@@ -668,7 +668,7 @@ class NutritionHealthValue extends HealthValue {
   bool operator ==(Object other) =>
       other is NutritionHealthValue &&
       other.name == name &&
-      other.mealType == mealType &&
+      other.meal_type == meal_type &&
       other.calories == calories &&
       other.protein == protein &&
       other.fat == fat &&

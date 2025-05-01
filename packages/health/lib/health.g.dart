@@ -27,6 +27,7 @@ HealthDataPoint _$HealthDataPointFromJson(Map<String, dynamic> json) =>
           : WorkoutSummary.fromJson(
               json['workoutSummary'] as Map<String, dynamic>),
       metadata: json['metadata'] as Map<String, dynamic>?,
+      deviceModel: json['deviceModel'] as String?,
     );
 
 Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) =>
@@ -45,6 +46,7 @@ Map<String, dynamic> _$HealthDataPointToJson(HealthDataPoint instance) =>
       if (instance.workoutSummary?.toJson() case final value?)
         'workoutSummary': value,
       if (instance.metadata case final value?) 'metadata': value,
+      if (instance.deviceModel case final value?) 'deviceModel': value,
     };
 
 const _$HealthDataTypeEnumMap = {
@@ -480,7 +482,7 @@ NutritionHealthValue _$NutritionHealthValueFromJson(
         Map<String, dynamic> json) =>
     NutritionHealthValue(
       name: json['name'] as String?,
-      mealType: json['mealType'] as String?,
+      meal_type: json['meal_type'] as String?,
       calories: (json['calories'] as num?)?.toDouble(),
       protein: (json['protein'] as num?)?.toDouble(),
       fat: (json['fat'] as num?)?.toDouble(),
@@ -530,7 +532,7 @@ Map<String, dynamic> _$NutritionHealthValueToJson(
     <String, dynamic>{
       if (instance.$type case final value?) '__type': value,
       if (instance.name case final value?) 'name': value,
-      if (instance.mealType case final value?) 'mealType': value,
+      if (instance.meal_type case final value?) 'meal_type': value,
       if (instance.calories case final value?) 'calories': value,
       if (instance.protein case final value?) 'protein': value,
       if (instance.fat case final value?) 'fat': value,
