@@ -322,6 +322,43 @@ Furthermore, the plugin now exposes three new functions to help you check and re
 2. `isHealthDataInBackgroundAuthorized()`: Checks the current status of the Health Data in Background permission
 3. `requestHealthDataInBackgroundAuthorization()`: Requests the Health Data in Background permission.
 
+### Fetch single health data by UUID
+
+In order to retrieve a single record, it is required to provide `String uuid` and `HealthDataType type`.
+
+Please see example below:
+```dart
+HealthDataPoint? healthPoint = await health.getHealthDataByUUID(
+  uuid: 'E9F2EEAD-8FC5-4CE5-9FF5-7C4E535FB8B8',
+  type: HealthDataType.WORKOUT,
+);
+```
+```
+data by UUID: HealthDataPoint -
+    uuid: E9F2EEAD-8FC5-4CE5-9FF5-7C4E535FB8B8,
+    value: WorkoutHealthValue - workoutActivityType: RUNNING,
+           totalEnergyBurned: null,
+           totalEnergyBurnedUnit: KILOCALORIE,
+           totalDistance: 2400,
+           totalDistanceUnit: METER
+           totalSteps: null,
+           totalStepsUnit: null,
+    unit: NO_UNIT,
+    dateFrom: 2025-05-02 07:31:00.000,
+    dateTo: 2025-05-02 08:25:00.000,
+    dataType: WORKOUT,
+    platform: HealthPlatformType.appleHealth,
+    deviceId: unknown,
+    sourceId: com.apple.Health,
+    sourceName: Health
+    recordingMethod: RecordingMethod.manual
+    workoutSummary: WorkoutSummary - workoutType: runningtotalDistance: 2400, totalEnergyBurned: 0, totalSteps: 0
+    metadata: null
+    deviceModel: null
+```
+> Assuming that the `uuid` and `type` are coming from your database.
+
+
 ## Data Types
 
 The plugin supports the following [`HealthDataType`](https://pub.dev/documentation/health/latest/health/HealthDataType.html).
