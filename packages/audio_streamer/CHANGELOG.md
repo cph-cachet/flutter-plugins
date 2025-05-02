@@ -1,3 +1,13 @@
+## 4.2.0
+
+* Gradle files restructure for example app
+* Small upgrades to ios example app
+* Upgrading gradle version
+* Upgrading agp
+* Upgrading targetSdkVersion
+* Upgrading compileSdkVersion
+* Upgrading ndkVersion
+
 ## 4.1.1
 
 * enable AGP 8.0
