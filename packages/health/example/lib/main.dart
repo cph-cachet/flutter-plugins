@@ -10,7 +10,11 @@ import 'package:carp_serializable/carp_serializable.dart';
 // Global Health instance
 final health = Health();
 
-void main() => runApp(HealthApp());
+void main() => runApp(
+      const MaterialApp(
+        home: HealthApp(),
+      ),
+    );
 
 class HealthApp extends StatefulWidget {
   const HealthApp({super.key});
@@ -122,13 +126,12 @@ class HealthAppState extends State<HealthApp> {
       try {
         authorized =
             await health.requestAuthorization(types, permissions: permissions);
-        
+
         // request access to read historic data
         await health.requestHealthDataHistoryAuthorization();
 
         // request access in background
         await health.requestHealthDataInBackgroundAuthorization();
-
       } catch (error) {
         debugPrint("Exception in authorize: $error");
       }
@@ -195,6 +198,26 @@ class HealthAppState extends State<HealthApp> {
     setState(() {
       _state = _healthDataList.isEmpty ? AppState.NO_DATA : AppState.DATA_READY;
     });
+  }
+
+  /// Fetch single data point by UUID and type.
+  Future<void> fetchDataByUUID({
+    required String uuid,
+    required HealthDataType type,
+  }) async {
+    try {
+      // fetch health data
+      HealthDataPoint? healthPoint = await health.getHealthDataByUUID(
+        uuid: uuid,
+        type: type,
+      );
+
+      if (healthPoint != null) {
+        openDetailBottomSheet(healthPoint);
+      }
+    } catch (error) {
+      debugPrint("Exception in getHealthDataByUUID: $error");
+    }
   }
 
   /// Add some random health data.
@@ -514,6 +537,22 @@ class HealthAppState extends State<HealthApp> {
     });
   }
 
+  /// Display bottom sheet dialog of selected HealthDataPoint
+  void openDetailBottomSheet(HealthDataPoint? healthPoint) {
+    if (!context.mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) => _detailedBottomSheet(
+        healthPoint: healthPoint,
+      ),
+    );
+  }
+
   // UI building below
 
   @override
@@ -735,6 +774,12 @@ class HealthAppState extends State<HealthApp> {
             trailing:
                 Text((p.value as WorkoutHealthValue).workoutActivityType.name),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
+            onTap: () {
+              fetchDataByUUID(
+                uuid: p.uuid,
+                type: p.type,
+              );
+            },
           );
         }
         if (p.value is NutritionHealthValue) {
@@ -750,6 +795,12 @@ class HealthAppState extends State<HealthApp> {
           title: Text("${p.typeString}: ${p.value}"),
           trailing: Text(p.unitString),
           subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
+          onTap: () {
+            fetchDataByUUID(
+              uuid: p.uuid,
+              type: p.type,
+            );
+          },
         );
       });
 
@@ -806,4 +857,49 @@ class HealthAppState extends State<HealthApp> {
         AppState.PERMISSIONS_REVOKED => _permissionsRevoked,
         AppState.PERMISSIONS_NOT_REVOKED => _permissionsNotRevoked,
       };
+
+  Widget _detailedBottomSheet({HealthDataPoint? healthPoint}) {
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.5,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      builder: (BuildContext listContext, scrollController) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Text(
+                "Health Data Details",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              healthPoint == null
+                  ? const Text('UUID Not Found!')
+                  : Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: healthPoint.toJson().entries.length,
+                        itemBuilder: (context, index) {
+                          String key =
+                              healthPoint.toJson().keys.elementAt(index);
+                          var value = healthPoint.toJson()[key];
+
+                          return ListTile(
+                            title: Text(
+                              key.replaceAll('_', ' ').toUpperCase(),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(value.toString()),
+                          );
+                        },
+                      ),
+                    ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
