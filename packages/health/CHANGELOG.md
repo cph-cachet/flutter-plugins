@@ -1,3 +1,7 @@
+## 13.0.0
+
+* Refactored Swift native implementation
+
 ## 12.2.0
 
 * iOS: Add `deviceModel` in returned Health data to identify the device that generated the data of the receiver. (in iOS `source_name` represents the revision of the source responsible for saving the receiver.)
