@@ -264,6 +264,70 @@ class Health {
     }
   }
 
+  /// Checks if the Health Data in Background feature is available.
+  ///
+  /// See this for more info: https://developer.android.com/reference/androidx/health/connect/client/permission/HealthPermission#PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND()
+  ///
+  ///
+  /// Android only. Returns false on iOS or if an error occurs.
+  Future<bool> isHealthDataInBackgroundAvailable() async {
+    if (Platform.isIOS) return false;
+
+    try {
+      final status =
+          await _channel.invokeMethod<bool>('isHealthDataInBackgroundAvailable');
+      return status ?? false;
+    } catch (e) {
+      debugPrint(
+          '$runtimeType - Exception in isHealthDataInBackgroundAvailable(): $e');
+      return false;
+    }
+  }
+
+  /// Checks the current status of the Health Data in Background permission.
+  /// Make sure to check [isHealthConnectAvailable] before calling this method.
+  ///
+  /// See this for more info: https://developer.android.com/reference/androidx/health/connect/client/permission/HealthPermission#PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND()
+  ///
+  ///
+  /// Android only. Returns true on iOS or false if an error occurs.
+  Future<bool> isHealthDataInBackgroundAuthorized() async {
+    if (Platform.isIOS) return true;
+
+    try {
+      final status =
+          await _channel.invokeMethod<bool>('isHealthDataInBackgroundAuthorized');
+      return status ?? false;
+    } catch (e) {
+      debugPrint(
+          '$runtimeType - Exception in isHealthDataInBackgroundAuthorized(): $e');
+      return false;
+    }
+  }
+
+  /// Requests the Health Data in Background permission.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// See this for more info: https://developer.android.com/reference/androidx/health/connect/client/permission/HealthPermission#PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND()
+  ///
+  ///
+  /// Android only. Returns true on iOS or false if an error occurs.
+  Future<bool> requestHealthDataInBackgroundAuthorization() async {
+    if (Platform.isIOS) return true;
+
+    await _checkIfHealthConnectAvailableOnAndroid();
+    try {
+      final bool? isAuthorized =
+          await _channel.invokeMethod('requestHealthDataInBackgroundAuthorization');
+      return isAuthorized ?? false;
+    } catch (e) {
+      debugPrint(
+          '$runtimeType - Exception in requestHealthDataInBackgroundAuthorization(): $e');
+      return false;
+    }
+  }
+
   /// Requests permissions to access health data [types].
   ///
   /// Returns true if successful, false otherwise.
