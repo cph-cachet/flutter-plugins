@@ -1,6 +1,6 @@
 import 'package:health/health.dart';
 
-/// List of data types available on iOS
+/// Data types available on iOS via Apple Health.
 const List<HealthDataType> dataTypesIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.AUDIOGRAM,
@@ -65,11 +65,7 @@ const List<HealthDataType> dataTypesIOS = [
   HealthDataType.UV_INDEX,
 ];
 
-/// List of data types available on Android.
-///
-/// Note that these are only the ones supported on Android's Health Connect API.
-/// Android's Health Connect has more types that we support in the [HealthDataType]
-/// enumeration.
+/// Data types available on Android via the Google Health Connect API.
 const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.BASAL_ENERGY_BURNED,
@@ -81,7 +77,7 @@ const List<HealthDataType> dataTypesAndroid = [
   HealthDataType.HEIGHT,
   HealthDataType.WEIGHT,
   HealthDataType.LEAN_BODY_MASS,
-  // HealthDataType.BODY_MASS_INDEX,
+  HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_TEMPERATURE,
   HealthDataType.HEART_RATE,
   HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
