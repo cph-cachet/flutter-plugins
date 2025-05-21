@@ -56,6 +56,7 @@ const val LEAN_BODY_MASS = "LEAN_BODY_MASS"
 const val BODY_TEMPERATURE = "BODY_TEMPERATURE"
 const val BODY_WATER_MASS = "BODY_WATER_MASS"
 const val DISTANCE_DELTA = "DISTANCE_DELTA"
+const val SPEED = "SPEED"
 const val FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
 const val HEART_RATE = "HEART_RATE"
 const val HEART_RATE_VARIABILITY_RMSSD = "HEART_RATE_VARIABILITY_RMSSD"
@@ -1380,6 +1381,19 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ),
                 )
 
+            is SpeedRecord ->
+                return record.samples.map {
+                    mapOf<String, Any>(
+                        "uuid" to metadata.id,
+                        "value" to it.speed.inMetersPerSecond,
+                        "date_from" to it.time.toEpochMilli(),
+                        "date_to" to it.time.toEpochMilli(),
+                        "source_id" to "",
+                        "source_name" to metadata.dataOrigin.packageName,
+                        "recording_method" to metadata.recordingMethod
+                    )
+                }
+
             is HydrationRecord ->
                 return listOf(
                     mapOf<String, Any>(
@@ -2535,6 +2549,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             BLOOD_GLUCOSE to BloodGlucoseRecord::class,
             HEART_RATE_VARIABILITY_RMSSD to HeartRateVariabilityRmssdRecord::class,
             DISTANCE_DELTA to DistanceRecord::class,
+            SPEED to SpeedRecord::class,
             WATER to HydrationRecord::class,
             SLEEP_ASLEEP to SleepSessionRecord::class,
             SLEEP_AWAKE to SleepSessionRecord::class,
