@@ -164,7 +164,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "getIntervalData" -> getIntervalData(call, result)
             "writeData" -> writeData(call, result)
             "delete" -> deleteData(call, result)
-            "deleteByIds" -> deleteDataByIds(call, result)
             "getAggregateData" -> getAggregateData(call, result)
             "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
             "writeWorkoutData" -> writeWorkoutData(call, result)
