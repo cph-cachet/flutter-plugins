@@ -1,3 +1,11 @@
+## 4.0.1
+
+* Upgrading gradle version
+* Upgrading agp version
+* Upgrading kotlin version
+* Removing tracked files from git
+* Removing depricated function calls
+
 ## 4.0.0
 
 * upgrade of Android APK

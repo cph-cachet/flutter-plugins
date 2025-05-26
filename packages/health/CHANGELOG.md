@@ -1,3 +1,27 @@
+## 12.2.0
+
+* iOS: Add `deviceModel` in returned Health data to identify the device that generated the data of the receiver. (in iOS `source_name` represents the revision of the source responsible for saving the receiver.)
+* Android: Add read health data in background - PR [#1184](https://github.com/cph-cachet/flutter-plugins/pull/1184)
+* Fix [#1169](https://github.com/cph-cachet/flutter-plugins/issues/1169) where `meal_type` property in `Nutrition` was null always
+* iOS: Add `CARDIO_DANCE` HealthDataType - [#1146](https://github.com/cph-cachet/flutter-plugins/pull/1146)
+
+## 12.1.0
+
+* Add delete record by UUID method. See function `deleteByUUID(required String uuid, HealthDataType? type)`
+* iOS: Parse metadata to remove unsupported types - PR [#1120](https://github.com/cph-cachet/flutter-plugins/pull/1120)
+* iOS: Add UV Index Types
+* Android: Add request access to historic data [#1126](https://github.com/cph-cachet/flutter-plugins/issues/1126) - PR [#1127](https://github.com/cph-cachet/flutter-plugins/pull/1127)
+```XML
+<!-- Add the following permission into AndroidManifest.xml -->
+<uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
+```
+* Android:
+  * Update `androidx.compose:compose-bom` to `2025.02.00`
+  * Update `androidx.health.connect:connect-client` to `1.1.0-alpha11`
+  * Update `androidx.fragment:fragment-ktx` to `1.8.6`
+  * Update to Java 11
+* Update example apps
+
 ## 12.0.1
 
 * Update of API and README doc
@@ -18,12 +42,10 @@
   * Fix [#984](https://github.com/cph-cachet/flutter-plugins/issues/984) - PR [#1055](https://github.com/cph-cachet/flutter-plugins/pull/1055)
 * Add `LEAN_BODY_MASS` data type [#1078](https://github.com/cph-cachet/flutter-plugins/issues/1078) - PR [#1097](https://github.com/cph-cachet/flutter-plugins/pull/1097)
   * The following AndroidManifest values are required to READ/WRITE `LEAN_BODY_MASS`:
-
   ```XML
   <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS"/>
   <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS"/>
   ```
-
 * iOS: Add `WATER_TEMPERATURE` and `UNDERWATER_DEPTH` health values [#1096](https://github.com/cph-cachet/flutter-plugins/issues/1096)
 * iOS: Add support for `Underwater Diving` workout [#1096](https://github.com/cph-cachet/flutter-plugins/issues/1096)
 * Fix [#1072](https://github.com/cph-cachet/flutter-plugins/issues/1072) and [#1074](https://github.com/cph-cachet/flutter-plugins/issues/1074)
