@@ -569,12 +569,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
      */
     private fun isHealthDataHistoryAuthorized(call: MethodCall, result: Result) {
         scope.launch {
-            result.success(
-                healthConnectClient
-                    .permissionController
-                    .getGrantedPermissions()
-                    .containsAll(listOf(PERMISSION_READ_HEALTH_DATA_HISTORY)),
-            )
+            try {
+                result.success(
+                    healthConnectClient
+                        .permissionController
+                        .getGrantedPermissions()
+                        .containsAll(listOf(PERMISSION_READ_HEALTH_DATA_HISTORY)),
+                )
+            } catch (e: Exception) {
+                Log.i(
+                    "FLUTTER_HEALTH::ERROR",
+                    "Unable to check health data history authorization due to the following exception:"
+                )
+                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                result.success(null)
+            }
         }
     }
 
@@ -618,12 +627,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
      */
     private fun isHealthDataInBackgroundAuthorized(call: MethodCall, result: Result) {
         scope.launch {
-            result.success(
-                healthConnectClient
-                    .permissionController
-                    .getGrantedPermissions()
-                    .containsAll(listOf(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)),
-            )
+            try {
+                result.success(
+                    healthConnectClient
+                        .permissionController
+                        .getGrantedPermissions()
+                        .containsAll(listOf(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)),
+                )
+            } catch (e: Exception) {
+                Log.i(
+                    "FLUTTER_HEALTH::ERROR",
+                    "Unable to check health data in background authorization due to the following exception:"
+                )
+                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                result.success(null)
+            }
         }
     }
 
@@ -683,12 +701,21 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             }
         }
         scope.launch {
-            result.success(
-                healthConnectClient
-                    .permissionController
-                    .getGrantedPermissions()
-                    .containsAll(permList),
-            )
+            try {
+                result.success(
+                    healthConnectClient
+                        .permissionController
+                        .getGrantedPermissions()
+                        .containsAll(permList),
+                )
+            } catch (e: Exception) {
+                Log.i(
+                    "FLUTTER_HEALTH::ERROR",
+                    "Unable to check permissions due to the following exception:"
+                )
+                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                result.success(null)
+            }
         }
     }
 
