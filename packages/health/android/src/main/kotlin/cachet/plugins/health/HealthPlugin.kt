@@ -409,8 +409,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
      */
     private fun revokePermissions(call: MethodCall, result: Result) {
         scope.launch {
-            Log.i("Health", "Disabling Health Connect")
-            healthConnectClient.permissionController.revokeAllPermissions()
+            try {
+                Log.i("Health", "Disabling Health Connect")
+                healthConnectClient.permissionController.revokeAllPermissions()
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Unable to revoke permissions: ${e.message}")
+            }
         }
         result.success(true)
     }
@@ -508,14 +512,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     private fun getHealthConnectSdkStatus(call: MethodCall, result: Result) {
-        checkAvailability()
-        if (healthConnectAvailable) {
-            healthConnectClient =
-                HealthConnectClient.getOrCreate(
-                    context!!
-                )
+        scope.launch {
+            checkAvailability()
+            result.success(healthConnectStatus)
         }
-        result.success(healthConnectStatus)
     }
 
     /** Filter records by recording methods */
@@ -540,7 +540,132 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
     }
 
->>>>>>> 4eab9fe4 (try catch getGrantedPermissions calls)
+    /**
+     * Checks if the health data history feature is available on this device
+     */
+    @OptIn(ExperimentalFeatureAvailabilityApi::class)
+    private fun isHealthDataHistoryAvailable(call: MethodCall, result: Result) {
+        scope.launch {
+            try {
+                result.success(
+                    healthConnectClient
+                        .features
+                        .getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY) ==
+                        HealthConnectFeatures.FEATURE_STATUS_AVAILABLE)
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Unable to check health data history availability: ${e.message}")
+                result.success(null)
+            }
+        }
+    }
+
+    /**
+     * Checks if PERMISSION_READ_HEALTH_DATA_HISTORY has been granted
+     */
+    private fun isHealthDataHistoryAuthorized(call: MethodCall, result: Result) {
+        scope.launch {
+            try {
+                result.success(
+                    healthConnectClient
+                        .permissionController
+                        .getGrantedPermissions()
+                        .containsAll(listOf(PERMISSION_READ_HEALTH_DATA_HISTORY)),
+                )
+            } catch (e: Exception) {
+                Log.i(
+                    "FLUTTER_HEALTH::ERROR",
+                    "Unable to check health data history authorization due to the following exception:"
+                )
+                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                result.success(null)
+            }
+        }
+    }
+
+    /**
+     * Requests authorization for PERMISSION_READ_HEALTH_DATA_HISTORY
+     */
+    private fun requestHealthDataHistoryAuthorization(call: MethodCall, result: Result) {
+        if (context == null) {
+            result.success(false)
+            return
+        }
+
+        if (healthConnectRequestPermissionsLauncher == null) {
+            result.success(false)
+            Log.i("FLUTTER_HEALTH", "Permission launcher not found")
+            return
+        }
+
+        // Store the result to be called in [onHealthConnectPermissionCallback]
+        mResult = result
+        isReplySubmitted = false
+        healthConnectRequestPermissionsLauncher!!.launch(setOf(PERMISSION_READ_HEALTH_DATA_HISTORY))
+    }
+
+    /**
+     * Checks if the health data in background feature is available on this device
+     */
+    @OptIn(ExperimentalFeatureAvailabilityApi::class)
+    private fun isHealthDataInBackgroundAvailable(call: MethodCall, result: Result) {
+        scope.launch {
+            try {
+                result.success(
+                    healthConnectClient
+                        .features
+                        .getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) ==
+                        HealthConnectFeatures.FEATURE_STATUS_AVAILABLE)
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Unable to check health data in background availability: ${e.message}")
+                result.success(null)
+            }
+        }
+    }
+
+    /**
+     * Checks if PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND has been granted
+     */
+    private fun isHealthDataInBackgroundAuthorized(call: MethodCall, result: Result) {
+        scope.launch {
+            try {
+                result.success(
+                    healthConnectClient
+                        .permissionController
+                        .getGrantedPermissions()
+                        .containsAll(listOf(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)),
+                )
+            } catch (e: Exception) {
+                Log.i(
+                    "FLUTTER_HEALTH::ERROR",
+                    "Unable to check health data in background authorization due to the following exception:"
+                )
+                Log.e("FLUTTER_HEALTH::ERROR", Log.getStackTraceString(e))
+                result.success(null)
+            }
+        }
+    }
+
+    /**
+     * Requests authorization for PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
+     */
+    private fun requestHealthDataInBackgroundAuthorization(call: MethodCall, result: Result) {
+        if (context == null) {
+            result.success(false)
+            return
+        }
+
+        if (healthConnectRequestPermissionsLauncher == null) {
+            result.success(false)
+            Log.i("FLUTTER_HEALTH", "Permission launcher not found")
+            return
+        }
+
+        // Store the result to be called in [onHealthConnectPermissionCallback]
+        mResult = result
+        isReplySubmitted = false
+        healthConnectRequestPermissionsLauncher!!.launch(setOf(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND))
+    }
+
     private fun hasPermissions(call: MethodCall, result: Result) {
         val args = call.arguments as HashMap<*, *>
         val types = (args["types"] as? ArrayList<*>)?.filterIsInstance<String>()!!
