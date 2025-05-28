@@ -419,8 +419,12 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
      */
     private fun revokePermissions(call: MethodCall, result: Result) {
         scope.launch {
-            Log.i("Health", "Disabling Health Connect")
-            healthConnectClient.permissionController.revokeAllPermissions()
+            try {
+                Log.i("Health", "Disabling Health Connect")
+                healthConnectClient.permissionController.revokeAllPermissions()
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Unable to revoke permissions: ${e.message}")
+            }
         }
         result.success(true)
     }
@@ -518,14 +522,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     private fun getHealthConnectSdkStatus(call: MethodCall, result: Result) {
-        checkAvailability()
-        if (healthConnectAvailable) {
-            healthConnectClient =
-                HealthConnectClient.getOrCreate(
-                    context!!
-                )
+        scope.launch {
+            checkAvailability()
+            result.success(healthConnectStatus)
         }
-        result.success(healthConnectStatus)
     }
 
     /** Filter records by recording methods */
@@ -556,11 +556,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     @OptIn(ExperimentalFeatureAvailabilityApi::class)
     private fun isHealthDataHistoryAvailable(call: MethodCall, result: Result) {
         scope.launch {
-            result.success(
-                healthConnectClient
-                    .features
-                    .getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY) ==
-                    HealthConnectFeatures.FEATURE_STATUS_AVAILABLE)
+            try {
+                result.success(
+                    healthConnectClient
+                        .features
+                        .getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY) ==
+                        HealthConnectFeatures.FEATURE_STATUS_AVAILABLE)
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Unable to check health data history availability: ${e.message}")
+                result.success(null)
+            }
         }
     }
 
@@ -614,11 +619,16 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     @OptIn(ExperimentalFeatureAvailabilityApi::class)
     private fun isHealthDataInBackgroundAvailable(call: MethodCall, result: Result) {
         scope.launch {
-            result.success(
-                healthConnectClient
-                    .features
-                    .getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) ==
-                    HealthConnectFeatures.FEATURE_STATUS_AVAILABLE)
+            try {
+                result.success(
+                    healthConnectClient
+                        .features
+                        .getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) ==
+                        HealthConnectFeatures.FEATURE_STATUS_AVAILABLE)
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Unable to check health data in background availability: ${e.message}")
+                result.success(null)
+            }
         }
     }
 
