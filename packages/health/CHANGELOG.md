@@ -1,3 +1,7 @@
+## 13.0.0
+
+* Refactored Swift native implementation
+
 ## 12.2.1
 
 * iOS: Add `swift_version` for add-to-app implementations - PR [#1205](https://github.com/cph-cachet/flutter-plugins/pull/1205)
