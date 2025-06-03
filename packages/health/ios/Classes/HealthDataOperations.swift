@@ -115,6 +115,7 @@ class HealthDataOperations {
         
         var typesToRead = Set<HKObjectType>()
         var typesToWrite = Set<HKSampleType>()
+        
         for (index, key) in types.enumerated() {
             if (key == HealthConstants.NUTRITION) {
                 for nutritionType in nutritionList {
@@ -125,32 +126,35 @@ class HealthDataOperations {
                     typesToWrite.insert(nutritionData)
                 }
             } else {
-                guard let dataType = dataTypesDict[key] else {
-                    print("Warning: Health data type '\(key)' not found in dataTypesDict")
-                    continue
+                let access = permissions[index]
+                
+                if let dataType = dataTypesDict[key] {
+                    switch access {
+                    case 0:
+                        typesToRead.insert(dataType)
+                    case 1:
+                        typesToWrite.insert(dataType)
+                    default:
+                        typesToRead.insert(dataType)
+                        typesToWrite.insert(dataType)
+                    }
                 }
                 
-                let access = permissions[index]
-                switch access {
-                case 0:
-                    typesToRead.insert(dataType)
-                case 1:
-                    typesToWrite.insert(dataType)
-                default:
-                    typesToRead.insert(dataType)
-                    typesToWrite.insert(dataType)
-                }
                 if let characteristicsType = characteristicsTypesDict[key] {
-                    let access = permissions[index]
                     switch access {
                     case 0:
                         typesToRead.insert(characteristicsType)
                     case 1:
-                        throw PluginError(message: "Can not ask for reading permissions to the type of \(characteristicsType)")
+                        throw PluginError(message: "Cannot request write permission for characteristic type \(characteristicsType)")
                     default:
-                        break
+                        typesToRead.insert(characteristicsType)
                     }
                 }
+                
+                if dataTypesDict[key] == nil && characteristicsTypesDict[key] == nil {
+                    print("Warning: Health data type '\(key)' not found in dataTypesDict or characteristicsTypesDict")
+                }
+                
             }
         }
         
@@ -175,6 +179,13 @@ class HealthDataOperations {
         guard let arguments = call.arguments as? NSDictionary,
               let dataTypeKey = arguments["dataTypeKey"] as? String else {
             print("Error: Missing dataTypeKey in arguments")
+            result(false)
+            return
+        }
+        
+        // Check if it's a characteristic type - these cannot be deleted
+        if characteristicsTypesDict[dataTypeKey] != nil {
+            print("Info: Cannot delete characteristic type '\(dataTypeKey)' - these are read-only system values")
             result(false)
             return
         }
@@ -205,9 +216,18 @@ class HealthDataOperations {
             guard let self = self else { return }
             
             guard let samplesOrNil = samplesOrNil, error == nil else {
-                // TODO: Add proper error handling
+                print("Error querying \(dataType) samples: \(error?.localizedDescription ?? "Unknown error")")
                 DispatchQueue.main.async {
                     result(false)
+                }
+                return
+            }
+            
+            // Chcek if there are any samples to delete
+            if samplesOrNil.isEmpty {
+                print("Info: No \(dataType) samples found in the specified date range.")
+                DispatchQueue.main.async {
+                    result(true)
                 }
                 return
             }
