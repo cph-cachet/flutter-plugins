@@ -42,51 +42,6 @@ import java.util.*
 import java.util.concurrent.*
 import kotlinx.coroutines.*
 
-const val CHANNEL_NAME = "flutter_health"
-
-const val ACTIVE_ENERGY_BURNED = "ACTIVE_ENERGY_BURNED"
-const val AGGREGATE_STEP_COUNT = "AGGREGATE_STEP_COUNT"
-const val BASAL_ENERGY_BURNED = "BASAL_ENERGY_BURNED"
-const val BLOOD_GLUCOSE = "BLOOD_GLUCOSE"
-const val BLOOD_OXYGEN = "BLOOD_OXYGEN"
-const val BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
-const val BLOOD_PRESSURE_SYSTOLIC = "BLOOD_PRESSURE_SYSTOLIC"
-const val BODY_FAT_PERCENTAGE = "BODY_FAT_PERCENTAGE"
-const val LEAN_BODY_MASS = "LEAN_BODY_MASS"
-const val BODY_TEMPERATURE = "BODY_TEMPERATURE"
-const val BODY_WATER_MASS = "BODY_WATER_MASS"
-const val DISTANCE_DELTA = "DISTANCE_DELTA"
-const val FLIGHTS_CLIMBED = "FLIGHTS_CLIMBED"
-const val HEART_RATE = "HEART_RATE"
-const val HEART_RATE_VARIABILITY_RMSSD = "HEART_RATE_VARIABILITY_RMSSD"
-const val HEIGHT = "HEIGHT"
-const val MENSTRUATION_FLOW = "MENSTRUATION_FLOW"
-const val RESPIRATORY_RATE = "RESPIRATORY_RATE"
-const val RESTING_HEART_RATE = "RESTING_HEART_RATE"
-const val STEPS = "STEPS"
-const val WATER = "WATER"
-const val WEIGHT = "WEIGHT"
-
-const val BREAKFAST = "BREAKFAST"
-const val DINNER = "DINNER"
-const val LUNCH = "LUNCH"
-const val MEAL_UNKNOWN = "UNKNOWN"
-const val NUTRITION = "NUTRITION"
-const val SLEEP_ASLEEP = "SLEEP_ASLEEP"
-const val SLEEP_AWAKE = "SLEEP_AWAKE"
-const val SLEEP_AWAKE_IN_BED = "SLEEP_AWAKE_IN_BED"
-const val SLEEP_DEEP = "SLEEP_DEEP"
-const val SLEEP_IN_BED = "SLEEP_IN_BED"
-const val SLEEP_LIGHT = "SLEEP_LIGHT"
-const val SLEEP_OUT_OF_BED = "SLEEP_OUT_OF_BED"
-const val SLEEP_REM = "SLEEP_REM"
-const val SLEEP_SESSION = "SLEEP_SESSION"
-const val SLEEP_UNKNOWN = "SLEEP_UNKNOWN"
-const val SNACK = "SNACK"
-const val WORKOUT = "WORKOUT"
-
-const val TOTAL_CALORIES_BURNED = "TOTAL_CALORIES_BURNED"
-
 
 class HealthPlugin(private var channel: MethodChannel? = null) :
     MethodCallHandler, ActivityResultListener, Result, ActivityAware, FlutterPlugin {
