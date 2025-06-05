@@ -1,3 +1,19 @@
+## 13.0.1
+
+* Refactored Swift native implementation - See PR [#1175](https://github.com/cph-cachet/flutter-plugins/pull/1175) and [#1208](https://github.com/cph-cachet/flutter-plugins/pull/1208) for more information:
+```
+SwiftHealthPlugin (Main Plugin Class)
+├── HealthDataReader (Reading health data)
+├── HealthDataWriter (Writing health data)
+├── HealthDataOperations (Permissions and deletion)
+├── HealthUtilities (Helper functions)
+└── HealthConstants (Constants and enums)
+```
+
+## 13.0.0
+
+* Refactored Swift native implementation
+
 ## 12.2.1
 
 * iOS: Add `swift_version` for add-to-app implementations - PR [#1205](https://github.com/cph-cachet/flutter-plugins/pull/1205)
