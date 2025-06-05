@@ -1,3 +1,7 @@
+## 13.1.0
+
+* Refactored Android native implementation (No Flutter API changes)
+
 ## 13.0.1
 
 * Refactored Swift native implementation - See PR [#1175](https://github.com/cph-cachet/flutter-plugins/pull/1175) and [#1208](https://github.com/cph-cachet/flutter-plugins/pull/1208) for more information:
