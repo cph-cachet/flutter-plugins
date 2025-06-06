@@ -478,6 +478,8 @@ class Health {
     HealthDataUnit? unit,
     required HealthDataType type,
     required DateTime startTime,
+    String? clientRecordId,
+    int? clientRecordVersion,
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
@@ -536,6 +538,8 @@ class Health {
       'dataUnitKey': unit.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
+      'clientRecordId' : clientRecordId,
+      'clientRecordVersion' : clientRecordVersion,
       'recordingMethod': recordingMethod.toInt(),
     };
     bool? success = await _channel.invokeMethod('writeData', args);
@@ -622,6 +626,8 @@ class Health {
     required int systolic,
     required int diastolic,
     required DateTime startTime,
+    String? clientRecordId,
+    int? clientRecordVersion,
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
@@ -642,6 +648,8 @@ class Health {
       'diastolic': diastolic,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
+      'clientRecordId' : clientRecordId,
+      'clientRecordVersion' : clientRecordVersion,
       'recordingMethod': recordingMethod.toInt(),
     };
     return await _channel.invokeMethod('writeBloodPressure', args) == true;
@@ -756,6 +764,8 @@ class Health {
     required MealType mealType,
     required DateTime startTime,
     required DateTime endTime,
+    String? clientRecordId,
+    int? clientRecordVersion,
     double? caloriesConsumed,
     double? carbohydrates,
     double? protein,
@@ -816,6 +826,8 @@ class Health {
       'meal_type': mealType.name,
       'start_time': startTime.millisecondsSinceEpoch,
       'end_time': endTime.millisecondsSinceEpoch,
+      'clientRecordId' : clientRecordId,
+      'clientRecordVersion' : clientRecordVersion,
       'calories': caloriesConsumed,
       'carbs': carbohydrates,
       'protein': protein,
@@ -1008,6 +1020,7 @@ class Health {
   /// If not specified, all data points will be included.
   Future<List<HealthDataPoint>> getHealthDataFromTypes({
     required List<HealthDataType> types,
+    Map<HealthDataType, HealthDataUnit>? preferredUnits,
     required DateTime startTime,
     required DateTime endTime,
     List<RecordingMethod> recordingMethodsToFilter = const [],
@@ -1017,7 +1030,7 @@ class Health {
 
     for (var type in types) {
       final result = await _prepareQuery(
-          startTime, endTime, type, recordingMethodsToFilter);
+          startTime, endTime, type, recordingMethodsToFilter, dataUnit: preferredUnits?[type]);
       dataPoints.addAll(result);
     }
 
@@ -1074,6 +1087,7 @@ class Health {
     DateTime endTime,
     HealthDataType dataType,
     List<RecordingMethod> recordingMethodsToFilter,
+  {HealthDataUnit? dataUnit}
   ) async {
     // Ask for device ID only once
     _deviceId ??= Platform.isAndroid
@@ -1091,7 +1105,7 @@ class Health {
       return _computeAndroidBMI(startTime, endTime, recordingMethodsToFilter);
     }
     return await _dataQuery(
-        startTime, endTime, dataType, recordingMethodsToFilter);
+        startTime, endTime, dataType, recordingMethodsToFilter, dataUnit: dataUnit);
   }
 
   /// Prepares an interval query, i.e. checks if the types are available, etc.
@@ -1144,10 +1158,11 @@ class Health {
       DateTime startTime,
       DateTime endTime,
       HealthDataType dataType,
-      List<RecordingMethod> recordingMethodsToFilter) async {
+      List<RecordingMethod> recordingMethodsToFilter,
+  {HealthDataUnit? dataUnit}) async {
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
-      'dataUnitKey': dataTypeToUnit[dataType]!.name,
+      'dataUnitKey': dataUnit?.name ?? dataTypeToUnit[dataType]!.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
       'recordingMethodsToFilter':
@@ -1158,6 +1173,7 @@ class Health {
     if (fetchedDataPoints != null && fetchedDataPoints is List) {
       final msg = <String, dynamic>{
         "dataType": dataType,
+        "dataUnit": dataUnit,
         "dataPoints": fetchedDataPoints,
       };
       const thresHold = 100;
@@ -1231,11 +1247,12 @@ class Health {
 
   List<HealthDataPoint> _parse(Map<String, dynamic> message) {
     final dataType = message["dataType"] as HealthDataType;
+    final dataUnit = message["dataUnit"] as HealthDataUnit?;
     final dataPoints = message["dataPoints"] as List;
 
     return dataPoints
         .map<HealthDataPoint>((dataPoint) =>
-            HealthDataPoint.fromHealthDataPoint(dataType, dataPoint))
+            HealthDataPoint.fromHealthDataPoint(dataType, dataUnit, dataPoint))
         .toList();
   }
 

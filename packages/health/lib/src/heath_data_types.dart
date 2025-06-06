@@ -388,6 +388,7 @@ enum HealthDataUnit {
   // MOLE_UNIT_WITH_PREFIX_MOLAR_MASS, // requires molar mass & prefix input - not supported yet
 
   // Length units
+  CENTIMETER,
   METER,
   INCH,
   FOOT,
@@ -452,6 +453,7 @@ enum HealthDataUnit {
   // Other units
   BEATS_PER_MINUTE,
   RESPIRATIONS_PER_MINUTE,
+  MILLIMOLES_PER_LITER,
   MILLIGRAM_PER_DECILITER,
   UNKNOWN_UNIT,
   NO_UNIT,

@@ -113,6 +113,7 @@ class HealthDataPoint {
   /// Create a [HealthDataPoint] based on a health data point from native data format.
   factory HealthDataPoint.fromHealthDataPoint(
     HealthDataType dataType,
+    HealthDataUnit? dataUnit,
     dynamic dataPoint,
   ) {
     // Handling different [HealthValue] types
@@ -141,7 +142,7 @@ class HealthDataPoint {
     final Map<String, dynamic>? metadata = dataPoint["metadata"] == null
         ? null
         : Map<String, dynamic>.from(dataPoint['metadata'] as Map);
-    final unit = dataTypeToUnit[dataType] ?? HealthDataUnit.UNKNOWN_UNIT;
+    final unit = dataUnit ?? dataTypeToUnit[dataType] ?? HealthDataUnit.UNKNOWN_UNIT;
     final String? uuid = dataPoint["uuid"] as String?;
     final String? deviceModel = dataPoint["device_model"] as String?;
 
