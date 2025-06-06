@@ -522,11 +522,15 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     }
 
     private fun getHealthConnectSdkStatus(call: MethodCall, result: Result) {
-        scope.launch {
-            checkAvailability()
-            result.success(healthConnectStatus)
-        }
-    }
+        checkAvailability()
+         if (healthConnectAvailable) {
+             healthConnectClient =
+                 HealthConnectClient.getOrCreate(
+                     context!!
+                 )
+         }
+         result.success(healthConnectStatus)
+     }
 
     /** Filter records by recording methods */
     private fun filterRecordsByRecordingMethods(
