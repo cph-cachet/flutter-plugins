@@ -2264,6 +2264,22 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
                     ),
                 )
 
+                SPEED -> SpeedRecord(
+                    startTime = Instant.ofEpochMilli(startTime),
+                    endTime = Instant.ofEpochMilli(endTime),
+                    samples = listOf(
+                        SpeedRecord.Sample(
+                            time = Instant.ofEpochMilli(startTime),
+                            speed = Velocity.metersPerSecond(value),                            
+                        ),
+                    ),
+                    startZoneOffset = null,
+                    endZoneOffset = null,
+                    metadata = Metadata(
+                        recordingMethod = recordingMethod,
+                    ),
+                )
+
                 BLOOD_PRESSURE_SYSTOLIC ->
                     throw IllegalArgumentException(
                         "You must use the [writeBloodPressure] API "
@@ -2598,7 +2614,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // "SexualActivity" to SexualActivityRecord::class,
             // "SleepSession" to SleepSessionRecord::class,
             // "SleepStage" to SleepStageRecord::class,
-            // "Speed" to SpeedRecord::class,
             // "StepsCadence" to StepsCadenceRecord::class,
             // "Steps" to StepsRecord::class,
             // "TotalCaloriesBurned" to
