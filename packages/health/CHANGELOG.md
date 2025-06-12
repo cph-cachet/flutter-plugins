@@ -1,6 +1,9 @@
 ## 13.1.0
 
 * Refactored Android native implementation (No Flutter API changes)
+* Android: Add `SPEED` health data type - PR [#1183](https://github.com/cph-cachet/flutter-plugins/pull/1183)
+* iOS: Add `WALKING_SPEED` health data type - PR [#1183](https://github.com/cph-cachet/flutter-plugins/pull/1183)
+* Add `METER_PER_SECOND` health data unit
 
 ## 13.0.1
 
