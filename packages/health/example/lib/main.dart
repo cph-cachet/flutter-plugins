@@ -301,6 +301,22 @@ class HealthAppState extends State<HealthApp> {
         startTime: earlier,
         endTime: now);
 
+    if (Platform.isIOS) {
+      success &= await health.writeHealthData(
+          value: 1.5, // 1.5 m/s (typical walking speed)
+          type: HealthDataType.WALKING_SPEED,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
+    } else {
+      success &= await health.writeHealthData(
+          value: 2.0, // 2.0 m/s (typical jogging speed)
+          type: HealthDataType.SPEED,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
+    }
+
     // specialized write methods
     success &= await health.writeBloodOxygen(
       saturation: 98,
