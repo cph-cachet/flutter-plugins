@@ -36,6 +36,7 @@ object HealthConstants {
     const val WATER = "WATER"
     const val WEIGHT = "WEIGHT"
     const val TOTAL_CALORIES_BURNED = "TOTAL_CALORIES_BURNED"
+    const val SPEED = "SPEED"
 
     // Meal types
     const val BREAKFAST = "BREAKFAST"
@@ -101,6 +102,7 @@ object HealthConstants {
         RESPIRATORY_RATE to RespiratoryRateRecord::class,
         TOTAL_CALORIES_BURNED to TotalCaloriesBurnedRecord::class,
         MENSTRUATION_FLOW to MenstruationFlowRecord::class,
+        SPEED to SpeedRecord::class,
     )
     
     /**

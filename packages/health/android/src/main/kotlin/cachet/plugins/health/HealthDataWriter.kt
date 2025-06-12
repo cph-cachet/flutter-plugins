@@ -352,7 +352,56 @@ class HealthDataWriter(
         }
     }
 
-    // ---------- Private Methods ----------
+    /**
+     * Writes speed/velocity data with multiple samples to Health Connect.
+     * Creates a SpeedRecord containing time-series speed measurements captured during
+     * activities like running, cycling, or walking. Each sample represents the user's
+     * instantaneous speed at a specific moment within the recording period.
+     *
+     * @param call Method call containing startTime, endTime, recordingMethod,
+     *             samples: List<Map<String, Any>> List of speed measurements, each
+     *             containing: time, speed (m/s)
+     *
+     * @param result Flutter result callback returning boolean success status
+     */
+    fun writeMultipleSpeedData(call: MethodCall, result: Result) {
+        val startTime = call.argument<Long>("startTime")!!
+        val endTime = call.argument<Long>("endTime")!!
+        val samples = call.argument<List<Map<String, Any>>>("samples")!!
+        val recordingMethod = call.argument<Int>("recordingMethod")!!
+
+        scope.launch {
+            try {
+                val speedSamples = samples.map { sample ->
+                    SpeedRecord.Sample(
+                        time = Instant.ofEpochMilli(sample["time"] as Long),
+                        speed = Velocity.metersPerSecond(sample["speed"] as Double)
+                    )
+                }
+
+                val speedRecord = SpeedRecord(
+                    startTime = Instant.ofEpochMilli(startTime),
+                    endTime = Instant.ofEpochMilli(endTime),
+                    samples = speedSamples,
+                    startZoneOffset = null,
+                    endZoneOffset = null,
+                    metadata = Metadata(recordingMethod = recordingMethod),
+                )
+
+                healthConnectClient.insertRecords(listOf(speedRecord))
+                result.success(true)
+                Log.i(
+                    "FLUTTER_HEALTH::SUCCESS",
+                    "Successfully wrote ${speedSamples.size} speed samples"
+                )
+            } catch (e: Exception) {
+                Log.e("FLUTTER_HEALTH::ERROR", "Error writing speed data: ${e.message}")
+                result.success(false)
+            }
+        }
+    }
+
+        // ---------- Private Methods ----------
 
     /**
      * Creates appropriate Health Connect record objects based on data type.
@@ -549,6 +598,20 @@ class HealthDataWriter(
                 zoneOffset = null,
                 metadata = Metadata(recordingMethod = recordingMethod),
             )
+
+            SPEED -> SpeedRecord(
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                samples = listOf(
+                    SpeedRecord.Sample(
+                        time = Instant.ofEpochMilli(startTime),
+                        speed = Velocity.metersPerSecond(value),
+                    )
+                ),
+                startZoneOffset = null,
+                endZoneOffset = null,
+                metadata = Metadata(recordingMethod = recordingMethod),
+            )
             
             BLOOD_PRESSURE_SYSTOLIC -> {
                 Log.e("FLUTTER_HEALTH::ERROR", "You must use the [writeBloodPressure] API")
@@ -630,6 +693,7 @@ class HealthDataWriter(
         private const val BLOOD_PRESSURE_DIASTOLIC = "BLOOD_PRESSURE_DIASTOLIC"
         private const val WORKOUT = "WORKOUT"
         private const val NUTRITION = "NUTRITION"
+        private const val SPEED = "SPEED"
         
         // Sleep types
         private const val SLEEP_ASLEEP = "SLEEP_ASLEEP"
