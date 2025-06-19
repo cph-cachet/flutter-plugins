@@ -1,3 +1,8 @@
+## 13.1.1
+
+* Fix [#1207](https://github.com/cph-cachet/flutter-plugins/issues/1207) - (**Important**: Some property names might have changed compared to before for `Nutrition`)
+*
+
 ## 13.1.0
 
 * Refactored Android native implementation (No Flutter API changes)
