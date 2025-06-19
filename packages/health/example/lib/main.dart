@@ -756,7 +756,7 @@ class HealthAppState extends State<HealthApp> {
         if (p.value is NutritionHealthValue) {
           return ListTile(
             title: Text(
-                "${p.typeString} ${(p.value as NutritionHealthValue).meal_type}: ${(p.value as NutritionHealthValue).name}"),
+                "${p.typeString} ${(p.value as NutritionHealthValue).mealType}: ${(p.value as NutritionHealthValue).name}"),
             trailing:
                 Text('${(p.value as NutritionHealthValue).calories} kcal'),
             subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
