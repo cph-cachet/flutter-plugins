@@ -355,10 +355,12 @@ class HealthDataReader {
             predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
         }
         
+        let statisticsOptions = statisticsOption(for: dataTypeKey)
+        
         let query = HKStatisticsCollectionQuery(
             quantityType: quantityType,
             quantitySamplePredicate: predicate,
-            options: [.cumulativeSum, .separateBySource],
+            options: statisticsOptions,
             anchorDate: dateFrom,
             intervalComponents: interval
         )
@@ -392,18 +394,30 @@ class HealthDataReader {
             var dictionaries = [[String: Any]]()
             collection.enumerateStatistics(from: dateFrom, to: dateTo) { [weak self] statisticData, _ in
                 guard let self = self else { return }
-                
-                if let quantity = statisticData.sumQuantity(),
-                   let dataUnitKey = dataUnitKey,
-                   let unit = self.unitDict[dataUnitKey] {
-                    let dict = [
-                        "value": quantity.doubleValue(for: unit),
-                        "date_from": Int(statisticData.startDate.timeIntervalSince1970 * 1000),
-                        "date_to": Int(statisticData.endDate.timeIntervalSince1970 * 1000),
-                        "source_id": statisticData.sources?.first?.bundleIdentifier ?? "",
-                        "source_name": statisticData.sources?.first?.name ?? ""
-                    ]
-                    dictionaries.append(dict)
+                if let dataUnitKey = dataUnitKey, let unit = self.unitDict[dataUnitKey] {
+                    var value: Double? = nil
+                    switch statisticsOptions {
+                    case .cumulativeSum:
+                        value = statisticData.sumQuantity()?.doubleValue(for: unit)
+                    case .discreteAverage:
+                        value = statisticData.averageQuantity()?.doubleValue(for: unit)
+                    case .discreteMin:
+                        value = statisticData.minimumQuantity()?.doubleValue(for: unit)
+                    case .discreteMax:
+                        value = statisticData.maximumQuantity()?.doubleValue(for: unit)
+                    default:
+                        value = statisticData.sumQuantity()?.doubleValue(for: unit)
+                    }
+                    if let value = value {
+                        let dict = [
+                            "value": value,
+                            "date_from": Int(statisticData.startDate.timeIntervalSince1970 * 1000),
+                            "date_to": Int(statisticData.endDate.timeIntervalSince1970 * 1000),
+                            "source_id": statisticData.sources?.first?.bundleIdentifier ?? "",
+                            "source_name": statisticData.sources?.first?.name ?? ""
+                        ]
+                        dictionaries.append(dict)
+                    }
                 }
             }
             DispatchQueue.main.async {
@@ -411,6 +425,25 @@ class HealthDataReader {
             }
         }
         healthStore.execute(query)
+    }
+
+    /// Helper to select correct HKStatisticsOptions for a given dataTypeKey
+    private func statisticsOption(for dataTypeKey: String) -> HKStatisticsOptions {
+        guard let quantityType = dataQuantityTypesDict[dataTypeKey] else {
+            // Default to cumulativeSum for backward compatibility
+            return .cumulativeSum
+        }
+        switch quantityType.aggregationStyle {
+        case .cumulative:
+            return .cumulativeSum
+        case .discreteArithmetic:
+            return .discreteAverage
+        case .discrete:
+            // Other options are .discreteAverage, .discreteMin, or .discreteMax
+            return .discreteAverage
+        @unknown default:
+            return .cumulativeSum
+        }
     }
     
     /// Gets total steps in interval
