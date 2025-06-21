@@ -1,7 +1,7 @@
 ## 13.1.1
 
 * Fix [#1207](https://github.com/cph-cachet/flutter-plugins/issues/1207) - (**Important**: Some property names might have changed compared to before for `Nutrition`)
-*
+* Fix [#1201](https://github.com/cph-cachet/flutter-plugins/issues/1201)
 
 ## 13.1.0
 
