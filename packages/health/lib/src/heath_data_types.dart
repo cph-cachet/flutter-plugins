@@ -4,6 +4,9 @@ part of '../health.dart';
 enum HealthDataType {
   ACTIVE_ENERGY_BURNED,
   ATRIAL_FIBRILLATION_BURDEN,
+  APPLE_STAND_HOUR,
+  APPLE_MOVE_TIME,
+  APPLE_STAND_TIME,
   AUDIOGRAM,
   BASAL_ENERGY_BURNED,
   BLOOD_GLUCOSE,
@@ -124,6 +127,9 @@ enum HealthDataAccess {
 const List<HealthDataType> dataTypeKeysIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
   HealthDataType.ATRIAL_FIBRILLATION_BURDEN,
+  HealthDataType.APPLE_STAND_HOUR,
+  HealthDataType.APPLE_MOVE_TIME,
+  HealthDataType.APPLE_STAND_TIME,
   HealthDataType.AUDIOGRAM,
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,
@@ -263,6 +269,9 @@ const List<HealthDataType> dataTypeKeysAndroid = [
 const Map<HealthDataType, HealthDataUnit> dataTypeToUnit = {
   HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataUnit.KILOCALORIE,
   HealthDataType.ATRIAL_FIBRILLATION_BURDEN: HealthDataUnit.PERCENT,
+  HealthDataType.APPLE_STAND_HOUR: HealthDataUnit.HOUR,
+  HealthDataType.APPLE_MOVE_TIME: HealthDataUnit.SECOND,
+  HealthDataType.APPLE_STAND_TIME: HealthDataUnit.SECOND,
   HealthDataType.AUDIOGRAM: HealthDataUnit.DECIBEL_HEARING_LEVEL,
   HealthDataType.BASAL_ENERGY_BURNED: HealthDataUnit.KILOCALORIE,
   HealthDataType.BLOOD_GLUCOSE: HealthDataUnit.MILLIGRAM_PER_DECILITER,

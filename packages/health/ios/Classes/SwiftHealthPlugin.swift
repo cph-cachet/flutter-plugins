@@ -443,13 +443,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             HealthConstants.DIETARY_SELENIUM,
         ]
         
-        // Set up iOS 13 specific types (ordinary health data types)
-        if #available(iOS 13.0, *) {
-            initializeIOS13Types()
-            healthDataTypes = Array(dataTypesDict.values)
-            characteristicsDataTypes = Array(characteristicsTypesDict.values)
-        }
-        
         // Set up iOS 11 specific types (ordinary health data quantity types)
         if #available(iOS 11.0, *) {
             initializeIOS11Types()
@@ -459,6 +452,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         // Set up heart rate data types specific to the apple watch, requires iOS 12
         if #available(iOS 12.2, *) {
             initializeIOS12Types()
+        }
+        
+        // Set up iOS 13 specific types (ordinary health data types)
+        if #available(iOS 13.0, *) {
+            initializeIOS13Types()
+            healthDataTypes = Array(dataTypesDict.values)
+            characteristicsDataTypes = Array(characteristicsTypesDict.values)
         }
         
         if #available(iOS 13.6, *) {
@@ -481,6 +481,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     /// Initialize iOS 11 specific data types
     @available(iOS 11.0, *)
     private func initializeIOS11Types() {
+        dataTypesDict[HealthConstants.APPLE_STAND_HOUR] = HKSampleType.categoryType(forIdentifier: .appleStandHour)!
+        
         dataQuantityTypesDict[HealthConstants.ACTIVE_ENERGY_BURNED] = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
         dataQuantityTypesDict[HealthConstants.BASAL_ENERGY_BURNED] = HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned)!
         dataQuantityTypesDict[HealthConstants.BLOOD_GLUCOSE] = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
@@ -559,6 +561,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     @available(iOS 13.0, *)
     private func initializeIOS13Types() {
         dataTypesDict[HealthConstants.ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!
+        dataTypesDict[HealthConstants.APPLE_STAND_TIME] = HKSampleType.quantityType(forIdentifier: .appleStandTime)!
         dataTypesDict[HealthConstants.AUDIOGRAM] = HKSampleType.audiogramSampleType()
         dataTypesDict[HealthConstants.BASAL_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!
         dataTypesDict[HealthConstants.BLOOD_GLUCOSE] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
@@ -683,279 +686,36 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     
     /// Initialize iOS 14 specific data types
     @available(iOS 14.0, *)
-    private func fetchEcgMeasurements(_ sample: HKElectrocardiogram) -> NSDictionary {
-        let semaphore = DispatchSemaphore(value: 0)
-        var voltageValues = [NSDictionary]()
-        let voltageQuery = HKElectrocardiogramQuery(sample) { query, result in
-            switch result {
-            case let .measurement(measurement):
-                if let voltageQuantity = measurement.quantity(for: .appleWatchSimilarToLeadI) {
-                    let voltage = voltageQuantity.doubleValue(for: HKUnit.volt())
-                    let timeSinceSampleStart = measurement.timeSinceSampleStart
-                    voltageValues.append(["voltage": voltage, "timeSinceSampleStart": timeSinceSampleStart])
-                }
-            case .done:
-                semaphore.signal()
-            case let .error(error):
-                print(error)
-            }
+    private func initializeIOS14Types() {
+        dataTypesDict[HealthConstants.ELECTROCARDIOGRAM] = HKSampleType.electrocardiogramType()
+        dataTypesDict[HealthConstants.WALKING_SPEED] = HKSampleType.quantityType(forIdentifier: .walkingSpeed)
+        
+        unitDict[HealthConstants.VOLT] = HKUnit.volt()
+        unitDict[HealthConstants.INCHES_OF_MERCURY] = HKUnit.inchesOfMercury()
+        
+        workoutActivityTypeMap["CARDIO_DANCE"] = HKWorkoutActivityType.cardioDance
+        workoutActivityTypeMap["SOCIAL_DANCE"] = HKWorkoutActivityType.socialDance
+        workoutActivityTypeMap["PICKLEBALL"] = HKWorkoutActivityType.pickleball
+        workoutActivityTypeMap["COOLDOWN"] = HKWorkoutActivityType.cooldown
+        
+        if #available(iOS 14.5, *) {
+            dataTypesDict[HealthConstants.APPLE_MOVE_TIME] = HKSampleType.quantityType(forIdentifier: .appleMoveTime)!
         }
-        HKHealthStore().execute(voltageQuery)
-        semaphore.wait()
-        return [
-            "uuid": "\(sample.uuid)",
-            "voltageValues": voltageValues,
-            "averageHeartRate": sample.averageHeartRate?.doubleValue(
-                for: HKUnit.count().unitDivided(by: HKUnit.minute())),
-            "samplingFrequency": sample.samplingFrequency?.doubleValue(for: HKUnit.hertz()),
-            "classification": sample.classification.rawValue,
-            "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-            "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-            "source_id": sample.sourceRevision.source.bundleIdentifier,
-            "source_name": sample.sourceRevision.source.name,
-        ]
     }
     
-    func getIntervalData(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        let arguments = call.arguments as? NSDictionary
-        let dataTypeKey = (arguments?["dataTypeKey"] as? String) ?? "DEFAULT"
-        let dataUnitKey = (arguments?["dataUnitKey"] as? String)
-        let startDate = (arguments?["startTime"] as? NSNumber) ?? 0
-        let endDate = (arguments?["endTime"] as? NSNumber) ?? 0
-        let intervalInSecond = (arguments?["interval"] as? Int) ?? 1
-        let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
-        let includeManualEntry = !recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
+    /// Initialize iOS 16 specific data types
+    @available(iOS 16.0, *)
+    private func initializeIOS16Types() {
+        dataTypesDict[HealthConstants.ATRIAL_FIBRILLATION_BURDEN] = HKQuantityType.quantityType(forIdentifier: .atrialFibrillationBurden)!
+        dataTypesDict[HealthConstants.WATER_TEMPERATURE] = HKQuantityType.quantityType(forIdentifier: .waterTemperature)!
+        dataTypesDict[HealthConstants.UNDERWATER_DEPTH] = HKQuantityType.quantityType(forIdentifier: .underwaterDepth)!
+        dataTypesDict[HealthConstants.UV_INDEX] = HKSampleType.quantityType(forIdentifier: .uvExposure)!
         
-        // Set interval in seconds.
-        var interval = DateComponents()
-        interval.second = intervalInSecond
-        
-        // Convert dates from milliseconds to Date()
-        let dateFrom = Date(timeIntervalSince1970: startDate.doubleValue / 1000)
-        let dateTo = Date(timeIntervalSince1970: endDate.doubleValue / 1000)
-        
-        let quantityType: HKQuantityType! = dataQuantityTypesDict[dataTypeKey]
-        var predicate = HKQuery.predicateForSamples(withStart: dateFrom, end: dateTo, options: [])
-        if (!includeManualEntry) {
-            let manualPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
-            predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
-        }
-        
-        let query = HKStatisticsCollectionQuery(quantityType: quantityType, quantitySamplePredicate: predicate, options: [.cumulativeSum, .separateBySource], anchorDate: dateFrom, intervalComponents: interval)
-        
-        query.initialResultsHandler = {
-            [weak self] _, statisticCollectionOrNil, error in
-            guard let self = self else {
-                // Handle the case where self became nil.
-                print("Self is nil")
-                DispatchQueue.main.async {
-                    result(nil)
-                }
-                return
-            }
-            
-            // Error detected.
-            if let error = error {
-                print("Query error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    result(nil)
-                }
-                return
-            }
-            
-            guard let collection = statisticCollectionOrNil as? HKStatisticsCollection else {
-                print("Unexpected result from query")
-                DispatchQueue.main.async {
-                    result(nil)
-                }
-                return
-            }
-            
-            var dictionaries = [[String: Any]]()
-            collection.enumerateStatistics(from: dateFrom, to: dateTo) {
-                [weak self] statisticData, _ in
-                guard let self = self else {
-                    // Handle the case where self became nil.
-                    print("Self is nil during enumeration")
-                    return
-                }
-                
-                do {
-                    if let quantity = statisticData.sumQuantity(),
-                       let dataUnitKey = dataUnitKey,
-                       let unit = self.unitDict[dataUnitKey] {
-                        let dict = [
-                            "value": quantity.doubleValue(for: unit),
-                            "date_from": Int(statisticData.startDate.timeIntervalSince1970 * 1000),
-                            "date_to": Int(statisticData.endDate.timeIntervalSince1970 * 1000),
-                            "source_id": statisticData.sources?.first?.bundleIdentifier ?? "",
-                            "source_name": statisticData.sources?.first?.name ?? ""
-                        ]
-                        dictionaries.append(dict)
-                    }
-                } catch {
-                    print("Error during collection.enumeration: \(error)")
-                }
-            }
-            DispatchQueue.main.async {
-                result(dictionaries)
-            }
-        }
-        HKHealthStore().execute(query)
+        dataQuantityTypesDict[HealthConstants.UV_INDEX] = HKQuantityType.quantityType(forIdentifier: .uvExposure)!
     }
     
-    func getTotalStepsInInterval(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        let arguments = call.arguments as? NSDictionary
-        let startTime = (arguments?["startTime"] as? NSNumber) ?? 0
-        let endTime = (arguments?["endTime"] as? NSNumber) ?? 0
-        let recordingMethodsToFilter = (arguments?["recordingMethodsToFilter"] as? [Int]) ?? []
-        let includeManualEntry = !recordingMethodsToFilter.contains(RecordingMethod.manual.rawValue)
-        
-        // Convert dates from milliseconds to Date()
-        let dateFrom = Date(timeIntervalSince1970: startTime.doubleValue / 1000)
-        let dateTo = Date(timeIntervalSince1970: endTime.doubleValue / 1000)
-        
-        let sampleType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        var predicate = HKQuery.predicateForSamples(
-            withStart: dateFrom, end: dateTo, options: .strictStartDate)
-        if (!includeManualEntry) {
-            let manualPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
-            predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
-        }
-        
-        // TODO: [NOTE] Computational heavy
-        let query = HKStatisticsCollectionQuery(
-            quantityType: sampleType,
-            quantitySamplePredicate: predicate,
-            options: .cumulativeSum,
-            anchorDate: dateFrom,
-            intervalComponents: DateComponents(day: 1)
-        )
-        query.initialResultsHandler = { query, results, error in
-            guard let results = results else { 
-                let error = error! as NSError
-                print("Error getting total steps in interval \(error.localizedDescription)")
-
-                DispatchQueue.main.async {
-                    result(nil)
-                }
-                return
-             }
-
-             var totalSteps = 0.0
-             results.enumerateStatistics(from: dateFrom, to: dateTo) { statistics, stop in
-                if let quantity = statistics.sumQuantity() {
-                    let unit = HKUnit.count()
-                    totalSteps += quantity.doubleValue(for: unit)
-                }
-             }
-
-             DispatchQueue.main.async {
-                result(Int(totalSteps))
-             }
-        }
-        
-        HKHealthStore().execute(query)
-    }
-    
-    func unitLookUp(key: String) -> HKUnit {
-        guard let unit = unitDict[key] else {
-            return HKUnit.count()
-        }
-        return unit
-    }
-    
-    func dataTypeLookUp(key: String) -> HKSampleType {
-        guard let dataType_ = dataTypesDict[key] else {
-            return HKSampleType.quantityType(forIdentifier: .bodyMass)!
-        }
-        return dataType_
-    }
-    
-    func getGender() -> HKBiologicalSex? {
-        var bioSex:HKBiologicalSex?
-        do {
-            bioSex = try healthStore.biologicalSex().biologicalSex
-        } catch {
-            bioSex = nil
-            print("Error retrieving biologicalSex: \(error)")
-        }
-        return bioSex
-    }
-    
-    func getBirthDate() -> Date? {
-        var dob:Date?
-        do {
-            dob = try healthStore.dateOfBirthComponents().date
-        } catch {
-            dob = nil
-            print("Error retrieving date of birth: \(error)")
-        }
-        return dob
-    }
-    
-    func getBloodType() -> HKBloodType? {
-        var bloodType:HKBloodType?
-        do {
-            bloodType = try healthStore.bloodType().bloodType
-        } catch {
-            bloodType = nil
-            print("Error retrieving blood type: \(error)")
-        }
-        return bloodType
-    }
-    
-    func initializeTypes() {
-        // Initialize units
-        unitDict[GRAM] = HKUnit.gram()
-        unitDict[KILOGRAM] = HKUnit.gramUnit(with: .kilo)
-        unitDict[OUNCE] = HKUnit.ounce()
-        unitDict[POUND] = HKUnit.pound()
-        unitDict[STONE] = HKUnit.stone()
-        unitDict[METER] = HKUnit.meter()
-        unitDict[INCH] = HKUnit.inch()
-        unitDict[FOOT] = HKUnit.foot()
-        unitDict[YARD] = HKUnit.yard()
-        unitDict[MILE] = HKUnit.mile()
-        unitDict[LITER] = HKUnit.liter()
-        unitDict[MILLILITER] = HKUnit.literUnit(with: .milli)
-        unitDict[FLUID_OUNCE_US] = HKUnit.fluidOunceUS()
-        unitDict[FLUID_OUNCE_IMPERIAL] = HKUnit.fluidOunceImperial()
-        unitDict[CUP_US] = HKUnit.cupUS()
-        unitDict[CUP_IMPERIAL] = HKUnit.cupImperial()
-        unitDict[PINT_US] = HKUnit.pintUS()
-        unitDict[PINT_IMPERIAL] = HKUnit.pintImperial()
-        unitDict[PASCAL] = HKUnit.pascal()
-        unitDict[MILLIMETER_OF_MERCURY] = HKUnit.millimeterOfMercury()
-        unitDict[CENTIMETER_OF_WATER] = HKUnit.centimeterOfWater()
-        unitDict[ATMOSPHERE] = HKUnit.atmosphere()
-        unitDict[DECIBEL_A_WEIGHTED_SOUND_PRESSURE_LEVEL] = HKUnit.decibelAWeightedSoundPressureLevel()
-        unitDict[SECOND] = HKUnit.second()
-        unitDict[MILLISECOND] = HKUnit.secondUnit(with: .milli)
-        unitDict[MINUTE] = HKUnit.minute()
-        unitDict[HOUR] = HKUnit.hour()
-        unitDict[DAY] = HKUnit.day()
-        unitDict[JOULE] = HKUnit.joule()
-        unitDict[KILOCALORIE] = HKUnit.kilocalorie()
-        unitDict[LARGE_CALORIE] = HKUnit.largeCalorie()
-        unitDict[SMALL_CALORIE] = HKUnit.smallCalorie()
-        unitDict[DEGREE_CELSIUS] = HKUnit.degreeCelsius()
-        unitDict[DEGREE_FAHRENHEIT] = HKUnit.degreeFahrenheit()
-        unitDict[KELVIN] = HKUnit.kelvin()
-        unitDict[DECIBEL_HEARING_LEVEL] = HKUnit.decibelHearingLevel()
-        unitDict[HERTZ] = HKUnit.hertz()
-        unitDict[SIEMEN] = HKUnit.siemen()
-        unitDict[INTERNATIONAL_UNIT] = HKUnit.internationalUnit()
-        unitDict[COUNT] = HKUnit.count()
-        unitDict[PERCENT] = HKUnit.percent()
-        unitDict[BEATS_PER_MINUTE] = HKUnit.init(from: "count/min")
-        unitDict[RESPIRATIONS_PER_MINUTE] = HKUnit.init(from: "count/min")
-        unitDict[MILLIGRAM_PER_DECILITER] = HKUnit.init(from: "mg/dL")
-        unitDict[METER_PER_SECOND] = HKUnit.init(from: "m/s")
-        unitDict[UNKNOWN_UNIT] = HKUnit.init(from: "")
-        unitDict[NO_UNIT] = HKUnit.init(from: "")
-        
-        // Initialize workout types
+    /// Initialize workout activity types
+    private func initializeWorkoutTypes() {
         workoutActivityTypeMap["ARCHERY"] = .archery
         workoutActivityTypeMap["BOWLING"] = .bowling
         workoutActivityTypeMap["FENCING"] = .fencing
