@@ -3,6 +3,9 @@ import 'package:health/health.dart';
 /// Data types available on iOS via Apple Health.
 const List<HealthDataType> dataTypesIOS = [
   HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.APPLE_STAND_TIME,
+  HealthDataType.APPLE_STAND_HOUR,
+  HealthDataType.APPLE_MOVE_TIME,
   HealthDataType.AUDIOGRAM,
   HealthDataType.BASAL_ENERGY_BURNED,
   HealthDataType.BLOOD_GLUCOSE,

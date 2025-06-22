@@ -74,6 +74,9 @@ class HealthAppState extends State<HealthApp> {
       .map((type) =>
           // can only request READ permissions to the following list of types on iOS
           [
+            HealthDataType.APPLE_MOVE_TIME,
+            HealthDataType.APPLE_STAND_HOUR,
+            HealthDataType.APPLE_STAND_TIME,
             HealthDataType.WALKING_HEART_RATE,
             HealthDataType.ELECTROCARDIOGRAM,
             HealthDataType.HIGH_HEART_RATE_EVENT,
@@ -245,19 +248,6 @@ class HealthAppState extends State<HealthApp> {
         type: HealthDataType.HEART_RATE,
         startTime: earlier,
         endTime: now);
-    if (Platform.isIOS) {
-      success &= await health.writeHealthData(
-          value: 30,
-          type: HealthDataType.HEART_RATE_VARIABILITY_SDNN,
-          startTime: earlier,
-          endTime: now);
-    } else {
-      success &= await health.writeHealthData(
-          value: 30,
-          type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
-          startTime: earlier,
-          endTime: now);
-    }
     success &= await health.writeHealthData(
         value: 37,
         type: HealthDataType.BODY_TEMPERATURE,
@@ -300,22 +290,6 @@ class HealthAppState extends State<HealthApp> {
         type: HealthDataType.LEAN_BODY_MASS,
         startTime: earlier,
         endTime: now);
-
-    if (Platform.isIOS) {
-      success &= await health.writeHealthData(
-          value: 1.5, // 1.5 m/s (typical walking speed)
-          type: HealthDataType.WALKING_SPEED,
-          startTime: earlier,
-          endTime: now,
-          recordingMethod: RecordingMethod.manual);
-    } else {
-      success &= await health.writeHealthData(
-          value: 2.0, // 2.0 m/s (typical jogging speed)
-          type: HealthDataType.SPEED,
-          startTime: earlier,
-          endTime: now,
-          recordingMethod: RecordingMethod.manual);
-    }
 
     // specialized write methods
     success &= await health.writeBloodOxygen(
@@ -407,7 +381,34 @@ class HealthAppState extends State<HealthApp> {
       endTime: now,
     );
 
-    // Available on iOS 16.0+ only
+
+    if (Platform.isIOS) {
+      success &= await health.writeHealthData(
+          value: 30,
+          type: HealthDataType.HEART_RATE_VARIABILITY_SDNN,
+          startTime: earlier,
+          endTime: now);
+      success &= await health.writeHealthData(
+          value: 1.5, // 1.5 m/s (typical walking speed)
+          type: HealthDataType.WALKING_SPEED,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
+    } else {
+      success &= await health.writeHealthData(
+          value: 2.0, // 2.0 m/s (typical jogging speed)
+          type: HealthDataType.SPEED,
+          startTime: earlier,
+          endTime: now,
+          recordingMethod: RecordingMethod.manual);
+      success &= await health.writeHealthData(
+          value: 30,
+          type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
+          startTime: earlier,
+          endTime: now);
+    }
+
+    // Available on iOS or iOS 16.0+ only
     if (Platform.isIOS) {
       success &= await health.writeHealthData(
           value: 22,
