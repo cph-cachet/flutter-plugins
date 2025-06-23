@@ -257,8 +257,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private fun writeMeal(call: MethodCall, result: Result) {
         val startTime = Instant.ofEpochMilli(call.argument<Long>("start_time")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("end_time")!!)
-        val clientRecordId = call.argument<String>("clientRecordId")!!
-        val clientRecordVersion = call.argument<Long>("clientRecordVersion")!!
+        val clientRecordId = call.argument<String>("clientRecordId")
+        val clientRecordVersion = call.argument<Long>("clientRecordVersion")
         val calories = call.argument<Double>("calories")
         val protein = call.argument<Double>("protein") as Double?
         val carbs = call.argument<Double>("carbs") as Double?
@@ -1772,8 +1772,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val startTime = call.argument<Long>("startTime")!!
         val endTime = call.argument<Long>("endTime")!!
         val value = call.argument<Double>("value")!!
-        val clientRecordId = call.argument<String>("clientRecordId")!!
-        val clientRecordVersion = call.argument<Long>("clientRecordVersion")!!
+        val clientRecordId = call.argument<String>("clientRecordId")
+        val clientRecordVersion = call.argument<Long>("clientRecordVersion")
         val recordingMethod = call.argument<Int>("recordingMethod")!!
         val unit = call.argument<String>("dataUnitKey")
 
@@ -2461,8 +2461,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         val diastolic = call.argument<Double>("diastolic")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val recordingMethod = call.argument<Int>("recordingMethod")!!
-        val clientRecordId = call.argument<String>("clientRecordId")!!
-        val clientRecordVersion = call.argument<Long>("clientRecordVersion")!!
+        val clientRecordId = call.argument<String>("clientRecordId")
+        val clientRecordVersion = call.argument<Long>("clientRecordVersion")
 
         scope.launch {
             try {
