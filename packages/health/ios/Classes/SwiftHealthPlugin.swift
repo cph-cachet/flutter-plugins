@@ -274,13 +274,6 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
             HealthConstants.DIETARY_SELENIUM,
         ]
         
-        // Set up iOS 13 specific types (ordinary health data types)
-        if #available(iOS 13.0, *) {
-            initializeIOS13Types()
-            healthDataTypes = Array(dataTypesDict.values)
-            characteristicsDataTypes = Array(characteristicsTypesDict.values)
-        }
-        
         // Set up iOS 11 specific types (ordinary health data quantity types)
         if #available(iOS 11.0, *) {
             initializeIOS11Types()
@@ -290,6 +283,13 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         // Set up heart rate data types specific to the apple watch, requires iOS 12
         if #available(iOS 12.2, *) {
             initializeIOS12Types()
+        }
+        
+        // Set up iOS 13 specific types (ordinary health data types)
+        if #available(iOS 13.0, *) {
+            initializeIOS13Types()
+            healthDataTypes = Array(dataTypesDict.values)
+            characteristicsDataTypes = Array(characteristicsTypesDict.values)
         }
         
         if #available(iOS 13.6, *) {
@@ -312,6 +312,8 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     /// Initialize iOS 11 specific data types
     @available(iOS 11.0, *)
     private func initializeIOS11Types() {
+        dataTypesDict[HealthConstants.APPLE_STAND_HOUR] = HKSampleType.categoryType(forIdentifier: .appleStandHour)!
+        
         dataQuantityTypesDict[HealthConstants.ACTIVE_ENERGY_BURNED] = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
         dataQuantityTypesDict[HealthConstants.BASAL_ENERGY_BURNED] = HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned)!
         dataQuantityTypesDict[HealthConstants.BLOOD_GLUCOSE] = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
@@ -390,6 +392,7 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
     @available(iOS 13.0, *)
     private func initializeIOS13Types() {
         dataTypesDict[HealthConstants.ACTIVE_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)!
+        dataTypesDict[HealthConstants.APPLE_STAND_TIME] = HKSampleType.quantityType(forIdentifier: .appleStandTime)!
         dataTypesDict[HealthConstants.AUDIOGRAM] = HKSampleType.audiogramSampleType()
         dataTypesDict[HealthConstants.BASAL_ENERGY_BURNED] = HKSampleType.quantityType(forIdentifier: .basalEnergyBurned)!
         dataTypesDict[HealthConstants.BLOOD_GLUCOSE] = HKSampleType.quantityType(forIdentifier: .bloodGlucose)!
@@ -525,6 +528,10 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["SOCIAL_DANCE"] = HKWorkoutActivityType.socialDance
         workoutActivityTypeMap["PICKLEBALL"] = HKWorkoutActivityType.pickleball
         workoutActivityTypeMap["COOLDOWN"] = HKWorkoutActivityType.cooldown
+        
+        if #available(iOS 14.5, *) {
+            dataTypesDict[HealthConstants.APPLE_MOVE_TIME] = HKSampleType.quantityType(forIdentifier: .appleMoveTime)!
+        }
     }
     
     /// Initialize iOS 16 specific data types
