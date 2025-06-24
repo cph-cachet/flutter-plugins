@@ -1,3 +1,9 @@
+## 13.1.1
+
+* Fix [#1207](https://github.com/cph-cachet/flutter-plugins/issues/1207) - (**Important**: Some property names might have changed compared to before for `Nutrition`)
+* Fix [#1201](https://github.com/cph-cachet/flutter-plugins/issues/1201)
+* iOS: Add `APPLE_STAND_TIME`, `APPLE_STAND_HOUR`, and `APPLE_MOVE_TIME` health data types (READ ONLY) [#1190](https://github.com/cph-cachet/flutter-plugins/issues/1190)
+
 ## 13.1.0
 
 * Refactored Android native implementation (No Flutter API changes)
