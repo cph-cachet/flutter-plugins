@@ -386,6 +386,9 @@ The plugin supports the following [`HealthDataType`](https://pub.dev/documentati
 | UV_INDEX                     | COUNT                   | yes              |                           |                                                                                                                                    |
 | LEAN_BODY_MASS               | KILOGRAMS               | yes              | yes                       |                                                                                                                                    |
 | WALKING_SPEED                | METER_PER_SECOND        | yes              | (yes)                     | On Android this will be recorded as `SPEED` with similar unit                                                                      |
+| APPLE_MOVE_TIME              | SECOND                  | yes              |                           | READ Only                                                                                                                          |
+| APPLE_STAND_HOUR             | HOUR                    | yes              |                           | READ Only                                                                                                                          |
+| APPLE_MOVE_TIME              | SECOND                  | yes              |                           | READ Only                                                                                                                          |
 
 ## Workout Types
 
