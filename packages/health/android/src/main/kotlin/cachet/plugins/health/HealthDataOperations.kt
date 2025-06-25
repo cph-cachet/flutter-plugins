@@ -251,9 +251,48 @@ class HealthDataOperations(
     }
 
     /**
-     * Internal helper method to prepare Health Connect permission strings.
-     * Converts data type names and access levels into proper permission format.
-     * 
+     * Deletes a specific health record by its client record ID and data type. Allows precise
+     * deletion of individual health records using client-side IDs.
+     *
+     * @param call Method call containing 'dataTypeKey', 'recordId', and 'clientRecordId'
+     * @param result Flutter result callback returning boolean success status
+     */
+    fun deleteByClientRecordId(call: MethodCall, result: Result) {
+        val arguments = call.arguments as? HashMap<*, *>
+        val dataTypeKey = (arguments?.get("dataTypeKey") as? String)!!
+        val recordId = listOfNotNull(arguments?.get("recordId") as? String)
+        val clientRecordId = listOfNotNull(arguments?.get("clientRecordId") as? String)
+        if (!HealthConstants.mapToType.containsKey(dataTypeKey)) {
+            Log.w("FLUTTER_HEALTH::ERROR", "Datatype $dataTypeKey not found in HC")
+            result.success(false)
+            return
+        }
+        val classType = HealthConstants.mapToType[dataTypeKey]!!
+
+        scope.launch {
+            try {
+                healthConnectClient.deleteRecords(
+                        classType,
+                        recordId,
+                        clientRecordId
+                )
+                result.success(true)
+            } catch (e: Exception) {
+                Log.e(
+                        "FLUTTER_HEALTH::ERROR",
+                        "Error deleting record with ClientRecordId: $clientRecordId"
+                )
+                Log.e("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
+                Log.e("FLUTTER_HEALTH::ERROR", e.stackTraceToString())
+                result.success(false)
+            }
+        }
+    }
+
+    /**
+     * Internal helper method to prepare Health Connect permission strings. Converts data type names
+     * and access levels into proper permission format.
+     *
      * @param types List of health data type strings
      * @param permissions List of permission level integers (0=read, 1=read+write)
      * @return List<String>? Formatted permission strings, or null if invalid input

@@ -40,6 +40,7 @@ class HealthDataReader(
      */
     fun getData(call: MethodCall, result: Result) {
         val dataType = call.argument<String>("dataTypeKey")!!
+        val dataUnit = call.argument<String>("dataUnitKey")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val healthConnectData = mutableListOf<Map<String, Any?>>()
@@ -47,7 +48,7 @@ class HealthDataReader(
 
         Log.i(
             "FLUTTER_HEALTH",
-            "Getting data for $dataType between $startTime and $endTime, filtering by $recordingMethodsToFilter"
+            "Getting data for $dataType with unit $dataUnit between $startTime and $endTime, filtering by $recordingMethodsToFilter"
         )
 
         scope.launch {
@@ -92,7 +93,7 @@ class HealthDataReader(
                             )
                             for (rec in filteredRecords) {
                                 healthConnectData.addAll(
-                                    dataConverter.convertRecord(rec, dataType)
+                                    dataConverter.convertRecord(rec, dataType, dataUnit)
                                 )
                             }
                         }

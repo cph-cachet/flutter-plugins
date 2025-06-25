@@ -7,25 +7,26 @@ import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.units.*
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel.Result
+import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.time.Instant
 
 /**
- * Handles writing health data to Health Connect.
- * Manages data insertion for various health metrics, specialized records like workouts and nutrition,
- * and proper data type conversion from Flutter to Health Connect format.
+ * Handles writing health data to Health Connect. Manages data insertion for various health metrics,
+ * specialized records like workouts and nutrition, and proper data type conversion from Flutter to
+ * Health Connect format.
  */
 class HealthDataWriter(
-    private val healthConnectClient: HealthConnectClient,
-    private val scope: CoroutineScope
+        private val healthConnectClient: HealthConnectClient,
+        private val scope: CoroutineScope
 ) {
-    
+
     /**
-     * Writes a single health data record to Health Connect.
-     * Supports most basic health metrics with automatic type conversion and validation.
-     * 
-     * @param call Method call containing 'dataTypeKey', 'startTime', 'endTime', 'value', 'recordingMethod'
+     * Writes a single health data record to Health Connect. Supports most basic health metrics with
+     * automatic type conversion and validation.
+     *
+     * @param call Method call containing 'dataTypeKey', 'startTime', 'endTime', 'value',
+     * 'recordingMethod'
      * @param result Flutter result callback returning boolean success status
      */
     fun writeData(call: MethodCall, result: Result) {
@@ -33,15 +34,28 @@ class HealthDataWriter(
         val startTime = call.argument<Long>("startTime")!!
         val endTime = call.argument<Long>("endTime")!!
         val value = call.argument<Double>("value")!!
+        val clientRecordId: String? = call.argument("clientRecordId")
+        val clientRecordVersion: Long? = call.argument("clientRecordVersion")
         val recordingMethod = call.argument<Int>("recordingMethod")!!
 
         Log.i(
-            "FLUTTER_HEALTH",
-            "Writing data for $type between $startTime and $endTime, value: $value, recording method: $recordingMethod"
+                "FLUTTER_HEALTH",
+                "Writing data for $type between $startTime and $endTime, value: $value, recording method: $recordingMethod"
         )
 
-        val record = createRecord(type, startTime, endTime, value, recordingMethod)
-        
+        val metadata: Metadata =
+                if ((clientRecordId != null) && (clientRecordVersion != null)) {
+                    Metadata(
+                            clientRecordId = clientRecordId,
+                            clientRecordVersion = clientRecordVersion,
+                            recordingMethod = recordingMethod
+                    )
+                } else {
+                    Metadata(recordingMethod = recordingMethod)
+                }
+
+        val record = createRecord(type, startTime, endTime, value, metadata)
+
         if (record == null) {
             result.success(false)
             return
@@ -59,13 +73,16 @@ class HealthDataWriter(
     }
 
     /**
-     * Writes a comprehensive workout session with optional distance and calorie data.
-     * Creates an ExerciseSessionRecord with associated DistanceRecord and TotalCaloriesBurnedRecord
-     * if supplementary data is provided.
-     * 
-     * @param call Method call containing workout details: 'activityType', 'startTime', 'endTime', 
+     * Writes a comprehensive workout session with optional distance and calorie data. Creates an
+     * ExerciseSessionRecord with associated DistanceRecord and TotalCaloriesBurnedRecord if
+     * supplementary data is provided.
+     *
+     * @param call Method call containing workout details: 'activityType', 'startTime', 'endTime',
+     * ```
      *             'totalEnergyBurned', 'totalDistance', 'recordingMethod', 'title'
-     * @param result Flutter result callback returning boolean success status
+     * @param result
+     * ```
+     * Flutter result callback returning boolean success status
      */
     fun writeWorkoutData(call: MethodCall, result: Result) {
         val type = call.argument<String>("activityType")!!
@@ -74,80 +91,77 @@ class HealthDataWriter(
         val totalEnergyBurned = call.argument<Int>("totalEnergyBurned")
         val totalDistance = call.argument<Int>("totalDistance")
         val recordingMethod = call.argument<Int>("recordingMethod")!!
-        
+
         if (!HealthConstants.workoutTypeMap.containsKey(type)) {
             result.success(false)
-            Log.w(
-                "FLUTTER_HEALTH::ERROR",
-                "[Health Connect] Workout type not supported"
-            )
+            Log.w("FLUTTER_HEALTH::ERROR", "[Health Connect] Workout type not supported")
             return
         }
-        
+
         val workoutType = HealthConstants.workoutTypeMap[type]!!
         val title = call.argument<String>("title") ?: type
 
         scope.launch {
             try {
                 val list = mutableListOf<Record>()
-                
+
                 // Add exercise session record
                 list.add(
-                    ExerciseSessionRecord(
-                        startTime = startTime,
-                        startZoneOffset = null,
-                        endTime = endTime,
-                        endZoneOffset = null,
-                        exerciseType = workoutType,
-                        title = title,
-                        metadata = Metadata(
-                            recordingMethod = recordingMethod,
+                        ExerciseSessionRecord(
+                                startTime = startTime,
+                                startZoneOffset = null,
+                                endTime = endTime,
+                                endZoneOffset = null,
+                                exerciseType = workoutType,
+                                title = title,
+                                metadata =
+                                        Metadata(
+                                                recordingMethod = recordingMethod,
+                                        ),
                         ),
-                    ),
                 )
-                
+
                 // Add distance record if provided
                 if (totalDistance != null) {
                     list.add(
-                        DistanceRecord(
-                            startTime = startTime,
-                            startZoneOffset = null,
-                            endTime = endTime,
-                            endZoneOffset = null,
-                            distance = Length.meters(totalDistance.toDouble()),
-                            metadata = Metadata(
-                                recordingMethod = recordingMethod,
+                            DistanceRecord(
+                                    startTime = startTime,
+                                    startZoneOffset = null,
+                                    endTime = endTime,
+                                    endZoneOffset = null,
+                                    distance = Length.meters(totalDistance.toDouble()),
+                                    metadata =
+                                            Metadata(
+                                                    recordingMethod = recordingMethod,
+                                            ),
                             ),
-                        ),
                     )
                 }
-                
+
                 // Add energy burned record if provided
                 if (totalEnergyBurned != null) {
                     list.add(
-                        TotalCaloriesBurnedRecord(
-                            startTime = startTime,
-                            startZoneOffset = null,
-                            endTime = endTime,
-                            endZoneOffset = null,
-                            energy = Energy.kilocalories(totalEnergyBurned.toDouble()),
-                            metadata = Metadata(
-                                recordingMethod = recordingMethod,
+                            TotalCaloriesBurnedRecord(
+                                    startTime = startTime,
+                                    startZoneOffset = null,
+                                    endTime = endTime,
+                                    endZoneOffset = null,
+                                    energy = Energy.kilocalories(totalEnergyBurned.toDouble()),
+                                    metadata =
+                                            Metadata(
+                                                    recordingMethod = recordingMethod,
+                                            ),
                             ),
-                        ),
                     )
                 }
-                
+
                 healthConnectClient.insertRecords(list)
                 result.success(true)
-                Log.i(
-                    "FLUTTER_HEALTH::SUCCESS",
-                    "[Health Connect] Workout was successfully added!"
-                )
+                Log.i("FLUTTER_HEALTH::SUCCESS", "[Health Connect] Workout was successfully added!")
             } catch (e: Exception) {
                 Log.w(
-                    "FLUTTER_HEALTH::ERROR",
-                    "[Health Connect] There was an error adding the workout",
+                        "FLUTTER_HEALTH::ERROR",
+                        "[Health Connect] There was an error adding the workout",
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
@@ -157,10 +171,9 @@ class HealthDataWriter(
     }
 
     /**
-     * Writes blood pressure measurement with both systolic and diastolic values.
-     * Creates a single BloodPressureRecord containing both pressure readings
-     * taken at the same time point.
-     * 
+     * Writes blood pressure measurement with both systolic and diastolic values. Creates a single
+     * BloodPressureRecord containing both pressure readings taken at the same time point.
+     *
      * @param call Method call containing 'systolic', 'diastolic', 'startTime', 'recordingMethod'
      * @param result Flutter result callback returning boolean success status
      */
@@ -169,31 +182,41 @@ class HealthDataWriter(
         val diastolic = call.argument<Double>("diastolic")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val recordingMethod = call.argument<Int>("recordingMethod")!!
+        val clientRecordId = call.argument<String>("clientRecordId")!! as String?
+        val clientRecordVersion = call.argument<Long>("clientRecordVersion")!! as Long?
 
         scope.launch {
             try {
+                val metadata: Metadata =
+                        if ((clientRecordId != null) && (clientRecordVersion != null)) {
+                            Metadata(
+                                    clientRecordId = clientRecordId,
+                                    clientRecordVersion = clientRecordVersion,
+                                    recordingMethod = recordingMethod
+                            )
+                        } else {
+                            Metadata(recordingMethod = recordingMethod)
+                        }
                 healthConnectClient.insertRecords(
-                    listOf(
-                        BloodPressureRecord(
-                            time = startTime,
-                            systolic = Pressure.millimetersOfMercury(systolic),
-                            diastolic = Pressure.millimetersOfMercury(diastolic),
-                            zoneOffset = null,
-                            metadata = Metadata(
-                                recordingMethod = recordingMethod,
-                            ),
+                        listOf(
+                                BloodPressureRecord(
+                                        time = startTime,
+                                        systolic = Pressure.millimetersOfMercury(systolic),
+                                        diastolic = Pressure.millimetersOfMercury(diastolic),
+                                        zoneOffset = null,
+                                        metadata = metadata,
+                                ),
                         ),
-                    ),
                 )
                 result.success(true)
                 Log.i(
-                    "FLUTTER_HEALTH::SUCCESS",
-                    "[Health Connect] Blood pressure was successfully added!",
+                        "FLUTTER_HEALTH::SUCCESS",
+                        "[Health Connect] Blood pressure was successfully added!",
                 )
             } catch (e: Exception) {
                 Log.w(
-                    "FLUTTER_HEALTH::ERROR",
-                    "[Health Connect] There was an error adding the blood pressure",
+                        "FLUTTER_HEALTH::ERROR",
+                        "[Health Connect] There was an error adding the blood pressure",
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
@@ -203,9 +226,9 @@ class HealthDataWriter(
     }
 
     /**
-     * Writes blood oxygen saturation measurement.
-     * Delegates to standard writeData method for OxygenSaturationRecord handling.
-     * 
+     * Writes blood oxygen saturation measurement. Delegates to standard writeData method for
+     * OxygenSaturationRecord handling.
+     *
      * @param call Method call with blood oxygen data
      * @param result Flutter result callback returning success status
      */
@@ -214,9 +237,9 @@ class HealthDataWriter(
     }
 
     /**
-     * Writes menstrual flow data.
-     * Delegates to standard writeData method for MenstruationFlowRecord handling.
-     * 
+     * Writes menstrual flow data. Delegates to standard writeData method for MenstruationFlowRecord
+     * handling.
+     *
      * @param call Method call with menstruation flow data
      * @param result Flutter result callback returning success status
      */
@@ -225,13 +248,16 @@ class HealthDataWriter(
     }
 
     /**
-     * Writes comprehensive nutrition/meal data with detailed nutrient breakdown.
-     * Creates NutritionRecord with extensive nutrient information including vitamins,
-     * minerals, macronutrients, and meal classification.
-     * 
-     * @param call Method call containing nutrition data: calories, macronutrients, vitamins, 
+     * Writes comprehensive nutrition/meal data with detailed nutrient breakdown. Creates
+     * NutritionRecord with extensive nutrient information including vitamins, minerals,
+     * macronutrients, and meal classification.
+     *
+     * @param call Method call containing nutrition data: calories, macronutrients, vitamins,
+     * ```
      *             minerals, meal details, timing information
-     * @param result Flutter result callback returning boolean success status
+     * @param result
+     * ```
+     * Flutter result callback returning boolean success status
      */
     fun writeMeal(call: MethodCall, result: Result) {
         val startTime = Instant.ofEpochMilli(call.argument<Long>("start_time")!!)
@@ -279,71 +305,81 @@ class HealthDataWriter(
 
         val name = call.argument<String>("name")
         val mealType = call.argument<String>("meal_type")!!
+        val clientRecordId = call.argument<String>("clientRecordId") as String?
+        val clientRecordVersion = call.argument<String>("clientRecordVersion") as Long?
 
         scope.launch {
             try {
+                val metaData: Metadata =
+                        if ((clientRecordId != null) && (clientRecordVersion != null)) {
+                            Metadata(
+                                    clientRecordId = clientRecordId,
+                                    clientRecordVersion = clientRecordVersion
+                            )
+                        } else {
+                            Metadata()
+                        }
                 val list = mutableListOf<Record>()
+
                 list.add(
-                    NutritionRecord(
-                        name = name,
-                        energy = calories?.kilocalories,
-                        totalCarbohydrate = carbs?.grams,
-                        protein = protein?.grams,
-                        totalFat = fat?.grams,
-                        caffeine = caffeine?.grams,
-                        vitaminA = vitaminA?.grams,
-                        thiamin = b1Thiamine?.grams,
-                        riboflavin = b2Riboflavin?.grams,
-                        niacin = b3Niacin?.grams,
-                        pantothenicAcid = b5PantothenicAcid?.grams,
-                        vitaminB6 = b6Pyridoxine?.grams,
-                        biotin = b7Biotin?.grams,
-                        folate = b9Folate?.grams,
-                        vitaminB12 = b12Cobalamin?.grams,
-                        vitaminC = vitaminC?.grams,
-                        vitaminD = vitaminD?.grams,
-                        vitaminE = vitaminE?.grams,
-                        vitaminK = vitaminK?.grams,
-                        calcium = calcium?.grams,
-                        chloride = chloride?.grams,
-                        cholesterol = cholesterol?.grams,
-                        chromium = chromium?.grams,
-                        copper = copper?.grams,
-                        unsaturatedFat = fatUnsaturated?.grams,
-                        monounsaturatedFat = fatMonounsaturated?.grams,
-                        polyunsaturatedFat = fatPolyunsaturated?.grams,
-                        saturatedFat = fatSaturated?.grams,
-                        transFat = fatTransMonoenoic?.grams,
-                        dietaryFiber = fiber?.grams,
-                        iodine = iodine?.grams,
-                        iron = iron?.grams,
-                        magnesium = magnesium?.grams,
-                        manganese = manganese?.grams,
-                        molybdenum = molybdenum?.grams,
-                        phosphorus = phosphorus?.grams,
-                        potassium = potassium?.grams,
-                        selenium = selenium?.grams,
-                        sodium = sodium?.grams,
-                        sugar = sugar?.grams,
-                        zinc = zinc?.grams,
-                        startTime = startTime,
-                        startZoneOffset = null,
-                        endTime = endTime,
-                        endZoneOffset = null,
-                        mealType = HealthConstants.mapMealTypeToType[mealType] 
-                            ?: MealType.MEAL_TYPE_UNKNOWN,
-                    ),
+                        NutritionRecord(
+                                name = name,
+                                metadata = metaData,
+                                energy = calories?.kilocalories,
+                                totalCarbohydrate = carbs?.grams,
+                                protein = protein?.grams,
+                                totalFat = fat?.grams,
+                                caffeine = caffeine?.grams,
+                                vitaminA = vitaminA?.grams,
+                                thiamin = b1Thiamine?.grams,
+                                riboflavin = b2Riboflavin?.grams,
+                                niacin = b3Niacin?.grams,
+                                pantothenicAcid = b5PantothenicAcid?.grams,
+                                vitaminB6 = b6Pyridoxine?.grams,
+                                biotin = b7Biotin?.grams,
+                                folate = b9Folate?.grams,
+                                vitaminB12 = b12Cobalamin?.grams,
+                                vitaminC = vitaminC?.grams,
+                                vitaminD = vitaminD?.grams,
+                                vitaminE = vitaminE?.grams,
+                                vitaminK = vitaminK?.grams,
+                                calcium = calcium?.grams,
+                                chloride = chloride?.grams,
+                                cholesterol = cholesterol?.grams,
+                                chromium = chromium?.grams,
+                                copper = copper?.grams,
+                                unsaturatedFat = fatUnsaturated?.grams,
+                                monounsaturatedFat = fatMonounsaturated?.grams,
+                                polyunsaturatedFat = fatPolyunsaturated?.grams,
+                                saturatedFat = fatSaturated?.grams,
+                                transFat = fatTransMonoenoic?.grams,
+                                dietaryFiber = fiber?.grams,
+                                iodine = iodine?.grams,
+                                iron = iron?.grams,
+                                magnesium = magnesium?.grams,
+                                manganese = manganese?.grams,
+                                molybdenum = molybdenum?.grams,
+                                phosphorus = phosphorus?.grams,
+                                potassium = potassium?.grams,
+                                selenium = selenium?.grams,
+                                sodium = sodium?.grams,
+                                sugar = sugar?.grams,
+                                zinc = zinc?.grams,
+                                startTime = startTime,
+                                startZoneOffset = null,
+                                endTime = endTime,
+                                endZoneOffset = null,
+                                mealType = HealthConstants.mapMealTypeToType[mealType]
+                                                ?: MealType.MEAL_TYPE_UNKNOWN
+                        ),
                 )
                 healthConnectClient.insertRecords(list)
                 result.success(true)
-                Log.i(
-                    "FLUTTER_HEALTH::SUCCESS",
-                    "[Health Connect] Meal was successfully added!"
-                )
+                Log.i("FLUTTER_HEALTH::SUCCESS", "[Health Connect] Meal was successfully added!")
             } catch (e: Exception) {
                 Log.w(
-                    "FLUTTER_HEALTH::ERROR",
-                    "[Health Connect] There was an error adding the meal",
+                        "FLUTTER_HEALTH::ERROR",
+                        "[Health Connect] There was an error adding the meal",
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
@@ -353,16 +389,19 @@ class HealthDataWriter(
     }
 
     /**
-     * Writes speed/velocity data with multiple samples to Health Connect.
-     * Creates a SpeedRecord containing time-series speed measurements captured during
-     * activities like running, cycling, or walking. Each sample represents the user's
-     * instantaneous speed at a specific moment within the recording period.
+     * Writes speed/velocity data with multiple samples to Health Connect. Creates a SpeedRecord
+     * containing time-series speed measurements captured during activities like running, cycling,
+     * or walking. Each sample represents the user's instantaneous speed at a specific moment within
+     * the recording period.
      *
      * @param call Method call containing startTime, endTime, recordingMethod,
+     * ```
      *             samples: List<Map<String, Any>> List of speed measurements, each
      *             containing: time, speed (m/s)
      *
-     * @param result Flutter result callback returning boolean success status
+     * @param result
+     * ```
+     * Flutter result callback returning boolean success status
      */
     fun writeMultipleSpeedData(call: MethodCall, result: Result) {
         val startTime = call.argument<Long>("startTime")!!
@@ -372,27 +411,29 @@ class HealthDataWriter(
 
         scope.launch {
             try {
-                val speedSamples = samples.map { sample ->
-                    SpeedRecord.Sample(
-                        time = Instant.ofEpochMilli(sample["time"] as Long),
-                        speed = Velocity.metersPerSecond(sample["speed"] as Double)
-                    )
-                }
+                val speedSamples =
+                        samples.map { sample ->
+                            SpeedRecord.Sample(
+                                    time = Instant.ofEpochMilli(sample["time"] as Long),
+                                    speed = Velocity.metersPerSecond(sample["speed"] as Double)
+                            )
+                        }
 
-                val speedRecord = SpeedRecord(
-                    startTime = Instant.ofEpochMilli(startTime),
-                    endTime = Instant.ofEpochMilli(endTime),
-                    samples = speedSamples,
-                    startZoneOffset = null,
-                    endZoneOffset = null,
-                    metadata = Metadata(recordingMethod = recordingMethod),
-                )
+                val speedRecord =
+                        SpeedRecord(
+                                startTime = Instant.ofEpochMilli(startTime),
+                                endTime = Instant.ofEpochMilli(endTime),
+                                samples = speedSamples,
+                                startZoneOffset = null,
+                                endZoneOffset = null,
+                                metadata = Metadata(recordingMethod = recordingMethod),
+                        )
 
                 healthConnectClient.insertRecords(listOf(speedRecord))
                 result.success(true)
                 Log.i(
-                    "FLUTTER_HEALTH::SUCCESS",
-                    "Successfully wrote ${speedSamples.size} speed samples"
+                        "FLUTTER_HEALTH::SUCCESS",
+                        "Successfully wrote ${speedSamples.size} speed samples"
                 )
             } catch (e: Exception) {
                 Log.e("FLUTTER_HEALTH::ERROR", "Error writing speed data: ${e.message}")
@@ -401,13 +442,12 @@ class HealthDataWriter(
         }
     }
 
-        // ---------- Private Methods ----------
+    // ---------- Private Methods ----------
 
     /**
-     * Creates appropriate Health Connect record objects based on data type.
-     * Factory method that instantiates the correct record type with proper unit conversion
-     * and metadata assignment.
-     * 
+     * Creates appropriate Health Connect record objects based on data type. Factory method that
+     * instantiates the correct record type with proper unit conversion and metadata assignment.
+     *
      * @param type Health data type string identifier
      * @param startTime Record start time in milliseconds
      * @param endTime Record end time in milliseconds
@@ -416,254 +456,308 @@ class HealthDataWriter(
      * @return Record? Properly configured Health Connect record, or null if type unsupported
      */
     private fun createRecord(
-        type: String, 
-        startTime: Long, 
-        endTime: Long, 
-        value: Double, 
-        recordingMethod: Int
+            type: String,
+            startTime: Long,
+            endTime: Long,
+            value: Double,
+            metadata: Metadata
     ): Record? {
         return when (type) {
-            BODY_FAT_PERCENTAGE -> BodyFatRecord(
-                time = Instant.ofEpochMilli(startTime),
-                percentage = Percentage(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            LEAN_BODY_MASS -> LeanBodyMassRecord(
-                time = Instant.ofEpochMilli(startTime),
-                mass = Mass.kilograms(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            HEIGHT -> HeightRecord(
-                time = Instant.ofEpochMilli(startTime),
-                height = Length.meters(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            WEIGHT -> WeightRecord(
-                time = Instant.ofEpochMilli(startTime),
-                weight = Mass.kilograms(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            STEPS -> StepsRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                count = value.toLong(),
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            ACTIVE_ENERGY_BURNED -> ActiveCaloriesBurnedRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                energy = Energy.kilocalories(value),
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            HEART_RATE -> HeartRateRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                samples = listOf(
-                    HeartRateRecord.Sample(
-                        time = Instant.ofEpochMilli(startTime),
-                        beatsPerMinute = value.toLong(),
-                    ),
-                ),
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            BODY_TEMPERATURE -> BodyTemperatureRecord(
-                time = Instant.ofEpochMilli(startTime),
-                temperature = Temperature.celsius(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            BODY_WATER_MASS -> BodyWaterMassRecord(
-                time = Instant.ofEpochMilli(startTime),
-                mass = Mass.kilograms(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            BLOOD_OXYGEN -> OxygenSaturationRecord(
-                time = Instant.ofEpochMilli(startTime),
-                percentage = Percentage(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            BLOOD_GLUCOSE -> BloodGlucoseRecord(
-                time = Instant.ofEpochMilli(startTime),
-                level = BloodGlucose.milligramsPerDeciliter(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            HEART_RATE_VARIABILITY_RMSSD -> HeartRateVariabilityRmssdRecord(
-                time = Instant.ofEpochMilli(startTime),
-                heartRateVariabilityMillis = value,
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            DISTANCE_DELTA -> DistanceRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                distance = Length.meters(value),
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            WATER -> HydrationRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                volume = Volume.liters(value),
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            SLEEP_ASLEEP -> createSleepRecord(startTime, endTime, SleepSessionRecord.STAGE_TYPE_SLEEPING, recordingMethod)
-            SLEEP_LIGHT -> createSleepRecord(startTime, endTime, SleepSessionRecord.STAGE_TYPE_LIGHT, recordingMethod)
-            SLEEP_DEEP -> createSleepRecord(startTime, endTime, SleepSessionRecord.STAGE_TYPE_DEEP, recordingMethod)
-            SLEEP_REM -> createSleepRecord(startTime, endTime, SleepSessionRecord.STAGE_TYPE_REM, recordingMethod)
-            SLEEP_OUT_OF_BED -> createSleepRecord(startTime, endTime, SleepSessionRecord.STAGE_TYPE_OUT_OF_BED, recordingMethod)
-            SLEEP_AWAKE -> createSleepRecord(startTime, endTime, SleepSessionRecord.STAGE_TYPE_AWAKE, recordingMethod)
-            SLEEP_AWAKE_IN_BED -> createSleepRecord(startTime, endTime, SleepSessionRecord.STAGE_TYPE_AWAKE_IN_BED, recordingMethod)
-            SLEEP_UNKNOWN -> createSleepRecord(startTime, endTime, SleepSessionRecord.STAGE_TYPE_UNKNOWN, recordingMethod)
-            
-            SLEEP_SESSION -> SleepSessionRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            RESTING_HEART_RATE -> RestingHeartRateRecord(
-                time = Instant.ofEpochMilli(startTime),
-                beatsPerMinute = value.toLong(),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            BASAL_ENERGY_BURNED -> BasalMetabolicRateRecord(
-                time = Instant.ofEpochMilli(startTime),
-                basalMetabolicRate = Power.kilocaloriesPerDay(value),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            FLIGHTS_CLIMBED -> FloorsClimbedRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                floors = value,
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            RESPIRATORY_RATE -> RespiratoryRateRecord(
-                time = Instant.ofEpochMilli(startTime),
-                rate = value,
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            TOTAL_CALORIES_BURNED -> TotalCaloriesBurnedRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                energy = Energy.kilocalories(value),
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
-            MENSTRUATION_FLOW -> MenstruationFlowRecord(
-                time = Instant.ofEpochMilli(startTime),
-                flow = value.toInt(),
-                zoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-
-            SPEED -> SpeedRecord(
-                startTime = Instant.ofEpochMilli(startTime),
-                endTime = Instant.ofEpochMilli(endTime),
-                samples = listOf(
-                    SpeedRecord.Sample(
-                        time = Instant.ofEpochMilli(startTime),
-                        speed = Velocity.metersPerSecond(value),
+            BODY_FAT_PERCENTAGE ->
+                    BodyFatRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            percentage = Percentage(value),
+                            zoneOffset = null,
+                            metadata = metadata,
                     )
-                ),
-                startZoneOffset = null,
-                endZoneOffset = null,
-                metadata = Metadata(recordingMethod = recordingMethod),
-            )
-            
+            LEAN_BODY_MASS ->
+                    LeanBodyMassRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            mass = Mass.kilograms(value),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            HEIGHT ->
+                    HeightRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            height = Length.meters(value),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            WEIGHT ->
+                    WeightRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            weight = Mass.kilograms(value),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            STEPS ->
+                    StepsRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            count = value.toLong(),
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
+            ACTIVE_ENERGY_BURNED ->
+                    ActiveCaloriesBurnedRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            energy = Energy.kilocalories(value),
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
+            HEART_RATE ->
+                    HeartRateRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            samples =
+                                    listOf(
+                                            HeartRateRecord.Sample(
+                                                    time = Instant.ofEpochMilli(startTime),
+                                                    beatsPerMinute = value.toLong(),
+                                            ),
+                                    ),
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
+            BODY_TEMPERATURE ->
+                    BodyTemperatureRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            temperature = Temperature.celsius(value),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            BODY_WATER_MASS ->
+                    BodyWaterMassRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            mass = Mass.kilograms(value),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            BLOOD_OXYGEN ->
+                    OxygenSaturationRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            percentage = Percentage(value),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            BLOOD_GLUCOSE ->
+                    BloodGlucoseRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            level = BloodGlucose.milligramsPerDeciliter(value),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            HEART_RATE_VARIABILITY_RMSSD ->
+                    HeartRateVariabilityRmssdRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            heartRateVariabilityMillis = value,
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            DISTANCE_DELTA ->
+                    DistanceRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            distance = Length.meters(value),
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
+            WATER ->
+                    HydrationRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            volume = Volume.liters(value),
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
+            SLEEP_ASLEEP ->
+                    createSleepRecord(
+                            startTime,
+                            endTime,
+                            SleepSessionRecord.STAGE_TYPE_SLEEPING,
+                            metadata
+                    )
+            SLEEP_LIGHT ->
+                    createSleepRecord(
+                            startTime,
+                            endTime,
+                            SleepSessionRecord.STAGE_TYPE_LIGHT,
+                            metadata
+                    )
+            SLEEP_DEEP ->
+                    createSleepRecord(
+                            startTime,
+                            endTime,
+                            SleepSessionRecord.STAGE_TYPE_DEEP,
+                            metadata
+                    )
+            SLEEP_REM ->
+                    createSleepRecord(
+                            startTime,
+                            endTime,
+                            SleepSessionRecord.STAGE_TYPE_REM,
+                            metadata
+                    )
+            SLEEP_OUT_OF_BED ->
+                    createSleepRecord(
+                            startTime,
+                            endTime,
+                            SleepSessionRecord.STAGE_TYPE_OUT_OF_BED,
+                            metadata
+                    )
+            SLEEP_AWAKE ->
+                    createSleepRecord(
+                            startTime,
+                            endTime,
+                            SleepSessionRecord.STAGE_TYPE_AWAKE,
+                            metadata
+                    )
+            SLEEP_AWAKE_IN_BED ->
+                    createSleepRecord(
+                            startTime,
+                            endTime,
+                            SleepSessionRecord.STAGE_TYPE_AWAKE_IN_BED,
+                            metadata
+                    )
+            SLEEP_UNKNOWN ->
+                    createSleepRecord(
+                            startTime,
+                            endTime,
+                            SleepSessionRecord.STAGE_TYPE_UNKNOWN,
+                            metadata
+                    )
+            SLEEP_SESSION ->
+                    SleepSessionRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
+            RESTING_HEART_RATE ->
+                    RestingHeartRateRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            beatsPerMinute = value.toLong(),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            BASAL_ENERGY_BURNED ->
+                    BasalMetabolicRateRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            basalMetabolicRate = Power.kilocaloriesPerDay(value),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            FLIGHTS_CLIMBED ->
+                    FloorsClimbedRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            floors = value,
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
+            RESPIRATORY_RATE ->
+                    RespiratoryRateRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            rate = value,
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            TOTAL_CALORIES_BURNED ->
+                    TotalCaloriesBurnedRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            energy = Energy.kilocalories(value),
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
+            MENSTRUATION_FLOW ->
+                    MenstruationFlowRecord(
+                            time = Instant.ofEpochMilli(startTime),
+                            flow = value.toInt(),
+                            zoneOffset = null,
+                            metadata = metadata,
+                    )
+            SPEED ->
+                    SpeedRecord(
+                            startTime = Instant.ofEpochMilli(startTime),
+                            endTime = Instant.ofEpochMilli(endTime),
+                            samples =
+                                    listOf(
+                                            SpeedRecord.Sample(
+                                                    time = Instant.ofEpochMilli(startTime),
+                                                    speed = Velocity.metersPerSecond(value),
+                                            )
+                                    ),
+                            startZoneOffset = null,
+                            endZoneOffset = null,
+                            metadata = metadata,
+                    )
             BLOOD_PRESSURE_SYSTOLIC -> {
                 Log.e("FLUTTER_HEALTH::ERROR", "You must use the [writeBloodPressure] API")
                 null
             }
-            
             BLOOD_PRESSURE_DIASTOLIC -> {
                 Log.e("FLUTTER_HEALTH::ERROR", "You must use the [writeBloodPressure] API")
                 null
             }
-            
             WORKOUT -> {
                 Log.e("FLUTTER_HEALTH::ERROR", "You must use the [writeWorkoutData] API")
                 null
             }
-            
             NUTRITION -> {
                 Log.e("FLUTTER_HEALTH::ERROR", "You must use the [writeMeal] API")
                 null
             }
-            
             else -> {
-                Log.e("FLUTTER_HEALTH::ERROR", "The type $type was not supported by the Health plugin or you must use another API")
+                Log.e(
+                        "FLUTTER_HEALTH::ERROR",
+                        "The type $type was not supported by the Health plugin or you must use another API"
+                )
                 null
             }
         }
     }
 
     /**
-     * Creates sleep session records with stage information.
-     * Builds SleepSessionRecord with appropriate sleep stage data and timing.
-     * 
+     * Creates sleep session records with stage information. Builds SleepSessionRecord with
+     * appropriate sleep stage data and timing.
+     *
      * @param startTime Sleep period start time in milliseconds
      * @param endTime Sleep period end time in milliseconds
      * @param stageType Sleep stage type constant
      * @param recordingMethod How sleep data was recorded
      * @return SleepSessionRecord Configured sleep session record
      */
-    private fun createSleepRecord(startTime: Long, endTime: Long, stageType: Int, recordingMethod: Int): SleepSessionRecord {
+    private fun createSleepRecord(
+            startTime: Long,
+            endTime: Long,
+            stageType: Int,
+            metadata: Metadata
+    ): SleepSessionRecord {
         return SleepSessionRecord(
-            startTime = Instant.ofEpochMilli(startTime),
-            endTime = Instant.ofEpochMilli(endTime),
-            startZoneOffset = null,
-            endZoneOffset = null,
-            stages = listOf(
-                SleepSessionRecord.Stage(
-                    Instant.ofEpochMilli(startTime),
-                    Instant.ofEpochMilli(endTime),
-                    stageType
-                )
-            ),
-            metadata = Metadata(recordingMethod = recordingMethod),
+                startTime = Instant.ofEpochMilli(startTime),
+                endTime = Instant.ofEpochMilli(endTime),
+                startZoneOffset = null,
+                endZoneOffset = null,
+                stages =
+                        listOf(
+                                SleepSessionRecord.Stage(
+                                        Instant.ofEpochMilli(startTime),
+                                        Instant.ofEpochMilli(endTime),
+                                        stageType
+                                )
+                        ),
+                metadata = metadata,
         )
     }
 
@@ -694,7 +788,7 @@ class HealthDataWriter(
         private const val WORKOUT = "WORKOUT"
         private const val NUTRITION = "NUTRITION"
         private const val SPEED = "SPEED"
-        
+
         // Sleep types
         private const val SLEEP_ASLEEP = "SLEEP_ASLEEP"
         private const val SLEEP_LIGHT = "SLEEP_LIGHT"

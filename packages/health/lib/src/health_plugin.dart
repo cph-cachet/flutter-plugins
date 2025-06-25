@@ -478,6 +478,8 @@ class Health {
     HealthDataUnit? unit,
     required HealthDataType type,
     required DateTime startTime,
+    String? clientRecordId,
+    int? clientRecordVersion,
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
@@ -537,6 +539,8 @@ class Health {
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
       'recordingMethod': recordingMethod.toInt(),
+      'clientRecordId' : clientRecordId,
+      'clientRecordVersion' : clientRecordVersion,
     };
     bool? success = await _channel.invokeMethod('writeData', args);
     return success ?? false;
@@ -604,6 +608,22 @@ class Health {
     return success ?? false;
   }
 
+  Future<bool> deleteByClientRecordId({
+    required HealthDataType dataTypeKey,
+    required String clientRecordId,
+    String? recordId,
+  }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
+
+    Map<String, dynamic> args = {
+      'dataTypeKey': dataTypeKey.name,
+      'recordId': recordId,
+      'clientRecordId': clientRecordId
+    };
+    bool? success = await _channel.invokeMethod('deleteByClientRecordId', args);
+    return success ?? false;
+  }
+
   /// Saves a blood pressure record.
   ///
   /// Returns true if successful, false otherwise.
@@ -622,6 +642,8 @@ class Health {
     required int systolic,
     required int diastolic,
     required DateTime startTime,
+    String? clientRecordId,
+    int? clientRecordVersion,
     DateTime? endTime,
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
@@ -643,6 +665,8 @@ class Health {
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
       'recordingMethod': recordingMethod.toInt(),
+      'clientRecordId' : clientRecordId,
+      'clientRecordVersion' : clientRecordVersion,
     };
     return await _channel.invokeMethod('writeBloodPressure', args) == true;
   }
@@ -756,6 +780,8 @@ class Health {
     required MealType mealType,
     required DateTime startTime,
     required DateTime endTime,
+    String? clientRecordId,
+    int? clientRecordVersion,
     double? caloriesConsumed,
     double? carbohydrates,
     double? protein,
@@ -816,6 +842,8 @@ class Health {
       'meal_type': mealType.name,
       'start_time': startTime.millisecondsSinceEpoch,
       'end_time': endTime.millisecondsSinceEpoch,
+      'clientRecordId' : clientRecordId,
+      'clientRecordVersion' : clientRecordVersion,
       'calories': caloriesConsumed,
       'carbs': carbohydrates,
       'protein': protein,
@@ -1008,6 +1036,7 @@ class Health {
   /// If not specified, all data points will be included.
   Future<List<HealthDataPoint>> getHealthDataFromTypes({
     required List<HealthDataType> types,
+    Map<HealthDataType, HealthDataUnit>? preferredUnits,
     required DateTime startTime,
     required DateTime endTime,
     List<RecordingMethod> recordingMethodsToFilter = const [],
@@ -1017,7 +1046,7 @@ class Health {
 
     for (var type in types) {
       final result = await _prepareQuery(
-          startTime, endTime, type, recordingMethodsToFilter);
+          startTime, endTime, type, recordingMethodsToFilter, dataUnit: preferredUnits?[type]);
       dataPoints.addAll(result);
     }
 
@@ -1074,6 +1103,7 @@ class Health {
     DateTime endTime,
     HealthDataType dataType,
     List<RecordingMethod> recordingMethodsToFilter,
+    {HealthDataUnit? dataUnit}
   ) async {
     // Ask for device ID only once
     _deviceId ??= Platform.isAndroid
@@ -1091,7 +1121,7 @@ class Health {
       return _computeAndroidBMI(startTime, endTime, recordingMethodsToFilter);
     }
     return await _dataQuery(
-        startTime, endTime, dataType, recordingMethodsToFilter);
+        startTime, endTime, dataType, recordingMethodsToFilter, dataUnit: dataUnit);
   }
 
   /// Prepares an interval query, i.e. checks if the types are available, etc.
@@ -1144,10 +1174,11 @@ class Health {
       DateTime startTime,
       DateTime endTime,
       HealthDataType dataType,
-      List<RecordingMethod> recordingMethodsToFilter) async {
+      List<RecordingMethod> recordingMethodsToFilter, 
+      {HealthDataUnit? dataUnit}) async {
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
-      'dataUnitKey': dataTypeToUnit[dataType]!.name,
+      'dataUnitKey': dataUnit?.name ?? dataTypeToUnit[dataType]!.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
       'recordingMethodsToFilter':
