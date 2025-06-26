@@ -4,11 +4,6 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.records.metadata.Metadata
-import androidx.health.connect.client.units.BloodGlucose
-import androidx.health.connect.client.units.Length
-import androidx.health.connect.client.units.Mass
-import androidx.health.connect.client.units.Temperature
-import androidx.health.connect.client.units.Volume
 
 /**
  * Converts Health Connect records to Flutter-compatible data structures.
