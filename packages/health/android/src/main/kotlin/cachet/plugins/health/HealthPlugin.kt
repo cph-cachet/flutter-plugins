@@ -156,6 +156,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             // Deleting data
             "delete" -> dataOperations.deleteData(call, result)
             "deleteByUUID" -> dataOperations.deleteByUUID(call, result)
+            "deleteByClientRecordId" -> dataOperations.deleteByClientRecordId(call, result)
             
             else -> result.notImplemented()
         }
