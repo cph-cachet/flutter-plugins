@@ -182,8 +182,8 @@ class HealthDataWriter(
         val diastolic = call.argument<Double>("diastolic")!!
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val recordingMethod = call.argument<Int>("recordingMethod")!!
-        val clientRecordId = call.argument<String>("clientRecordId")!! as String?
-        val clientRecordVersion = call.argument<Long>("clientRecordVersion")!! as Long?
+        val clientRecordId: String? = call.argument<String>("clientRecordId")
+        val clientRecordVersion: Long? = call.argument<Long>("clientRecordVersion")
 
         scope.launch {
             try {
@@ -305,8 +305,8 @@ class HealthDataWriter(
 
         val name = call.argument<String>("name")
         val mealType = call.argument<String>("meal_type")!!
-        val clientRecordId = call.argument<String>("clientRecordId") as String?
-        val clientRecordVersion = call.argument<String>("clientRecordVersion") as Long?
+        val clientRecordId: String? = call.argument<String>("clientRecordId")
+        val clientRecordVersion: Long? = call.argument<Long>("clientRecordVersion")
 
         scope.launch {
             try {

@@ -40,7 +40,7 @@ class HealthDataReader(
      */
     fun getData(call: MethodCall, result: Result) {
         val dataType = call.argument<String>("dataTypeKey")!!
-        val dataUnit = call.argument<String>("dataUnitKey")!!
+        val dataUnit: String? = call.argument<String>("dataUnitKey")
         val startTime = Instant.ofEpochMilli(call.argument<Long>("startTime")!!)
         val endTime = Instant.ofEpochMilli(call.argument<Long>("endTime")!!)
         val healthConnectData = mutableListOf<Map<String, Any?>>()

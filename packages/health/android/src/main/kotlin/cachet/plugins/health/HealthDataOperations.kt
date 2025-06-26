@@ -260,8 +260,8 @@ class HealthDataOperations(
     fun deleteByClientRecordId(call: MethodCall, result: Result) {
         val arguments = call.arguments as? HashMap<*, *>
         val dataTypeKey = (arguments?.get("dataTypeKey") as? String)!!
-        val recordId = listOfNotNull(arguments?.get("recordId") as? String)
-        val clientRecordId = listOfNotNull(arguments?.get("clientRecordId") as? String)
+        val recordId = listOfNotNull(arguments["recordId"] as? String)
+        val clientRecordId = listOfNotNull(arguments["clientRecordId"] as? String)
         if (!HealthConstants.mapToType.containsKey(dataTypeKey)) {
             Log.w("FLUTTER_HEALTH::ERROR", "Datatype $dataTypeKey not found in HC")
             result.success(false)
