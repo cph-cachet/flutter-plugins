@@ -1,3 +1,7 @@
+## 5.1.1
+
+- compile Java and Kotlin sources to bytecode level 21
+
 ## 5.1.0
 
 - upgrading gradle version
