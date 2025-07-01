@@ -1,3 +1,8 @@
+## 4.2.1
+
+* Update example app and outdated libraries
+* Upgraded Gradle
+
 ## 4.2.0
 
 * Gradle files restructure for example app
