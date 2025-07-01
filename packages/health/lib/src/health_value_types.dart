@@ -193,6 +193,7 @@ class WorkoutHealthValue extends HealthValue {
   @override
   String toString() =>
       """$runtimeType - workoutActivityType: ${workoutActivityType.name},
+           rawWorkoutActivityType: $rawWorkoutActivityType,
            totalEnergyBurned: $totalEnergyBurned,
            totalEnergyBurnedUnit: ${totalEnergyBurnedUnit?.name},
            totalDistance: $totalDistance,
@@ -203,6 +204,7 @@ class WorkoutHealthValue extends HealthValue {
   @override
   bool operator ==(Object other) =>
       other is WorkoutHealthValue &&
+      rawWorkoutActivityType == other.rawWorkoutActivityType &&
       workoutActivityType == other.workoutActivityType &&
       totalEnergyBurned == other.totalEnergyBurned &&
       totalEnergyBurnedUnit == other.totalEnergyBurnedUnit &&
@@ -214,6 +216,7 @@ class WorkoutHealthValue extends HealthValue {
   @override
   int get hashCode => Object.hash(
       workoutActivityType,
+      rawWorkoutActivityType,
       totalEnergyBurned,
       totalEnergyBurnedUnit,
       totalDistance,
