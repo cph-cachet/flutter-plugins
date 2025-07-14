@@ -5,13 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:audio_streamer/audio_streamer.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(AudioStreamingApp());
+void main() => runApp(new AudioStreamingApp());
 
 class AudioStreamingApp extends StatefulWidget {
-  const AudioStreamingApp({super.key});
-
   @override
-  AudioStreamingAppState createState() => AudioStreamingAppState();
+  AudioStreamingAppState createState() => new AudioStreamingAppState();
 }
 
 class AudioStreamingAppState extends State<AudioStreamingApp> {
@@ -83,9 +81,9 @@ class AudioStreamingAppState extends State<AudioStreamingApp> {
                     margin: EdgeInsets.all(25),
                     child: Column(children: [
                       Container(
-                        margin: EdgeInsets.only(top: 20),
                         child: Text(isRecording ? "Mic: ON" : "Mic: OFF",
                             style: TextStyle(fontSize: 25, color: Colors.blue)),
+                        margin: EdgeInsets.only(top: 20),
                       ),
                       Text(''),
                       Text('Max amp: ${latestBuffer?.reduce(max)}'),
@@ -96,8 +94,8 @@ class AudioStreamingAppState extends State<AudioStreamingApp> {
               ])),
           floatingActionButton: FloatingActionButton(
             backgroundColor: isRecording ? Colors.red : Colors.green,
-            onPressed: isRecording ? stop : start,
             child: isRecording ? Icon(Icons.stop) : Icon(Icons.mic),
+            onPressed: isRecording ? stop : start,
           ),
         ),
       );

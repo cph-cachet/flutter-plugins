@@ -1,7 +1,6 @@
-## 4.2.1
+## 4.2.2
 
-* Update example app and outdated libraries
-* Upgraded Gradle
+* Reverts [#1226](https://github.com/cph-cachet/flutter-plugins/pull/1226)
 
 ## 4.2.0
 
