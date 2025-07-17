@@ -473,7 +473,7 @@ class Health {
   ///
   /// Values for Sleep and Headache are ignored and will be automatically assigned
   /// the default value.
-  Future<bool> writeHealthData({
+  Future<HealthDataPoint?> writeHealthData({
     required double value,
     HealthDataUnit? unit,
     required HealthDataType type,
@@ -538,8 +538,22 @@ class Health {
       'endTime': endTime.millisecondsSinceEpoch,
       'recordingMethod': recordingMethod.toInt(),
     };
-    bool? success = await _channel.invokeMethod('writeData', args);
-    return success ?? false;
+
+    String uuid = '${await _channel.invokeMethod('writeData', args)}';
+    if (uuid.isEmpty) {
+      return null;
+    }
+
+    try {
+      final healthPoint = await getHealthDataByUUID(
+        uuid: uuid,
+        type: type,
+      );
+
+      return healthPoint;
+    } catch (e) {
+      return null;
+    }
   }
 
   /// Deletes all records of the given [type] for a given period of time.
@@ -661,7 +675,7 @@ class Health {
   ///    Simply set [endTime] equal to [startTime] if the blood oxygen saturation
   ///    is measured only at a specific point in time (default).
   ///  * [recordingMethod] - the recording method of the data point.
-  Future<bool> writeBloodOxygen({
+  Future<HealthDataPoint?> writeBloodOxygen({
     required double saturation,
     required DateTime startTime,
     DateTime? endTime,
@@ -678,10 +692,11 @@ class Health {
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
-    bool? success;
+
+    HealthDataPoint? healthDataPoint;
 
     if (Platform.isIOS) {
-      success = await writeHealthData(
+      healthDataPoint = await writeHealthData(
           value: saturation,
           type: HealthDataType.BLOOD_OXYGEN,
           startTime: startTime,
@@ -695,9 +710,9 @@ class Health {
         'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,
         'recordingMethod': recordingMethod.toInt(),
       };
-      success = await _channel.invokeMethod('writeBloodOxygen', args);
+      healthDataPoint = await _channel.invokeMethod('writeBloodOxygen', args);
     }
-    return success ?? false;
+    return healthDataPoint;
   }
 
   /// Saves meal record into Apple Health or Health Connect.
@@ -1230,14 +1245,17 @@ class Health {
       'dataUnitKey': dataTypeToUnit[dataType]!.name,
       'uuid': uuid,
     };
-    final fetchedDataPoint = await _channel.invokeMethod('getDataByUUID', args);
 
-    if (fetchedDataPoint != null) {
+    final fetchedDataPoints =
+        await _channel.invokeMethod('getDataByUUID', args);
+
+    if (fetchedDataPoints != null) {
       final msg = <String, dynamic>{
         "dataType": dataType,
-        "dataPoints": [fetchedDataPoint],
+        "dataPoints": fetchedDataPoints,
       };
 
+      // get single record of parsed fetchedDataPoints
       return _parse(msg).first;
     } else {
       return null;

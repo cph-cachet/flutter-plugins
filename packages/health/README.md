@@ -270,6 +270,22 @@ flutter: Health Plugin Error:
 flutter:  PlatformException(FlutterHealth, Results are null, Optional(Error Domain=com.apple.healthkit Code=6 "Protected health data is inaccessible" UserInfo={NSLocalizedDescription=Protected health data is inaccessible}))
 ```
 
+### Fetch single health data by UUID
+
+In order to retrieve a single record, it is required to provide `String uuid` and `HealthDataType type`.
+
+Please see example below:
+```dart
+HealthDataPoint? healthPoint = await health.getHealthDataByUUID(
+  uuid: 'random-uuid-string',
+  type: HealthDataType.STEPS,
+);
+```
+```
+I/FLUTTER_HEALTH( 9161): Success: {uuid=random-uuid-string, value=12, date_from=1742259061009, date_to=1742259092888, source_id=, source_name=com.google.android.apps.fitness, recording_method=0}
+```
+> Assuming that the `uuid` and `type` are coming from your database.
+
 ### Filtering by recording method
 
 Google Health Connect and Apple HealthKit both provide ways to distinguish samples collected "automatically" and manually entered data by the user.
