@@ -1,3 +1,36 @@
+## 13.1.1
+
+* Fix [#1207](https://github.com/cph-cachet/flutter-plugins/issues/1207) - (**Important**: Some property names might have changed compared to before for `Nutrition`)
+* Fix [#1201](https://github.com/cph-cachet/flutter-plugins/issues/1201)
+* iOS: Add `APPLE_STAND_TIME`, `APPLE_STAND_HOUR`, and `APPLE_MOVE_TIME` health data types (READ ONLY) [#1190](https://github.com/cph-cachet/flutter-plugins/issues/1190)
+
+## 13.1.0
+
+* Refactored Android native implementation (No Flutter API changes)
+* Android: Add `SPEED` health data type - PR [#1183](https://github.com/cph-cachet/flutter-plugins/pull/1183)
+* iOS: Add `WALKING_SPEED` health data type - PR [#1183](https://github.com/cph-cachet/flutter-plugins/pull/1183)
+* Add `METER_PER_SECOND` health data unit
+
+## 13.0.1
+
+* Refactored Swift native implementation - See PR [#1175](https://github.com/cph-cachet/flutter-plugins/pull/1175) and [#1208](https://github.com/cph-cachet/flutter-plugins/pull/1208) for more information:
+```
+SwiftHealthPlugin (Main Plugin Class)
+├── HealthDataReader (Reading health data)
+├── HealthDataWriter (Writing health data)
+├── HealthDataOperations (Permissions and deletion)
+├── HealthUtilities (Helper functions)
+└── HealthConstants (Constants and enums)
+```
+
+## 13.0.0
+
+* Refactored Swift native implementation
+
+## 12.2.1
+
+* iOS: Add `swift_version` for add-to-app implementations - PR [#1205](https://github.com/cph-cachet/flutter-plugins/pull/1205)
+
 ## 12.2.0
 
 * iOS: Add `deviceModel` in returned Health data to identify the device that generated the data of the receiver. (in iOS `source_name` represents the revision of the source responsible for saving the receiver.)
