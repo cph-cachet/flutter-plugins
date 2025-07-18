@@ -473,7 +473,7 @@ class Health {
   ///
   /// Values for Sleep and Headache are ignored and will be automatically assigned
   /// the default value.
-  Future<HealthDataPoint?> writeHealthData({
+  Future<bool> writeHealthData({
     required double value,
     HealthDataUnit? unit,
     required HealthDataType type,
@@ -538,22 +538,8 @@ class Health {
       'endTime': endTime.millisecondsSinceEpoch,
       'recordingMethod': recordingMethod.toInt(),
     };
-
-    String uuid = '${await _channel.invokeMethod('writeData', args)}';
-    if (uuid.isEmpty) {
-      return null;
-    }
-
-    try {
-      final healthPoint = await getHealthDataByUUID(
-        uuid: uuid,
-        type: type,
-      );
-
-      return healthPoint;
-    } catch (e) {
-      return null;
-    }
+    bool? success = await _channel.invokeMethod('writeData', args);
+    return success ?? false;
   }
 
   /// Deletes all records of the given [type] for a given period of time.
@@ -675,7 +661,7 @@ class Health {
   ///    Simply set [endTime] equal to [startTime] if the blood oxygen saturation
   ///    is measured only at a specific point in time (default).
   ///  * [recordingMethod] - the recording method of the data point.
-  Future<HealthDataPoint?> writeBloodOxygen({
+  Future<bool> writeBloodOxygen({
     required double saturation,
     required DateTime startTime,
     DateTime? endTime,
@@ -692,11 +678,10 @@ class Health {
     if (startTime.isAfter(endTime)) {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
-
-    HealthDataPoint? healthDataPoint;
+    bool? success;
 
     if (Platform.isIOS) {
-      healthDataPoint = await writeHealthData(
+      success = await writeHealthData(
           value: saturation,
           type: HealthDataType.BLOOD_OXYGEN,
           startTime: startTime,
@@ -710,9 +695,9 @@ class Health {
         'dataTypeKey': HealthDataType.BLOOD_OXYGEN.name,
         'recordingMethod': recordingMethod.toInt(),
       };
-      healthDataPoint = await _channel.invokeMethod('writeBloodOxygen', args);
+      success = await _channel.invokeMethod('writeBloodOxygen', args);
     }
-    return healthDataPoint;
+    return success ?? false;
   }
 
   /// Saves meal record into Apple Health or Health Connect.
