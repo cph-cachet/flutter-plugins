@@ -319,6 +319,10 @@ class HealthDataReader {
         healthStore.execute(query)
     }
 
+    /// Gets single health data by UUID
+    /// - Parameters:
+    ///   - call: Flutter method call
+    ///   - result: Flutter result callback
     func getDataByUUID(call: FlutterMethodCall, result: @escaping FlutterResult) {
 
         guard let arguments = call.arguments as? NSDictionary,
@@ -333,9 +337,6 @@ class HealthDataReader {
         }
         
         let dataUnitKey = arguments["dataUnitKey"] as? String
-        let recordingMethodsToFilter = (arguments["recordingMethodsToFilter"] as? [Int]) ?? []
-        let includeManualEntry = !recordingMethodsToFilter.contains(HealthConstants.RecordingMethod.manual.rawValue)
-        
         var unit: HKUnit?
         if let dataUnitKey = dataUnitKey {
             unit = unitDict[dataUnitKey] // Ensure unitDict exists and contains the key
@@ -351,7 +352,7 @@ class HealthDataReader {
         }
 
         guard let uuid = UUID(uuidString: uuidarg) else {
-            result(false)
+            result(nil)
             return
         }
 
@@ -359,11 +360,6 @@ class HealthDataReader {
         
         let sourceIdForCharacteristic = "com.apple.Health"
         let sourceNameForCharacteristic = "Health"
-        
-        if (!includeManualEntry) {
-            let manualPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
-            predicate = NSCompoundPredicate(type: .and, subpredicates: [predicate, manualPredicate])
-        }
         
         let query = HKSampleQuery(
             sampleType: dataType,
@@ -373,7 +369,6 @@ class HealthDataReader {
         ) {
             [self]
             x, samplesOrNil, error in
-
 
             guard error == nil else {
                 DispatchQueue.main.async {
@@ -386,7 +381,7 @@ class HealthDataReader {
             
             guard let samples = samplesOrNil else {
                 DispatchQueue.main.async {
-                    result([])
+                    result(nil)
                 }
                 return
             }
@@ -408,7 +403,7 @@ class HealthDataReader {
                     ]
                 }
                 DispatchQueue.main.async {
-                    result(dictionaries)
+                    result(dictionaries.first)
                 }
             } else if var categorySamples = samples as? [HKCategorySample] {
                 // filter category samples based on dataTypeKey
@@ -454,7 +449,7 @@ class HealthDataReader {
                     ]
                 }
                 DispatchQueue.main.async {
-                    result(categories)
+                    result(categories.first)
                 }
             } else if let workoutSamples = samples as? [HKWorkout] {
                 let dictionaries = workoutSamples.map { sample -> NSDictionary in
@@ -481,7 +476,7 @@ class HealthDataReader {
                 }
                 
                 DispatchQueue.main.async {
-                    result(dictionaries)
+                    result(dictionaries.first)
                 }
             } else if let audiogramSamples = samples as? [HKAudiogramSample] {
                 let dictionaries = audiogramSamples.map { sample -> NSDictionary in
@@ -507,7 +502,7 @@ class HealthDataReader {
                     ]
                 }
                 DispatchQueue.main.async {
-                    result(dictionaries)
+                    result(dictionaries.first)
                 }
             } else if let nutritionSamples = samples as? [HKCorrelation] {
                 var foods: [[String: Any?]] = []
@@ -543,13 +538,13 @@ class HealthDataReader {
                 }
                 
                 DispatchQueue.main.async {
-                    result(foods)
+                    result(foods.first)
                 }
             } else {
                 if #available(iOS 14.0, *), let ecgSamples = samples as? [HKElectrocardiogram] {
                     let dictionaries = ecgSamples.map(self.fetchEcgMeasurements)
                     DispatchQueue.main.async {
-                        result(dictionaries)
+                        result(dictionaries.first)
                     }
                 } else {
                     DispatchQueue.main.async {

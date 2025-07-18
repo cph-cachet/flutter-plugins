@@ -1033,13 +1033,6 @@ class Health {
     required String uuid,
     required HealthDataType type,
   }) async {
-    if (Platform.isAndroid) {
-      throw HealthException(
-        type,
-        'getHealthDataByUUID is not available for Android at this moment.',
-      );
-    }
-
     if (uuid.isEmpty) {
       throw HealthException(type, 'UUID is empty!');
     }
@@ -1246,13 +1239,15 @@ class Health {
       'uuid': uuid,
     };
 
-    final fetchedDataPoints =
-        await _channel.invokeMethod('getDataByUUID', args);
+    final fetchedDataPoint = await _channel.invokeMethod('getDataByUUID', args);
 
-    if (fetchedDataPoints != null) {
+    // fetchedDataPoint is Map<Object, Object>. // Must be converted to List first
+    // so no need to recreate _parse() to handle single HealthDataPoint.
+
+    if (fetchedDataPoint != null) {
       final msg = <String, dynamic>{
         "dataType": dataType,
-        "dataPoints": fetchedDataPoints,
+        "dataPoints": [fetchedDataPoint],
       };
 
       // get single record of parsed fetchedDataPoints
