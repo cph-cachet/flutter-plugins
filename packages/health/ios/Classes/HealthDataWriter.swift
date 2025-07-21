@@ -64,7 +64,17 @@ class HealthDataWriter {
                     print("Error Saving \(type) Sample: \(err.localizedDescription)")
                 }
                 DispatchQueue.main.async {
-                    result(success)
+                    if success {
+                        // Return the UUID of the saved object
+                        if let savedSample = sample as? HKObject {
+                            print("Saved: \(savedSample.uuid.uuidString)")
+                            result(savedSample.uuid.uuidString) // Return UUID as String
+                        } else {
+                            result("")
+                        }
+                    }
+
+                    result("")
                 }
             })
     }
@@ -353,7 +363,18 @@ class HealthDataWriter {
                     print("Error Saving Workout. Sample: \(err.localizedDescription)")
                 }
                 DispatchQueue.main.async {
-                    result(success)
+                    
+                    if success {
+                        // Return the UUID of the saved object
+                        if let savedSample = workout as? HKWorkout {
+                            print("Saved: \(savedSample.uuid.uuidString)")
+                            result(savedSample.uuid.uuidString) // Return UUID as String
+                        } else {
+                            result("")
+                        }
+                    }
+
+                    result("")
                 }
             })
     }
