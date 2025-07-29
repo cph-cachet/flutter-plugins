@@ -1175,7 +1175,7 @@ class Health {
   Future<List<HealthDataPoint>> _dataQuery(DateTime startTime, DateTime endTime,
       HealthDataType dataType, List<RecordingMethod> recordingMethodsToFilter,
       {HealthDataUnit? dataUnit}) async {
-    String? unit = dataUnit?.name ?? dataTypeToUnit[dataType]!.name;
+    String? unit = dataUnit?.name ?? dataTypeToUnit[dataType]?.name;
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
       'dataUnitKey': unit,
