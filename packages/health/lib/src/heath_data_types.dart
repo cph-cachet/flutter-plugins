@@ -613,8 +613,7 @@ enum InsulinDeliveryReason {
 }
 
 /// Extension to assign numbers to [ElectrocardiogramClassification]s
-extension ElectrocardiogramClassificationValue
-    on ElectrocardiogramClassification {
+extension ElectrocardiogramClassificationValue on ElectrocardiogramClassification {
   int get value => switch (this) {
         ElectrocardiogramClassification.NOT_SET => 0,
         ElectrocardiogramClassification.SINUS_RHYTHM => 1,

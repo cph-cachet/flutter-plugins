@@ -4,14 +4,14 @@ version: 13.1.1
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/health
 
 environment:
-  sdk: ">=3.2.0 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
   flutter: ">=3.6.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  intl: '>=0.18.0 <0.21.0'
-  device_info_plus: '>=9.0.0 <12.0.0'
+  intl: ">=0.18.0 <0.21.0"
+  device_info_plus: ">=9.0.0 <12.0.0"
   json_annotation: ^4.8.0
   carp_serializable: ^2.0.0 # polymorphic json serialization
 
@@ -24,7 +24,7 @@ dev_dependencies:
 
   # Using carp_serializable & json_serializable to auto generate json code (.g files) with this command:
   #   dart run build_runner build --delete-conflicting-outputs
-  build_runner: any
+  build_runner: 2.5.0
   json_serializable: any
   mocktail: ^1.0.4
   mockito: ^5.4.5

@@ -41,12 +41,10 @@ class Health {
 
   String? _deviceId;
   final DeviceInfoPlugin _deviceInfo;
-  HealthConnectSdkStatus _healthConnectSdkStatus =
-      HealthConnectSdkStatus.sdkUnavailable;
+  HealthConnectSdkStatus _healthConnectSdkStatus = HealthConnectSdkStatus.sdkUnavailable;
 
   /// Get an instance of the health plugin.
-  Health({DeviceInfoPlugin? deviceInfo})
-      : _deviceInfo = deviceInfo ?? DeviceInfoPlugin() {
+  Health({DeviceInfoPlugin? deviceInfo}) : _deviceInfo = deviceInfo ?? DeviceInfoPlugin() {
     _registerFromJsonFunctions();
   }
 
@@ -54,9 +52,7 @@ class Health {
   HealthConnectSdkStatus get healthConnectSdkStatus => _healthConnectSdkStatus;
 
   /// The type of platform of this device.
-  HealthPlatformType get platformType => Platform.isIOS
-      ? HealthPlatformType.appleHealth
-      : HealthPlatformType.googleHealthConnect;
+  HealthPlatformType get platformType => Platform.isIOS ? HealthPlatformType.appleHealth : HealthPlatformType.googleHealthConnect;
 
   /// The id of this device.
   ///
@@ -66,15 +62,11 @@ class Health {
 
   /// Configure the health plugin. Must be called before using the plugin.
   Future<void> configure() async {
-    _deviceId = Platform.isAndroid
-        ? (await _deviceInfo.androidInfo).id
-        : (await _deviceInfo.iosInfo).identifierForVendor;
+    _deviceId = Platform.isAndroid ? (await _deviceInfo.androidInfo).id : (await _deviceInfo.iosInfo).identifierForVendor;
   }
 
   /// Check if a given data type is available on the platform
-  bool isDataTypeAvailable(HealthDataType dataType) => Platform.isAndroid
-      ? dataTypeKeysAndroid.contains(dataType)
-      : dataTypeKeysIOS.contains(dataType);
+  bool isDataTypeAvailable(HealthDataType dataType) => Platform.isAndroid ? dataTypeKeysAndroid.contains(dataType) : dataTypeKeysIOS.contains(dataType);
 
   /// Determines if the health data [types] have been granted with the specified
   /// access rights [permissions].
@@ -106,14 +98,12 @@ class Health {
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
     if (permissions != null && permissions.length != types.length) {
-      throw ArgumentError(
-          "The lists of types and permissions must be of same length.");
+      throw ArgumentError("The lists of types and permissions must be of same length.");
     }
 
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
-        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
-            growable: true)
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index, growable: true)
         : permissions.map((permission) => permission.index).toList();
 
     /// On Android, if BMI is requested, then also ask for weight and height
@@ -152,11 +142,8 @@ class Health {
     if (Platform.isIOS) return null;
 
     try {
-      final status =
-          await _channel.invokeMethod<int>('getHealthConnectSdkStatus');
-      _healthConnectSdkStatus = status != null
-          ? HealthConnectSdkStatus.fromNativeValue(status)
-          : HealthConnectSdkStatus.sdkUnavailable;
+      final status = await _channel.invokeMethod<int>('getHealthConnectSdkStatus');
+      _healthConnectSdkStatus = status != null ? HealthConnectSdkStatus.fromNativeValue(status) : HealthConnectSdkStatus.sdkUnavailable;
 
       return _healthConnectSdkStatus;
     } catch (e) {
@@ -168,10 +155,7 @@ class Health {
   /// Is Google Health Connect available on this phone?
   ///
   /// Android only. Returns always true on iOS.
-  Future<bool> isHealthConnectAvailable() async => !Platform.isAndroid
-      ? true
-      : (await getHealthConnectSdkStatus() ==
-          HealthConnectSdkStatus.sdkAvailable);
+  Future<bool> isHealthConnectAvailable() async => !Platform.isAndroid ? true : (await getHealthConnectSdkStatus() == HealthConnectSdkStatus.sdkAvailable);
 
   /// Prompt the user to install the Google Health Connect app via the
   /// installed store (most likely Play Store).
@@ -187,6 +171,25 @@ class Health {
     }
   }
 
+  /// Opens specific Health Connect screens.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Android only. Returns true on iOS.
+  Future<bool> openHealthConnectScreen() async {
+    if (Platform.isIOS) return true;
+
+    await _checkIfHealthConnectAvailableOnAndroid();
+
+    try {
+      final result = await _channel.invokeMethod('openHealthConnectScreen');
+      return result == true;
+    } catch (e) {
+      debugPrint('$runtimeType - Exception in openHealthConnectScreen(): $e');
+      return false;
+    }
+  }
+
   /// Checks if Google Health Connect is available and throws an [UnsupportedError]
   /// if not.
   /// Internal methods used to check availability before any getter or setter methods.
@@ -194,8 +197,7 @@ class Health {
     if (!Platform.isAndroid) return;
 
     if (!(await isHealthConnectAvailable())) {
-      throw UnsupportedError(
-          "Google Health Connect is not available on this Android device. "
+      throw UnsupportedError("Google Health Connect is not available on this Android device. "
           "You may prompt the user to install it using the 'installHealthConnect' method");
     }
   }
@@ -210,12 +212,10 @@ class Health {
     if (Platform.isIOS) return false;
 
     try {
-      final status =
-          await _channel.invokeMethod<bool>('isHealthDataHistoryAvailable');
+      final status = await _channel.invokeMethod<bool>('isHealthDataHistoryAvailable');
       return status ?? false;
     } catch (e) {
-      debugPrint(
-          '$runtimeType - Exception in isHealthDataHistoryAvailable(): $e');
+      debugPrint('$runtimeType - Exception in isHealthDataHistoryAvailable(): $e');
       return false;
     }
   }
@@ -231,12 +231,10 @@ class Health {
     if (Platform.isIOS) return true;
 
     try {
-      final status =
-          await _channel.invokeMethod<bool>('isHealthDataHistoryAuthorized');
+      final status = await _channel.invokeMethod<bool>('isHealthDataHistoryAuthorized');
       return status ?? false;
     } catch (e) {
-      debugPrint(
-          '$runtimeType - Exception in isHealthDataHistoryAuthorized(): $e');
+      debugPrint('$runtimeType - Exception in isHealthDataHistoryAuthorized(): $e');
       return false;
     }
   }
@@ -254,12 +252,10 @@ class Health {
 
     await _checkIfHealthConnectAvailableOnAndroid();
     try {
-      final bool? isAuthorized =
-          await _channel.invokeMethod('requestHealthDataHistoryAuthorization');
+      final bool? isAuthorized = await _channel.invokeMethod('requestHealthDataHistoryAuthorization');
       return isAuthorized ?? false;
     } catch (e) {
-      debugPrint(
-          '$runtimeType - Exception in requestHealthDataHistoryAuthorization(): $e');
+      debugPrint('$runtimeType - Exception in requestHealthDataHistoryAuthorization(): $e');
       return false;
     }
   }
@@ -274,12 +270,10 @@ class Health {
     if (Platform.isIOS) return false;
 
     try {
-      final status =
-          await _channel.invokeMethod<bool>('isHealthDataInBackgroundAvailable');
+      final status = await _channel.invokeMethod<bool>('isHealthDataInBackgroundAvailable');
       return status ?? false;
     } catch (e) {
-      debugPrint(
-          '$runtimeType - Exception in isHealthDataInBackgroundAvailable(): $e');
+      debugPrint('$runtimeType - Exception in isHealthDataInBackgroundAvailable(): $e');
       return false;
     }
   }
@@ -295,12 +289,10 @@ class Health {
     if (Platform.isIOS) return true;
 
     try {
-      final status =
-          await _channel.invokeMethod<bool>('isHealthDataInBackgroundAuthorized');
+      final status = await _channel.invokeMethod<bool>('isHealthDataInBackgroundAuthorized');
       return status ?? false;
     } catch (e) {
-      debugPrint(
-          '$runtimeType - Exception in isHealthDataInBackgroundAuthorized(): $e');
+      debugPrint('$runtimeType - Exception in isHealthDataInBackgroundAuthorized(): $e');
       return false;
     }
   }
@@ -318,12 +310,10 @@ class Health {
 
     await _checkIfHealthConnectAvailableOnAndroid();
     try {
-      final bool? isAuthorized =
-          await _channel.invokeMethod('requestHealthDataInBackgroundAuthorization');
+      final bool? isAuthorized = await _channel.invokeMethod('requestHealthDataInBackgroundAuthorization');
       return isAuthorized ?? false;
     } catch (e) {
-      debugPrint(
-          '$runtimeType - Exception in requestHealthDataInBackgroundAuthorization(): $e');
+      debugPrint('$runtimeType - Exception in requestHealthDataInBackgroundAuthorization(): $e');
       return false;
     }
   }
@@ -354,8 +344,7 @@ class Health {
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
     if (permissions != null && permissions.length != types.length) {
-      throw ArgumentError(
-          'The length of [types] must be same as that of [permissions].');
+      throw ArgumentError('The length of [types] must be same as that of [permissions].');
     }
 
     if (permissions != null) {
@@ -377,16 +366,14 @@ class Health {
 
     final mTypes = List<HealthDataType>.from(types, growable: true);
     final mPermissions = permissions == null
-        ? List<int>.filled(types.length, HealthDataAccess.READ.index,
-            growable: true)
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index, growable: true)
         : permissions.map((permission) => permission.index).toList();
 
     // on Android, if BMI is requested, then also ask for weight and height
     if (Platform.isAndroid) _handleBMI(mTypes, mPermissions);
 
     List<String> keys = mTypes.map((e) => e.name).toList();
-    final bool? isAuthorized = await _channel.invokeMethod(
-        'requestAuthorization', {'types': keys, "permissions": mPermissions});
+    final bool? isAuthorized = await _channel.invokeMethod('requestAuthorization', {'types': keys, "permissions": mPermissions});
     return isAuthorized ?? false;
   }
 
@@ -414,27 +401,22 @@ class Health {
     DateTime endTime,
     List<RecordingMethod> recordingMethodsToFilter,
   ) async {
-    List<HealthDataPoint> heights = await _prepareQuery(
-        startTime, endTime, HealthDataType.HEIGHT, recordingMethodsToFilter);
+    List<HealthDataPoint> heights = await _prepareQuery(startTime, endTime, HealthDataType.HEIGHT, recordingMethodsToFilter);
 
     if (heights.isEmpty) {
       return [];
     }
 
-    List<HealthDataPoint> weights = await _prepareQuery(
-        startTime, endTime, HealthDataType.WEIGHT, recordingMethodsToFilter);
+    List<HealthDataPoint> weights = await _prepareQuery(startTime, endTime, HealthDataType.WEIGHT, recordingMethodsToFilter);
 
-    double h =
-        (heights.last.value as NumericHealthValue).numericValue.toDouble();
+    double h = (heights.last.value as NumericHealthValue).numericValue.toDouble();
 
     const dataType = HealthDataType.BODY_MASS_INDEX;
     final unit = dataTypeToUnit[dataType]!;
 
     final bmiHealthPoints = <HealthDataPoint>[];
     for (var i = 0; i < weights.length; i++) {
-      final bmiValue =
-          (weights[i].value as NumericHealthValue).numericValue.toDouble() /
-              (h * h);
+      final bmiValue = (weights[i].value as NumericHealthValue).numericValue.toDouble() / (h * h);
       final x = HealthDataPoint(
         uuid: '',
         value: NumericHealthValue(numericValue: bmiValue),
@@ -482,15 +464,12 @@ class Health {
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
-    if (Platform.isIOS &&
-        [RecordingMethod.active, RecordingMethod.unknown]
-            .contains(recordingMethod)) {
+    if (Platform.isIOS && [RecordingMethod.active, RecordingMethod.unknown].contains(recordingMethod)) {
       throw ArgumentError("recordingMethod must be manual or automatic on iOS");
     }
 
     if (type == HealthDataType.WORKOUT) {
-      throw ArgumentError(
-          "Adding workouts should be done using the writeWorkoutData method.");
+      throw ArgumentError("Adding workouts should be done using the writeWorkoutData method.");
     }
     // If not implemented on platform, throw an exception
     if (!isDataTypeAvailable(type)) {
@@ -507,8 +486,7 @@ class Health {
           HealthDataType.ELECTROCARDIOGRAM,
         }.contains(type) &&
         Platform.isIOS) {
-      throw ArgumentError(
-          "$type - iOS does not support writing this data type in HealthKit");
+      throw ArgumentError("$type - iOS does not support writing this data type in HealthKit");
     }
 
     // Assign default unit if not specified
@@ -563,11 +541,7 @@ class Health {
       throw ArgumentError("startTime must be equal or earlier than endTime");
     }
 
-    Map<String, dynamic> args = {
-      'dataTypeKey': type.name,
-      'startTime': startTime.millisecondsSinceEpoch,
-      'endTime': endTime.millisecondsSinceEpoch
-    };
+    Map<String, dynamic> args = {'dataTypeKey': type.name, 'startTime': startTime.millisecondsSinceEpoch, 'endTime': endTime.millisecondsSinceEpoch};
     bool? success = await _channel.invokeMethod('delete', args);
     return success ?? false;
   }
@@ -626,9 +600,7 @@ class Health {
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
-    if (Platform.isIOS &&
-        [RecordingMethod.active, RecordingMethod.unknown]
-            .contains(recordingMethod)) {
+    if (Platform.isIOS && [RecordingMethod.active, RecordingMethod.unknown].contains(recordingMethod)) {
       throw ArgumentError("recordingMethod must be manual or automatic on iOS");
     }
 
@@ -667,9 +639,7 @@ class Health {
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
-    if (Platform.isIOS &&
-        [RecordingMethod.active, RecordingMethod.unknown]
-            .contains(recordingMethod)) {
+    if (Platform.isIOS && [RecordingMethod.active, RecordingMethod.unknown].contains(recordingMethod)) {
       throw ArgumentError("recordingMethod must be manual or automatic on iOS");
     }
 
@@ -680,12 +650,8 @@ class Health {
     bool? success;
 
     if (Platform.isIOS) {
-      success = await writeHealthData(
-          value: saturation,
-          type: HealthDataType.BLOOD_OXYGEN,
-          startTime: startTime,
-          endTime: endTime,
-          recordingMethod: recordingMethod);
+      success =
+          await writeHealthData(value: saturation, type: HealthDataType.BLOOD_OXYGEN, startTime: startTime, endTime: endTime, recordingMethod: recordingMethod);
     } else if (Platform.isAndroid) {
       Map<String, dynamic> args = {
         'value': saturation,
@@ -801,9 +767,7 @@ class Health {
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
-    if (Platform.isIOS &&
-        [RecordingMethod.active, RecordingMethod.unknown]
-            .contains(recordingMethod)) {
+    if (Platform.isIOS && [RecordingMethod.active, RecordingMethod.unknown].contains(recordingMethod)) {
       throw ArgumentError("recordingMethod must be manual or automatic on iOS");
     }
 
@@ -882,18 +846,14 @@ class Health {
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
-    if (Platform.isIOS &&
-        [RecordingMethod.active, RecordingMethod.unknown]
-            .contains(recordingMethod)) {
+    if (Platform.isIOS && [RecordingMethod.active, RecordingMethod.unknown].contains(recordingMethod)) {
       throw ArgumentError("recordingMethod must be manual or automatic on iOS");
     }
 
-    var value =
-        Platform.isAndroid ? MenstrualFlow.toHealthConnect(flow) : flow.index;
+    var value = Platform.isAndroid ? MenstrualFlow.toHealthConnect(flow) : flow.index;
 
     if (value == -1) {
-      throw ArgumentError(
-          "$flow is not a valid menstrual flow value for $platformType");
+      throw ArgumentError("$flow is not a valid menstrual flow value for $platformType");
     }
 
     Map<String, dynamic> args = {
@@ -931,16 +891,11 @@ class Health {
     DateTime? endTime,
     Map<String, dynamic>? metadata,
   }) async {
-    if (frequencies.isEmpty ||
-        leftEarSensitivities.isEmpty ||
-        rightEarSensitivities.isEmpty) {
-      throw ArgumentError(
-          "frequencies, leftEarSensitivities and rightEarSensitivities can't be empty");
+    if (frequencies.isEmpty || leftEarSensitivities.isEmpty || rightEarSensitivities.isEmpty) {
+      throw ArgumentError("frequencies, leftEarSensitivities and rightEarSensitivities can't be empty");
     }
-    if (frequencies.length != leftEarSensitivities.length ||
-        rightEarSensitivities.length != leftEarSensitivities.length) {
-      throw ArgumentError(
-          "frequencies, leftEarSensitivities and rightEarSensitivities need to be of the same length");
+    if (frequencies.length != leftEarSensitivities.length || rightEarSensitivities.length != leftEarSensitivities.length) {
+      throw ArgumentError("frequencies, leftEarSensitivities and rightEarSensitivities need to be of the same length");
     }
     endTime ??= startTime;
     if (startTime.isAfter(endTime)) {
@@ -988,8 +943,7 @@ class Health {
     }
 
     if (Platform.isAndroid) {
-      throw UnsupportedError(
-          "writeInsulinDelivery is not supported on Android");
+      throw UnsupportedError("writeInsulinDelivery is not supported on Android");
     }
 
     Map<String, dynamic> args = {
@@ -1016,8 +970,7 @@ class Health {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
-      final result = await _prepareQuery(
-          startTime, endTime, type, recordingMethodsToFilter);
+      final result = await _prepareQuery(startTime, endTime, type, recordingMethodsToFilter);
       dataPoints.addAll(result);
     }
 
@@ -1042,8 +995,7 @@ class Health {
     List<HealthDataPoint> dataPoints = [];
 
     for (var type in types) {
-      final result = await _prepareIntervalQuery(
-          startDate, endDate, type, interval, recordingMethodsToFilter);
+      final result = await _prepareIntervalQuery(startDate, endDate, type, interval, recordingMethodsToFilter);
       dataPoints.addAll(result);
     }
 
@@ -1061,8 +1013,7 @@ class Health {
     await _checkIfHealthConnectAvailableOnAndroid();
     List<HealthDataPoint> dataPoints = [];
 
-    final result = await _prepareAggregateQuery(
-        startDate, endDate, types, activitySegmentDuration, includeManualEntry);
+    final result = await _prepareAggregateQuery(startDate, endDate, types, activitySegmentDuration, includeManualEntry);
     dataPoints.addAll(result);
 
     return removeDuplicates(dataPoints);
@@ -1076,57 +1027,39 @@ class Health {
     List<RecordingMethod> recordingMethodsToFilter,
   ) async {
     // Ask for device ID only once
-    _deviceId ??= Platform.isAndroid
-        ? (await _deviceInfo.androidInfo).id
-        : (await _deviceInfo.iosInfo).identifierForVendor;
+    _deviceId ??= Platform.isAndroid ? (await _deviceInfo.androidInfo).id : (await _deviceInfo.iosInfo).identifierForVendor;
 
     // If not implemented on platform, throw an exception
     if (!isDataTypeAvailable(dataType)) {
-      throw HealthException(
-          dataType, 'Not available on platform $platformType');
+      throw HealthException(dataType, 'Not available on platform $platformType');
     }
 
     // If BodyMassIndex is requested on Android, calculate this manually
     if (dataType == HealthDataType.BODY_MASS_INDEX && Platform.isAndroid) {
       return _computeAndroidBMI(startTime, endTime, recordingMethodsToFilter);
     }
-    return await _dataQuery(
-        startTime, endTime, dataType, recordingMethodsToFilter);
+    return await _dataQuery(startTime, endTime, dataType, recordingMethodsToFilter);
   }
 
   /// Prepares an interval query, i.e. checks if the types are available, etc.
   Future<List<HealthDataPoint>> _prepareIntervalQuery(
-      DateTime startDate,
-      DateTime endDate,
-      HealthDataType dataType,
-      int interval,
-      List<RecordingMethod> recordingMethodsToFilter) async {
+      DateTime startDate, DateTime endDate, HealthDataType dataType, int interval, List<RecordingMethod> recordingMethodsToFilter) async {
     // Ask for device ID only once
-    _deviceId ??= Platform.isAndroid
-        ? (await _deviceInfo.androidInfo).id
-        : (await _deviceInfo.iosInfo).identifierForVendor;
+    _deviceId ??= Platform.isAndroid ? (await _deviceInfo.androidInfo).id : (await _deviceInfo.iosInfo).identifierForVendor;
 
     // If not implemented on platform, throw an exception
     if (!isDataTypeAvailable(dataType)) {
-      throw HealthException(
-          dataType, 'Not available on platform $platformType');
+      throw HealthException(dataType, 'Not available on platform $platformType');
     }
 
-    return await _dataIntervalQuery(
-        startDate, endDate, dataType, interval, recordingMethodsToFilter);
+    return await _dataIntervalQuery(startDate, endDate, dataType, interval, recordingMethodsToFilter);
   }
 
   /// Prepares an aggregate query, i.e. checks if the types are available, etc.
   Future<List<HealthDataPoint>> _prepareAggregateQuery(
-      DateTime startDate,
-      DateTime endDate,
-      List<HealthDataType> dataTypes,
-      int activitySegmentDuration,
-      bool includeManualEntry) async {
+      DateTime startDate, DateTime endDate, List<HealthDataType> dataTypes, int activitySegmentDuration, bool includeManualEntry) async {
     // Ask for device ID only once
-    _deviceId ??= Platform.isAndroid
-        ? (await _deviceInfo.androidInfo).id
-        : (await _deviceInfo.iosInfo).identifierForVendor;
+    _deviceId ??= Platform.isAndroid ? (await _deviceInfo.androidInfo).id : (await _deviceInfo.iosInfo).identifierForVendor;
 
     for (var type in dataTypes) {
       // If not implemented on platform, throw an exception
@@ -1135,23 +1068,18 @@ class Health {
       }
     }
 
-    return await _dataAggregateQuery(startDate, endDate, dataTypes,
-        activitySegmentDuration, includeManualEntry);
+    return await _dataAggregateQuery(startDate, endDate, dataTypes, activitySegmentDuration, includeManualEntry);
   }
 
   /// Fetches data points from Android/iOS native code.
   Future<List<HealthDataPoint>> _dataQuery(
-      DateTime startTime,
-      DateTime endTime,
-      HealthDataType dataType,
-      List<RecordingMethod> recordingMethodsToFilter) async {
+      DateTime startTime, DateTime endTime, HealthDataType dataType, List<RecordingMethod> recordingMethodsToFilter) async {
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
       'dataUnitKey': dataTypeToUnit[dataType]!.name,
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
-      'recordingMethodsToFilter':
-          recordingMethodsToFilter.map((e) => e.toInt()).toList(),
+      'recordingMethodsToFilter': recordingMethodsToFilter.map((e) => e.toInt()).toList(),
     };
     final fetchedDataPoints = await _channel.invokeMethod('getData', args);
 
@@ -1174,23 +1102,17 @@ class Health {
 
   /// function for fetching statistic health data
   Future<List<HealthDataPoint>> _dataIntervalQuery(
-      DateTime startDate,
-      DateTime endDate,
-      HealthDataType dataType,
-      int interval,
-      List<RecordingMethod> recordingMethodsToFilter) async {
+      DateTime startDate, DateTime endDate, HealthDataType dataType, int interval, List<RecordingMethod> recordingMethodsToFilter) async {
     final args = <String, dynamic>{
       'dataTypeKey': dataType.name,
       'dataUnitKey': dataTypeToUnit[dataType]!.name,
       'startTime': startDate.millisecondsSinceEpoch,
       'endTime': endDate.millisecondsSinceEpoch,
       'interval': interval,
-      'recordingMethodsToFilter':
-          recordingMethodsToFilter.map((e) => e.toInt()).toList(),
+      'recordingMethodsToFilter': recordingMethodsToFilter.map((e) => e.toInt()).toList(),
     };
 
-    final fetchedDataPoints =
-        await _channel.invokeMethod('getIntervalData', args);
+    final fetchedDataPoints = await _channel.invokeMethod('getIntervalData', args);
     if (fetchedDataPoints != null) {
       final msg = <String, dynamic>{
         "dataType": dataType,
@@ -1203,11 +1125,7 @@ class Health {
 
   /// function for fetching statistic health data
   Future<List<HealthDataPoint>> _dataAggregateQuery(
-      DateTime startDate,
-      DateTime endDate,
-      List<HealthDataType> dataTypes,
-      int activitySegmentDuration,
-      bool includeManualEntry) async {
+      DateTime startDate, DateTime endDate, List<HealthDataType> dataTypes, int activitySegmentDuration, bool includeManualEntry) async {
     final args = <String, dynamic>{
       'dataTypeKeys': dataTypes.map((dataType) => dataType.name).toList(),
       'startTime': startDate.millisecondsSinceEpoch,
@@ -1216,8 +1134,7 @@ class Health {
       'includeManualEntry': includeManualEntry
     };
 
-    final fetchedDataPoints =
-        await _channel.invokeMethod('getAggregateData', args);
+    final fetchedDataPoints = await _channel.invokeMethod('getAggregateData', args);
 
     if (fetchedDataPoints != null) {
       final msg = <String, dynamic>{
@@ -1233,26 +1150,19 @@ class Health {
     final dataType = message["dataType"] as HealthDataType;
     final dataPoints = message["dataPoints"] as List;
 
-    return dataPoints
-        .map<HealthDataPoint>((dataPoint) =>
-            HealthDataPoint.fromHealthDataPoint(dataType, dataPoint))
-        .toList();
+    return dataPoints.map<HealthDataPoint>((dataPoint) => HealthDataPoint.fromHealthDataPoint(dataType, dataPoint)).toList();
   }
 
   /// Return a list of [HealthDataPoint] based on [points] with no duplicates.
-  List<HealthDataPoint> removeDuplicates(List<HealthDataPoint> points) =>
-      LinkedHashSet.of(points).toList();
+  List<HealthDataPoint> removeDuplicates(List<HealthDataPoint> points) => LinkedHashSet.of(points).toList();
 
   /// Get the total number of steps within a specific time period.
   /// Returns null if not successful.
-  Future<int?> getTotalStepsInInterval(DateTime startTime, DateTime endTime,
-      {bool includeManualEntry = true}) async {
+  Future<int?> getTotalStepsInInterval(DateTime startTime, DateTime endTime, {bool includeManualEntry = true}) async {
     final args = <String, dynamic>{
       'startTime': startTime.millisecondsSinceEpoch,
       'endTime': endTime.millisecondsSinceEpoch,
-      'recordingMethodsToFilter': includeManualEntry
-          ? <RecordingMethod>[]
-          : [RecordingMethod.manual.toInt()],
+      'recordingMethodsToFilter': includeManualEntry ? <RecordingMethod>[] : [RecordingMethod.manual.toInt()],
     };
     final stepsCount = await _channel.invokeMethod<int?>(
       'getTotalStepsInInterval',
@@ -1274,8 +1184,8 @@ class Health {
         HealthDataType.HEADACHE_MILD => 2,
         HealthDataType.HEADACHE_MODERATE => 3,
         HealthDataType.HEADACHE_SEVERE => 4,
-        _ => throw HealthException(type,
-            "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues"),
+        _ =>
+          throw HealthException(type, "HealthDataType was not aligned correctly - please report bug at https://github.com/cph-cachet/flutter-plugins/issues"),
       };
 
   /// Write workout data to Apple Health or Google Health Connect.
@@ -1307,19 +1217,15 @@ class Health {
     RecordingMethod recordingMethod = RecordingMethod.automatic,
   }) async {
     await _checkIfHealthConnectAvailableOnAndroid();
-    if (Platform.isIOS &&
-        [RecordingMethod.active, RecordingMethod.unknown]
-            .contains(recordingMethod)) {
+    if (Platform.isIOS && [RecordingMethod.active, RecordingMethod.unknown].contains(recordingMethod)) {
       throw ArgumentError("recordingMethod must be manual or automatic on iOS");
     }
 
     // Check that value is on the current Platform
     if (Platform.isIOS && !_isOnIOS(activityType)) {
-      throw HealthException(activityType,
-          "Workout activity type $activityType is not supported on iOS");
+      throw HealthException(activityType, "Workout activity type $activityType is not supported on iOS");
     } else if (Platform.isAndroid && !_isOnAndroid(activityType)) {
-      throw HealthException(activityType,
-          "Workout activity type $activityType is not supported on Android");
+      throw HealthException(activityType, "Workout activity type $activityType is not supported on Android");
     }
     final args = <String, dynamic>{
       'activityType': activityType.name,
