@@ -1,3 +1,9 @@
+## 5.2.0
+
+- update to `audio_streamer: ^4.2.0`
+- update to dart SDK `3.8.1`
+- update gradle and kotlin versions in example app
+
 ## 5.1.0
 
 - upgrading gradle version
