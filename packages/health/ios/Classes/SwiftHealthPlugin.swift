@@ -203,8 +203,11 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[HealthConstants.MILLIMETER_OF_MERCURY] = HKUnit.millimeterOfMercury()
         unitDict[HealthConstants.CENTIMETER_OF_WATER] = HKUnit.centimeterOfWater()
         unitDict[HealthConstants.ATMOSPHERE] = HKUnit.atmosphere()
-        unitDict[HealthConstants.DECIBEL_A_WEIGHTED_SOUND_PRESSURE_LEVEL] = HKUnit.decibelAWeightedSoundPressureLevel()
         unitDict[HealthConstants.SECOND] = HKUnit.second()
+        
+        if #available(iOS 13.0, *) {
+            unitDict[HealthConstants.DECIBEL_A_WEIGHTED_SOUND_PRESSURE_LEVEL] = HKUnit.decibelAWeightedSoundPressureLevel()
+        }
         unitDict[HealthConstants.MILLISECOND] = HKUnit.secondUnit(with: .milli)
         unitDict[HealthConstants.MINUTE] = HKUnit.minute()
         unitDict[HealthConstants.HOUR] = HKUnit.hour()
@@ -216,9 +219,12 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         unitDict[HealthConstants.DEGREE_CELSIUS] = HKUnit.degreeCelsius()
         unitDict[HealthConstants.DEGREE_FAHRENHEIT] = HKUnit.degreeFahrenheit()
         unitDict[HealthConstants.KELVIN] = HKUnit.kelvin()
-        unitDict[HealthConstants.DECIBEL_HEARING_LEVEL] = HKUnit.decibelHearingLevel()
-        unitDict[HealthConstants.HERTZ] = HKUnit.hertz()
         unitDict[HealthConstants.SIEMEN] = HKUnit.siemen()
+        
+        if #available(iOS 13.0, *) {
+            unitDict[HealthConstants.DECIBEL_HEARING_LEVEL] = HKUnit.decibelHearingLevel()
+            unitDict[HealthConstants.HERTZ] = HKUnit.hertz()
+        }
         unitDict[HealthConstants.INTERNATIONAL_UNIT] = HKUnit.internationalUnit()
         unitDict[HealthConstants.COUNT] = HKUnit.count()
         unitDict[HealthConstants.PERCENT] = HKUnit.percent()
@@ -557,7 +563,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["BASEBALL"] = .baseball
         workoutActivityTypeMap["BASKETBALL"] = .basketball
         workoutActivityTypeMap["CRICKET"] = .cricket
-        workoutActivityTypeMap["DISC_SPORTS"] = .discSports
+        if #available(iOS 13.0, *) {
+            workoutActivityTypeMap["DISC_SPORTS"] = .discSports
+        }
         workoutActivityTypeMap["HANDBALL"] = .handball
         workoutActivityTypeMap["HOCKEY"] = .hockey
         workoutActivityTypeMap["LACROSSE"] = .lacrosse
@@ -585,7 +593,9 @@ public class SwiftHealthPlugin: NSObject, FlutterPlugin {
         workoutActivityTypeMap["STAIR_CLIMBING"] = .stairClimbing
         workoutActivityTypeMap["STAIRS"] = .stairs
         workoutActivityTypeMap["STEP_TRAINING"] = .stepTraining
-        workoutActivityTypeMap["FITNESS_GAMING"] = .fitnessGaming
+        if #available(iOS 13.0, *) {
+            workoutActivityTypeMap["FITNESS_GAMING"] = .fitnessGaming
+        }
         workoutActivityTypeMap["BARRE"] = .barre
         workoutActivityTypeMap["YOGA"] = .yoga
         workoutActivityTypeMap["MIND_AND_BODY"] = .mindAndBody

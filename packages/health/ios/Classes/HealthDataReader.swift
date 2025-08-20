@@ -239,7 +239,7 @@ class HealthDataReader {
                 DispatchQueue.main.async {
                     result(dictionaries)
                 }
-            } else if let audiogramSamples = samples as? [HKAudiogramSample] {
+            } else if #available(iOS 13.0, *), let audiogramSamples = samples as? [HKAudiogramSample] {
                 let dictionaries = audiogramSamples.map { sample -> NSDictionary in
                     var frequencies = [Double]()
                     var leftEarSensitivities = [Double]()

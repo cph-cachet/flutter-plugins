@@ -74,6 +74,10 @@ class HealthDataWriter {
     ///   - call: Flutter method call
     ///   - result: Flutter result callback
     func writeAudiogram(call: FlutterMethodCall, result: @escaping FlutterResult) throws {
+        guard #available(iOS 13.0, *) else {
+            throw PluginError(message: "Audiogram data is only available on iOS 13.0 or later")
+        }
+        
         guard let arguments = call.arguments as? NSDictionary,
               let frequencies = (arguments["frequencies"] as? [Double]),
               let leftEarSensitivities = (arguments["leftEarSensitivities"] as? [Double]),
