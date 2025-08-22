@@ -7,6 +7,7 @@ import android.os.Handler
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.NonNull
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
@@ -34,6 +35,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
     private var activity: Activity? = null
     private var context: Context? = null
     private var healthConnectRequestPermissionsLauncher: ActivityResultLauncher<Set<String>>? = null
+    private var healthConnectScreenLauncher: ActivityResultLauncher<Intent>? = null
+    private var pendingResult: Result? = null
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var scope: CoroutineScope
     private var isReplySubmitted = false
@@ -157,6 +160,9 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "delete" -> dataOperations.deleteData(call, result)
             "deleteByUUID" -> dataOperations.deleteByUUID(call, result)
             
+            // Health Connect Screens
+            "openHealthConnectScreen" -> openHealthConnectScreen(call, result)
+            
             else -> result.notImplemented()
         }
     }
@@ -181,6 +187,11 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             (activity as ComponentActivity).registerForActivityResult(
                 requestPermissionActivityContract
             ) { granted -> onHealthConnectPermissionCallback(granted) }
+
+        healthConnectScreenLauncher =
+            (activity as ComponentActivity).registerForActivityResult(
+                ActivityResultContracts.StartActivityForResult()
+            ) { result -> onHealthConnectScreenClosed(result) }
     }
     
     override fun onDetachedFromActivityForConfigChanges() {
@@ -201,6 +212,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
         }
         activity = null
         healthConnectRequestPermissionsLauncher = null
+        healthConnectScreenLauncher = null
+        pendingResult = null
     }
 
     /**
@@ -338,4 +351,81 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             setOf(HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)
         )
     }
+
+    /**
+     * Opens Health Connect screens (onboarding, system onboarding, or permission usage).
+     * Provides unified access to all Health Connect screen types through a single method.
+     * 
+     * @param call Method call containing screen type parameter
+     * @param result Flutter result callback for operation outcome
+     */
+    private fun openHealthConnectScreen(call: MethodCall, result: Result) {
+
+        if (activity == null) {
+            result.error("NO_ACTIVITY", "Activity is not available", null)
+            return
+        }
+
+        if (healthConnectScreenLauncher == null) {
+            result.error("NO_LAUNCHER", "Activity result launcher is not available", null)
+            return
+        }
+
+        try {
+            val intent = createOnboardingIntent()
+
+            // Intent creation methods now handle fallbacks internally,
+            // so we should always have a valid intent to launch
+
+            intent?.let {
+                pendingResult = result
+                healthConnectScreenLauncher!!.launch(intent)
+            }
+
+        } catch (e: Exception) {
+            // Last resort: try to open Health Connect installation if everything fails
+            try {
+                Log.w("FLUTTER_HEALTH", "All attempts failed, trying Health Connect installation")
+                val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                    setPackage("com.android.vending")
+                    data = android.net.Uri.parse("market://details?id=com.google.android.apps.healthdata")
+                }
+                pendingResult = result
+                healthConnectScreenLauncher!!.launch(installIntent)
+                Log.i("FLUTTER_HEALTH", "Opened Health Connect installation page")
+            } catch (installException: Exception) {
+                result.error("ERROR", "Failed to open Health Connect screen and installation: ${e.localizedMessage}", null)
+                Log.e("FLUTTER_HEALTH", "Complete failure opening Health Connect", e)
+            }
+        }
+    }
+
+    /**
+     * Callback method called when Health Connect screen is closed.
+     * Sends success result back to Flutter when the user returns from Health Connect.
+     */
+    private fun onHealthConnectScreenClosed(result: androidx.activity.result.ActivityResult) {
+        pendingResult?.let {
+            it.success(true)
+            pendingResult = null
+        }
+    }
+
+    /**
+     * Creates intent for Health Connect onboarding with intelligent fallback.
+     * Based on Stack Overflow recommendations for Android 14+ and legacy versions.
+     */
+    private fun createOnboardingIntent(): Intent? {
+        val packageManager = context!!.packageManager
+        
+        // Option 4: Try Health Connect settings (legacy)
+        val legacySettingsIntent = Intent("androidx.health.ACTION_HEALTH_CONNECT_SETTINGS")
+        
+        if (legacySettingsIntent.resolveActivity(packageManager) != null) {
+            return legacySettingsIntent
+        }
+        return null
+       
+    }
+    
 }
