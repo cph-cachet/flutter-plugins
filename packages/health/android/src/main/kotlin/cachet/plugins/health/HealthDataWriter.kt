@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.records.metadata.Metadata
+import androidx.health.connect.client.response.InsertRecordsResponse
 import androidx.health.connect.client.units.*
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel.Result
@@ -43,17 +44,31 @@ class HealthDataWriter(
         val record = createRecord(type, startTime, endTime, value, recordingMethod)
         
         if (record == null) {
-            result.success(false)
+            result.success("")
             return
         }
 
         scope.launch {
             try {
-                healthConnectClient.insertRecords(listOf(record))
-                result.success(true)
+                // Insert records into Health Connect
+                val insertResponse: InsertRecordsResponse = healthConnectClient.insertRecords(listOf(record))
+
+                // Extract UUID from the first inserted record
+                val insertedUUID = insertResponse.recordIdsList.firstOrNull() ?: ""
+
+                if (insertedUUID.isEmpty()) {
+                    Log.e("FLUTTER_HEALTH::ERROR", "UUID is empty! No records were inserted.")
+                } else {
+                    Log.i(
+                        "FLUTTER_HEALTH::SUCCESS",
+                        "[Health Connect] Workout $insertedUUID was successfully added!"
+                    )
+                }
+
+                result.success(insertedUUID)
             } catch (e: Exception) {
                 Log.e("FLUTTER_HEALTH::ERROR", "Error writing $type: ${e.message}")
-                result.success(false)
+                result.success("")
             }
         }
     }
@@ -76,7 +91,7 @@ class HealthDataWriter(
         val recordingMethod = call.argument<Int>("recordingMethod")!!
         
         if (!HealthConstants.workoutTypeMap.containsKey(type)) {
-            result.success(false)
+            result.success("")
             Log.w(
                 "FLUTTER_HEALTH::ERROR",
                 "[Health Connect] Workout type not supported"
@@ -138,12 +153,22 @@ class HealthDataWriter(
                     )
                 }
                 
-                healthConnectClient.insertRecords(list)
-                result.success(true)
+                // Insert records into Health Connect
+                val insertResponse: InsertRecordsResponse = healthConnectClient.insertRecords(list)
+
+                // Extract UUID from the first inserted record
+                val insertedUUID = insertResponse.recordIdsList.firstOrNull() ?: ""
+
+                if (insertedUUID.isEmpty()) {
+                    Log.e("FLUTTER_HEALTH::ERROR", "UUID is empty! No records were inserted.")
+                }
+
                 Log.i(
                     "FLUTTER_HEALTH::SUCCESS",
-                    "[Health Connect] Workout was successfully added!"
+                    "[Health Connect] Workout $insertedUUID was successfully added!"
                 )
+
+                result.success(insertedUUID)
             } catch (e: Exception) {
                 Log.w(
                     "FLUTTER_HEALTH::ERROR",
@@ -151,7 +176,7 @@ class HealthDataWriter(
                 )
                 Log.w("FLUTTER_HEALTH::ERROR", e.message ?: "unknown error")
                 Log.w("FLUTTER_HEALTH::ERROR", e.stackTrace.toString())
-                result.success(false)
+                result.success("")
             }
         }
     }
