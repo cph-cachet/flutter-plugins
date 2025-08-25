@@ -1,6 +1,7 @@
 ## 13.1.2
 
 * Fix [#1250](https://github.com/cph-cachet/flutter-plugins/issues/1250)
+* Fix [#1233](https://github.com/cph-cachet/flutter-plugins/issues/1233)
 
 ## 13.1.1
 
