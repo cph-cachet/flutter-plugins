@@ -260,8 +260,6 @@ class HealthAppState extends State<HealthApp> {
         type: HealthDataType.BLOOD_GLUCOSE,
         startTime: earlier,
         endTime: now);
-    success &= await health.writeInsulinDelivery(
-        5, InsulinDeliveryReason.BOLUS, earlier, now);
     success &= await health.writeHealthData(
         value: 1.8,
         type: HealthDataType.WATER,
@@ -386,6 +384,8 @@ class HealthAppState extends State<HealthApp> {
     );
 
     if (Platform.isIOS) {
+      success &= await health.writeInsulinDelivery(
+          5, InsulinDeliveryReason.BOLUS, earlier, now);
       success &= await health.writeHealthData(
           value: 30,
           type: HealthDataType.HEART_RATE_VARIABILITY_SDNN,
