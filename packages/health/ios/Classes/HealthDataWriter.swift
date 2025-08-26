@@ -45,10 +45,17 @@ class HealthDataWriter {
         ]
         
         let sample: HKObject
-        
+        let sampleValue: Int
+
+        if type == "MINDFULNESS" {
+            sampleValue = HKCategoryValue.notApplicable.rawValue
+        } else {
+            sampleValue = Int(value)
+        }
+
         if dataTypesDict[type]!.isKind(of: HKCategoryType.self) {
             sample = HKCategorySample(
-                type: dataTypesDict[type] as! HKCategoryType, value: Int(value), start: dateFrom,
+                type: dataTypesDict[type] as! HKCategoryType, value: sampleValue, start: dateFrom,
                 end: dateTo, metadata: metadata)
         } else {
             let quantity = HKQuantity(unit: unitDict[unit]!, doubleValue: value)
