@@ -1,5 +1,6 @@
 ## 13.1.3
 
+* Fix permissions issues with iOS
 * Fix [#1231](https://github.com/cph-cachet/flutter-plugins/issues/1231)
 
 ## 13.1.2
