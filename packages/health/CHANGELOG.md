@@ -1,3 +1,7 @@
+## 13.1.4
+
+* Fix adding mindfulness resulted in crash in iOS
+
 ## 13.1.3
 
 * Fix permissions issues with iOS

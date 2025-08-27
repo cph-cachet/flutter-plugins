@@ -632,14 +632,14 @@ class NutritionHealthValue extends HealthValue {
     dataPoint = dataPoint as Map<Object?, Object?>;
     // Convert to Map<String, Object?> and ensure all expected fields are present
     final Map<String, Object?> dataPointMap = {};
-    
+
     // Add all entries from the native data
     dataPoint.forEach((key, value) {
       if (key != null) {
         dataPointMap[key as String] = value;
       }
     });
-    
+
     return _$NutritionHealthValueFromJson(dataPointMap);
   }
 

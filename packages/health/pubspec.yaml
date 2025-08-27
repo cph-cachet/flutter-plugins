@@ -1,6 +1,6 @@
 name: health
 description: Wrapper for Apple's HealthKit on iOS and Google's Health Connect on Android.
-version: 13.1.3
+version: 13.1.4
 homepage: https://github.com/cph-cachet/flutter-plugins/tree/master/packages/health
 
 environment:
