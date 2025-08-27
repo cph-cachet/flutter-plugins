@@ -1,6 +1,7 @@
 ## 13.1.4
 
 * Fix adding mindfulness resulted in crash in iOS
+* Support SPM for iOS
 
 ## 13.1.3
 
@@ -28,6 +29,7 @@
 ## 13.0.1
 
 * Refactored Swift native implementation - See PR [#1175](https://github.com/cph-cachet/flutter-plugins/pull/1175) and [#1208](https://github.com/cph-cachet/flutter-plugins/pull/1208) for more information:
+
 ```
 SwiftHealthPlugin (Main Plugin Class)
 ├── HealthDataReader (Reading health data)
@@ -58,10 +60,12 @@ SwiftHealthPlugin (Main Plugin Class)
 * iOS: Parse metadata to remove unsupported types - PR [#1120](https://github.com/cph-cachet/flutter-plugins/pull/1120)
 * iOS: Add UV Index Types
 * Android: Add request access to historic data [#1126](https://github.com/cph-cachet/flutter-plugins/issues/1126) - PR [#1127](https://github.com/cph-cachet/flutter-plugins/pull/1127)
+
 ```XML
 <!-- Add the following permission into AndroidManifest.xml -->
 <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
 ```
+
 * Android:
   * Update `androidx.compose:compose-bom` to `2025.02.00`
   * Update `androidx.health.connect:connect-client` to `1.1.0-alpha11`
@@ -89,10 +93,12 @@ SwiftHealthPlugin (Main Plugin Class)
   * Fix [#984](https://github.com/cph-cachet/flutter-plugins/issues/984) - PR [#1055](https://github.com/cph-cachet/flutter-plugins/pull/1055)
 * Add `LEAN_BODY_MASS` data type [#1078](https://github.com/cph-cachet/flutter-plugins/issues/1078) - PR [#1097](https://github.com/cph-cachet/flutter-plugins/pull/1097)
   * The following AndroidManifest values are required to READ/WRITE `LEAN_BODY_MASS`:
+
   ```XML
   <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS"/>
   <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS"/>
   ```
+
 * iOS: Add `WATER_TEMPERATURE` and `UNDERWATER_DEPTH` health values [#1096](https://github.com/cph-cachet/flutter-plugins/issues/1096)
 * iOS: Add support for `Underwater Diving` workout [#1096](https://github.com/cph-cachet/flutter-plugins/issues/1096)
 * Fix [#1072](https://github.com/cph-cachet/flutter-plugins/issues/1072) and [#1074](https://github.com/cph-cachet/flutter-plugins/issues/1074)
