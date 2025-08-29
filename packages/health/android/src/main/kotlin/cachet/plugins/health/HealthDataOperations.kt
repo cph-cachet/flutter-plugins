@@ -280,6 +280,11 @@ class HealthDataOperations(
                 permList.add(
                         HealthPermission.getWritePermission(dataType),
                 )
+            } else if (access == 1) {
+                // write permission only
+                permList.add(
+                    HealthPermission.getWritePermission(dataType),
+                )
             } else {
                 // Read and write permissions
                 permList.addAll(
