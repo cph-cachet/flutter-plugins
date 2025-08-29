@@ -60,8 +60,10 @@ class AudioStreamingAppState extends State<AudioStreamingApp> {
     AudioStreamer().sampleRate = 22100;
 
     // Start listening to the audio stream.
-    audioSubscription =
-        AudioStreamer().audioStream.listen(onAudio, onError: handleError);
+    audioSubscription = AudioStreamer().audioStream.listen(
+      onAudio,
+      onError: handleError,
+    );
 
     setState(() => isRecording = true);
   }
@@ -74,31 +76,39 @@ class AudioStreamingAppState extends State<AudioStreamingApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        home: Scaffold(
-          body: Center(
+    home: Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.all(25),
               child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                Container(
-                    margin: EdgeInsets.all(25),
-                    child: Column(children: [
-                      Container(
-                        margin: EdgeInsets.only(top: 20),
-                        child: Text(isRecording ? "Mic: ON" : "Mic: OFF",
-                            style: TextStyle(fontSize: 25, color: Colors.blue)),
-                      ),
-                      Text(''),
-                      Text('Max amp: ${latestBuffer?.reduce(max)}'),
-                      Text('Min amp: ${latestBuffer?.reduce(min)}'),
-                      Text(
-                          '${recordingTime?.toStringAsFixed(2)} seconds recorded.'),
-                    ])),
-              ])),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: isRecording ? Colors.red : Colors.green,
-            onPressed: isRecording ? stop : start,
-            child: isRecording ? Icon(Icons.stop) : Icon(Icons.mic),
-          ),
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(top: 20),
+                    child: Text(
+                      isRecording ? "Mic: ON" : "Mic: OFF",
+                      style: TextStyle(fontSize: 25, color: Colors.blue),
+                    ),
+                  ),
+                  Text(''),
+                  Text('Max amp: ${latestBuffer?.reduce(max)}'),
+                  Text('Min amp: ${latestBuffer?.reduce(min)}'),
+                  Text(
+                    '${recordingTime?.toStringAsFixed(2)} seconds recorded.',
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: isRecording ? Colors.red : Colors.green,
+        onPressed: isRecording ? stop : start,
+        child: isRecording ? Icon(Icons.stop) : Icon(Icons.mic),
+      ),
+    ),
+  );
 }

@@ -1,3 +1,13 @@
+## 13.1.3
+
+* Fix permissions issues with iOS
+* Fix [#1231](https://github.com/cph-cachet/flutter-plugins/issues/1231)
+
+## 13.1.2
+
+* Fix [#1250](https://github.com/cph-cachet/flutter-plugins/issues/1250)
+* Fix [#1233](https://github.com/cph-cachet/flutter-plugins/issues/1233)
+
 ## 13.1.1
 
 * Fix [#1207](https://github.com/cph-cachet/flutter-plugins/issues/1207) - (**Important**: Some property names might have changed compared to before for `Nutrition`)
