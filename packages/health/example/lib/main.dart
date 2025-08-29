@@ -409,6 +409,15 @@ class HealthAppState extends State<HealthApp> {
           type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
           startTime: earlier,
           endTime: now);
+
+      // Mindfulness value should be counted based on start and end time
+      success &= await health.writeHealthData(
+        value: 10,
+        type: HealthDataType.MINDFULNESS,
+        startTime: earlier,
+        endTime: now,
+        recordingMethod: RecordingMethod.automatic,
+      );
     }
 
     // Available on iOS or iOS 16.0+ only
