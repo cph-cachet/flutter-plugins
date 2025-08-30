@@ -74,6 +74,9 @@ class HealthAppState extends State<HealthApp> {
       .map((type) =>
           // can only request READ permissions to the following list of types on iOS
           [
+            HealthDataType.GENDER,
+            HealthDataType.BLOOD_TYPE,
+            HealthDataType.BIRTH_DATE,
             HealthDataType.APPLE_MOVE_TIME,
             HealthDataType.APPLE_STAND_HOUR,
             HealthDataType.APPLE_STAND_TIME,
@@ -190,7 +193,7 @@ class HealthAppState extends State<HealthApp> {
     _healthDataList = health.removeDuplicates(_healthDataList);
 
     for (var data in _healthDataList) {
-      debugPrint(toJsonString(data));
+      debugPrint(data.toJson().toString());
     }
 
     // update the UI to display the results
@@ -279,8 +282,6 @@ class HealthAppState extends State<HealthApp> {
         type: HealthDataType.BLOOD_GLUCOSE,
         startTime: earlier,
         endTime: now);
-    success &= await health.writeInsulinDelivery(
-        5, InsulinDeliveryReason.BOLUS, earlier, now);
     success &= await health.writeHealthData(
         value: 1.8,
         type: HealthDataType.WATER,
@@ -405,6 +406,8 @@ class HealthAppState extends State<HealthApp> {
     );
 
     if (Platform.isIOS) {
+      success &= await health.writeInsulinDelivery(
+          5, InsulinDeliveryReason.BOLUS, earlier, now);
       success &= await health.writeHealthData(
           value: 30,
           type: HealthDataType.HEART_RATE_VARIABILITY_SDNN,
@@ -428,6 +431,15 @@ class HealthAppState extends State<HealthApp> {
           type: HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
           startTime: earlier,
           endTime: now);
+
+      // Mindfulness value should be counted based on start and end time
+      success &= await health.writeHealthData(
+        value: 10,
+        type: HealthDataType.MINDFULNESS,
+        startTime: earlier,
+        endTime: now,
+        recordingMethod: RecordingMethod.automatic,
+      );
     }
 
     // Available on iOS or iOS 16.0+ only
@@ -576,8 +588,9 @@ class HealthAppState extends State<HealthApp> {
     healthDataResponse.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
     _healthDataList.clear();
-    _healthDataList.addAll(
-      (healthDataResponse.length < 100) ? healthDataResponse : healthDataResponse.sublist(0, 100));
+    _healthDataList.addAll((healthDataResponse.length < 100)
+        ? healthDataResponse
+        : healthDataResponse.sublist(0, 100));
 
     for (var data in _healthDataList) {
       debugPrint(toJsonString(data));
