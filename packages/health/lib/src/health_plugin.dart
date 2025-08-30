@@ -1004,6 +1004,46 @@ class Health {
     return success ?? false;
   }
 
+  /// [iOS only] Fetch a `HealthDataPoint` by `uuid` and `type`. Returns `null` if no matching record.
+  ///
+  /// Parameters:
+  ///  * [uuid] - UUID of your saved health data point (e.g. A91A2F10-3D7B-486A-B140-5ADCD3C9C6D0)
+  ///  * [type] - Data type of your saved health data point (e.g. HealthDataType.WORKOUT)
+  ///
+  /// Assuming above data are coming from your database.
+  ///
+  /// Note: this feature is only for iOS at this moment due to
+  /// requires refactoring for Android.
+  Future<HealthDataPoint?> getHealthDataByUUID({
+    required String uuid,
+    required HealthDataType type,
+  }) async {
+    if (uuid.isEmpty) {
+      throw HealthException(type, 'UUID is empty!');
+    }
+
+    await _checkIfHealthConnectAvailableOnAndroid();
+
+    // Ask for device ID only once
+    _deviceId ??= Platform.isAndroid
+        ? (await _deviceInfo.androidInfo).id
+        : (await _deviceInfo.iosInfo).identifierForVendor;
+
+    // If not implemented on platform, throw an exception
+    if (!isDataTypeAvailable(type)) {
+      throw HealthException(type, 'Not available on platform $platformType');
+    }
+
+    final result = await _dataQueryByUUID(
+      uuid,
+      type,
+    );
+
+    debugPrint('data by UUID: ${result?.toString()}');
+
+    return result;
+  }
+
   /// Fetch a list of health data points based on [types].
   /// You can also specify the [recordingMethodsToFilter] to filter the data points.
   /// If not specified, all data points will be included.
@@ -1170,6 +1210,35 @@ class Health {
       return _parse(msg);
     } else {
       return <HealthDataPoint>[];
+    }
+  }
+
+  /// Fetches single data point by `uuid` and `type` from Android/iOS native code.
+  Future<HealthDataPoint?> _dataQueryByUUID(
+    String uuid,
+    HealthDataType dataType,
+  ) async {
+    final args = <String, dynamic>{
+      'dataTypeKey': dataType.name,
+      'dataUnitKey': dataTypeToUnit[dataType]!.name,
+      'uuid': uuid,
+    };
+
+    final fetchedDataPoint = await _channel.invokeMethod('getDataByUUID', args);
+
+    // fetchedDataPoint is Map<Object, Object>. // Must be converted to List first
+    // so no need to recreate _parse() to handle single HealthDataPoint.
+
+    if (fetchedDataPoint != null) {
+      final msg = <String, dynamic>{
+        "dataType": dataType,
+        "dataPoints": [fetchedDataPoint],
+      };
+
+      // get single record of parsed fetchedDataPoints
+      return _parse(msg).first;
+    } else {
+      return null;
     }
   }
 
