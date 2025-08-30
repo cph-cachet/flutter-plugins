@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:carp_serializable/carp_serializable.dart';
-import 'package:health_example/util.dart';
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
+import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:carp_serializable/carp_serializable.dart';
 
 // Global Health instance
 final health = Health();
 
-void main() => runApp(const HealthApp());
+void main() => runApp(HealthApp());
 
 class HealthApp extends StatefulWidget {
   const HealthApp({super.key});
@@ -576,9 +576,8 @@ class HealthAppState extends State<HealthApp> {
     healthDataResponse.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
     _healthDataList.clear();
-    _healthDataList.addAll((healthDataResponse.length < 100)
-        ? healthDataResponse
-        : healthDataResponse.sublist(0, 100));
+    _healthDataList.addAll(
+      (healthDataResponse.length < 100) ? healthDataResponse : healthDataResponse.sublist(0, 100));
 
     for (var data in _healthDataList) {
       debugPrint(toJsonString(data));
@@ -825,8 +824,7 @@ class HealthAppState extends State<HealthApp> {
                 return ListTile(
                   title: Text("${p.typeString}: ${p.value}"),
                   trailing: Text(p.unitString),
-                  subtitle:
-                      Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
+                  subtitle: Text('${p.dateFrom} - ${p.dateTo}\n${p.recordingMethod}'),
                   onTap: () {
                     fetchDataByUUID(
                       context,
